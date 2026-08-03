@@ -375,13 +375,20 @@
     <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-6 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 ドラフト結果</h2>
     <div id="ranking-container" class="w-full max-w-4xl space-y-4 pb-20"></div>
     <div class="mt-6 flex flex-col md:flex-row gap-4 mb-10 w-full max-w-md">
-      <button onclick="window.startMatch()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse">
-        ⚔️ ドラフト最強AIと試合をする
+      <button onclick="window.startPlayoff()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse">
+        🏆 プレーオフに進出する
       </button>
       <button onclick="location.reload()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-8 rounded-full">
         最初から
       </button>
     </div>
+  </div>
+
+  <!-- 画面5b: プレーオフ -->
+  <div id="screen-playoff" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
+    <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-4 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 プレーオフ</h2>
+    <div id="playoff-bracket" class="w-full max-w-md space-y-4 mb-4"></div>
+    <div id="playoff-next-panel" class="w-full max-w-md bg-gray-800 rounded-lg p-4 shadow-xl border border-gray-700 mb-10"></div>
   </div>
 
   <!-- 画面6: リアルタイム試合観戦＆勝率メーター -->
@@ -444,7 +451,10 @@
       <div id="scorebook-content" class="flex flex-col gap-6"></div>
     </div>
 
-    <button onclick="location.reload()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full mb-10 shadow-lg w-full max-w-sm shrink-0">トップへ戻る</button>
+    <div class="w-full max-w-sm flex flex-col gap-2 mb-10 shrink-0">
+      <button onclick="window.continuePlayoffAfterLiveGame()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-black py-3 px-8 rounded-full shadow-lg w-full">🏆 プレーオフに戻る</button>
+      <button onclick="location.reload()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded-full shadow-lg w-full text-sm">トップへ戻る（最初から）</button>
+    </div>
   </div>
 
   <script>
@@ -1156,7 +1166,7 @@
     };
 
     function showScreen(screenId) {
-      ['screen-setup', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-ranking', 'screen-match'].forEach(id => {
+      ['screen-setup', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-ranking', 'screen-playoff', 'screen-match'].forEach(id => {
         const el = document.getElementById(id);
         if(el) el.classList.add('hidden-screen');
       });
@@ -1820,20 +1830,11 @@
     };
 
     // ==========================================
-    // 試合シミュレーション＆リアルタイム勝率
+    // 試合エンジン（ライブ観戦／瞬間シミュレーションの共用コア）
     // ==========================================
     let matchSpeed = 1000;
-
-    let matchState = {
-      teamA: null, teamB: null,
-      scoreA: 0, scoreB: 0,
-      inning: 1, isTop: true, outs: 0,
-      bases: [false, false, false],
-      log: [], timer: null,
-      lineupA: null, lineupB: null,
-      batterIdxA: 0, batterIdxB: 0,
-      currentPitcherA: null, currentPitcherB: null
-    };
+    let matchState = null; // ライブ観戦中（screen-match表示用）の試合状態
+    const MAX_INNING = 21; // 安全弁：ここまで同点が続いたら強制決着させる
 
     // ★ RE24モデル
     const RUN_EXPECTANCY = [
@@ -1895,90 +1896,89 @@
       return { batters, pitchers };
     }
 
-    function checkPitcherChange() {
-      const defLineup = matchState.isTop ? matchState.lineupB : matchState.lineupA;
-      const defTeam = matchState.isTop ? matchState.teamB : matchState.teamA;
-
-      let expectedPitcher = null;
-      if (matchState.inning <= 6) expectedPitcher = defLineup.pitchers.sp;
-      else if (matchState.inning <= 8) expectedPitcher = defLineup.pitchers.rp;
-      else expectedPitcher = defLineup.pitchers.cp;
-
-      const currentPitcherRef = matchState.isTop ? 'currentPitcherB' : 'currentPitcherA';
-
-      if (matchState[currentPitcherRef] !== expectedPitcher) {
-        matchState[currentPitcherRef] = expectedPitcher;
-        addLog(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代: ${expectedPitcher.name} がマウンドに上がります。</span>`);
-      }
-    }
-
-    window.toggleSpeed = function() {
-      if (!matchState || !matchState.timer) return;
-
-      clearInterval(matchState.timer);
-      const btn = document.getElementById('speed-btn');
-
-      if (matchSpeed === 1000) {
-        matchSpeed = 200;
-        btn.textContent = "⏩ 超早送り中";
-        btn.className = "bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
-      } else {
-        matchSpeed = 1000;
-        btn.textContent = "▶️ 通常スピード";
-        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
-      }
-      matchState.timer = setInterval(simulateAtBat, matchSpeed);
-    };
-
-    window.startMatch = function() {
-      const userTeam = userTeamRef();
-      const topAITeam = teams.filter(t => !t.isUser).sort((a, b) => b.finalScore - a.finalScore)[0];
-
-      matchState = {
-        teamA: userTeam, teamB: topAITeam,
+    function createMatchState(teamA, teamB) {
+      return {
+        teamA, teamB,
         scoreA: 0, scoreB: 0,
         inning: 1, isTop: true, outs: 0,
         bases: [false, false, false],
-        log: [],
-        lineupA: extractLineup(userTeam),
-        lineupB: extractLineup(topAITeam),
+        timer: null,
+        lineupA: extractLineup(teamA),
+        lineupB: extractLineup(teamB),
         batterIdxA: 0, batterIdxB: 0,
         currentPitcherA: null, currentPitcherB: null
       };
+    }
 
-      document.getElementById('match-team-a-name').textContent = userTeam.name.replace('(AI)','');
-      document.getElementById('match-team-b-name').textContent = topAITeam.name.replace('(AI)','');
-      document.getElementById('match-log').innerHTML = '<p class="text-blue-600 border-b pb-1">プレイボール！</p>';
+    function checkPitcherChange(state, log) {
+      const defLineup = state.isTop ? state.lineupB : state.lineupA;
+      const defTeam = state.isTop ? state.teamB : state.teamA;
 
-      document.getElementById('match-scorebook').classList.add('hidden');
-      document.getElementById('speed-btn').style.display = '';
+      let expectedPitcher = null;
+      if (state.inning <= 6) expectedPitcher = defLineup.pitchers.sp;
+      else if (state.inning <= 8) expectedPitcher = defLineup.pitchers.rp;
+      else expectedPitcher = defLineup.pitchers.cp;
 
-      showScreen('screen-match');
-      checkPitcherChange();
-      updateMatchUI();
+      const currentPitcherRef = state.isTop ? 'currentPitcherB' : 'currentPitcherA';
 
-      matchSpeed = 1000;
-      document.getElementById('speed-btn').textContent = "▶️ 通常スピード";
-      document.getElementById('speed-btn').className = "bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
+      if (state[currentPitcherRef] !== expectedPitcher) {
+        state[currentPitcherRef] = expectedPitcher;
+        if (log) log(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代: ${expectedPitcher.name} がマウンドに上がります。</span>`);
+      }
+    }
 
-      matchState.timer = setInterval(simulateAtBat, matchSpeed);
-    };
+    function scoreRuns(state, runs, batter, pitcher, log) {
+      if (runs <= 0) return;
+      if (state.isTop) state.scoreA += runs;
+      else state.scoreB += runs;
+      batter.stats.rbi += runs;
+      pitcher.stats.run += runs;
+      if (log) log(`<span class="text-red-500 font-black bg-red-50 px-2 py-0.5 rounded block">🔥 ${runs}点追加！！</span>`);
+    }
 
-    function simulateAtBat() {
-      if (matchState.inning > 9 && matchState.scoreA !== matchState.scoreB) {
-        endMatch();
-        return;
-      } else if (matchState.inning > 12) {
-        endMatch(true);
-        return;
+    function processHit(state, advance, batter, pitcher, log) {
+      let runs = 0;
+      const runSpeed = (batter.fStats ? batter.fStats.run : 50);
+
+      for (let i = 2; i >= 0; i--) {
+        if (!state.bases[i]) continue;
+        let adv = advance;
+        // 単打での二塁走者、二塁打での一塁走者は足次第で1つ余分に進む
+        if (advance <= 2 && i >= 1 - (advance - 1) && Math.random() < 0.35 + (runSpeed - 50) * 0.006) adv += 1;
+
+        if (i + adv >= 3) { runs++; state.bases[i] = false; }
+        else { state.bases[i + adv] = true; state.bases[i] = false; }
       }
 
-      const atkTeam = matchState.isTop ? matchState.teamA : matchState.teamB;
+      if (advance >= 4) runs++;
+      else state.bases[advance - 1] = true;
 
-      const atkLineup = matchState.isTop ? matchState.lineupA : matchState.lineupB;
-      const batterIdx = matchState.isTop ? matchState.batterIdxA : matchState.batterIdxB;
+      scoreRuns(state, runs, batter, pitcher, log);
+    }
+
+    // ★ 四球は「詰まっている塁」だけを押し出す
+    function processWalk(state, batter, pitcher, log) {
+      if (!state.bases[0]) { state.bases[0] = true; return; }
+      if (!state.bases[1]) { state.bases[1] = true; return; }
+      if (!state.bases[2]) { state.bases[2] = true; return; }
+      scoreRuns(state, 1, batter, pitcher, log); // 満塁 → 押し出し
+    }
+
+    // 1打席分をシミュレートして状態を更新する。試合が決着したら { done: true } を返す。
+    // log を渡すとテキスト実況を生成する（ライブ観戦用）。null なら瞬間シミュレーション。
+    function gameTick(state, log) {
+      if (state.inning > 9 && state.scoreA !== state.scoreB) return { done: true };
+      if (state.inning > MAX_INNING) {
+        // 安全弁：延長が続きすぎた場合は点を与えて強制決着させる
+        if (state.scoreA === state.scoreB) state.scoreA += 1;
+        return { done: true };
+      }
+
+      const atkTeam = state.isTop ? state.teamA : state.teamB;
+      const atkLineup = state.isTop ? state.lineupA : state.lineupB;
+      const batterIdx = state.isTop ? state.batterIdxA : state.batterIdxB;
       const batter = atkLineup.batters[batterIdx];
-      const pitcher = matchState.isTop ? matchState.currentPitcherB : matchState.currentPitcherA;
+      const pitcher = state.isTop ? state.currentPitcherB : state.currentPitcherA;
 
       const bStats = batter.fStats || { meet: 50, pow: 50, run: 50 };
       const pStatsOrg = pitcher.pStats || { pow: 50, con: 50, sta: 50 };
@@ -2015,123 +2015,99 @@
         resultStr = "ホームラン！！";
         resultClass = "text-red-600 font-black text-lg";
         batter.stats.hit++; batter.stats.hr++; pitcher.stats.hit++; pitcher.stats.hr++;
-        processHit(4, batter, pitcher);
+        processHit(state, 4, batter, pitcher, log);
       }
       else if (rand < hrProb + (hitProb * 0.05)) {
         resultStr = "スリーベースヒット！";
         resultClass = "text-orange-600 font-black";
         batter.stats.hit++; pitcher.stats.hit++;
-        processHit(3, batter, pitcher);
+        processHit(state, 3, batter, pitcher, log);
       }
       else if (rand < hrProb + (hitProb * 0.25)) {
         resultStr = "ツーベースヒット！";
         resultClass = "text-orange-500 font-bold";
         batter.stats.hit++; pitcher.stats.hit++;
-        processHit(2, batter, pitcher);
+        processHit(state, 2, batter, pitcher, log);
       }
       else if (rand < hrProb + hitProb) {
         resultStr = "ヒット！";
         resultClass = "text-blue-600 font-bold";
         batter.stats.hit++; pitcher.stats.hit++;
-        processHit(1, batter, pitcher);
+        processHit(state, 1, batter, pitcher, log);
       }
       else if (rand < hrProb + hitProb + bbProb) {
         resultStr = "フォアボール";
         resultClass = "text-green-600 font-bold";
         batter.stats.ab--; // 四球は打数に含めない
         batter.stats.bb++; pitcher.stats.bb++;
-        processWalk(batter, pitcher);
+        processWalk(state, batter, pitcher, log);
       }
       else if (rand < hrProb + hitProb + bbProb + soProb) {
         resultStr = "空振り三振！";
         resultClass = "text-gray-600 font-bold";
         pitcher.stats.so++;
-        pitcher.stats.out++; matchState.outs++;
+        pitcher.stats.out++; state.outs++;
       }
       else {
         // ★ ダブルプレーの判定 (1アウト以下、1塁にランナーがいる場合)
-        if (matchState.outs < 2 && matchState.bases[0] && Math.random() < 0.15 + ((50 - bStats.run)*0.002)) {
+        if (state.outs < 2 && state.bases[0] && Math.random() < 0.15 + ((50 - bStats.run)*0.002)) {
            resultStr = "ダブルプレー！";
            resultClass = "text-purple-600 font-bold";
-           pitcher.stats.out += 2; matchState.outs += 2;
-           matchState.bases[0] = false;
-           if (matchState.outs >= 3) matchState.outs = 3;
+           pitcher.stats.out += 2; state.outs += 2;
+           state.bases[0] = false;
+           if (state.outs >= 3) state.outs = 3;
         } else {
            resultStr = "アウト";
            resultClass = "text-gray-500 font-normal";
-           pitcher.stats.out++; matchState.outs++;
+           pitcher.stats.out++; state.outs++;
         }
       }
 
-      addLog(`【${atkTeam.name.replace('(AI)','')}】第${batterIdx + 1}打者 <strong>${batter.name}</strong> : <span class="${resultClass}">${resultStr}</span>`);
+      if (log) log(`【${atkTeam.name.replace('(AI)','')}】第${batterIdx + 1}打者 <strong>${batter.name}</strong> : <span class="${resultClass}">${resultStr}</span>`);
 
-      if (matchState.isTop) matchState.batterIdxA = (matchState.batterIdxA + 1) % 9;
-      else matchState.batterIdxB = (matchState.batterIdxB + 1) % 9;
+      if (state.isTop) state.batterIdxA = (state.batterIdxA + 1) % 9;
+      else state.batterIdxB = (state.batterIdxB + 1) % 9;
 
       // ★ サヨナラ判定：9回以降の裏で後攻がリードしたら即終了
-      if (!matchState.isTop && matchState.inning >= 9 && matchState.scoreB > matchState.scoreA) {
-        addLog(`<span class="text-red-600 font-black text-lg">🎊 サヨナラ！</span>`);
-        endMatch();
-        return;
+      if (!state.isTop && state.inning >= 9 && state.scoreB > state.scoreA) {
+        if (log) log(`<span class="text-red-600 font-black text-lg">🎊 サヨナラ！</span>`);
+        return { done: true };
       }
 
-      if (matchState.outs >= 3) {
-        addLog(`チェンジ。`);
-        matchState.outs = 0;
-        matchState.bases = [false, false, false];
-        if (matchState.isTop) {
-          matchState.isTop = false;
+      if (state.outs >= 3) {
+        if (log) log(`チェンジ。`);
+        state.outs = 0;
+        state.bases = [false, false, false];
+        if (state.isTop) {
+          state.isTop = false;
           // ★ 9回以降、裏の攻撃前に後攻がリードしていれば試合終了
-          if (matchState.inning >= 9 && matchState.scoreB > matchState.scoreA) {
-            updateMatchUI();
-            endMatch();
-            return;
+          if (state.inning >= 9 && state.scoreB > state.scoreA) {
+            return { done: true };
           }
         } else {
-          matchState.isTop = true;
-          matchState.inning++;
+          state.isTop = true;
+          state.inning++;
         }
-        if (matchState.inning <= 12) checkPitcherChange();
+        if (state.inning <= MAX_INNING) checkPitcherChange(state, log);
       }
 
-      updateMatchUI();
+      return { done: false };
     }
 
-    function scoreRuns(runs, batter, pitcher) {
-      if (runs <= 0) return;
-      if (matchState.isTop) matchState.scoreA += runs;
-      else matchState.scoreB += runs;
-      batter.stats.rbi += runs;
-      pitcher.stats.run += runs;
-      addLog(`<span class="text-red-500 font-black bg-red-50 px-2 py-0.5 rounded block">🔥 ${runs}点追加！！</span>`);
-    }
-
-    function processHit(advance, batter, pitcher) {
-      let runs = 0;
-      const runSpeed = (batter.fStats ? batter.fStats.run : 50);
-
-      for (let i = 2; i >= 0; i--) {
-        if (!matchState.bases[i]) continue;
-        let adv = advance;
-        // 単打での二塁走者、二塁打での一塁走者は足次第で1つ余分に進む
-        if (advance <= 2 && i >= 1 - (advance - 1) && Math.random() < 0.35 + (runSpeed - 50) * 0.006) adv += 1;
-
-        if (i + adv >= 3) { runs++; matchState.bases[i] = false; }
-        else { matchState.bases[i + adv] = true; matchState.bases[i] = false; }
+    // AI同士の試合など、ユーザーが観戦しない試合を瞬時に決着させる
+    function runInstantGame(teamA, teamB) {
+      const state = createMatchState(teamA, teamB);
+      checkPitcherChange(state, null);
+      let guard = 0;
+      while (guard < 600) {
+        const r = gameTick(state, null);
+        guard++;
+        if (r.done) break;
       }
-
-      if (advance >= 4) runs++;
-      else matchState.bases[advance - 1] = true;
-
-      scoreRuns(runs, batter, pitcher);
-    }
-
-    // ★ 四球は「詰まっている塁」だけを押し出す
-    function processWalk(batter, pitcher) {
-      if (!matchState.bases[0]) { matchState.bases[0] = true; return; }
-      if (!matchState.bases[1]) { matchState.bases[1] = true; return; }
-      if (!matchState.bases[2]) { matchState.bases[2] = true; return; }
-      scoreRuns(1, batter, pitcher); // 満塁 → 押し出し
+      const winner = state.scoreA === state.scoreB
+        ? (Math.random() < 0.5 ? teamA : teamB)
+        : (state.scoreA > state.scoreB ? teamA : teamB);
+      return { scoreA: state.scoreA, scoreB: state.scoreB, winner };
     }
 
     function addLog(text) {
@@ -2141,10 +2117,56 @@
       logDiv.prepend(p);
     }
 
+    window.toggleSpeed = function() {
+      if (!matchState || !matchState.timer) return;
+
+      clearInterval(matchState.timer);
+      const btn = document.getElementById('speed-btn');
+
+      if (matchSpeed === 1000) {
+        matchSpeed = 200;
+        btn.textContent = "⏩ 超早送り中";
+        btn.className = "bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
+      } else {
+        matchSpeed = 1000;
+        btn.textContent = "▶️ 通常スピード";
+        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
+      }
+      matchState.timer = setInterval(liveTick, matchSpeed);
+    };
+
+    function liveTick() {
+      const r = gameTick(matchState, addLog);
+      updateMatchUI();
+      if (r.done) endMatch();
+    }
+
+    // プレーオフの1試合をライブ観戦画面で開始する（ユーザーが絡む試合用）
+    function startLiveMatch(teamA, teamB) {
+      matchState = createMatchState(teamA, teamB);
+
+      document.getElementById('match-team-a-name').textContent = teamA.name.replace('(AI)','');
+      document.getElementById('match-team-b-name').textContent = teamB.name.replace('(AI)','');
+      document.getElementById('match-log').innerHTML = '<p class="text-blue-600 border-b pb-1">プレイボール！</p>';
+
+      document.getElementById('match-scorebook').classList.add('hidden');
+      document.getElementById('speed-btn').style.display = '';
+
+      showScreen('screen-match');
+      checkPitcherChange(matchState, addLog);
+      updateMatchUI();
+
+      matchSpeed = 1000;
+      document.getElementById('speed-btn').textContent = "▶️ 通常スピード";
+      document.getElementById('speed-btn').className = "bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
+
+      matchState.timer = setInterval(liveTick, matchSpeed);
+    }
+
     function updateMatchUI() {
       document.getElementById('match-team-a-score').textContent = matchState.scoreA;
       document.getElementById('match-team-b-score').textContent = matchState.scoreB;
-      document.getElementById('match-inning').textContent = `${matchState.inning > 12 ? 12 : matchState.inning}回${matchState.isTop ? '表' : '裏'}`;
+      document.getElementById('match-inning').textContent = `${matchState.inning > MAX_INNING ? MAX_INNING : matchState.inning}回${matchState.isTop ? '表' : '裏'}`;
       document.getElementById('match-outs').textContent = `●`.repeat(matchState.outs) + `○`.repeat(Math.max(0, 3 - matchState.outs)) + ` ${matchState.outs}アウト`;
 
       document.getElementById('base-1').className = `absolute top-1/2 right-0 transform -translate-y-1/2 w-4 h-4 rotate-45 ${matchState.bases[0] ? 'bg-yellow-400 shadow-[0_0_8px_#facc15]' : 'bg-gray-600'}`;
@@ -2177,18 +2199,14 @@
     // ==========================================
     // ★ 試合終了とスコアブックの生成 ★
     // ==========================================
-    function endMatch(isDraw = false) {
+    function endMatch() {
       clearInterval(matchState.timer);
       matchState.timer = null;
-      const btn = document.getElementById('speed-btn');
-      btn.style.display = 'none';
+      document.getElementById('speed-btn').style.display = 'none';
 
-      if (isDraw) {
-        addLog(`<span class="text-xl text-gray-600">延長12回 引き分け試合終了！</span>`);
-      } else {
-        addLog(`<span class="text-xl text-red-600">試合終了！ ${matchState.scoreA} - ${matchState.scoreB}</span>`);
-      }
+      addLog(`<span class="text-xl text-red-600">試合終了！ ${matchState.scoreA} - ${matchState.scoreB}</span>`);
 
+      recordPlayoffLiveResult(matchState);
       showScorebook();
     }
 
@@ -2263,6 +2281,169 @@
         screen.scrollTo({ top: screen.scrollHeight, behavior: 'smooth' });
       }, 100);
     }
+
+    // ==========================================
+    // ★ プレーオフ（全チーム参加のトーナメント） ★
+    // ==========================================
+    let playoffState = null;
+
+    function makeMatch(a, b) {
+      return { a, b, scoreA: null, scoreB: null, winner: null, resolved: false };
+    }
+
+    // finalScore順にシードし、参加チーム数（2/3/4）に応じたブラケットを組む
+    function buildPlayoffBracket() {
+      const seeded = [...teams].sort((a, b) => b.finalScore - a.finalScore);
+      let rounds;
+      if (seeded.length === 2) {
+        rounds = [ { name: '決勝', matches: [ makeMatch(seeded[0], seeded[1]) ] } ];
+      } else if (seeded.length === 3) {
+        // 1位シードは準決勝を不戦勝で免除し、決勝から登場する
+        rounds = [
+          { name: '準決勝', matches: [ makeMatch(seeded[1], seeded[2]) ] },
+          { name: '決勝',   matches: [ makeMatch(seeded[0], null) ] }
+        ];
+      } else {
+        rounds = [
+          { name: '準決勝', matches: [ makeMatch(seeded[0], seeded[3]), makeMatch(seeded[1], seeded[2]) ] },
+          { name: '決勝',   matches: [ makeMatch(null, null) ] }
+        ];
+      }
+      return { seeded, rounds, roundIdx: 0, matchIdx: 0, champion: null };
+    }
+
+    function getCurrentPlayoffMatch() {
+      if (!playoffState) return null;
+      const round = playoffState.rounds[playoffState.roundIdx];
+      if (!round) return null;
+      return round.matches[playoffState.matchIdx] || null;
+    }
+
+    function propagateWinner(roundIdx, matchIdx, winner) {
+      const round = playoffState.rounds[roundIdx];
+      const nextRound = playoffState.rounds[roundIdx + 1];
+      if (!nextRound) return;
+      const nextMatch = nextRound.matches[0];
+      if (round.matches.length === 2) {
+        if (matchIdx === 0) nextMatch.a = winner; else nextMatch.b = winner;
+      } else {
+        // 3チーム形式：準決勝の勝者は決勝の2枠目へ
+        nextMatch.b = winner;
+      }
+    }
+
+    // 現在の試合の勝者をブラケットへ反映し、次の試合（または優勝決定）へポインタを進める
+    function advancePlayoffPointer() {
+      const round = playoffState.rounds[playoffState.roundIdx];
+      const match = round.matches[playoffState.matchIdx];
+      if (match && match.resolved) propagateWinner(playoffState.roundIdx, playoffState.matchIdx, match.winner);
+
+      if (playoffState.matchIdx < round.matches.length - 1) {
+        playoffState.matchIdx++;
+      } else if (playoffState.roundIdx < playoffState.rounds.length - 1) {
+        playoffState.roundIdx++;
+        playoffState.matchIdx = 0;
+      } else {
+        playoffState.champion = match ? match.winner : null;
+      }
+    }
+
+    // ライブ観戦で試合が終わったとき、その結果をブラケットに記録する（ポインタはまだ進めない）
+    function recordPlayoffLiveResult(state) {
+      if (!playoffState) return;
+      const match = getCurrentPlayoffMatch();
+      if (!match) return;
+      match.scoreA = state.scoreA;
+      match.scoreB = state.scoreB;
+      match.winner = state.scoreA === state.scoreB ? (Math.random() < 0.5 ? match.a : match.b) : (state.scoreA > state.scoreB ? match.a : match.b);
+      match.resolved = true;
+    }
+
+    window.startPlayoff = function() {
+      playoffState = buildPlayoffBracket();
+      renderPlayoffScreen();
+      showScreen('screen-playoff');
+    };
+
+    function renderMatchCard(m) {
+      const aName = m.a ? m.a.name.replace('(AI)','') : '(未定)';
+      const bName = m.b ? m.b.name.replace('(AI)','') : '(未定)';
+      const aWin = m.resolved && m.winner === m.a;
+      const bWin = m.resolved && m.winner === m.b;
+      return `
+        <div class="bg-gray-800 rounded p-2 text-xs border border-gray-700">
+          <div class="flex justify-between items-center ${aWin ? 'text-yellow-400 font-black' : 'text-gray-300 font-bold'}">
+            <span class="truncate">${aWin ? '🏆 ' : ''}${aName}</span>
+            <span>${m.resolved ? m.scoreA : ''}</span>
+          </div>
+          <div class="flex justify-between items-center mt-1 ${bWin ? 'text-yellow-400 font-black' : 'text-gray-300 font-bold'}">
+            <span class="truncate">${bWin ? '🏆 ' : ''}${bName}</span>
+            <span>${m.resolved ? m.scoreB : ''}</span>
+          </div>
+        </div>`;
+    }
+
+    function renderPlayoffScreen() {
+      const bracket = document.getElementById('playoff-bracket');
+      let html = '';
+      playoffState.rounds.forEach(round => {
+        html += `<div>
+          <h3 class="text-yellow-400 font-black text-sm mb-2 border-b border-yellow-600/40 pb-1">${round.name}</h3>
+          <div class="space-y-2">${round.matches.map(renderMatchCard).join('')}</div>
+        </div>`;
+      });
+      bracket.innerHTML = html;
+
+      const nextPanel = document.getElementById('playoff-next-panel');
+
+      if (playoffState.champion) {
+        const champ = playoffState.champion;
+        nextPanel.innerHTML = `
+          <div class="text-center py-2">
+            <p class="text-xs text-gray-400 mb-1">🏆 プレーオフ優勝</p>
+            <p class="text-2xl font-black ${champ.isUser ? 'text-yellow-400' : 'text-white'}">${champ.name.replace('(AI)','')}</p>
+            <p class="mt-2 font-bold ${champ.isUser ? 'text-green-400' : 'text-gray-400'}">${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '健闘及ばず…来年に期待です。'}</p>
+          </div>
+          <button onclick="location.reload()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
+        `;
+        return;
+      }
+
+      const match = getCurrentPlayoffMatch();
+      const involvesUser = match.a.isUser || match.b.isUser;
+      nextPanel.innerHTML = `
+        <p class="text-center text-xs text-gray-400 mb-2">次の試合</p>
+        <p class="text-center font-black text-base mb-3">${match.a.name.replace('(AI)','')} <span class="text-gray-500 text-sm">vs</span> ${match.b.name.replace('(AI)','')}</p>
+        <button onclick="window.playNextPlayoffMatch()" class="w-full ${involvesUser ? 'bg-red-600 hover:bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500'} text-white font-black py-3 rounded-full shadow-lg">
+          ${involvesUser ? '🎮 試合開始（観戦する）' : '⚡ 結果を見る'}
+        </button>
+      `;
+    }
+
+    window.playNextPlayoffMatch = function() {
+      const match = getCurrentPlayoffMatch();
+      if (!match) return;
+
+      if (match.a.isUser || match.b.isUser) {
+        startLiveMatch(match.a, match.b);
+      } else {
+        const result = runInstantGame(match.a, match.b);
+        match.scoreA = result.scoreA;
+        match.scoreB = result.scoreB;
+        match.winner = result.winner;
+        match.resolved = true;
+        advancePlayoffPointer();
+        renderPlayoffScreen();
+      }
+    };
+
+    // ライブ観戦の試合が終わったあと「プレーオフに戻る」ボタンから呼ばれる
+    window.continuePlayoffAfterLiveGame = function() {
+      const match = getCurrentPlayoffMatch();
+      if (match && match.resolved) advancePlayoffPointer();
+      renderPlayoffScreen();
+      showScreen('screen-playoff');
+    };
   </script>
 </body>
 </html>
