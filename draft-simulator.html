@@ -2372,11 +2372,11 @@
       const bWin = m.resolved && m.winner === m.b;
       return `
         <div class="bg-gray-800 rounded p-2 text-xs border border-gray-700">
-          <div class="flex justify-between items-center ${aWin ? 'text-yellow-400 font-black' : 'text-gray-300 font-bold'}">
+          <div class="flex justify-between items-center pl-2 border-l-4 ${m.a ? m.a.color.border : 'border-gray-700'} ${aWin ? 'text-yellow-400 font-black' : 'text-gray-300 font-bold'}">
             <span class="truncate">${aWin ? '🏆 ' : ''}${aName}</span>
             <span>${m.resolved ? m.scoreA : ''}</span>
           </div>
-          <div class="flex justify-between items-center mt-1 ${bWin ? 'text-yellow-400 font-black' : 'text-gray-300 font-bold'}">
+          <div class="flex justify-between items-center mt-1 pl-2 border-l-4 ${m.b ? m.b.color.border : 'border-gray-700'} ${bWin ? 'text-yellow-400 font-black' : 'text-gray-300 font-bold'}">
             <span class="truncate">${bWin ? '🏆 ' : ''}${bName}</span>
             <span>${m.resolved ? m.scoreB : ''}</span>
           </div>
@@ -2399,7 +2399,7 @@
       if (playoffState.champion) {
         const champ = playoffState.champion;
         nextPanel.innerHTML = `
-          <div class="text-center py-2">
+          <div class="text-center py-3 px-3 rounded border-4 ${champ.color.border}">
             <p class="text-xs text-gray-400 mb-1">🏆 プレーオフ優勝</p>
             <p class="text-2xl font-black ${champ.isUser ? 'text-yellow-400' : 'text-white'}">${champ.name.replace('(AI)','')}</p>
             <p class="mt-2 font-bold ${champ.isUser ? 'text-green-400' : 'text-gray-400'}">${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '健闘及ばず…来年に期待です。'}</p>
@@ -2413,7 +2413,11 @@
       const involvesUser = match.a.isUser || match.b.isUser;
       nextPanel.innerHTML = `
         <p class="text-center text-xs text-gray-400 mb-2">次の試合</p>
-        <p class="text-center font-black text-base mb-3">${match.a.name.replace('(AI)','')} <span class="text-gray-500 text-sm">vs</span> ${match.b.name.replace('(AI)','')}</p>
+        <p class="text-center font-black text-base mb-3 flex items-center justify-center gap-2">
+          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full ${match.a.color.bg}"></span>${match.a.name.replace('(AI)','')}</span>
+          <span class="text-gray-500 text-sm">vs</span>
+          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full ${match.b.color.bg}"></span>${match.b.name.replace('(AI)','')}</span>
+        </p>
         <button onclick="window.playNextPlayoffMatch()" class="w-full ${involvesUser ? 'bg-red-600 hover:bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500'} text-white font-black py-3 rounded-full shadow-lg">
           ${involvesUser ? '🎮 試合開始（観戦する）' : '⚡ 結果を見る'}
         </button>
