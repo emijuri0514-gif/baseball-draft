@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI対戦型 究極ドラフト＆スタメンシミュレーター</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- スマホタッチ対応ライブラリ -->
+  <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+  <!-- レーダーチャート用ライブラリ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #f1f5f9; user-select: none; -webkit-user-select: none; }
+
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .hidden-screen { display: none !important; }
+
+    /* === 3D クジ引き封筒 === */
+    .lottery-area { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 10px; }
+    .envelope-container { perspective: 1000px; width: 120px; height: 160px; position: relative; cursor: pointer; transition: transform 0.2s; }
+    .envelope-container:hover { transform: translateY(-5px); }
+    .envelope-body { width: 100%; height: 100%; background-color: #f8f9fa; position: absolute; box-shadow: 0 10px 20px rgba(0,0,0,0.2); border-radius: 2px; }
+    .flap { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 60px solid transparent; border-right: 60px solid transparent; border-top: 50px solid #e2e8f0; transform-origin: top; transition: transform 0.6s; z-index: 4; }
+    .letter { position: absolute; top: 10px; left: 10px; width: 100px; height: 130px; background-color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #cbd5e1; z-index: 2; transition: transform 0.8s 0.3s; }
+    .stamp { color: #dc2626; border: 3px solid #dc2626; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; text-align: center; line-height: 1.2; transform: rotate(-15deg); opacity: 0; transition: opacity 0.3s 1s; }
+    .pocket { position: absolute; bottom: 0; left: 0; width: 0; height: 0; border-left: 60px solid #f1f5f9; border-right: 60px solid #f1f5f9; border-bottom: 110px solid #f8f9fa; z-index: 3; pointer-events: none; }
+    .envelope-container.open .flap { transform: rotateX(180deg); z-index: 1; }
+    .envelope-container.open .letter { transform: translateY(-80px); }
+    .envelope-container.open .letter .stamp { opacity: 1; }
+    .envelope-container.disabled { opacity: 0.5; pointer-events: none; }
+
+    /* === ドラッグ＆ドロップ === */
+    .dnd-slot { border: 2px dashed #cbd5e1; background-color: #f8fafc; transition: all 0.2s; }
+    .dnd-slot.drag-over { background-color: #dbeafe; border-color: #3b82f6; }
+
+    .draft-table th, .draft-table td { border: 1px solid #e5e7eb; text-align: center; padding: 0.2rem; font-size: 0.7rem; }
+    .draft-table th { font-weight: 900; color: white; padding: 0.4rem; }
+
+    .pos-badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; border: 1px solid #cbd5e1; }
+    .pos-ok { background-color: #dcfce7; color: #1e40af; border-color: #93c5fd; }
+    .pos-need { background-color: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+
+    .tab-btn { padding: 8px 12px; font-weight: bold; font-size: 0.8rem; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; }
+    .tab-btn.active { color: #1d4ed8; border-bottom-color: #1d4ed8; }
+
+    .star-btn { cursor: pointer; color: #cbd5e1; transition: color 0.2s; font-size: 1.2rem; }
+    .star-btn.active { color: #eab308; }
+    .secret-cover { transition: opacity 0.5s ease-out; }
+
+    /* ★ ステータス表示用スタイル ★ */
+    .stat-box { display: inline-flex; align-items: center; gap: 2px; margin-right: 6px; font-size: 0.65rem; font-weight: 900; }
+    .stat-label { color: #64748b; }
+    .stat-val {
+      padding: 1px 4px; border-radius: 3px; color: white;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    }
+    .val-A { background-color: #ec4899; } /* ピンク (80~) */
+    .val-B { background-color: #ef4444; } /* 赤 (70~79) */
+    .val-C { background-color: #f97316; } /* オレンジ (60~69) */
+    .val-D { background-color: #eab308; } /* 黄色 (50~59) */
+    .val-E { background-color: #22c55e; } /* 緑 (40~49) */
+    .val-F { background-color: #3b82f6; } /* 青 (30~39) */
+    .val-G { background-color: #9ca3af; } /* 灰色 (~29) */
+
+    .touch-none { touch-action: none; }
+    .text-shadow { text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+
+    /* スコアブック用のテーブルスタイル */
+    .scorebook-table th { background-color: #374151; color: #9ca3af; font-size: 0.7rem; padding: 4px; border: 1px solid #4b5563; }
+    .scorebook-table td { font-size: 0.75rem; padding: 4px; border: 1px solid #4b5563; text-align: center; }
+  </style>
+</head>
+<body class="text-gray-800 h-screen overflow-hidden flex flex-col">
+
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      alert("⚠️ システムエラー\n" + message + "\n(行: " + lineno + ")");
+    };
+
+    function getBaseStat(p) {
+      if (p.pStats) {
+        const primaryPos = Array.isArray(p.bestPos) ? p.bestPos[0] : p.bestPos;
+        if (primaryPos === "中継" || primaryPos === "抑え") {
+          return p.pStats.pow * 0.65 + p.pStats.con * 0.35;
+        }
+        return (p.pStats.pow + p.pStats.con + p.pStats.sta) / 3;
+      } else if (p.fStats) {
+        return (p.fStats.meet + p.fStats.pow + p.fStats.run + p.fStats.def) / 4;
+      }
+      return 60;
+    }
+
+    function getPosScore(p, pos) {
+      let score = 50;
+      let bestPositions = Array.isArray(p.bestPos) ? p.bestPos : [p.bestPos];
+
+      if (p.pStats) {
+        if (pos === "先発") score = p.pStats.con * 0.4 + p.pStats.sta * 0.35 + p.pStats.pow * 0.25;
+        else if (pos === "中継" || pos === "抑え") score = p.pStats.pow * 0.65 + p.pStats.con * 0.35;
+
+        if (bestPositions[0] === pos) score += 5;
+        else if (bestPositions.includes(pos)) score += 2;
+        else if (pos === "先発" && !bestPositions.includes("先発")) score -= 10;
+        else if (pos !== "先発" && bestPositions[0] === "先発") score -= 5;
+      } else if (p.fStats) {
+        const s = p.fStats;
+        if (pos === "DH") score = s.pow * 0.5 + s.meet * 0.5;
+        else if (pos === "捕") score = s.def * 0.5 + s.pow * 0.3 + s.meet * 0.1 + s.run * 0.1;
+        else if (pos === "一") score = s.pow * 0.5 + s.meet * 0.3 + s.def * 0.1 + s.run * 0.1;
+        else if (pos === "二" || pos === "遊") score = s.def * 0.45 + s.run * 0.35 + s.meet * 0.1 + s.pow * 0.1;
+        else if (pos === "三") score = s.meet * 0.4 + s.pow * 0.3 + s.def * 0.2 + s.run * 0.1;
+        else if (pos === "中") score = s.run * 0.4 + s.def * 0.3 + s.meet * 0.2 + s.pow * 0.1;
+        else if (pos === "左") score = s.pow * 0.4 + s.meet * 0.3 + s.run * 0.2 + s.def * 0.1;
+        else if (pos === "右") score = s.pow * 0.4 + s.meet * 0.3 + s.def * 0.2 + s.run * 0.1;
+
+        if (pos !== "DH") {
+          let expandedBestPos = [];
+          bestPositions.forEach(bp => {
+            if (bp === "外") expandedBestPos.push("左", "中", "右");
+            else expandedBestPos.push(bp);
+          });
+
+          if (expandedBestPos[0] === pos || (bestPositions[0] === "外" && ["左", "中", "右"].includes(pos))) {
+            score += 5;
+          } else if (expandedBestPos.includes(pos)) {
+            score += 2;
+          } else {
+            const isOut = ["左","中","右"].includes(pos);
+            const pIsOut = expandedBestPos.some(bp => ["左","中","右"].includes(bp));
+            const isIn = ["一","二","三","遊"].includes(pos);
+            const pIsIn = expandedBestPos.some(bp => ["一","二","三","遊"].includes(bp));
+
+            if (expandedBestPos[0] === "捕" && pos !== "捕") score -= 10;
+            else if (pos === "捕" && !expandedBestPos.includes("捕")) score -= 20;
+            else if (isOut && pIsOut) score -= 2;
+            else if (isIn && pIsIn) score -= 3;
+            else score -= 15;
+          }
+        }
+      }
+      return score;
+    }
+  </script>
+
+  <!-- 画面0: 初期設定画面 -->
+  <div id="screen-setup" class="fixed inset-0 bg-blue-900 z-[100] flex flex-col items-center justify-center text-white fade-in px-4 overflow-y-auto py-8">
+    <h1 class="text-2xl md:text-4xl font-black mb-6 tracking-widest text-yellow-400 text-center">⚾ DRAFT SIMULATOR</h1>
+    <div class="bg-white text-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-md text-center">
+      <h2 class="text-lg font-bold mb-4 border-b pb-2">ドラフト設定</h2>
+
+      <p class="font-bold mb-2 text-sm text-left text-blue-800">① あなたの担当球団</p>
+      <select id="user-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500">
+        <option value="巨人">読売ジャイアンツ</option>
+        <option value="阪神">阪神タイガース</option>
+        <option value="DeNA">横浜DeNAベイスターズ</option>
+        <option value="ヤクルト">東京ヤクルトスワローズ</option>
+        <option value="中日">中日ドラゴンズ</option>
+        <option value="広島">広島東洋カープ</option>
+        <option value="オリックス">オリックス・バファローズ</option>
+        <option value="ロッテ">千葉ロッテマリーンズ</option>
+        <option value="ソフトバンク">福岡ソフトバンクホークス</option>
+        <option value="楽天">東北楽天ゴールデンイーグルス</option>
+        <option value="日本ハム">北海道日本ハムファイターズ</option>
+        <option value="西武">埼玉西武ライオンズ</option>
+      </select>
+
+      <p class="font-bold mb-2 text-sm text-left text-blue-800">② 対戦するAI球団数 (ライバル)</p>
+      <select id="ai-count" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500">
+        <option value="1">1球団（計2球団で対戦）</option>
+        <option value="2">2球団（計3球団で対戦）</option>
+        <option value="3" selected>3球団（計4球団で対戦）</option>
+      </select>
+
+      <p class="font-bold mb-2 text-sm text-left text-blue-800">③ ドラフト方式</p>
+      <select id="draft-mode" class="w-full border-2 border-gray-300 p-3 rounded mb-2 font-bold text-sm md:text-base focus:outline-none focus:border-blue-500">
+        <option value="npb" selected>NPB方式：1巡目のみ抽選 → 2巡目以降ウェーバー</option>
+        <option value="lottery">全巡 同時指名（毎回くじ引き）</option>
+        <option value="waiver">完全ウェーバー（抽選なし・順番指名）</option>
+      </select>
+      <p id="draft-mode-desc" class="text-[11px] text-left text-gray-500 mb-6 leading-snug"></p>
+
+      <button onclick="window.startGame()" class="w-full bg-blue-600 hover:bg-blue-800 text-white font-black py-4 rounded-lg text-lg shadow-lg">ドラフト会議を開始する</button>
+    </div>
+  </div>
+
+  <!-- ヘッダー -->
+  <header class="bg-gray-900 text-white p-2 shadow-md flex justify-between items-center z-10 relative border-b-4 border-blue-600">
+    <h1 class="text-sm font-black tracking-wider">⚾ DRAFT SIM</h1>
+    <div id="round-indicator" class="font-bold bg-blue-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
+  </header>
+
+  <!-- 画面1: ドラフト検索＆指名画面 -->
+  <div id="screen-draft" class="hidden-screen flex-1 flex flex-col md:flex-row overflow-hidden pb-12 md:pb-0 relative">
+
+    <!-- ▼ 選手リストエリア ▼ -->
+    <div id="view-player-list" class="w-full md:w-3/5 h-full flex flex-col border-r border-gray-300 bg-white">
+      <div class="bg-gray-50 border-b border-gray-200 shadow-sm z-10">
+        <div class="flex border-b border-gray-300 px-2 pt-1 gap-2">
+          <div id="tab-all" class="tab-btn active" onclick="switchTab('all')">全選手</div>
+          <div id="tab-fav" class="tab-btn flex items-center" onclick="switchTab('fav')"><span class="text-yellow-500 mr-1">★</span>リスト</div>
+        </div>
+        <div class="p-2">
+          <div id="turn-bar" class="hidden"></div>
+          <div id="status-alert" class="hidden mb-2 p-2 font-bold text-xs rounded border-l-4"></div>
+          <div id="pos-status-bar" class="flex flex-wrap gap-1 mb-2"></div>
+
+          <div class="grid grid-cols-3 gap-1 mb-2">
+            <select id="team-filter" class="border-2 border-gray-300 rounded p-1 text-[10px] md:text-sm focus:outline-none font-bold text-gray-600">
+              <option value="">全球団</option>
+              <option value="巨人">巨人</option>
+              <option value="阪神">阪神</option>
+              <option value="DeNA">DeNA</option>
+              <option value="ヤクルト">ヤクルト</option>
+              <option value="中日">中日</option>
+              <option value="広島">広島</option>
+              <option value="オリックス">オリックス</option>
+              <option value="ロッテ">ロッテ</option>
+              <option value="ソフトバンク">ソフトバンク</option>
+              <option value="楽天">楽天</option>
+              <option value="日本ハム">日本ハム</option>
+              <option value="西武">西武</option>
+            </select>
+            <select id="stat-filter" class="border-2 border-gray-300 rounded p-1 text-[10px] md:text-sm focus:outline-none font-bold text-gray-600">
+              <option value="">全能力</option>
+              <option value="80">80以上あり</option>
+              <option value="75">最高75〜79</option>
+              <option value="70">最高70〜74</option>
+              <option value="0">69以下</option>
+            </select>
+            <select id="sort-filter" class="border-2 border-gray-300 rounded p-1 text-[10px] md:text-sm focus:outline-none font-bold text-gray-600">
+              <option value="default">総合能力順</option>
+              <option value="team">球団順</option>
+              <option value="pos">ポジション順</option>
+            </select>
+          </div>
+
+          <input type="text" id="search-input" placeholder="選手名・ポジションで検索" class="w-full border-2 border-gray-300 rounded p-2 focus:outline-none text-sm font-bold">
+        </div>
+      </div>
+      <div id="player-list" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-100 pb-10"></div>
+    </div>
+
+    <!-- ▼ 指名ボードエリア ▼ -->
+    <div id="view-draft-board" class="hidden md:flex w-full md:w-2/5 h-full flex-col bg-white">
+      <div class="p-2 bg-gray-100 border-b border-gray-300 flex items-center">
+        <h2 class="font-black text-sm text-gray-800">指名ボード</h2>
+      </div>
+      <div class="flex-1 p-1 overflow-y-auto">
+        <table class="w-full draft-table bg-white">
+          <thead id="draft-matrix-head"></thead>
+          <tbody id="draft-matrix-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- スマホ用ボトムナビゲーション -->
+    <div class="fixed bottom-0 left-0 w-full flex bg-gray-900 text-white md:hidden z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
+      <button id="nav-list-btn" onclick="window.switchDraftView('list')" class="flex-1 py-3 font-bold text-sm bg-blue-700 text-white transition-colors duration-200 border-r border-gray-700">🔍 選手検索</button>
+      <button id="nav-board-btn" onclick="window.switchDraftView('board')" class="flex-1 py-3 font-bold text-sm bg-gray-800 text-gray-400 transition-colors duration-200">📋 指名ボード</button>
+    </div>
+  </div>
+
+  <!-- 画面2: リヴィール -->
+  <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center text-white fade-in px-2">
+    <h2 class="text-xl md:text-3xl font-black mb-6 tracking-widest text-yellow-400">第 <span id="reveal-round">1</span> 巡 選択希望選手</h2>
+    <div id="reveal-cards-container" class="flex flex-wrap justify-center gap-4 max-w-5xl overflow-y-auto max-h-[60vh] py-2"></div>
+    <div id="reveal-status" class="mt-6 text-lg md:text-2xl font-bold h-10"></div>
+  </div>
+
+  <!-- 画面3: クジ引き -->
+  <div id="screen-lottery" class="hidden-screen fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center text-white fade-in px-4">
+    <h2 class="text-3xl md:text-4xl font-black text-red-500 mb-2 tracking-widest">競合発生！</h2>
+    <p id="lottery-target-name" class="text-xl md:text-2xl font-black mb-4 text-white text-center"></p>
+    <p id="lottery-instruction" class="text-sm md:text-lg font-bold mb-4 text-yellow-300">あなたの封筒を選んでクリック</p>
+
+    <button id="lottery-skip-btn" class="hidden bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full mb-2 shadow-lg" onclick="window.skipAILottery()">スキップ (結果のみ表示)</button>
+
+    <div id="lottery-envelopes" class="lottery-area"></div>
+  </div>
+
+  <!-- 画面4: スタメンボード -->
+  <div id="screen-lineup" class="hidden-screen fixed inset-0 flex flex-row overflow-hidden bg-gray-200 fade-in z-[100]">
+    <div class="w-2/5 md:w-1/3 bg-white border-r border-gray-300 flex flex-col h-full" id="lineup-pool-container">
+      <div class="p-2 bg-blue-900 text-white font-bold tracking-widest text-center text-[10px] md:text-xs shrink-0">獲得選手 (配置・解除)</div>
+      <div id="lineup-pool" class="flex-1 p-2 overflow-y-auto space-y-2 bg-gray-50 pb-20"></div>
+    </div>
+
+    <div class="w-3/5 md:w-2/3 flex flex-col items-center p-2 md:p-6 relative overflow-y-auto h-full">
+      <div class="w-full max-w-md bg-green-800 rounded-lg shadow-2xl p-2 md:p-4 border-2 border-white mb-4 shrink-0">
+        <h2 class="text-white text-center font-black text-sm md:text-xl mb-1 tracking-widest border-b border-green-600 pb-1">スタメン編成 (守備位置を選択)</h2>
+        <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-2">打＝打順適性 ／ 守＝守備適性　◎最適 ○good △普通 ▲不向き ✕ミスマッチ</p>
+
+        <div class="space-y-1" id="lineup-slots">
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">1番</div>
+            <select id="pos-b1" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中" selected>中</option><option value="右">右</option><option value="一">一</option><option value="二">二</option><option value="三">三</option><option value="遊">遊</option><option value="捕">捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b1" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">2番</div>
+            <select id="pos-b2" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中">中</option><option value="右">右</option><option value="一">一</option><option value="二" selected>二</option><option value="三">三</option><option value="遊">遊</option><option value="捕">捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b2" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">3番</div>
+            <select id="pos-b3" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左" selected>左</option><option value="中">中</option><option value="右">右</option><option value="一">一</option><option value="二">二</option><option value="三">三</option><option value="遊">遊</option><option value="捕">捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b3" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">4番</div>
+            <select id="pos-b4" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中">中</option><option value="右">右</option><option value="一" selected>一</option><option value="二">二</option><option value="三">三</option><option value="遊">遊</option><option value="捕">捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b4" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">5番</div>
+            <select id="pos-b5" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中">中</option><option value="右">右</option><option value="一">一</option><option value="二">二</option><option value="三" selected>三</option><option value="遊">遊</option><option value="捕">捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b5" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">6番</div>
+            <select id="pos-b6" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中">中</option><option value="右">右</option><option value="一">一</option><option value="二">二</option><option value="三">三</option><option value="遊">遊</option><option value="捕">捕</option><option value="DH" selected>DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b6" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">7番</div>
+            <select id="pos-b7" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中">中</option><option value="右" selected>右</option><option value="一">一</option><option value="二">二</option><option value="三">三</option><option value="遊">遊</option><option value="捕">捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b7" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">8番</div>
+            <select id="pos-b8" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中">中</option><option value="右">右</option><option value="一">一</option><option value="二">二</option><option value="三">三</option><option value="遊">遊</option><option value="捕" selected>捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b8" data-type="batter"></div>
+          </div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-sm text-center shrink-0">9番</div>
+            <select id="pos-b9" class="text-[10px] md:text-sm p-1 md:py-1.5 md:px-2 rounded-l border-r border-gray-300 bg-gray-100 font-bold focus:outline-none appearance-none text-center h-8"><option value="左">左</option><option value="中">中</option><option value="右">右</option><option value="一">一</option><option value="二">二</option><option value="三">三</option><option value="遊" selected>遊</option><option value="捕">捕</option><option value="DH">DH</option></select>
+            <div class="flex-1 dnd-slot h-8 rounded-r p-1" id="slot-b9" data-type="batter"></div>
+          </div>
+
+          <div class="mt-1 pt-1 border-t border-green-600"></div>
+
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-xs text-center shrink-0">先発</div>
+            <div class="flex-1 dnd-slot h-8 rounded p-1 ml-[34px] md:ml-[42px]" id="slot-p1" data-type="pitcher"></div>
+          </div>
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-xs text-center shrink-0">中継</div>
+            <div class="flex-1 dnd-slot h-8 rounded p-1 ml-[34px] md:ml-[42px]" id="slot-p2" data-type="pitcher"></div>
+          </div>
+          <div class="flex items-center">
+            <div class="w-8 md:w-12 text-white font-bold text-[10px] md:text-xs text-center shrink-0">抑え</div>
+            <div class="flex-1 dnd-slot h-8 rounded p-1 ml-[34px] md:ml-[42px]" id="slot-p3" data-type="pitcher"></div>
+          </div>
+        </div>
+
+        <div id="order-summary" class="mt-2 pt-2 border-t border-green-600 text-[10px] md:text-xs text-white font-bold text-center"></div>
+      </div>
+      <button onclick="finishLineup()" class="bg-red-600 hover:bg-red-800 text-white font-black py-3 px-4 w-full rounded-full shadow-lg text-sm md:text-lg shrink-0 mb-4">AI採点を見る</button>
+    </div>
+  </div>
+
+  <!-- 画面5: ランキング＆戦力評価 -->
+  <div id="screen-ranking" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
+    <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-6 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 ドラフト結果</h2>
+    <div id="ranking-container" class="w-full max-w-4xl space-y-4 pb-20"></div>
+    <div class="mt-6 flex flex-col md:flex-row gap-4 mb-10 w-full max-w-md">
+      <button onclick="window.startMatch()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse">
+        ⚔️ ドラフト最強AIと試合をする
+      </button>
+      <button onclick="location.reload()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-8 rounded-full">
+        最初から
+      </button>
+    </div>
+  </div>
+
+  <!-- 画面6: リアルタイム試合観戦＆勝率メーター -->
+  <div id="screen-match" class="hidden-screen fixed inset-0 bg-gray-900 z-[200] flex flex-col items-center p-4 text-white fade-in overflow-y-auto">
+    <!-- スピード調整ボタン付きヘッダー -->
+    <div class="flex justify-between items-center w-full max-w-3xl mb-2 px-2 mt-4 shrink-0">
+      <h2 class="text-lg md:text-2xl font-black text-yellow-400 tracking-widest">⚾ 頂上決戦</h2>
+      <button id="speed-btn" onclick="window.toggleSpeed()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors">▶️ 通常スピード</button>
+    </div>
+
+    <!-- スコアボード -->
+    <div class="w-full max-w-3xl bg-gray-800 rounded-lg p-4 mb-4 shadow-2xl border-2 border-gray-600 shrink-0">
+      <div class="flex justify-between items-center text-center">
+        <div class="w-1/3">
+          <p id="match-team-a-name" class="font-bold text-sm text-gray-400">先攻</p>
+          <p id="match-team-a-score" class="text-5xl font-black mt-2 text-white">0</p>
+        </div>
+        <div class="w-1/3 text-center">
+          <p id="match-inning" class="text-xl font-bold text-yellow-300">1回表</p>
+          <div class="mt-2 flex justify-center gap-2 text-sm font-bold">
+            <span id="match-outs" class="text-red-400">●● オウト0</span>
+          </div>
+          <!-- ダイヤモンド型のベース表示 -->
+          <div class="mt-2 relative w-12 h-12 mx-auto">
+            <div id="base-2" class="absolute top-0 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-gray-600 rotate-45"></div>
+            <div id="base-3" class="absolute top-1/2 left-0 transform -translate-y-1/2 w-4 h-4 bg-gray-600 rotate-45"></div>
+            <div id="base-1" class="absolute top-1/2 right-0 transform -translate-y-1/2 w-4 h-4 bg-gray-600 rotate-45"></div>
+            <!-- 本塁（飾り用） -->
+            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white opacity-20 rotate-45"></div>
+          </div>
+        </div>
+        <div class="w-1/3">
+          <p id="match-team-b-name" class="font-bold text-sm text-gray-400">後攻</p>
+          <p id="match-team-b-score" class="text-5xl font-black mt-2 text-white">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- リアルタイム勝率メーター -->
+    <div class="w-full max-w-3xl bg-gray-800 rounded-lg p-3 mb-4 shadow-xl border border-gray-700 shrink-0">
+      <p class="text-center text-xs font-bold text-gray-400 mb-1">🔥 リアルタイム勝利期待値 (Win Probability)</p>
+      <div class="flex justify-between text-sm font-black mb-1">
+        <span id="wp-a-text" class="text-blue-400">50%</span>
+        <span id="wp-b-text" class="text-red-400">50%</span>
+      </div>
+      <div class="w-full h-4 bg-gray-700 rounded-full overflow-hidden flex">
+        <div id="wp-a-bar" class="h-full bg-blue-500 transition-all duration-500 ease-out" style="width: 50%;"></div>
+        <div id="wp-b-bar" class="h-full bg-red-500 transition-all duration-500 ease-out" style="width: 50%;"></div>
+      </div>
+    </div>
+
+    <!-- 実況ログ -->
+    <div id="match-log" class="w-full max-w-3xl bg-white text-gray-900 rounded-lg p-4 flex-1 min-h-[200px] max-h-[300px] overflow-y-auto font-bold text-sm shadow-inner space-y-2 mb-4 shrink-0">
+      <!-- ログがここに追加されます -->
+    </div>
+
+    <!-- 試合終了後に表示されるスコアブック -->
+    <div id="match-scorebook" class="hidden w-full max-w-3xl bg-gray-800 rounded-lg p-4 mb-4 shadow-xl border border-gray-700 shrink-0">
+      <h3 class="text-xl font-black text-white border-b border-gray-600 pb-2 mb-4 text-center">📋 試合結果 / スコアブック</h3>
+      <div id="scorebook-content" class="flex flex-col gap-6"></div>
+    </div>
+
+    <button onclick="location.reload()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full mb-10 shadow-lg w-full max-w-sm shrink-0">トップへ戻る</button>
+  </div>
+
+  <script>
+    const getPhotoUrl = (id) => `https://cdn.findfriends.jp/img.sp.baseball/player_image.php?player_id=${id}&type=t`;
+    const QUOTAS = { "投手": 3, "捕手": 1, "内野手": 4, "外野手": 3 };
+    const TOTAL_ROUNDS = 12;
+    const ALL_TEAMS = ["巨人", "阪神", "DeNA", "ヤクルト", "中日", "広島", "オリックス", "ロッテ", "ソフトバンク", "楽天", "日本ハム", "西武"];
+
+    // ★ 球団ごとのテーマカラー定義 ★
+    const TEAM_STYLE = {
+      "巨人": { bg: "bg-[#f97316]", border: "border-[#f97316]" },
+      "阪神": { bg: "bg-[#eab308]", border: "border-[#eab308]" },
+      "DeNA": { bg: "bg-[#0ea5e9]", border: "border-[#0ea5e9]" },
+      "ヤクルト": { bg: "bg-[#22c55e]", border: "border-[#22c55e]" },
+      "中日": { bg: "bg-[#2563eb]", border: "border-[#2563eb]" },
+      "広島": { bg: "bg-[#dc2626]", border: "border-[#dc2626]" },
+      "オリックス": { bg: "bg-[#0f172a]", border: "border-[#0f172a]" },
+      "ロッテ": { bg: "bg-[#6b7280]", border: "border-[#6b7280]" },
+      "ソフトバンク": { bg: "bg-[#fde047]", border: "border-[#fde047]" },
+      "楽天": { bg: "bg-[#9f1239]", border: "border-[#9f1239]" },
+      "日本ハム": { bg: "bg-[#7dd3fc]", border: "border-[#7dd3fc]" },
+      "西武": { bg: "bg-[#06b6d4]", border: "border-[#06b6d4]" }
+    };
+
+    const TEAM_POLICIES = {
+      "巨人": "能力重視", "ソフトバンク": "能力重視",
+      "広島": "投手重視", "中日": "投手重視", "オリックス": "投手重視", "西武": "投手重視",
+      "DeNA": "打撃重視", "ヤクルト": "打撃重視", "日本ハム": "打撃重視",
+      "阪神": "バランス重視", "楽天": "バランス重視", "ロッテ": "バランス重視"
+    };
+
+    function getValClass(val) {
+      if(val >= 80) return 'val-A';
+      if(val >= 70) return 'val-B';
+      if(val >= 60) return 'val-C';
+      if(val >= 50) return 'val-D';
+      if(val >= 40) return 'val-E';
+      if(val >= 30) return 'val-F';
+      return 'val-G';
+    }
+
+    const initialDatabase = [
+      // 巨人
+      { id: 20000044, name: "戸郷翔征", team: "巨人", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 76, con: 73, sta: 78} },
+      { id: 19990153, name: "大勢", team: "巨人", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 81, con: 77, sta: 65} },
+      { id: 19960048, name: "マルティネス", team: "巨人", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 85, con: 80, sta: 64} },
+      { id: 19960043, name: "岸田行倫", team: "巨人", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 72, pow: 70, run: 66, def: 65} },
+      { id: 19990197, name: "泉口友汰", team: "巨人", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 76, pow: 67, run: 69, def: 72} },
+      { id: 19880045, name: "坂本勇人", team: "巨人", pos: "内野手", bestPos: ["遊", "三"], eval: "内野手", fStats: {meet: 75, pow: 75, run: 75, def: 65} },
+      { id: 19970198, name: "キャベッジ", team: "巨人", pos: "外野手", bestPos: ["左", "外"], eval: "外野手", fStats: {meet: 71, pow: 76, run: 75, def: 56} },
+      { id: 19890063, name: "丸佳浩", team: "巨人", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 75, pow: 75, run: 73, def: 59} },
+
+      // 阪神
+      { id: 19980012, name: "才木浩人", team: "阪神", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 81, con: 74, sta: 79} },
+      { id: 19980010, name: "村上頌樹", team: "阪神", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 83, sta: 79} },
+      { id: 19970128, name: "石井大智", team: "阪神", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 80, con: 80, sta: 63} },
+      { id: 19930015, name: "坂本誠志郎", team: "阪神", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 67, pow: 67, run: 66, def: 67} },
+      { id: 19940089, name: "大山悠輔", team: "阪神", pos: "内野手", bestPos: ["一", "三"], eval: "内野手", fStats: {meet: 76, pow: 76, run: 68, def: 64} },
+      { id: 19990126, name: "佐藤輝明", team: "阪神", pos: "内野手", bestPos: ["三", "外"], eval: "内野手", fStats: {meet: 77, pow: 83, run: 72, def: 59} },
+      { id: 19940132, name: "近本光司", team: "阪神", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 79, pow: 70, run: 85, def: 83} },
+      { id: 20000057, name: "森下翔太", team: "阪神", pos: "外野手", bestPos: ["右", "外"], eval: "外野手", fStats: {meet: 77, pow: 79, run: 69, def: 72} },
+
+      // DeNA
+      { id: 19950086, name: "東克樹", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 75, con: 83, sta: 80} },
+      { id: 20020148, name: "石田裕太郎", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 75, con: 74, sta: 73} },
+      { id: 19920049, name: "山崎康晃", team: "DeNA", pos: "投手", bestPos: ["中継", "抑え"], eval: "抑え", pStats: {pow: 74, con: 75, sta: 63} },
+      { id: 20040019, name: "松尾汐恩", team: "DeNA", pos: "捕手", bestPos: ["捕", "三"], eval: "捕手", fStats: {meet: 65, pow: 68, run: 70, def: 62} },
+      { id: 19980104, name: "牧秀悟", team: "DeNA", pos: "内野手", bestPos: ["二", "一"], eval: "内野手", fStats: {meet: 80, pow: 81, run: 70, def: 60} },
+      { id: 19880065, name: "宮崎敏郎", team: "DeNA", pos: "内野手", bestPos: ["三"], eval: "内野手", fStats: {meet: 78, pow: 76, run: 59, def: 46} },
+      { id: 19910070, name: "筒香嘉智", team: "DeNA", pos: "外野手", bestPos: ["左", "外", "三"], eval: "外野手", fStats: {meet: 61, pow: 75, run: 64, def: 58} },
+      { id: 19940065, name: "佐野恵太", team: "DeNA", pos: "外野手", bestPos: ["左", "外", "一"], eval: "外野手", fStats: {meet: 77, pow: 76, run: 64, def: 61} },
+
+      // 中日
+      { id: 20020035, name: "高橋宏斗", team: "中日", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 78, con: 73, sta: 78} },
+      { id: 20030120, name: "金丸夢斗", team: "中日", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 75, sta: 74} },
+      { id: 20000199, name: "松山晋也", team: "中日", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 81, con: 74, sta: 62} },
+      { id: 20000159, name: "石伊雄太", team: "中日", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 63, pow: 65, run: 62, def: 56} },
+      { id: 20000049, name: "田中幹也", team: "中日", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 61, pow: 61, run: 81, def: 78} },
+      { id: 20010008, name: "村松開人", team: "中日", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 72, pow: 65, run: 78, def: 70} },
+      { id: 19980058, name: "細川成也", team: "中日", pos: "外野手", bestPos: ["右", "外", "一"], eval: "外野手", fStats: {meet: 77, pow: 78, run: 69, def: 55} },
+      { id: 20020001, name: "岡林勇希", team: "中日", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 79, pow: 68, run: 80, def: 72} },
+
+      // ヤクルト
+      { id: 19980092, name: "吉村貢司郎", team: "ヤクルト", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 76, sta: 75} },
+      { id: 20000094, name: "荘司宏太", team: "ヤクルト", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 77, con: 67, sta: 65} },
+      { id: 19970105, name: "大西広樹", team: "ヤクルト", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 77, sta: 68} },
+      { id: 19980053, name: "古賀優大", team: "ヤクルト", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 70, pow: 63, run: 61, def: 67} },
+      { id: 19920108, name: "オスナ", team: "ヤクルト", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 72, pow: 75, run: 58, def: 61} },
+      { id: 20010105, name: "長岡秀樹", team: "ヤクルト", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 73, pow: 68, run: 72, def: 70} },
+      { id: 19920106, name: "サンタナ", team: "ヤクルト", pos: "外野手", bestPos: ["右", "外"], eval: "外野手", fStats: {meet: 77, pow: 77, run: 62, def: 45} },
+      { id: 19930145, name: "塩見泰隆", team: "ヤクルト", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 74, pow: 74, run: 81, def: 73} },
+
+      // 広島
+      { id: 19970085, name: "森下暢仁", team: "広島", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 76, con: 81, sta: 81} },
+      { id: 19950053, name: "床田寛樹", team: "広島", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 76, con: 79, sta: 81} },
+      { id: 19960067, name: "栗林良吏", team: "広島", pos: "投手", bestPos: ["先発", "中継", "抑え"], eval: "抑え", pStats: {pow: 82, con: 72, sta: 69} },
+      { id: 19980037, name: "坂倉将吾", team: "広島", pos: "捕手", bestPos: ["捕", "一", "三"], eval: "捕手", fStats: {meet: 75, pow: 74, run: 74, def: 58} },
+      { id: 20000006, name: "小園海斗", team: "広島", pos: "内野手", bestPos: ["遊", "三", "二"], eval: "内野手", fStats: {meet: 80, pow: 70, run: 78, def: 56} },
+      { id: 19900044, name: "菊池涼介", team: "広島", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 67, pow: 68, run: 78, def: 68} },
+      { id: 19980201, name: "ファビアン", team: "広島", pos: "外野手", bestPos: ["左", "外"], eval: "外野手", fStats: {meet: 77, pow: 76, run: 69, def: 60} },
+      { id: 19880026, name: "秋山翔吾", team: "広島", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 76, pow: 72, run: 75, def: 66} },
+
+      // オリックス
+      { id: 20010023, name: "宮城大弥", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 81, con: 82, sta: 78} },
+      { id: 20020073, name: "山下舜平大", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 70, sta: 72} },
+      { id: 19930175, name: "マチャド", team: "オリックス", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 80, con: 70, sta: 63} },
+      { id: 19950009, name: "森友哉", team: "オリックス", pos: "捕手", bestPos: ["捕", "DH", "外"], eval: "捕手", fStats: {meet: 75, pow: 72, run: 74, def: 67} },
+      { id: 20020016, name: "紅林弘太郎", team: "オリックス", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 72, pow: 71, run: 69, def: 54} },
+      { id: 20010004, name: "太田椋", team: "オリックス", pos: "内野手", bestPos: ["二", "一", "三"], eval: "内野手", fStats: {meet: 76, pow: 71, run: 72, def: 61} },
+      { id: 19940046, name: "西川龍馬", team: "オリックス", pos: "外野手", bestPos: ["左", "外"], eval: "外野手", fStats: {meet: 80, pow: 74, run: 76, def: 64} },
+      { id: 19960059, name: "中川圭太", team: "オリックス", pos: "外野手", bestPos: ["中", "外", "一"], eval: "外野手", fStats: {meet: 73, pow: 74, run: 74, def: 58} },
+
+      // ロッテ
+      { id: 19980059, name: "種市篤暉", team: "ロッテ", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 72, sta: 79} },
+      { id: 19960057, name: "小島和哉", team: "ロッテ", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 76, sta: 77} },
+      { id: 19980011, name: "鈴木昭汰", team: "ロッテ", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 74, con: 72, sta: 70} },
+      { id: 20050060, name: "寺地隆成", team: "ロッテ", pos: "捕手", bestPos: ["捕", "三"], eval: "捕手", fStats: {meet: 70, pow: 69, run: 70, def: 54} },
+      { id: 19890119, name: "ソト", team: "ロッテ", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 70, pow: 77, run: 58, def: 59} },
+      { id: 19980085, name: "佐藤都志也", team: "ロッテ", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 71, pow: 67, run: 75, def: 64} },
+      { id: 20000025, name: "藤原恭大", team: "ロッテ", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 76, pow: 69, run: 80, def: 66} },
+      { id: 20030122, name: "西川史礁", team: "ロッテ", pos: "外野手", bestPos: ["右", "外"], eval: "外野手", fStats: {meet: 71, pow: 70, run: 69, def: 68} },
+
+      // ソフトバンク
+      { id: 19950085, name: "モイネロ", team: "ソフトバンク", pos: "投手", bestPos: ["先発", "中継"], eval: "先発", pStats: {pow: 84, con: 76, sta: 78} },
+      { id: 19960001, name: "松本裕樹", team: "ソフトバンク", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 80, con: 74, sta: 67} },
+      { id: 19970083, name: "杉山一樹", team: "ソフトバンク", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 81, con: 66, sta: 67} },
+      { id: 19970090, name: "海野隆司", team: "ソフトバンク", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 60, pow: 61, run: 65, def: 63} },
+      { id: 19910032, name: "山川穂高", team: "ソフトバンク", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 64, pow: 81, run: 58, def: 63} },
+      { id: 19960002, name: "栗原陵矢", team: "ソフトバンク", pos: "内野手", bestPos: ["三", "捕"], eval: "内野手", fStats: {meet: 73, pow: 76, run: 69, def: 72} },
+      { id: 19960053, name: "周東佑京", team: "ソフトバンク", pos: "内野手", bestPos: ["外", "二"], eval: "内野手", fStats: {meet: 76, pow: 67, run: 87, def: 74} },
+      { id: 19930035, name: "近藤健介", team: "ソフトバンク", pos: "外野手", bestPos: ["左", "外"], eval: "外野手", fStats: {meet: 81, pow: 76, run: 68, def: 71} },
+
+      // 楽天
+      { id: 20000164, name: "荘司康誠", team: "楽天", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 68, sta: 74} },
+      { id: 19960040, name: "西口直人", team: "楽天", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 80, con: 71, sta: 63} },
+      { id: 19980031, name: "藤平尚真", team: "楽天", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 78, con: 67, sta: 71} },
+      { id: 19960083, name: "太田光", team: "楽天", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 58, pow: 63, run: 65, def: 76} },
+      { id: 19900016, name: "浅村栄斗", team: "楽天", pos: "内野手", bestPos: ["三", "一", "二"], eval: "内野手", fStats: {meet: 71, pow: 77, run: 69, def: 52} },
+      { id: 19970045, name: "村林一輝", team: "楽天", pos: "内野手", bestPos: ["遊", "三"], eval: "内野手", fStats: {meet: 77, pow: 67, run: 77, def: 70} },
+      { id: 20010167, name: "中島大輔", team: "楽天", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 73, pow: 68, run: 83, def: 73} },
+      { id: 19960063, name: "辰己涼介", team: "楽天", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 77, pow: 72, run: 81, def: 80} },
+
+      // 日本ハム
+      { id: 19970076, name: "伊藤大海", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 77, con: 80, sta: 80} },
+      { id: 19990058, name: "北山亘基", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 70, sta: 77} },
+      { id: 19920002, name: "加藤貴之", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 72, con: 85, sta: 78} },
+      { id: 20000125, name: "田宮裕涼", team: "日本ハム", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 71, pow: 69, run: 73, def: 58} },
+      { id: 19990007, name: "清宮幸太郎", team: "日本ハム", pos: "内野手", bestPos: ["一", "三"], eval: "内野手", fStats: {meet: 75, pow: 75, run: 63, def: 61} },
+      { id: 19950168, name: "レイエス", team: "日本ハム", pos: "外野手", bestPos: ["DH", "一"], eval: "外野手", fStats: {meet: 77, pow: 83, run: 66, def: 49} },
+      { id: 20000001, name: "万波中正", team: "日本ハム", pos: "外野手", bestPos: ["右", "外"], eval: "外野手", fStats: {meet: 69, pow: 78, run: 71, def: 70} },
+      { id: 20010013, name: "水谷瞬", team: "日本ハム", pos: "外野手", bestPos: ["左", "外"], eval: "外野手", fStats: {meet: 74, pow: 75, run: 74, def: 58} },
+
+      // 西武
+      { id: 19990045, name: "平良海馬", team: "西武", pos: "投手", bestPos: ["先発", "中継", "抑え"], eval: "先発", pStats: {pow: 82, con: 72, sta: 75} },
+      { id: 19970038, name: "高橋光成", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 74, sta: 79} },
+      { id: 19990157, name: "隅田知一郎", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 78, con: 79, sta: 79} },
+      { id: 19990025, name: "古賀悠斗", team: "西武", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 62, pow: 67, run: 61, def: 65} },
+      { id: 19970200, name: "ネビン", team: "西武", pos: "内野手", bestPos: ["一", "外"], eval: "内野手", fStats: {meet: 76, pow: 76, run: 63, def: 66} },
+      { id: 19930109, name: "源田壮亮", team: "西武", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 72, pow: 64, run: 81, def: 79} },
+      { id: 20020138, name: "渡部聖弥", team: "西武", pos: "外野手", bestPos: ["三", "外"], eval: "外野手", fStats: {meet: 72, pow: 74, run: 73, def: 58} },
+      { id: 19990016, name: "西川愛也", team: "西武", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 70, pow: 68, run: 76, def: 69} }
+    ];
+
+    initialDatabase.forEach(p => p.img = getPhotoUrl(p.id));
+
+    let availablePlayers = [];
+    let teams = [];
+    let currentRound = 1;
+    let isHazurePhase = false;
+    let isDrawingLottery = false;
+    let favoriteIds = [];
+    let currentTab = 'all';
+
+    let currentConflicts = [];
+    let currentConflictIndex = 0;
+    let autoLotteryTimer = null;
+
+    let lineupAssignments = {};
+    let lineupPhaseInitialized = false;
+
+    // ★ ドラフト方式・ウェーバー管理 ★
+    let draftMode = 'npb';
+    let waiverBaseOrder = [];
+    let waiverQueue = [];
+    let waiverPos = 0;
+    let waiverLog = [];
+
+    const DRAFT_MODE_DESC = {
+      npb: "実際のNPBに近い形式。1巡目だけ全球団が同時に入札し、競合したら抽選。2巡目からは順番指名（スネーク方式）になります。",
+      lottery: "全12巡すべてで同時入札と抽選を行います。運の要素が最も大きい形式です。",
+      waiver: "抽選は一切なし。決められた順番で1人ずつ指名していきます。読み合い重視の形式です。"
+    };
+
+    const userTeamRef = () => teams.find(t => t.isUser);
+
+    // ★ 打順適性テーブル（各行の合計は1.0）
+    const ORDER_WEIGHTS = {
+      1: { meet:.38, pow:.02, run:.55, def:.05, label:"出塁と足で流れを作る" },
+      2: { meet:.48, pow:.17, run:.28, def:.07, label:"つなぎ役・小技" },
+      3: { meet:.40, pow:.42, run:.13, def:.05, label:"打率と長打の両立" },
+      4: { meet:.27, pow:.68, run:.00, def:.05, label:"チーム最強の長打力" },
+      5: { meet:.32, pow:.58, run:.05, def:.05, label:"4番の後を打つ長距離砲" },
+      6: { meet:.38, pow:.38, run:.16, def:.08, label:"バランス型" },
+      7: { meet:.32, pow:.28, run:.20, def:.20, label:"打撃も守備も" },
+      8: { meet:.26, pow:.14, run:.20, def:.40, label:"守備重視" },
+      9: { meet:.33, pow:.04, run:.48, def:.15, label:"第2の1番・つなぎ" }
+    };
+    const DEF_PRIORITY = ["捕","遊","二","中","三","右","左","一","DH"];
+    const ORDER_PRIORITY = [4,3,1,2,5,9,6,7,8];
+
+    function getOrderFit(p, order) {
+      if (!p || !p.fStats) return 50;
+      const w = ORDER_WEIGHTS[order], s = p.fStats;
+      return s.meet*w.meet + s.pow*w.pow + s.run*w.run + s.def*w.def;
+    }
+    // その選手の素の平均に対して、その打順がどれだけ「活きる」か
+    function getOrderDiff(p, order) {
+      if (!p || !p.fStats) return 0;
+      const avg = (p.fStats.meet + p.fStats.pow + p.fStats.run + p.fStats.def) / 4;
+      return getOrderFit(p, order) - avg;
+    }
+    function orderMark(d) {
+      if (d >=  4.5) return { mark:"◎", cls:"text-pink-600"   };
+      if (d >=  1.5) return { mark:"○", cls:"text-blue-600"   };
+      if (d >= -1.5) return { mark:"△", cls:"text-gray-500"   };
+      if (d >= -4.5) return { mark:"▲", cls:"text-orange-500" };
+      return                { mark:"✕", cls:"text-red-600"    };
+    }
+    function posMark(s) {
+      if (s >= 75) return { mark:"◎", cls:"text-pink-600"   };
+      if (s >= 68) return { mark:"○", cls:"text-blue-600"   };
+      if (s >= 60) return { mark:"△", cls:"text-gray-500"   };
+      if (s >= 52) return { mark:"▲", cls:"text-orange-500" };
+      return              { mark:"✕", cls:"text-red-600"    };
+    }
+    function calcOrderBuff(arr) {
+      if (!arr.length) return 0;
+      return arr.reduce((s, b) => s + getOrderDiff(b.p, b.order), 0) / arr.length;
+    }
+
+    window.startGame = function() {
+      const userTeamSelect = document.getElementById('user-team').value;
+      const aiCount = parseInt(document.getElementById('ai-count').value);
+
+      availablePlayers = [...initialDatabase];
+
+      teams = [{
+        id: 0,
+        name: userTeamSelect,
+        baseName: userTeamSelect,
+        isUser: true,
+        color: TEAM_STYLE[userTeamSelect],
+        roster: [],
+        needsPick: true,
+        personality: TEAM_POLICIES[userTeamSelect] || "バランス重視"
+      }];
+
+      let availableAiTeams = ALL_TEAMS.filter(t => t !== userTeamSelect).sort(() => 0.5 - Math.random());
+
+      for (let i = 1; i <= aiCount; i++) {
+        const teamName = availableAiTeams[i-1];
+        teams.push({
+          id: i,
+          name: teamName + "(AI)",
+          baseName: teamName,
+          isUser: false,
+          color: TEAM_STYLE[teamName],
+          roster: [],
+          needsPick: true,
+          personality: TEAM_POLICIES[teamName] || "バランス重視"
+        });
+      }
+
+      initDraftMatrix();
+
+      draftMode = document.getElementById('draft-mode').value;
+      waiverBaseOrder = teams.map(t => t.id).sort(() => 0.5 - Math.random());
+      waiverLog = [];
+
+      window.switchDraftView('list');
+      beginRound();
+    };
+
+    window.switchDraftView = function(view) {
+      const listArea = document.getElementById('view-player-list');
+      const boardArea = document.getElementById('view-draft-board');
+      const listBtn = document.getElementById('nav-list-btn');
+      const boardBtn = document.getElementById('nav-board-btn');
+
+      if(window.innerWidth < 768) {
+        if(view === 'list') {
+          listArea.classList.remove('hidden');
+          boardArea.classList.add('hidden');
+          boardArea.classList.remove('flex');
+          listBtn.className = "flex-1 py-3 font-bold text-sm bg-blue-700 text-white transition-colors duration-200 border-r border-gray-700";
+          boardBtn.className = "flex-1 py-3 font-bold text-sm bg-gray-800 text-gray-400 transition-colors duration-200";
+        } else {
+          listArea.classList.add('hidden');
+          boardArea.classList.remove('hidden');
+          boardArea.classList.add('flex');
+          boardBtn.className = "flex-1 py-3 font-bold text-sm bg-blue-700 text-white transition-colors duration-200";
+          listBtn.className = "flex-1 py-3 font-bold text-sm bg-gray-800 text-gray-400 transition-colors duration-200 border-r border-gray-700";
+        }
+      } else {
+        listArea.classList.remove('hidden');
+        boardArea.classList.remove('hidden');
+        boardArea.classList.add('flex');
+      }
+    };
+
+    window.addEventListener('resize', () => {
+      if(document.getElementById('screen-draft').classList.contains('hidden-screen')) return;
+      if(window.innerWidth >= 768) {
+         document.getElementById('view-player-list').classList.remove('hidden');
+         document.getElementById('view-draft-board').classList.remove('hidden');
+         document.getElementById('view-draft-board').classList.add('flex');
+      } else {
+         const isListActive = document.getElementById('nav-list-btn').classList.contains('bg-blue-700');
+         window.switchDraftView(isListActive ? 'list' : 'board');
+      }
+    });
+
+    window.toggleFavorite = function(id, e) {
+      e.stopPropagation();
+      const idx = favoriteIds.indexOf(id);
+      if(idx > -1) favoriteIds.splice(idx, 1);
+      else favoriteIds.push(id);
+      renderSearchList();
+    };
+
+    window.switchTab = function(tab) {
+      currentTab = tab;
+      document.getElementById('tab-all').className = `tab-btn ${tab==='all' ? 'active' : ''}`;
+      document.getElementById('tab-fav').className = `tab-btn flex items-center ${tab==='fav' ? 'active' : ''}`;
+      renderSearchList();
+    };
+
+    function getMissingPositions(roster) {
+      let counts = { "投手": 0, "捕手": 0, "内野手": 0, "外野手": 0 };
+      roster.forEach(p => { if(p) counts[p.pos]++; });
+
+      let surplus = Math.max(0, counts["捕手"] - 1) + Math.max(0, counts["内野手"] - 4) + Math.max(0, counts["外野手"] - 3);
+
+      let missing = [];
+      if (counts["投手"] < 3) missing.push("投手");
+
+      if (surplus === 0) {
+        if (counts["捕手"] < 2) missing.push("捕手");
+        if (counts["内野手"] < 5) missing.push("内野手");
+        if (counts["外野手"] < 4) missing.push("外野手");
+      } else {
+        if (counts["捕手"] < 1) missing.push("捕手");
+        if (counts["内野手"] < 4) missing.push("内野手");
+        if (counts["外野手"] < 3) missing.push("外野手");
+      }
+
+      return missing;
+    }
+
+    function renderPosStatus() {
+      let counts = { "投手": 0, "捕手": 0, "内野手": 0, "外野手": 0 };
+      userTeamRef().roster.forEach(p => { if(p) counts[p.pos]++; });
+
+      let surplus = Math.max(0, counts["捕手"] - 1) + Math.max(0, counts["内野手"] - 4) + Math.max(0, counts["外野手"] - 3);
+      let dhFilled = surplus > 0 ? 1 : 0;
+
+      let html = '';
+      html += `<span class="pos-badge ${counts["投手"]>=3?'pos-ok':'pos-need'}">投: ${Math.min(counts["投手"],3)}/3</span>`;
+      html += `<span class="pos-badge ${counts["捕手"]>=1?'pos-ok':'pos-need'}">捕: ${Math.min(counts["捕手"],1)}/1</span>`;
+      html += `<span class="pos-badge ${counts["内野手"]>=4?'pos-ok':'pos-need'}">内: ${Math.min(counts["内野手"],4)}/4</span>`;
+      html += `<span class="pos-badge ${counts["外野手"]>=3?'pos-ok':'pos-need'}">外: ${Math.min(counts["外野手"],3)}/3</span>`;
+      html += `<span class="pos-badge ${dhFilled?'pos-ok':'pos-need'}">DH: ${dhFilled}/1</span>`;
+
+      document.getElementById('pos-status-bar').innerHTML = html;
+    }
+
+    function initDraftMatrix() {
+      const thead = document.getElementById('draft-matrix-head');
+      let thHtml = `<th class="w-8 bg-gray-100 text-gray-800 border-gray-300">巡</th>`;
+      teams.forEach(t => { thHtml += `<th class="${t.color.bg} text-white text-shadow border-gray-300">${t.name.replace('(AI)','')}</th>`; });
+      thead.innerHTML = `<tr>${thHtml}</tr>`;
+      renderDraftMatrix();
+    }
+
+    function renderDraftMatrix() {
+      const tbody = document.getElementById('draft-matrix-body');
+      let html = '';
+      for (let i = 0; i < TOTAL_ROUNDS; i++) {
+        let rowHtml = `<td class="font-bold text-gray-500 bg-gray-100">${i + 1}</td>`;
+        teams.forEach(t => {
+          const pickName = t.roster[i] ? t.roster[i].name : '-';
+          rowHtml += `<td class="font-bold text-gray-800 text-xs">${pickName}</td>`;
+        });
+        html += `<tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} h-8">${rowHtml}</tr>`;
+      }
+      tbody.innerHTML = html;
+    }
+
+    function generateStatsHtml(p) {
+      if (p.pStats) {
+        return `
+          <div class="stat-box mt-1">
+            <span class="stat-label">球威</span><span class="stat-val ${getValClass(p.pStats.pow)}">${p.pStats.pow}</span>
+            <span class="stat-label ml-1">制球</span><span class="stat-val ${getValClass(p.pStats.con)}">${p.pStats.con}</span>
+            <span class="stat-label ml-1">ｽタ</span><span class="stat-val ${getValClass(p.pStats.sta)}">${p.pStats.sta}</span>
+          </div>`;
+      } else if (p.fStats) {
+        return `
+          <div class="stat-box mt-1">
+            <span class="stat-label">ミ</span><span class="stat-val ${getValClass(p.fStats.meet)}">${p.fStats.meet}</span>
+            <span class="stat-label ml-1">パ</span><span class="stat-val ${getValClass(p.fStats.pow)}">${p.fStats.pow}</span>
+            <span class="stat-label ml-1">走</span><span class="stat-val ${getValClass(p.fStats.run)}">${p.fStats.run}</span>
+            <span class="stat-label ml-1">守</span><span class="stat-val ${getValClass(p.fStats.def)}">${p.fStats.def}</span>
+          </div>`;
+      }
+      return '';
+    }
+
+    function renderSearchList() {
+      const keyword = document.getElementById('search-input').value.toLowerCase();
+      const teamFilter = document.getElementById('team-filter').value;
+      const statFilter = document.getElementById('stat-filter').value;
+      const sortFilter = document.getElementById('sort-filter').value;
+      const listDiv = document.getElementById('player-list');
+      const user = userTeamRef();
+
+      // 必要ポジションの選手が枯れた場合は全ポジションを解放する
+      let missing = getMissingPositions(user.roster);
+      if (!availablePlayers.some(p => missing.includes(p.pos))) {
+        missing = ["投手", "捕手", "内野手", "外野手"];
+      }
+
+      let displayPlayers = availablePlayers.filter(p => {
+        if(currentTab === 'fav' && !favoriteIds.includes(p.id)) return false;
+        if(teamFilter && p.team !== teamFilter) return false;
+
+        const isMatch = p.name.includes(keyword) || p.pos.includes(keyword) || p.team.includes(keyword) ||
+                        (Array.isArray(p.bestPos) ? p.bestPos.some(bp => bp.includes(keyword)) : p.bestPos.includes(keyword));
+        if(!isMatch) return false;
+
+        const isNeeded = missing.includes(p.pos);
+        if(!isNeeded) return false;
+
+        if(statFilter !== "") {
+           let maxStat = 50;
+           if (p.fStats) maxStat = Math.max(p.fStats.meet, p.fStats.pow, p.fStats.run, p.fStats.def);
+           if (p.pStats) maxStat = Math.max(p.pStats.pow, p.pStats.con, p.pStats.sta);
+
+           if (statFilter === "80" && maxStat < 80) return false;
+           if (statFilter === "75" && (maxStat < 75 || maxStat >= 80)) return false;
+           if (statFilter === "70" && (maxStat < 70 || maxStat >= 75)) return false;
+           if (statFilter === "0" && maxStat >= 70) return false;
+        }
+
+        return true;
+      });
+
+      if (sortFilter === 'team') {
+        const teamOrder = ["巨人","阪神","DeNA","ヤクルト","中日","広島","オリックス","ロッテ","ソフトバンク","楽天","日本ハム","西武"];
+        displayPlayers.sort((a, b) => teamOrder.indexOf(a.team) - teamOrder.indexOf(b.team));
+      } else if (sortFilter === 'pos') {
+        const posOrder = {"投手":1, "捕手":2, "内野手":3, "外野手":4};
+        displayPlayers.sort((a, b) => posOrder[a.pos] - posOrder[b.pos]);
+      } else {
+        displayPlayers.sort((a, b) => {
+           return getBaseStat(b) - getBaseStat(a);
+        });
+      }
+
+      let html = '';
+      displayPlayers.forEach(p => {
+        const isFav = favoriteIds.includes(p.id);
+        const btnHtml = user.needsPick
+          ? `<button onclick="window.handleDraftSubmit(${p.id})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 text-xs rounded shadow ml-1 flex-shrink-0 h-10">指名</button>`
+          : `<button class="bg-gray-400 text-white font-bold py-2 px-3 text-xs rounded shadow ml-1 flex-shrink-0 cursor-not-allowed h-10" disabled>待機中</button>`;
+
+        const statsHtml = generateStatsHtml(p);
+        const bestPosDisplay = Array.isArray(p.bestPos) ? p.bestPos.join('・') : p.bestPos;
+
+        html += `
+          <div class="bg-white p-2 rounded shadow-sm border border-gray-200 flex justify-between items-center hover:bg-blue-50 transition">
+            <div class="flex items-center gap-2">
+              <div class="star-btn ${isFav ? 'active' : ''}" onclick="window.toggleFavorite(${p.id}, event)">★</div>
+              <img src="${p.img}" class="w-10 h-14 object-cover rounded border border-gray-300" onerror="this.style.display='none'">
+              <div>
+                <span class="text-[9px] font-bold text-gray-500 bg-gray-200 px-1 py-0.5 rounded block w-max mb-0.5">${p.team} - ${p.pos}</span>
+                <span class="font-black text-sm md:text-base leading-tight">${p.name} <span class="text-[10px] text-gray-400 font-bold ml-1">[${bestPosDisplay}]</span></span>
+                <p class="text-[10px] text-gray-500 hidden md:block">${p.eval}</p>
+                ${statsHtml}
+              </div>
+            </div>
+            ${btnHtml}
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html || '<p class="text-gray-500 text-xs p-2 font-bold">該当選手がいません</p>';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('search-input').addEventListener('input', renderSearchList);
+      document.getElementById('team-filter').addEventListener('change', renderSearchList);
+      document.getElementById('sort-filter').addEventListener('change', renderSearchList);
+      document.getElementById('stat-filter').addEventListener('change', renderSearchList);
+
+      const modeSel = document.getElementById('draft-mode');
+      const modeDesc = document.getElementById('draft-mode-desc');
+      const syncDesc = () => { modeDesc.textContent = DRAFT_MODE_DESC[modeSel.value]; };
+      modeSel.addEventListener('change', syncDesc);
+      syncDesc();
+    });
+
+    // ==========================================
+    // ドラフト進行（同時指名 / ウェーバー）
+    // ==========================================
+    function isWaiverRound(round) {
+      if (draftMode === 'lottery') return false;
+      if (draftMode === 'waiver')  return true;
+      return round >= 2; // npb方式
+    }
+
+    function beginRound() {
+      document.getElementById('round-indicator').textContent =
+        `第 ${currentRound} 巡 ${isWaiverRound(currentRound) ? 'ウェーバー指名' : '選択希望選手'}`;
+      document.getElementById('search-input').value = "";
+      teams.forEach(t => t.needsPick = true);
+
+      if (isWaiverRound(currentRound)) {
+        startWaiverRound();
+      } else {
+        isHazurePhase = false;
+        startTurn();
+        showScreen('screen-draft');
+      }
+    }
+
+    function startWaiverRound() {
+      // スネーク方式：巡ごとに順序を折り返す
+      const base = [...waiverBaseOrder];
+      waiverQueue = (currentRound % 2 === 0) ? base : base.reverse();
+      waiverPos = 0;
+      showScreen('screen-draft');
+      proceedWaiver();
+    }
+
+    function commitPick(team, player) {
+      if (!player) return;
+      team.roster.push(player);
+      team.needsPick = false;
+      availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+      waiverLog.push(`<strong>${team.name.replace('(AI)','')}</strong>→${player.name}`);
+      renderDraftMatrix();
+    }
+
+    function proceedWaiver() {
+      if (waiverPos >= waiverQueue.length) {
+        currentRound++;
+        if (currentRound > TOTAL_ROUNDS) startLineupPhase();
+        else beginRound();
+        return;
+      }
+
+      const team = teams.find(t => t.id === waiverQueue[waiverPos]);
+      teams.forEach(t => t.needsPick = false);
+      team.needsPick = true;
+
+      renderTurnBar(team);
+      renderPosStatus();
+      renderSearchList();
+      document.getElementById('status-alert').className = "hidden";
+
+      if (!team.isUser) {
+        setTimeout(() => {
+          commitPick(team, getAIPick(team));
+          waiverPos++;
+          proceedWaiver();
+        }, 900);
+      }
+    }
+
+    function renderTurnBar(activeTeam) {
+      const bar = document.getElementById('turn-bar');
+      if (!isWaiverRound(currentRound)) { bar.className = "hidden"; return; }
+      bar.className = "mb-2 rounded overflow-hidden border border-gray-300";
+
+      const chips = waiverQueue.map((tid, i) => {
+        const t = teams.find(x => x.id === tid);
+        const now = i === waiverPos, done = i < waiverPos;
+        const cls = now  ? `${t.color.bg} text-white ring-2 ring-yellow-400`
+                  : done ? 'bg-gray-200 text-gray-400 line-through'
+                         : 'bg-white text-gray-600 border border-gray-300';
+        return `<span class="px-1.5 py-0.5 rounded text-[10px] font-black ${cls}">${t.name.replace('(AI)','')}</span>`;
+      }).join('');
+
+      const msg = activeTeam
+        ? (activeTeam.isUser ? '<span class="text-yellow-300">▶ あなたの指名です</span>'
+                             : `${activeTeam.name.replace('(AI)','')} が検討中...`)
+        : '';
+
+      bar.innerHTML = `
+        <div class="bg-gray-800 text-white text-[10px] font-bold px-2 py-1 flex justify-between">
+          <span>第${currentRound}巡 ウェーバー ${waiverPos + 1}/${waiverQueue.length}</span><span>${msg}</span>
+        </div>
+        <div class="bg-gray-50 p-1.5 flex flex-wrap gap-1">${chips}</div>
+        ${waiverLog.length ? `<div class="bg-white px-2 py-1 text-[10px] text-gray-600 border-t truncate">直前: ${waiverLog.slice(-3).reverse().join(' ／ ')}</div>` : ''}`;
+    }
+
+    function startTurn() {
+      renderPosStatus();
+      renderSearchList();
+      renderTurnBar();
+
+      const alertBox = document.getElementById('status-alert');
+      const user = userTeamRef();
+
+      if (isHazurePhase && user.needsPick) {
+        alertBox.textContent = "⚠️ ハズレ指名を行ってください";
+        alertBox.className = "mb-2 p-2 font-bold text-xs rounded border-l-4 bg-red-100 border-red-500 text-red-700 block";
+      } else if (isHazurePhase && !user.needsPick) {
+        alertBox.textContent = "⏳ 他球団がハズレ指名を行っています...";
+        alertBox.className = "mb-2 p-2 font-bold text-xs rounded border-l-4 bg-yellow-100 border-yellow-500 text-yellow-700 block";
+
+        setTimeout(() => {
+          teams.forEach(t => { if (!t.isUser && t.needsPick) t.currentPick = getAIPick(t); });
+          executeReveal();
+        }, 1500);
+      } else {
+        alertBox.className = "hidden";
+      }
+    }
+
+    function getAIPick(team) {
+      const missing = getMissingPositions(team.roster);
+      let candidates = availablePlayers.filter(p => missing.includes(p.pos));
+      if (candidates.length === 0) candidates = [...availablePlayers]; // 枠が枯れたら全体から
+      if (candidates.length === 0) return null;
+
+      let bestPlayer = candidates[0];
+      let maxScore = -100;
+
+      let pow75Count = team.roster.filter(p => p && p.fStats && p.fStats.pow >= 75).length;
+      let run75Count = team.roster.filter(p => p && p.fStats && p.fStats.run >= 75).length;
+      let def70Count = team.roster.filter(p => p && p.fStats && p.fStats.def >= 70).length;
+      let meet75Count = team.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length;
+      let rel80Count = team.roster.filter(p => p && p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))).length;
+
+      let teamCounts = {};
+      team.roster.forEach(p => { if(p) teamCounts[p.team] = (teamCounts[p.team] || 0) + 1; });
+
+      const userTeam = userTeamRef();
+      let userPowCount = userTeam.roster.filter(p => p && p.fStats && p.fStats.pow >= 75).length;
+      let userMeetCount = userTeam.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length;
+
+      candidates.forEach(p => {
+        let score = Math.random() * 2;
+
+        let statAvg = getBaseStat(p);
+        let batPow = (p.fStats) ? (p.fStats.meet + p.fStats.pow) / 2 : 0;
+
+        const policy = team.personality;
+
+        if (policy === "能力重視") {
+          score += statAvg;
+        } else if (policy === "投手重視") {
+          if (p.pos === "投手") score += statAvg + 35;
+          else score += statAvg;
+        } else if (policy === "打撃重視") {
+          if (p.pos !== "投手") score += batPow + 35;
+          else score += statAvg;
+        } else {
+          score += statAvg;
+          if (missing.length > 0 && missing[0] === p.pos) score += 10;
+        }
+
+        if (p.fStats) {
+           if (pow75Count === 3 && p.fStats.pow >= 75) score += 20;
+           if (run75Count === 2 && p.fStats.run >= 75) score += 15;
+           if (def70Count === 3 && p.fStats.def >= 70) score += 15;
+           if (meet75Count === 2 && p.fStats.meet >= 75) score += 15;
+        }
+        if (p.pStats) {
+           if (rel80Count === 1 && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))) score += 20;
+        }
+        if (teamCounts[p.team] === 2) score += 15;
+
+        if (userPowCount === 3 && p.fStats && p.fStats.pow >= 75) score += 10;
+        if (userMeetCount === 2 && p.fStats && p.fStats.meet >= 75) score += 10;
+
+        if (score > maxScore) { maxScore = score; bestPlayer = p; }
+      });
+      return bestPlayer;
+    }
+
+    window.handleDraftSubmit = function(playerId) {
+      const user = userTeamRef();
+      if (!user.needsPick) return;
+      const selected = availablePlayers.find(p => p.id === playerId);
+      if (!selected) return;
+
+      if (isWaiverRound(currentRound)) {
+        commitPick(user, selected);
+        waiverPos++;
+        proceedWaiver();
+        return;
+      }
+
+      user.currentPick = selected;
+      teams.forEach(t => { if (!t.isUser && t.needsPick) t.currentPick = getAIPick(t); });
+      executeReveal();
+    };
+
+    function showScreen(screenId) {
+      ['screen-setup', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-ranking', 'screen-match'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden-screen');
+      });
+      document.getElementById(screenId).classList.remove('hidden-screen');
+    }
+
+    function executeReveal() {
+      document.getElementById('reveal-round').textContent = currentRound;
+      const container = document.getElementById('reveal-cards-container');
+      container.innerHTML = '';
+
+      teams.forEach(t => {
+        if (!t.needsPick || !t.currentPick) return;
+        let coverHtml = !t.isUser ? `
+          <div id="cover-${t.id}" class="secret-cover absolute inset-0 bg-gray-800 flex flex-col items-center justify-center z-10 text-white">
+            <span class="text-[9px] font-bold text-gray-400 mb-1">${t.personality}</span>
+            <p class="font-bold tracking-widest text-[10px] animate-pulse">開票中</p>
+          </div>` : '';
+
+        const bestPosDisplay = Array.isArray(t.currentPick.bestPos) ? t.currentPick.bestPos.join('・') : t.currentPick.bestPos;
+
+        container.innerHTML += `
+          <div class="text-center w-28 md:w-36">
+            <p class="text-gray-400 font-bold mb-1 text-[10px] md:text-xs">${t.name.replace('(AI)','')}</p>
+            <div class="bg-white text-black p-2 rounded shadow-2xl flex flex-col items-center border-2 md:border-4 ${t.color.border} relative overflow-hidden">
+              ${coverHtml}
+              <img src="${t.currentPick.img}" class="w-12 h-16 md:w-16 md:h-24 object-cover border border-gray-300 mb-1 rounded-sm" onerror="this.style.display='none'">
+              <p class="text-[8px] md:text-[10px] font-bold text-gray-500 bg-gray-100 px-1 py-0.5 rounded w-full text-center truncate">${t.currentPick.team}/${t.currentPick.pos} <span class="font-normal">[${bestPosDisplay}]</span></p>
+              <p class="text-xs md:text-base font-black mt-1 tracking-wider truncate w-full">${t.currentPick.name}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      const statusText = document.getElementById('reveal-status');
+      statusText.textContent = "指名を読み上げています...";
+      statusText.className = "mt-4 md:mt-8 text-sm md:text-xl font-bold h-10 animate-pulse text-gray-400";
+      showScreen('screen-reveal');
+
+      setTimeout(() => {
+        teams.forEach(t => {
+          if (!t.isUser && t.needsPick) {
+            const c = document.getElementById(`cover-${t.id}`);
+            if(c) { c.style.opacity = '0'; setTimeout(()=>c.style.display='none', 500); }
+          }
+        });
+        statusText.textContent = ".......";
+        setTimeout(resolveDraftPicks, 1500);
+      }, 2000);
+    }
+
+    function resolveDraftPicks() {
+      let pickMap = {};
+      teams.forEach(t => {
+        if (t.needsPick && t.currentPick) {
+          if (!pickMap[t.currentPick.id]) pickMap[t.currentPick.id] = [];
+          pickMap[t.currentPick.id].push(t);
+        }
+      });
+
+      currentConflicts = [];
+
+      for (const [pIdStr, cTeams] of Object.entries(pickMap)) {
+        let player = availablePlayers.find(p => p.id == pIdStr) || cTeams[0].currentPick;
+
+        if (cTeams.length === 1) {
+          cTeams[0].roster.push(player);
+          cTeams[0].needsPick = false;
+          availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+        } else {
+          currentConflicts.push({ player: player, teams: cTeams });
+        }
+      }
+
+      const statusText = document.getElementById('reveal-status');
+      if (currentConflicts.length > 0) {
+        statusText.textContent = `💥 ${currentConflicts[0].teams.length}球団競合！ 抽選へ 💥`;
+        statusText.className = "mt-4 md:mt-8 text-xl md:text-2xl font-black h-10 text-red-500 animate-bounce";
+        setTimeout(() => processConflict(0), 2000);
+      } else {
+        statusText.textContent = "✨ 指名完了 ✨";
+        statusText.className = "mt-4 md:mt-8 text-xl md:text-2xl font-black h-10 text-green-400";
+        setTimeout(checkNextStep, 2000);
+      }
+    }
+
+    function processConflict(index) {
+      currentConflictIndex = index;
+      if (index >= currentConflicts.length) {
+        checkNextStep();
+        return;
+      }
+      const conflict = currentConflicts[index];
+      setupLottery(conflict.teams, conflict.player);
+    }
+
+    let currentLotteryContext = {};
+
+    function setupLottery(cTeams, player) {
+      isDrawingLottery = false;
+      currentLotteryContext = { teams: cTeams, player: player };
+      document.getElementById('lottery-target-name').textContent = `${player.name} (${cTeams.length}球団)`;
+
+      const isUserInvolved = cTeams.some(t => t.isUser);
+      document.getElementById('lottery-instruction').textContent = isUserInvolved ? "あなたの封筒を選んでクリック" : "AI球団が抽選を行っています...";
+
+      currentLotteryContext.shuffledTeams = [...cTeams].sort(() => 0.5 - Math.random());
+
+      const skipBtn = document.getElementById('lottery-skip-btn');
+      if (!isUserInvolved) {
+        skipBtn.classList.remove('hidden');
+        autoLotteryTimer = setTimeout(() => {
+          if(!isDrawingLottery) window.drawLottery(0);
+        }, 2000);
+      } else {
+        skipBtn.classList.add('hidden');
+      }
+
+      const container = document.getElementById('lottery-envelopes');
+      container.innerHTML = '';
+      for(let i=0; i<cTeams.length; i++) {
+        const clickEvent = isUserInvolved ? `onclick="window.drawLottery(${i})"` : ``;
+        const teamName = !isUserInvolved ? currentLotteryContext.shuffledTeams[i].name.replace('(AI)','') : "";
+
+        container.innerHTML += `
+        <div class="flex flex-col items-center">
+          <div class="text-white font-bold mb-2 h-5 text-sm md:text-base text-shadow">${teamName}</div>
+          <div class="envelope-container" id="env-${i}" ${clickEvent}>
+            <div class="envelope-body"></div><div class="flap"></div><div class="letter" id="letter-${i}"></div><div class="pocket"></div>
+          </div>
+        </div>`;
+      }
+      showScreen('screen-lottery');
+    }
+
+    window.skipAILottery = function() {
+      if(autoLotteryTimer) clearTimeout(autoLotteryTimer);
+      if(isDrawingLottery) return;
+      isDrawingLottery = true;
+
+      const cTeams = currentLotteryContext.teams;
+      const player = currentLotteryContext.player;
+      const winIdx = Math.floor(Math.random() * cTeams.length);
+      const aiWinner = cTeams[winIdx];
+
+      alert(`【スキップ】\n抽選の結果、${aiWinner.name.replace('(AI)','')} が ${player.name} を獲得しました。`);
+
+      aiWinner.roster.push(player);
+      aiWinner.needsPick = false;
+      availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+
+      processConflict(currentConflictIndex + 1);
+    };
+
+    window.drawLottery = function(selectedIdx) {
+      if(isDrawingLottery) return; isDrawingLottery = true;
+      if(autoLotteryTimer) clearTimeout(autoLotteryTimer);
+
+      const cTeams = currentLotteryContext.teams;
+      const player = currentLotteryContext.player;
+      const total = cTeams.length;
+      const isUserInvolved = cTeams.some(t => t.isUser);
+
+      let assignedTeams = [];
+      if (isUserInvolved) {
+        const userTeam = cTeams.find(t => t.isUser);
+        const aiTeams = cTeams.filter(t => !t.isUser).sort(() => 0.5 - Math.random());
+        for(let i=0; i<total; i++) {
+          if (i === selectedIdx) {
+            assignedTeams[i] = userTeam;
+            const envEl = document.getElementById(`env-${i}`);
+            if(envEl && envEl.previousElementSibling) envEl.previousElementSibling.textContent = "あなた";
+          } else {
+            assignedTeams[i] = aiTeams.pop();
+            const envEl = document.getElementById(`env-${i}`);
+            if(envEl && envEl.previousElementSibling && assignedTeams[i]) envEl.previousElementSibling.textContent = assignedTeams[i].name.replace('(AI)','');
+          }
+        }
+      } else {
+        assignedTeams = currentLotteryContext.shuffledTeams;
+      }
+
+      const winIdx = Math.floor(Math.random() * total);
+      const winnerTeam = assignedTeams[winIdx];
+
+      for(let i=0; i<total; i++) {
+        const env = document.getElementById(`env-${i}`);
+        const letter = document.getElementById(`letter-${i}`);
+        if(letter) letter.innerHTML = i === winIdx ? '<div class="stamp">交渉権<br>確定</div>' : '';
+        if(env) env.classList.add('open');
+      }
+
+      setTimeout(() => {
+        if(winnerTeam.isUser) {
+          alert(`🎉 見事引き当てました！\n${player.name} を獲得！`);
+        } else {
+          const msgHead = isUserInvolved ? "😭 ハズレ...\n" : "🤖 抽選の結果...\n";
+          alert(`${msgHead}${winnerTeam.name.replace('(AI)','')} が ${player.name} を獲得しました！`);
+        }
+
+        winnerTeam.roster.push(player);
+        winnerTeam.needsPick = false;
+        availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+
+        processConflict(currentConflictIndex + 1);
+      }, 2000);
+    };
+
+    function checkNextStep() {
+      renderDraftMatrix();
+
+      if (teams.some(t => t.needsPick)) {
+        isHazurePhase = true;
+        startTurn();
+        showScreen('screen-draft');
+      } else {
+        isHazurePhase = false;
+        currentRound++;
+        if (currentRound > TOTAL_ROUNDS) startLineupPhase();
+        else beginRound();
+      }
+    }
+
+    // ==========================================
+    // AIのスタメン自動編成（守備位置・打順を最適化）
+    // ==========================================
+    function buildAILineup(team) {
+      const batters  = team.roster.filter(p => p && p.fStats).slice(0, 9);
+      const pitchers = team.roster.filter(p => p && p.pStats);
+
+      // 守備位置の割当（重要ポジションから貪欲に埋める）
+      const assign = {}, usedD = new Set();
+      DEF_PRIORITY.forEach(pos => {
+        let best = null, bs = -999;
+        batters.forEach(p => {
+          if (usedD.has(p.id)) return;
+          const s = getPosScore(p, pos);
+          if (s > bs) { bs = s; best = p; }
+        });
+        if (best) { assign[pos] = best; usedD.add(best.id); }
+      });
+
+      // 打順の割当（4番・3番から順に最適な選手を埋める）
+      const slots = [], usedO = new Set();
+      ORDER_PRIORITY.forEach(o => {
+        let best = null, bpos = null, bs = -999;
+        for (const [pos, p] of Object.entries(assign)) {
+          if (usedO.has(p.id)) continue;
+          const s = getOrderFit(p, o);
+          if (s > bs) { bs = s; best = p; bpos = pos; }
+        }
+        if (best) { slots[o] = { p: best, pos: bpos, order: o }; usedO.add(best.id); }
+      });
+
+      const out = [];
+      for (let o = 1; o <= 9; o++) if (slots[o]) out.push(slots[o]);
+
+      const sp = pitchers.find(p => p.bestPos.includes("先発")) || pitchers[0];
+      const rp = pitchers.find(p => p.bestPos.includes("中継") && p !== sp) || pitchers.find(p => p !== sp) || sp;
+      const cp = pitchers.find(p => p.bestPos.includes("抑え") && p !== sp && p !== rp) || pitchers.find(p => p !== sp && p !== rp) || rp;
+
+      return { batters: out, sp, rp, cp };
+    }
+
+    // ==========================================
+    // スタメンボード
+    // ==========================================
+    function startLineupPhase() {
+      if (!lineupPhaseInitialized) {
+        const poolContainer = document.getElementById('lineup-pool-container');
+        poolContainer.addEventListener('dragover', e => { e.preventDefault(); poolContainer.classList.add('bg-blue-50'); });
+        poolContainer.addEventListener('dragleave', () => poolContainer.classList.remove('bg-blue-50'));
+        poolContainer.addEventListener('drop', e => {
+          e.preventDefault();
+          poolContainer.classList.remove('bg-blue-50');
+          const sourceSlot = e.dataTransfer.getData('source-slot');
+          if (sourceSlot) {
+            delete lineupAssignments[sourceSlot];
+            renderLineupPhase();
+          }
+        });
+
+        document.querySelectorAll('.dnd-slot').forEach(slot => {
+          slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
+          slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+          slot.addEventListener('drop', e => {
+            e.preventDefault();
+            slot.classList.remove('drag-over');
+            const type = e.dataTransfer.getData('type');
+            const pId = parseInt(e.dataTransfer.getData('player-id'));
+            const sourceSlot = e.dataTransfer.getData('source-slot');
+
+            if (slot.dataset.type === type) {
+              if (sourceSlot && sourceSlot !== slot.id) {
+                delete lineupAssignments[sourceSlot];
+              } else {
+                for(let key in lineupAssignments) {
+                  if (lineupAssignments[key] === pId) delete lineupAssignments[key];
+                }
+              }
+              lineupAssignments[slot.id] = pId;
+              renderLineupPhase();
+            } else {
+              alert("⚠️ 投手枠と野手枠が違います！");
+            }
+          });
+        });
+
+        // 守備位置を変えたら適性マークを更新
+        for (let i = 1; i <= 9; i++) {
+          document.getElementById(`pos-b${i}`).addEventListener('change', renderLineupPhase);
+        }
+
+        lineupPhaseInitialized = true;
+      }
+
+      lineupAssignments = {};
+      renderLineupPhase();
+      showScreen('screen-lineup');
+    }
+
+    function renderLineupPhase() {
+      const pool = document.getElementById('lineup-pool');
+      pool.innerHTML = '';
+
+      const user = userTeamRef();
+      const assignedIds = Object.values(lineupAssignments);
+
+      user.roster.forEach(p => {
+        if (!p || assignedIds.includes(p.id)) return;
+
+        const card = document.createElement('div');
+        card.className = 'player-card text-xs flex items-center justify-between gap-1 bg-white p-1.5 rounded shadow-sm border border-gray-200';
+
+        const bestPosDisplay = Array.isArray(p.bestPos) ? p.bestPos.join('・') : p.bestPos;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-1 pointer-events-none">
+            <img src="${p.img}" class="w-8 h-8 object-cover rounded-full border">
+            <div><span class="text-[8px] font-bold text-gray-500">[${bestPosDisplay}]</span><br><span class="font-bold leading-tight">${p.name}</span></div>
+          </div>
+          <div class="drag-handle text-gray-400 text-xl px-2 py-1 active:text-blue-500 cursor-grab touch-none" draggable="true">≡</div>
+        `;
+
+        const handle = card.querySelector('.drag-handle');
+        handle.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('player-id', p.id);
+          e.dataTransfer.setData('type', p.pos === "投手" ? "pitcher" : "batter");
+          e.dataTransfer.setData('source-slot', '');
+          try { e.dataTransfer.setDragImage(card, 20, 20); } catch(err){}
+          setTimeout(() => card.classList.add('opacity-50'), 0);
+        });
+        handle.addEventListener('dragend', () => card.classList.remove('opacity-50'));
+
+        pool.appendChild(card);
+      });
+
+      let orderDiffs = [];
+
+      document.querySelectorAll('.dnd-slot').forEach(slot => {
+        const pId = lineupAssignments[slot.id];
+        if (pId) {
+          const p = user.roster.find(player => player.id === pId);
+          if (p) {
+            const oi = slot.id.startsWith('slot-b') ? parseInt(slot.id.replace('slot-b','')) : 0;
+            let badge = '';
+            if (oi) {
+              const diff = getOrderDiff(p, oi);
+              orderDiffs.push(diff);
+              const om = orderMark(diff);
+              const dm = posMark(getPosScore(p, document.getElementById(`pos-b${oi}`).value));
+              badge = `<span class="ml-1 text-[10px] ${om.cls} font-black" title="${ORDER_WEIGHTS[oi].label}">打${om.mark}</span>` +
+                      `<span class="ml-0.5 text-[10px] ${dm.cls} font-black">守${dm.mark}</span>`;
+            }
+            slot.innerHTML = `<div class="bg-green-100 w-full h-full rounded flex items-center justify-center font-bold text-[10px] md:text-sm border border-green-500 text-green-900 truncate px-1 cursor-grab" draggable="true"><span class="truncate">${p.name}</span>${badge}</div>`;
+            slot.dataset.filled = "true";
+
+            const assignedEl = slot.querySelector('div[draggable]');
+            assignedEl.addEventListener('dragstart', e => {
+              e.dataTransfer.setData('player-id', p.id);
+              e.dataTransfer.setData('type', p.pos === "投手" ? "pitcher" : "batter");
+              e.dataTransfer.setData('source-slot', slot.id);
+              setTimeout(() => assignedEl.classList.add('opacity-50'), 0);
+            });
+            assignedEl.addEventListener('dragend', () => assignedEl.classList.remove('opacity-50'));
+          } else {
+            slot.innerHTML = '';
+            slot.dataset.filled = "false";
+          }
+        } else {
+          slot.innerHTML = '';
+          slot.dataset.filled = "false";
+        }
+      });
+
+      // 打順適性のサマリー
+      const summary = document.getElementById('order-summary');
+      if (orderDiffs.length) {
+        const avg = orderDiffs.reduce((a, b) => a + b, 0) / orderDiffs.length;
+        const cls = avg >= 1.5 ? 'text-yellow-300' : avg <= -1.5 ? 'text-red-300' : 'text-green-200';
+        summary.innerHTML = `打順適性ボーナス <span class="${cls}">${avg >= 0 ? '+' : ''}${avg.toFixed(1)}</span>　(${orderDiffs.length}/9人配置)`;
+      } else {
+        summary.innerHTML = `<span class="text-green-200">選手を打順に配置すると適性が表示されます</span>`;
+      }
+    }
+
+    // ==========================================
+    // ★ 採点＆ランキング ★
+    // ==========================================
+    window.finishLineup = function() {
+      const slots = document.querySelectorAll('.dnd-slot');
+      let filledCount = 0;
+      slots.forEach(s => { if(s.dataset.filled === "true") filledCount++; });
+      if(filledCount < 12) { alert("全12枠（打者9名、投手3名）に選手を配置してください！"); return; }
+
+      teams.forEach(t => {
+        let comboNames = [];
+        let comboBadges = '';
+
+        // --- 1. コンボの判定 ---
+        let teamCounts = {};
+        t.roster.forEach(p => { if(p) teamCounts[p.team] = (teamCounts[p.team] || 0) + 1; });
+        for (const [team, count] of Object.entries(teamCounts)) {
+          if (count >= 3) {
+            comboNames.push(`【${team}愛】`);
+            comboBadges += `<span class="bg-yellow-500 text-yellow-900 px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-yellow-600">${team}愛</span>`;
+          }
+        }
+
+        if (t.roster.filter(p => p && p.fStats && p.fStats.pow >= 75).length >= 4) {
+          comboNames.push('【超重量打線】');
+          comboBadges += `<span class="bg-red-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-red-800">超重量打線</span>`;
+        }
+        if (t.roster.filter(p => p && p.fStats && p.fStats.run >= 75).length >= 3) {
+          comboNames.push('【機動力野球】');
+          comboBadges += `<span class="bg-blue-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-blue-800">機動力野球</span>`;
+        }
+        if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 70).length >= 4) {
+          comboNames.push('【鉄壁の守備陣】');
+          comboBadges += `<span class="bg-green-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-green-800">鉄壁の守備陣</span>`;
+        }
+        if (t.roster.filter(p => p && p.pStats && getBaseStat(p) >= 75).length >= 2) {
+          comboNames.push('【黄金の投手陣】');
+          comboBadges += `<span class="bg-purple-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-purple-800">黄金の投手陣</span>`;
+        }
+        if (t.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length >= 3) {
+          comboNames.push('【安打製造機】');
+          comboBadges += `<span class="bg-pink-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-pink-800">安打製造機</span>`;
+        }
+        if (t.roster.filter(p => p && p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))).length >= 2) {
+          comboNames.push('【勝利の方程式】');
+          comboBadges += `<span class="bg-orange-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-orange-800">勝利の方程式</span>`;
+        }
+        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 70 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中"))).length;
+        if (centerLineCount >= 4) {
+          comboNames.push('【センターライン】');
+          comboBadges += `<span class="bg-emerald-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-emerald-800">センターライン</span>`;
+        }
+        if (t.roster.filter(p => p && p.bestPos && p.bestPos.length >= 2).length >= 5) {
+          comboNames.push('【ユーティリティ】');
+          comboBadges += `<span class="bg-teal-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-teal-800">ユーティリティ</span>`;
+        }
+
+        t.comboBadgesHtml = comboBadges;
+
+        // --- 2. スタメンの確定 ---
+        let batters = [], pitchers = [];
+
+        if (t.isUser) {
+           for(let i=1; i<=9; i++) {
+             const pid = lineupAssignments[`slot-b${i}`];
+             const pos = document.getElementById(`pos-b${i}`).value;
+             if(pid) {
+                const p = t.roster.find(x => x.id === pid);
+                if(p) batters.push({ p, pos, order: i });
+             }
+           }
+           ['p1','p2','p3'].forEach((k, idx) => {
+             const pid = lineupAssignments[`slot-${k}`];
+             const pos = ["先発","中継","抑え"][idx];
+             if(pid) {
+                const p = t.roster.find(x => x.id === pid);
+                if(p) pitchers.push({ p, pos });
+             }
+           });
+        } else {
+           const al = buildAILineup(t);
+           t.aiLineup = al;
+           batters  = al.batters;
+           pitchers = [{p:al.sp,pos:"先発"},{p:al.rp,pos:"中継"},{p:al.cp,pos:"抑え"}].filter(x => x.p);
+        }
+
+        // --- 3. 各項目の素の平均値計算 ---
+        let p_pow  = batters.reduce((sum, b) => sum + b.p.fStats.pow, 0) / (batters.length || 1);
+        let p_meet = batters.reduce((sum, b) => sum + b.p.fStats.meet, 0) / (batters.length || 1);
+        let p_run  = batters.reduce((sum, b) => sum + b.p.fStats.run, 0) / (batters.length || 1);
+
+        let defBatters = batters.filter(b => b.pos !== "DH");
+        let p_def = defBatters.length > 0 ? defBatters.reduce((sum, b) => sum + b.p.fStats.def, 0) / defBatters.length : 40;
+
+        let sp = pitchers.filter(x => x.pos === "先発");
+        let rp = pitchers.filter(x => x.pos !== "先発");
+
+        let p_sp = sp.length ? sp.reduce((sum, x) => sum + getPosScore(x.p, "先発"), 0) / sp.length : 40;
+        let p_rp = rp.length ? rp.reduce((sum, x) => sum + getPosScore(x.p, "中継"), 0) / rp.length : 40;
+
+        // --- 4. コンボバフの適用 ---
+        let buffAll = 0;
+        comboNames.forEach(name => {
+           if(name.includes('愛')) buffAll += 2;
+           if(name === '【超重量打線】') p_pow += 12;
+           if(name === '【機動力野球】') p_run += 12;
+           if(name === '【鉄壁の守備陣】') p_def += 12;
+           if(name === '【黄金の投手陣】') { p_sp += 10; p_rp += 10; }
+           if(name === '【安打製造機】') p_meet += 12;
+           if(name === '【勝利の方程式】') p_rp += 12;
+           if(name === '【センターライン】') p_def += 8;
+           if(name === '【ユーティリティ】') buffAll += 3;
+        });
+
+        // --- 5. 配置適性 & 打順適性 ---
+        let posSum = 0;
+        batters.forEach(b => posSum += getPosScore(b.p, b.pos));
+        pitchers.forEach(x => posSum += getPosScore(x.p, x.pos));
+        const posBuff   = (posSum / Math.max(1, batters.length + pitchers.length) - 50) * 0.5;
+        const orderBuff = calcOrderBuff(batters);
+
+        t.posBuff = posBuff;
+        t.orderBuff = orderBuff;
+
+        // --- 6. 最終値の確定 (Max 100) ---
+        const cl = v => Math.min(100, Math.max(0, v));
+        let final_pow  = cl(p_pow  + buffAll + posBuff + orderBuff);
+        let final_meet = cl(p_meet + buffAll + posBuff + orderBuff);
+        let final_run  = cl(p_run  + buffAll + posBuff + orderBuff);
+        let final_def  = cl(p_def  + buffAll + posBuff + orderBuff);
+        let final_sp   = cl(p_sp   + buffAll + posBuff);
+        let final_rp   = cl(p_rp   + buffAll + posBuff);
+
+        t.radarData = [
+          Math.round(final_pow),
+          Math.round(final_meet),
+          Math.round(final_run),
+          Math.round(final_def),
+          Math.round(final_sp),
+          Math.round(final_rp)
+        ];
+
+        // ★ レーダーチャートの面積(平均)がそのまま総合ptになる ★
+        t.finalScore = Math.round((final_pow + final_meet + final_run + final_def + final_sp + final_rp) / 6);
+
+        // コメント生成
+        if (orderBuff <= -2.5) {
+          t.comment = `能力は揃っていますが、打順と選手のタイプが噛み合っていません。足のある選手を上位に、長打力を中軸に置くだけで大きく変わります。`;
+        } else if (comboNames.length > 2) {
+          t.comment = `素晴らしい編成です！${comboNames.join('・')}が見事に発動し、強烈なシナジーを生み出しています！`;
+        } else if (t.finalScore >= 85) {
+          t.comment = `GMの完璧なタクト！打順・守備位置ともに計算し尽くされた驚異のオーダーです！`;
+        } else if (t.finalScore >= 75) {
+          t.comment = `投打に弱点が見当たらない、バランスの取れた素晴らしい編成です。`;
+        } else {
+          t.comment = `個々の能力は高いですが、不慣れなポジションを守っている選手がいるかもしれません。`;
+        }
+      });
+
+      // ★ teams本体は並べ替えず、表示用のコピーだけソートする
+      const ranked = [...teams].sort((a, b) => b.finalScore - a.finalScore);
+
+      const container = document.getElementById('ranking-container');
+      container.innerHTML = '';
+
+      ranked.forEach((t, index) => {
+        let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🔹";
+
+        const rows = t.isUser
+          ? Array.from({length: 9}, (_, i) => {
+              const pid = lineupAssignments[`slot-b${i+1}`];
+              const pos = document.getElementById(`pos-b${i+1}`).value;
+              const p = t.roster.find(x => x && x.id == pid);
+              return p ? { p, pos, order: i+1 } : null;
+            }).filter(Boolean)
+          : (t.aiLineup ? t.aiLineup.batters : []);
+
+        let lineupStr = rows.map(r => {
+          const om = orderMark(getOrderDiff(r.p, r.order));
+          return `<span class="${om.cls} font-black">${om.mark}</span>${r.order}番[${r.pos}]${r.p.name}`;
+        }).join(' / ');
+
+        const pNames = t.isUser
+          ? ['p1','p2','p3'].map(k => {
+              const p = t.roster.find(x => x && x.id == lineupAssignments[`slot-${k}`]);
+              return p ? p.name : null;
+            }).filter(Boolean)
+          : (t.aiLineup ? [t.aiLineup.sp, t.aiLineup.rp, t.aiLineup.cp].filter(Boolean).map(p => p.name) : []);
+
+        lineupStr += ` ／ (投)${pNames.join(",")}`;
+        lineupStr += `<br><span class="text-[10px] text-yellow-300 font-black">打順適性 ${t.orderBuff >= 0 ? '+' : ''}${t.orderBuff.toFixed(1)}　守備適性 ${t.posBuff >= 0 ? '+' : ''}${t.posBuff.toFixed(1)}</span>`;
+
+        container.innerHTML += `
+          <div class="bg-gray-800 rounded-lg p-4 border-l-8 ${t.color.border} shadow-xl">
+            <div class="flex justify-between items-center mb-2 border-b border-gray-600 pb-2">
+              <h3 class="text-lg md:text-2xl font-black">${medal} ${index+1}位：${t.name.replace('(AI)','')} <span class="text-xs font-normal text-gray-400">[${t.personality}]</span></h3>
+              <div class="text-xl md:text-3xl font-black text-yellow-400">${t.finalScore} <span class="text-sm">pt</span></div>
+            </div>
+
+            <div class="flex flex-wrap gap-1 mb-3">
+              ${t.comboBadgesHtml}
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 mb-3">
+              <div class="w-full md:w-1/2">
+                <p class="text-xs text-blue-300 font-bold mb-1">▼ 予想オーダー</p>
+                <p class="text-xs bg-gray-900 p-2 rounded leading-relaxed text-gray-200">${lineupStr}</p>
+              </div>
+              <div class="w-full md:w-1/2 flex justify-center items-center">
+                <div class="w-48 h-48 md:w-56 md:h-56">
+                  <canvas id="radar-${t.id}"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-2 rounded-lg flex gap-2 items-start">
+              <div class="text-lg">🤖</div>
+              <p class="text-xs italic text-gray-300">「${t.comment}」</p>
+            </div>
+          </div>
+        `;
+      });
+      showScreen('screen-ranking');
+
+      ranked.forEach(t => {
+        const ctx = document.getElementById(`radar-${t.id}`);
+        if(ctx) {
+          new Chart(ctx, {
+            type: 'radar',
+            data: {
+              labels: ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣'],
+              datasets: [{
+                label: 'チーム戦力',
+                data: t.radarData,
+                backgroundColor: 'rgba(250, 204, 21, 0.4)',
+                borderColor: 'rgba(250, 204, 21, 1)',
+                pointBackgroundColor: 'rgba(250, 204, 21, 1)',
+                borderWidth: 2,
+              }]
+            },
+            options: {
+              scales: {
+                r: {
+                  angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+                  grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                  pointLabels: { color: '#cbd5e1', font: { size: 10, weight: 'bold' } },
+                  ticks: { display: false, min: 40, max: 100 }
+                }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+      });
+    };
+
+    // ==========================================
+    // 試合シミュレーション＆リアルタイム勝率
+    // ==========================================
+    let matchSpeed = 1000;
+
+    let matchState = {
+      teamA: null, teamB: null,
+      scoreA: 0, scoreB: 0,
+      inning: 1, isTop: true, outs: 0,
+      bases: [false, false, false],
+      log: [], timer: null,
+      lineupA: null, lineupB: null,
+      batterIdxA: 0, batterIdxB: 0,
+      currentPitcherA: null, currentPitcherB: null
+    };
+
+    // ★ RE24モデル
+    const RUN_EXPECTANCY = [
+      [0.481, 0.859, 1.100, 1.350, 1.437, 1.704, 1.964, 2.282], // 0アウト
+      [0.254, 0.509, 0.664, 0.950, 0.884, 1.130, 1.376, 1.520], // 1アウト
+      [0.098, 0.224, 0.319, 0.353, 0.430, 0.478, 0.580, 0.736]  // 2アウト
+    ];
+
+    function getBaseIndex(bases) {
+      if (!bases[0] && !bases[1] && !bases[2]) return 0;
+      if (bases[0] && !bases[1] && !bases[2]) return 1;
+      if (!bases[0] && bases[1] && !bases[2]) return 2;
+      if (!bases[0] && !bases[1] && bases[2]) return 3;
+      if (bases[0] && bases[1] && !bases[2]) return 4;
+      if (bases[0] && !bases[1] && bases[2]) return 5;
+      if (!bases[0] && bases[1] && bases[2]) return 6;
+      if (bases[0] && bases[1] && bases[2]) return 7;
+      return 0;
+    }
+
+    function initBatterStats(p) {
+      return { ...p, stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
+    }
+    function initPitcherStats(p) {
+      return { ...p, stats: { out: 0, hit: 0, hr: 0, run: 0, so: 0, bb: 0, pitches: 0 } };
+    }
+
+    function extractLineup(team) {
+      let batters = [];
+      let pitchers = { sp: null, rp: null, cp: null };
+
+      if (team.isUser) {
+        for(let i=1; i<=9; i++) {
+          const pid = lineupAssignments[`slot-b${i}`];
+          if(pid) {
+            const p = team.roster.find(player => player.id === pid);
+            if(p) batters.push(initBatterStats(p));
+          }
+        }
+        const spP = team.roster.find(p => p.id === lineupAssignments[`slot-p1`]);
+        const rpP = team.roster.find(p => p.id === lineupAssignments[`slot-p2`]);
+        const cpP = team.roster.find(p => p.id === lineupAssignments[`slot-p3`]);
+        if(spP) pitchers.sp = initPitcherStats(spP);
+        if(rpP) pitchers.rp = initPitcherStats(rpP);
+        if(cpP) pitchers.cp = initPitcherStats(cpP);
+      } else {
+        const al = team.aiLineup || buildAILineup(team);
+        batters = al.batters.map(b => initBatterStats(b.p));
+        if(al.sp) pitchers.sp = initPitcherStats(al.sp);
+        if(al.rp) pitchers.rp = initPitcherStats(al.rp);
+        if(al.cp) pitchers.cp = initPitcherStats(al.cp);
+      }
+
+      while(batters.length < 9) batters.push(initBatterStats({ name: "代打", bestPos: ["外"], fStats: { meet: 50, pow: 50, run: 50, def: 50 } }));
+      if(!pitchers.sp) pitchers.sp = initPitcherStats({ name: "先発投手", bestPos: ["先発"], pStats: { pow: 50, con: 50, sta: 50 } });
+      if(!pitchers.rp) pitchers.rp = initPitcherStats({ name: "中継ぎ投手", bestPos: ["中継"], pStats: { pow: 50, con: 50, sta: 50 } });
+      if(!pitchers.cp) pitchers.cp = initPitcherStats({ name: "抑え投手", bestPos: ["抑え"], pStats: { pow: 50, con: 50, sta: 50 } });
+
+      return { batters, pitchers };
+    }
+
+    function checkPitcherChange() {
+      const defLineup = matchState.isTop ? matchState.lineupB : matchState.lineupA;
+      const defTeam = matchState.isTop ? matchState.teamB : matchState.teamA;
+
+      let expectedPitcher = null;
+      if (matchState.inning <= 6) expectedPitcher = defLineup.pitchers.sp;
+      else if (matchState.inning <= 8) expectedPitcher = defLineup.pitchers.rp;
+      else expectedPitcher = defLineup.pitchers.cp;
+
+      const currentPitcherRef = matchState.isTop ? 'currentPitcherB' : 'currentPitcherA';
+
+      if (matchState[currentPitcherRef] !== expectedPitcher) {
+        matchState[currentPitcherRef] = expectedPitcher;
+        addLog(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代: ${expectedPitcher.name} がマウンドに上がります。</span>`);
+      }
+    }
+
+    window.toggleSpeed = function() {
+      if (!matchState || !matchState.timer) return;
+
+      clearInterval(matchState.timer);
+      const btn = document.getElementById('speed-btn');
+
+      if (matchSpeed === 1000) {
+        matchSpeed = 200;
+        btn.textContent = "⏩ 超早送り中";
+        btn.className = "bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
+      } else {
+        matchSpeed = 1000;
+        btn.textContent = "▶️ 通常スピード";
+        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
+      }
+      matchState.timer = setInterval(simulateAtBat, matchSpeed);
+    };
+
+    window.startMatch = function() {
+      const userTeam = userTeamRef();
+      const topAITeam = teams.filter(t => !t.isUser).sort((a, b) => b.finalScore - a.finalScore)[0];
+
+      matchState = {
+        teamA: userTeam, teamB: topAITeam,
+        scoreA: 0, scoreB: 0,
+        inning: 1, isTop: true, outs: 0,
+        bases: [false, false, false],
+        log: [],
+        lineupA: extractLineup(userTeam),
+        lineupB: extractLineup(topAITeam),
+        batterIdxA: 0, batterIdxB: 0,
+        currentPitcherA: null, currentPitcherB: null
+      };
+
+      document.getElementById('match-team-a-name').textContent = userTeam.name.replace('(AI)','');
+      document.getElementById('match-team-b-name').textContent = topAITeam.name.replace('(AI)','');
+      document.getElementById('match-log').innerHTML = '<p class="text-blue-600 border-b pb-1">プレイボール！</p>';
+
+      document.getElementById('match-scorebook').classList.add('hidden');
+      document.getElementById('speed-btn').style.display = '';
+
+      showScreen('screen-match');
+      checkPitcherChange();
+      updateMatchUI();
+
+      matchSpeed = 1000;
+      document.getElementById('speed-btn').textContent = "▶️ 通常スピード";
+      document.getElementById('speed-btn').className = "bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-full shadow-lg text-xs transition-colors";
+
+      matchState.timer = setInterval(simulateAtBat, matchSpeed);
+    };
+
+    function simulateAtBat() {
+      if (matchState.inning > 9 && matchState.scoreA !== matchState.scoreB) {
+        endMatch();
+        return;
+      } else if (matchState.inning > 12) {
+        endMatch(true);
+        return;
+      }
+
+      const atkTeam = matchState.isTop ? matchState.teamA : matchState.teamB;
+
+      const atkLineup = matchState.isTop ? matchState.lineupA : matchState.lineupB;
+      const batterIdx = matchState.isTop ? matchState.batterIdxA : matchState.batterIdxB;
+      const batter = atkLineup.batters[batterIdx];
+      const pitcher = matchState.isTop ? matchState.currentPitcherB : matchState.currentPitcherA;
+
+      const bStats = batter.fStats || { meet: 50, pow: 50, run: 50 };
+      const pStatsOrg = pitcher.pStats || { pow: 50, con: 50, sta: 50 };
+
+      // ★ 投球数の増加とスタミナによる能力減衰
+      const pitchesThisAtBat = Math.floor(Math.random() * 5) + 2; // 2〜6球
+      pitcher.stats.pitches += pitchesThisAtBat;
+
+      let fatigue = 1.0;
+      if (pitcher.stats.pitches > pStatsOrg.sta * 1.5) {
+        fatigue = Math.max(0.7, 1.0 - ((pitcher.stats.pitches - pStatsOrg.sta * 1.5) * 0.01));
+      }
+      const currentPPow = pStatsOrg.pow * fatigue;
+      const currentPCon = pStatsOrg.con * fatigue;
+
+      // 確率計算
+      let hrProb  = 3  + (bStats.pow - currentPPow) * 0.15;
+      let hitProb = 25 + (bStats.meet - currentPCon) * 0.3;
+      let bbProb  = 8  + (50 - currentPCon) * 0.15;
+      let soProb  = 18 + (currentPPow - bStats.meet) * 0.2;
+
+      hrProb = Math.max(0.5, hrProb);
+      hitProb = Math.max(10, hitProb);
+      bbProb = Math.max(2, bbProb);
+      soProb = Math.max(5, soProb);
+
+      const rand = Math.random() * 100;
+      let resultStr = "";
+      let resultClass = "text-gray-800";
+
+      batter.stats.ab++;
+
+      if (rand < hrProb) {
+        resultStr = "ホームラン！！";
+        resultClass = "text-red-600 font-black text-lg";
+        batter.stats.hit++; batter.stats.hr++; pitcher.stats.hit++; pitcher.stats.hr++;
+        processHit(4, batter, pitcher);
+      }
+      else if (rand < hrProb + (hitProb * 0.05)) {
+        resultStr = "スリーベースヒット！";
+        resultClass = "text-orange-600 font-black";
+        batter.stats.hit++; pitcher.stats.hit++;
+        processHit(3, batter, pitcher);
+      }
+      else if (rand < hrProb + (hitProb * 0.25)) {
+        resultStr = "ツーベースヒット！";
+        resultClass = "text-orange-500 font-bold";
+        batter.stats.hit++; pitcher.stats.hit++;
+        processHit(2, batter, pitcher);
+      }
+      else if (rand < hrProb + hitProb) {
+        resultStr = "ヒット！";
+        resultClass = "text-blue-600 font-bold";
+        batter.stats.hit++; pitcher.stats.hit++;
+        processHit(1, batter, pitcher);
+      }
+      else if (rand < hrProb + hitProb + bbProb) {
+        resultStr = "フォアボール";
+        resultClass = "text-green-600 font-bold";
+        batter.stats.ab--; // 四球は打数に含めない
+        batter.stats.bb++; pitcher.stats.bb++;
+        processWalk(batter, pitcher);
+      }
+      else if (rand < hrProb + hitProb + bbProb + soProb) {
+        resultStr = "空振り三振！";
+        resultClass = "text-gray-600 font-bold";
+        pitcher.stats.so++;
+        pitcher.stats.out++; matchState.outs++;
+      }
+      else {
+        // ★ ダブルプレーの判定 (1アウト以下、1塁にランナーがいる場合)
+        if (matchState.outs < 2 && matchState.bases[0] && Math.random() < 0.15 + ((50 - bStats.run)*0.002)) {
+           resultStr = "ダブルプレー！";
+           resultClass = "text-purple-600 font-bold";
+           pitcher.stats.out += 2; matchState.outs += 2;
+           matchState.bases[0] = false;
+           if (matchState.outs >= 3) matchState.outs = 3;
+        } else {
+           resultStr = "アウト";
+           resultClass = "text-gray-500 font-normal";
+           pitcher.stats.out++; matchState.outs++;
+        }
+      }
+
+      addLog(`【${atkTeam.name.replace('(AI)','')}】第${batterIdx + 1}打者 <strong>${batter.name}</strong> : <span class="${resultClass}">${resultStr}</span>`);
+
+      if (matchState.isTop) matchState.batterIdxA = (matchState.batterIdxA + 1) % 9;
+      else matchState.batterIdxB = (matchState.batterIdxB + 1) % 9;
+
+      // ★ サヨナラ判定：9回以降の裏で後攻がリードしたら即終了
+      if (!matchState.isTop && matchState.inning >= 9 && matchState.scoreB > matchState.scoreA) {
+        addLog(`<span class="text-red-600 font-black text-lg">🎊 サヨナラ！</span>`);
+        endMatch();
+        return;
+      }
+
+      if (matchState.outs >= 3) {
+        addLog(`チェンジ。`);
+        matchState.outs = 0;
+        matchState.bases = [false, false, false];
+        if (matchState.isTop) {
+          matchState.isTop = false;
+          // ★ 9回以降、裏の攻撃前に後攻がリードしていれば試合終了
+          if (matchState.inning >= 9 && matchState.scoreB > matchState.scoreA) {
+            updateMatchUI();
+            endMatch();
+            return;
+          }
+        } else {
+          matchState.isTop = true;
+          matchState.inning++;
+        }
+        if (matchState.inning <= 12) checkPitcherChange();
+      }
+
+      updateMatchUI();
+    }
+
+    function scoreRuns(runs, batter, pitcher) {
+      if (runs <= 0) return;
+      if (matchState.isTop) matchState.scoreA += runs;
+      else matchState.scoreB += runs;
+      batter.stats.rbi += runs;
+      pitcher.stats.run += runs;
+      addLog(`<span class="text-red-500 font-black bg-red-50 px-2 py-0.5 rounded block">🔥 ${runs}点追加！！</span>`);
+    }
+
+    function processHit(advance, batter, pitcher) {
+      let runs = 0;
+      const runSpeed = (batter.fStats ? batter.fStats.run : 50);
+
+      for (let i = 2; i >= 0; i--) {
+        if (!matchState.bases[i]) continue;
+        let adv = advance;
+        // 単打での二塁走者、二塁打での一塁走者は足次第で1つ余分に進む
+        if (advance <= 2 && i >= 1 - (advance - 1) && Math.random() < 0.35 + (runSpeed - 50) * 0.006) adv += 1;
+
+        if (i + adv >= 3) { runs++; matchState.bases[i] = false; }
+        else { matchState.bases[i + adv] = true; matchState.bases[i] = false; }
+      }
+
+      if (advance >= 4) runs++;
+      else matchState.bases[advance - 1] = true;
+
+      scoreRuns(runs, batter, pitcher);
+    }
+
+    // ★ 四球は「詰まっている塁」だけを押し出す
+    function processWalk(batter, pitcher) {
+      if (!matchState.bases[0]) { matchState.bases[0] = true; return; }
+      if (!matchState.bases[1]) { matchState.bases[1] = true; return; }
+      if (!matchState.bases[2]) { matchState.bases[2] = true; return; }
+      scoreRuns(1, batter, pitcher); // 満塁 → 押し出し
+    }
+
+    function addLog(text) {
+      const logDiv = document.getElementById('match-log');
+      const p = document.createElement('p');
+      p.innerHTML = text;
+      logDiv.prepend(p);
+    }
+
+    function updateMatchUI() {
+      document.getElementById('match-team-a-score').textContent = matchState.scoreA;
+      document.getElementById('match-team-b-score').textContent = matchState.scoreB;
+      document.getElementById('match-inning').textContent = `${matchState.inning > 12 ? 12 : matchState.inning}回${matchState.isTop ? '表' : '裏'}`;
+      document.getElementById('match-outs').textContent = `●`.repeat(matchState.outs) + `○`.repeat(Math.max(0, 3 - matchState.outs)) + ` ${matchState.outs}アウト`;
+
+      document.getElementById('base-1').className = `absolute top-1/2 right-0 transform -translate-y-1/2 w-4 h-4 rotate-45 ${matchState.bases[0] ? 'bg-yellow-400 shadow-[0_0_8px_#facc15]' : 'bg-gray-600'}`;
+      document.getElementById('base-2').className = `absolute top-0 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 ${matchState.bases[1] ? 'bg-yellow-400 shadow-[0_0_8px_#facc15]' : 'bg-gray-600'}`;
+      document.getElementById('base-3').className = `absolute top-1/2 left-0 transform -translate-y-1/2 w-4 h-4 rotate-45 ${matchState.bases[2] ? 'bg-yellow-400 shadow-[0_0_8px_#facc15]' : 'bg-gray-600'}`;
+
+      const expectedRuns = RUN_EXPECTANCY[Math.min(2, matchState.outs)][getBaseIndex(matchState.bases)];
+      let realScoreDiff = matchState.scoreA - matchState.scoreB;
+      if (matchState.isTop) realScoreDiff += expectedRuns;
+      else realScoreDiff -= expectedRuns;
+
+      let remainingOutsA = Math.max(1, (9 - matchState.inning) * 3 + (matchState.isTop ? (3 - matchState.outs) : 0));
+      let remainingOutsB = Math.max(1, (9 - matchState.inning) * 3 + (!matchState.isTop ? (3 - matchState.outs) : 0));
+      let totalRemainingOuts = remainingOutsA + remainingOutsB;
+
+      const weightMultiplier = Math.max(2, (54 / totalRemainingOuts));
+      let wpDiff = realScoreDiff * weightMultiplier * 6.5;
+      wpDiff += (matchState.teamA.finalScore - matchState.teamB.finalScore) * 0.5;
+
+      let wpA = 50 + wpDiff;
+      wpA = Math.max(1, Math.min(99, wpA));
+      const wpB = 100 - wpA;
+
+      document.getElementById('wp-a-bar').style.width = `${wpA}%`;
+      document.getElementById('wp-b-bar').style.width = `${wpB}%`;
+      document.getElementById('wp-a-text').textContent = `${Math.round(wpA)}%`;
+      document.getElementById('wp-b-text').textContent = `${Math.round(wpB)}%`;
+    }
+
+    // ==========================================
+    // ★ 試合終了とスコアブックの生成 ★
+    // ==========================================
+    function endMatch(isDraw = false) {
+      clearInterval(matchState.timer);
+      matchState.timer = null;
+      const btn = document.getElementById('speed-btn');
+      btn.style.display = 'none';
+
+      if (isDraw) {
+        addLog(`<span class="text-xl text-gray-600">延長12回 引き分け試合終了！</span>`);
+      } else {
+        addLog(`<span class="text-xl text-red-600">試合終了！ ${matchState.scoreA} - ${matchState.scoreB}</span>`);
+      }
+
+      showScorebook();
+    }
+
+    function generateBattingTable(lineup) {
+      let html = `<table class="w-full scorebook-table mb-2 bg-gray-900 text-gray-200">
+                    <thead><tr><th class="text-left w-1/3">打者</th><th>打数</th><th>安打</th><th>本塁打</th><th>打点</th><th>四球</th></tr></thead><tbody>`;
+      lineup.batters.forEach((b, i) => {
+        html += `<tr>
+                   <td class="text-left font-bold text-[10px] md:text-xs text-blue-200">${i+1}. ${b.name}</td>
+                   <td>${b.stats.ab}</td>
+                   <td class="${b.stats.hit > 0 ? 'text-yellow-400 font-bold' : ''}">${b.stats.hit}</td>
+                   <td class="${b.stats.hr > 0 ? 'text-red-400 font-bold' : ''}">${b.stats.hr}</td>
+                   <td>${b.stats.rbi}</td>
+                   <td>${b.stats.bb}</td>
+                 </tr>`;
+      });
+      html += `</tbody></table>`;
+      return html;
+    }
+
+    function formatIP(outs) {
+      const whole = Math.floor(outs / 3);
+      const frac = outs % 3;
+      return frac === 0 ? `${whole}` : `${whole}.${frac}`;
+    }
+
+    function generatePitchingTable(lineup) {
+      let html = `<table class="w-full scorebook-table bg-gray-900 text-gray-200">
+                    <thead><tr><th class="text-left w-1/3">投手</th><th>回</th><th>球数</th><th>被安打</th><th>奪三振</th><th>与四球</th><th>失点</th></tr></thead><tbody>`;
+      const pList = [lineup.pitchers.sp, lineup.pitchers.rp, lineup.pitchers.cp];
+      pList.forEach(p => {
+        if (p && (p.stats.out > 0 || p.stats.pitches > 0)) {
+          html += `<tr>
+                     <td class="text-left font-bold text-[10px] md:text-xs text-green-200">${p.name}</td>
+                     <td>${formatIP(p.stats.out)}</td>
+                     <td>${p.stats.pitches}</td>
+                     <td>${p.stats.hit}</td>
+                     <td class="${p.stats.so >= 3 ? 'text-yellow-400 font-bold' : ''}">${p.stats.so}</td>
+                     <td>${p.stats.bb}</td>
+                     <td class="${p.stats.run > 0 ? 'text-red-400' : ''}">${p.stats.run}</td>
+                   </tr>`;
+        }
+      });
+      html += `</tbody></table>`;
+      return html;
+    }
+
+    function showScorebook() {
+      const container = document.getElementById('scorebook-content');
+      container.innerHTML = '';
+
+      container.innerHTML += `
+        <div class="bg-gray-700 p-2 rounded">
+          <h4 class="text-sm font-black text-yellow-400 mb-2">▼ 先攻: ${matchState.teamA.name.replace('(AI)','')}</h4>
+          ${generateBattingTable(matchState.lineupA)}
+          ${generatePitchingTable(matchState.lineupA)}
+        </div>
+      `;
+
+      container.innerHTML += `
+        <div class="bg-gray-700 p-2 rounded">
+          <h4 class="text-sm font-black text-yellow-400 mb-2">▼ 後攻: ${matchState.teamB.name.replace('(AI)','')}</h4>
+          ${generateBattingTable(matchState.lineupB)}
+          ${generatePitchingTable(matchState.lineupB)}
+        </div>
+      `;
+
+      document.getElementById('match-scorebook').classList.remove('hidden');
+
+      setTimeout(() => {
+        const screen = document.getElementById('screen-match');
+        screen.scrollTo({ top: screen.scrollHeight, behavior: 'smooth' });
+      }, 100);
+    }
+  </script>
+</body>
+</html>
