@@ -695,6 +695,11 @@
       return arr.reduce((s, b) => s + getOrderDiff(b.p, b.order), 0) / arr.length;
     }
 
+    // コンボ/適性バフを試合エンジンへ流し込む際の上下限（採点上の見た目だけが暴走しないための安全弁）
+    function clampBuff(v) {
+      return Math.max(-12, Math.min(18, v));
+    }
+
     window.startGame = function() {
       const userTeamSelect = document.getElementById('user-team').value;
       const aiCount = parseInt(document.getElementById('ai-count').value);
@@ -1675,14 +1680,15 @@
 
         // --- 4. コンボバフの適用 ---
         let buffAll = 0;
+        let powDelta = 0, meetDelta = 0, runDelta = 0, spDelta = 0, rpDelta = 0;
         comboNames.forEach(name => {
            if(name.includes('愛')) buffAll += 2;
-           if(name === '【超重量打線】') p_pow += 12;
-           if(name === '【機動力野球】') p_run += 12;
+           if(name === '【超重量打線】') { p_pow += 12; powDelta += 12; }
+           if(name === '【機動力野球】') { p_run += 12; runDelta += 12; }
            if(name === '【鉄壁の守備陣】') p_def += 12;
-           if(name === '【黄金の投手陣】') { p_sp += 10; p_rp += 10; }
-           if(name === '【安打製造機】') p_meet += 12;
-           if(name === '【勝利の方程式】') p_rp += 12;
+           if(name === '【黄金の投手陣】') { p_sp += 10; p_rp += 10; spDelta += 10; rpDelta += 10; }
+           if(name === '【安打製造機】') { p_meet += 12; meetDelta += 12; }
+           if(name === '【勝利の方程式】') { p_rp += 12; rpDelta += 12; }
            if(name === '【センターライン】') p_def += 8;
            if(name === '【ユーティリティ】') buffAll += 3;
         });
@@ -1696,6 +1702,19 @@
 
         t.posBuff = posBuff;
         t.orderBuff = orderBuff;
+
+        // コンボ／守備適性／打順適性を試合エンジン側にも反映させる（見た目のptだけ盛れる状態を防ぐ）
+        const uniformBat = buffAll + posBuff + orderBuff;
+        const uniformPitch = buffAll + posBuff;
+        t.battingBuff = {
+          pow: clampBuff(powDelta + uniformBat),
+          meet: clampBuff(meetDelta + uniformBat),
+          run: clampBuff(runDelta + uniformBat)
+        };
+        t.pitchingBuff = {
+          sp: clampBuff(spDelta + uniformPitch),
+          rp: clampBuff(rpDelta + uniformPitch)
+        };
 
         // --- 6. 最終値の確定 (Max 100) ---
         const cl = v => Math.min(100, Math.max(0, v));
@@ -1855,14 +1874,31 @@
       return 0;
     }
 
-    function initBatterStats(p) {
-      return { ...p, stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
+    // buff（{pow,meet,run}）を与えると、選手本体を書き換えずに試合用の実効fStatsを底上げする
+    function initBatterStats(p, buff) {
+      let fStats = p.fStats;
+      if (fStats && buff) {
+        fStats = {
+          ...fStats,
+          pow: fStats.pow + (buff.pow || 0),
+          meet: fStats.meet + (buff.meet || 0),
+          run: fStats.run + (buff.run || 0)
+        };
+      }
+      return { ...p, fStats, stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
     }
-    function initPitcherStats(p) {
-      return { ...p, stats: { out: 0, hit: 0, hr: 0, run: 0, so: 0, bb: 0, pitches: 0 } };
+    // delta（数値）を与えると、選手本体を書き換えずに試合用の実効pStats（pow/con）を底上げする
+    function initPitcherStats(p, delta) {
+      let pStats = p.pStats;
+      if (pStats && delta) {
+        pStats = { ...pStats, pow: pStats.pow + delta, con: pStats.con + delta };
+      }
+      return { ...p, pStats, stats: { out: 0, hit: 0, hr: 0, run: 0, so: 0, bb: 0, pitches: 0 } };
     }
 
     function extractLineup(team) {
+      const battingBuff = team.battingBuff || null;
+      const pitchingBuff = team.pitchingBuff || { sp: 0, rp: 0 };
       let batters = [];
       let pitchers = { sp: null, rp: null, cp: null };
 
@@ -1871,21 +1907,21 @@
           const pid = lineupAssignments[`slot-b${i}`];
           if(pid) {
             const p = team.roster.find(player => player.id === pid);
-            if(p) batters.push(initBatterStats(p));
+            if(p) batters.push(initBatterStats(p, battingBuff));
           }
         }
         const spP = team.roster.find(p => p.id === lineupAssignments[`slot-p1`]);
         const rpP = team.roster.find(p => p.id === lineupAssignments[`slot-p2`]);
         const cpP = team.roster.find(p => p.id === lineupAssignments[`slot-p3`]);
-        if(spP) pitchers.sp = initPitcherStats(spP);
-        if(rpP) pitchers.rp = initPitcherStats(rpP);
-        if(cpP) pitchers.cp = initPitcherStats(cpP);
+        if(spP) pitchers.sp = initPitcherStats(spP, pitchingBuff.sp);
+        if(rpP) pitchers.rp = initPitcherStats(rpP, pitchingBuff.rp);
+        if(cpP) pitchers.cp = initPitcherStats(cpP, pitchingBuff.rp);
       } else {
         const al = team.aiLineup || buildAILineup(team);
-        batters = al.batters.map(b => initBatterStats(b.p));
-        if(al.sp) pitchers.sp = initPitcherStats(al.sp);
-        if(al.rp) pitchers.rp = initPitcherStats(al.rp);
-        if(al.cp) pitchers.cp = initPitcherStats(al.cp);
+        batters = al.batters.map(b => initBatterStats(b.p, battingBuff));
+        if(al.sp) pitchers.sp = initPitcherStats(al.sp, pitchingBuff.sp);
+        if(al.rp) pitchers.rp = initPitcherStats(al.rp, pitchingBuff.rp);
+        if(al.cp) pitchers.cp = initPitcherStats(al.cp, pitchingBuff.rp);
       }
 
       while(batters.length < 9) batters.push(initBatterStats({ name: "代打", bestPos: ["外"], fStats: { meet: 50, pow: 50, run: 50, def: 50 } }));
@@ -1906,24 +1942,46 @@
         lineupA: extractLineup(teamA),
         lineupB: extractLineup(teamB),
         batterIdxA: 0, batterIdxB: 0,
-        currentPitcherA: null, currentPitcherB: null
+        currentPitcherA: null, currentPitcherB: null,
+        stageA: 0, stageB: 0 // 0=先発 1=中継 2=抑え（スタミナ切れで前倒しにはなるが後戻りはしない）
       };
     }
 
+    // 投球数とスタミナ(sta)から今の疲労係数(0.7〜1.0)を求める
+    function getPitcherFatigue(pitcher) {
+      const sta = (pitcher.pStats && pitcher.pStats.sta) || 50;
+      const pitches = pitcher.stats.pitches;
+      if (pitches <= sta * 1.5) return 1.0;
+      return Math.max(0.7, 1.0 - ((pitches - sta * 1.5) * 0.01));
+    }
+
+    function scheduledPitcherStage(inning) {
+      if (inning <= 6) return 0;
+      if (inning <= 8) return 1;
+      return 2;
+    }
+
+    // 通常はイニング経過で先発→中継→抑えと起用するが、現在の投手がスタミナ切れ(疲労0.8以下)
+    // なら予定より早く次の投手へスイッチする。段階は進むだけで後戻りはしない。
     function checkPitcherChange(state, log) {
       const defLineup = state.isTop ? state.lineupB : state.lineupA;
       const defTeam = state.isTop ? state.teamB : state.teamA;
-
-      let expectedPitcher = null;
-      if (state.inning <= 6) expectedPitcher = defLineup.pitchers.sp;
-      else if (state.inning <= 8) expectedPitcher = defLineup.pitchers.rp;
-      else expectedPitcher = defLineup.pitchers.cp;
-
+      const stageKey = state.isTop ? 'stageB' : 'stageA';
       const currentPitcherRef = state.isTop ? 'currentPitcherB' : 'currentPitcherA';
+
+      let stage = Math.max(state[stageKey], scheduledPitcherStage(state.inning));
+
+      const current = state[currentPitcherRef];
+      const dueToFatigue = !!current && stage < 2 && getPitcherFatigue(current) <= 0.8;
+      if (dueToFatigue) stage++;
+
+      state[stageKey] = stage;
+      const expectedPitcher = [defLineup.pitchers.sp, defLineup.pitchers.rp, defLineup.pitchers.cp][stage];
 
       if (state[currentPitcherRef] !== expectedPitcher) {
         state[currentPitcherRef] = expectedPitcher;
-        if (log) log(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代: ${expectedPitcher.name} がマウンドに上がります。</span>`);
+        const reason = dueToFatigue ? '（スタミナ切れ）' : '';
+        if (log) log(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代${reason}: ${expectedPitcher.name} がマウンドに上がります。</span>`);
       }
     }
 
@@ -1974,6 +2032,9 @@
         return { done: true };
       }
 
+      // 打席前に必ず投手を確認する（スタミナ切れならここで交代が起きる）
+      checkPitcherChange(state, log);
+
       const atkTeam = state.isTop ? state.teamA : state.teamB;
       const atkLineup = state.isTop ? state.lineupA : state.lineupB;
       const batterIdx = state.isTop ? state.batterIdxA : state.batterIdxB;
@@ -1987,10 +2048,7 @@
       const pitchesThisAtBat = Math.floor(Math.random() * 5) + 2; // 2〜6球
       pitcher.stats.pitches += pitchesThisAtBat;
 
-      let fatigue = 1.0;
-      if (pitcher.stats.pitches > pStatsOrg.sta * 1.5) {
-        fatigue = Math.max(0.7, 1.0 - ((pitcher.stats.pitches - pStatsOrg.sta * 1.5) * 0.01));
-      }
+      const fatigue = getPitcherFatigue(pitcher);
       const currentPPow = pStatsOrg.pow * fatigue;
       const currentPCon = pStatsOrg.con * fatigue;
 
@@ -2088,7 +2146,6 @@
           state.isTop = true;
           state.inning++;
         }
-        if (state.inning <= MAX_INNING) checkPitcherChange(state, log);
       }
 
       return { done: false };
