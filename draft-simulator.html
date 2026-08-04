@@ -207,7 +207,7 @@
           <div id="status-alert" class="hidden mb-2 p-2 font-bold text-xs rounded border-l-4"></div>
           <div id="pos-status-bar" class="flex flex-wrap gap-1 mb-2"></div>
 
-          <div class="grid grid-cols-3 gap-1 mb-2">
+          <div class="grid grid-cols-2 gap-1 mb-2">
             <select id="team-filter" class="border-2 border-gray-300 rounded p-1 text-[10px] md:text-sm focus:outline-none font-bold text-gray-600">
               <option value="">全球団</option>
               <option value="巨人">巨人</option>
@@ -222,6 +222,25 @@
               <option value="楽天">楽天</option>
               <option value="日本ハム">日本ハム</option>
               <option value="西武">西武</option>
+            </select>
+            <select id="pos-filter" class="border-2 border-gray-300 rounded p-1 text-[10px] md:text-sm focus:outline-none font-bold text-gray-600">
+              <option value="">全ポジション</option>
+              <optgroup label="投手">
+                <option value="先発">先発</option>
+                <option value="中継">中継</option>
+                <option value="抑え">抑え</option>
+              </optgroup>
+              <optgroup label="野手">
+                <option value="捕">捕手</option>
+                <option value="一">一塁</option>
+                <option value="二">二塁</option>
+                <option value="三">三塁</option>
+                <option value="遊">遊撃</option>
+                <option value="左">左翼</option>
+                <option value="中">中堅</option>
+                <option value="右">右翼</option>
+                <option value="DH">DH</option>
+              </optgroup>
             </select>
             <select id="stat-filter" class="border-2 border-gray-300 rounded p-1 text-[10px] md:text-sm focus:outline-none font-bold text-gray-600">
               <option value="">全能力</option>
@@ -916,6 +935,7 @@
     function renderSearchList() {
       const keyword = document.getElementById('search-input').value.toLowerCase();
       const teamFilter = document.getElementById('team-filter').value;
+      const posFilter = document.getElementById('pos-filter').value;
       const statFilter = document.getElementById('stat-filter').value;
       const sortFilter = document.getElementById('sort-filter').value;
       const listDiv = document.getElementById('player-list');
@@ -930,6 +950,7 @@
       let displayPlayers = availablePlayers.filter(p => {
         if(currentTab === 'fav' && !favoriteIds.includes(p.id)) return false;
         if(teamFilter && p.team !== teamFilter) return false;
+        if(posFilter && !(Array.isArray(p.bestPos) ? p.bestPos.includes(posFilter) : p.bestPos === posFilter)) return false;
 
         const isMatch = p.name.includes(keyword) || p.pos.includes(keyword) || p.team.includes(keyword) ||
                         (Array.isArray(p.bestPos) ? p.bestPos.some(bp => bp.includes(keyword)) : p.bestPos.includes(keyword));
@@ -996,6 +1017,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('search-input').addEventListener('input', renderSearchList);
       document.getElementById('team-filter').addEventListener('change', renderSearchList);
+      document.getElementById('pos-filter').addEventListener('change', renderSearchList);
       document.getElementById('sort-filter').addEventListener('change', renderSearchList);
       document.getElementById('stat-filter').addEventListener('change', renderSearchList);
 
