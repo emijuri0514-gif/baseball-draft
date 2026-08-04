@@ -665,6 +665,41 @@
     const DEF_PRIORITY = ["捕","遊","二","中","三","右","左","一","DH"];
     const ORDER_PRIORITY = [4,3,1,2,5,9,6,7,8];
 
+    // 守備位置優先順に、貪欲法で打者を割り当てる（スタメン自動編成とAI指名評価の両方で使う）
+    function greedyDefAssign(batters) {
+      const assign = {}, used = new Set();
+      DEF_PRIORITY.forEach(pos => {
+        let best = null, bs = -999;
+        batters.forEach(p => {
+          if (used.has(p.id)) return;
+          const s = getPosScore(p, pos);
+          if (s > bs) { bs = s; best = p; }
+        });
+        if (best) { assign[pos] = best; used.add(best.id); }
+      });
+      return assign;
+    }
+
+    // 現在のロースターでまだ埋まっていない守備位置（ドラフト中のAI指名評価に使う）
+    function getOpenDefensiveSlots(roster) {
+      const batters = roster.filter(p => p && p.fStats);
+      const assign = greedyDefAssign(batters);
+      return DEF_PRIORITY.filter(pos => !assign[pos]);
+    }
+
+    // 現在のロースターでまだ担当がいない投手ロール
+    function getOpenPitcherRoles(roster) {
+      const pitchers = roster.filter(p => p && p.pStats);
+      return ["先発", "中継", "抑え"].filter(role => !pitchers.some(p => p.bestPos.includes(role)));
+    }
+
+    // コンボ達成に向けて段階的にボーナスを乗せる（「あと1人で発動」の瞬間だけでなく、
+    // 序盤の1人目・2人目の時点から少しずつ狙って集めるようにする）
+    function comboApproachBonus(currentCount, neededCount, maxBonus) {
+      if (currentCount >= neededCount) return 0;
+      return maxBonus * (currentCount + 1) / neededCount;
+    }
+
     function getOrderFit(p, order) {
       if (!p || !p.fStats) return 50;
       const w = ORDER_WEIGHTS[order], s = p.fStats;
@@ -1112,6 +1147,10 @@
       let userPowCount = userTeam.roster.filter(p => p && p.fStats && p.fStats.pow >= 75).length;
       let userMeetCount = userTeam.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length;
 
+      // ★ 実際にまだ埋まっていない守備位置・投手ロールを把握し、指名候補がそこにどれだけ嵌るかも評価する
+      const openSlots = getOpenDefensiveSlots(team.roster);
+      const openRoles = getOpenPitcherRoles(team.roster);
+
       candidates.forEach(p => {
         let score = Math.random() * 2;
 
@@ -1133,16 +1172,25 @@
           if (missing.length > 0 && missing[0] === p.pos) score += 10;
         }
 
+        // ★ 守備位置フィット：本当に必要な枠（一番相性の良い open slot）にどれだけ嵌るか
+        if (p.fStats && openSlots.length > 0) {
+          score += Math.max(...openSlots.map(pos => getPosScore(p, pos))) - 50;
+        }
+        if (p.pStats && openRoles.length > 0) {
+          score += Math.max(...openRoles.map(role => getPosScore(p, role))) - 50;
+        }
+
+        // ★ コンボ狙い：「あと1人」だけでなく、序盤の1人目・2人目からも段階的に加点
         if (p.fStats) {
-           if (pow75Count === 3 && p.fStats.pow >= 75) score += 20;
-           if (run75Count === 2 && p.fStats.run >= 75) score += 15;
-           if (def70Count === 3 && p.fStats.def >= 70) score += 15;
-           if (meet75Count === 2 && p.fStats.meet >= 75) score += 15;
+           if (p.fStats.pow  >= 75) score += comboApproachBonus(pow75Count,  4, 20);
+           if (p.fStats.run  >= 75) score += comboApproachBonus(run75Count,  3, 15);
+           if (p.fStats.def  >= 70) score += comboApproachBonus(def70Count,  4, 15);
+           if (p.fStats.meet >= 75) score += comboApproachBonus(meet75Count, 3, 15);
         }
-        if (p.pStats) {
-           if (rel80Count === 1 && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))) score += 20;
+        if (p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))) {
+           score += comboApproachBonus(rel80Count, 2, 20);
         }
-        if (teamCounts[p.team] === 2) score += 15;
+        score += comboApproachBonus(teamCounts[p.team] || 0, 3, 15);
 
         if (userPowCount === 3 && p.fStats && p.fStats.pow >= 75) score += 10;
         if (userMeetCount === 2 && p.fStats && p.fStats.meet >= 75) score += 10;
@@ -1403,16 +1451,7 @@
       const pitchers = team.roster.filter(p => p && p.pStats);
 
       // 守備位置の割当（重要ポジションから貪欲に埋める）
-      const assign = {}, usedD = new Set();
-      DEF_PRIORITY.forEach(pos => {
-        let best = null, bs = -999;
-        batters.forEach(p => {
-          if (usedD.has(p.id)) return;
-          const s = getPosScore(p, pos);
-          if (s > bs) { bs = s; best = p; }
-        });
-        if (best) { assign[pos] = best; usedD.add(best.id); }
-      });
+      const assign = greedyDefAssign(batters);
 
       // 打順の割当（4番・3番から順に最適な選手を埋める）
       const slots = [], usedO = new Set();
