@@ -75,9 +75,55 @@
 </head>
 <body class="text-gray-800 h-screen overflow-hidden flex flex-col">
 
+  <!-- 汎用モーダル（alert/confirmの置き換え。アプリの見た目に合わせた通知・確認ダイアログ） -->
+  <div id="app-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-70 z-[300] flex items-center justify-center px-6 fade-in">
+    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-sm p-5 text-white">
+      <p id="app-modal-message" class="text-sm font-bold leading-relaxed mb-5 text-center" style="white-space: pre-line;"></p>
+      <div id="app-modal-buttons" class="flex gap-2"></div>
+    </div>
+  </div>
+
   <script>
+    // 予期しない致命的エラー用の最終フォールバック。app-modal自体が壊れている可能性もあるため、
+    // ここだけは確実に表示できるネイティブalertのままにしている。
     window.onerror = function(message, source, lineno, colno, error) {
       alert("⚠️ システムエラー\n" + message + "\n(行: " + lineno + ")");
+    };
+
+    // ★ alert/confirmの置き換え：アプリの見た目に合わせたモーダル ★
+    function hideAppModal() {
+      document.getElementById('app-modal').classList.add('hidden-screen');
+    }
+    function showAppModal({ message, confirmText = 'OK', cancelText = null, onConfirm = null, onCancel = null }) {
+      document.getElementById('app-modal-message').textContent = message;
+      const buttons = document.getElementById('app-modal-buttons');
+      buttons.innerHTML = '';
+
+      if (cancelText) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = cancelText;
+        cancelBtn.className = 'flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-full text-sm';
+        cancelBtn.onclick = () => { hideAppModal(); if (onCancel) onCancel(); };
+        buttons.appendChild(cancelBtn);
+      }
+      const confirmBtn = document.createElement('button');
+      confirmBtn.textContent = confirmText;
+      confirmBtn.className = 'flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-full text-sm';
+      confirmBtn.onclick = () => { hideAppModal(); if (onConfirm) onConfirm(); };
+      buttons.appendChild(confirmBtn);
+
+      document.getElementById('app-modal').classList.remove('hidden-screen');
+    }
+    function showAppAlert(message, onOk) {
+      showAppModal({ message, confirmText: 'OK', onConfirm: onOk });
+    }
+    function showAppConfirm(message, onConfirm, confirmText = '実行する') {
+      showAppModal({ message, confirmText, cancelText: 'キャンセル', onConfirm });
+    }
+
+    // 「最初から」ボタン共通：進行状況が消えることを確認してからリセットする
+    window.confirmReset = function() {
+      showAppConfirm('本当に最初からやり直しますか？\n現在の進行状況はすべて失われます。', () => location.reload(), '最初からやり直す');
     };
 
     function getBaseStat(p) {
@@ -257,6 +303,10 @@
           </div>
 
           <input type="text" id="search-input" placeholder="選手名・ポジションで検索" class="w-full border-2 border-gray-300 rounded p-2 focus:outline-none text-sm font-bold">
+          <p class="text-[10px] text-gray-400 leading-snug mt-1">
+            <span class="text-yellow-500">★</span>タップでお気に入り登録（「★リスト」タブで確認）／
+            野手：ミ=ミート パ=パワー 走=走力 守=守備　投手：球威・制球・スタ=スタミナ
+          </p>
         </div>
       </div>
       <div id="player-list" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-100 pb-10"></div>
@@ -310,7 +360,10 @@
     <div class="w-3/5 md:w-2/3 flex flex-col items-center p-2 md:p-6 relative overflow-y-auto h-full">
       <div class="w-full max-w-md bg-green-800 rounded-lg shadow-2xl p-2 md:p-4 border-2 border-white mb-4 shrink-0">
         <h2 class="text-white text-center font-black text-sm md:text-xl mb-1 tracking-widest border-b border-green-600 pb-1">スタメン編成 (守備位置を選択)</h2>
-        <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-2">打＝打順適性 ／ 守＝守備適性　◎最適 ○good △普通 ▲不向き ✕ミスマッチ</p>
+        <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-1">打＝打順適性 ／ 守＝守備適性　◎最適 ○good △普通 ▲不向き ✕ミスマッチ</p>
+        <div class="text-center mb-2">
+          <button onclick="window.clearLineup()" class="text-[10px] md:text-xs text-green-200 underline underline-offset-2">配置を全解除してやり直す</button>
+        </div>
 
         <div class="space-y-1" id="lineup-slots">
           <div class="flex items-center">
@@ -397,7 +450,7 @@
       <button onclick="window.startPlayoff()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse">
         🏆 プレーオフに進出する
       </button>
-      <button onclick="location.reload()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-8 rounded-full">
+      <button onclick="window.confirmReset()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-8 rounded-full">
         最初から
       </button>
     </div>
@@ -472,7 +525,7 @@
 
     <div class="w-full max-w-sm flex flex-col gap-2 mb-10 shrink-0">
       <button onclick="window.continuePlayoffAfterLiveGame()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-black py-3 px-8 rounded-full shadow-lg w-full">🏆 プレーオフに戻る</button>
-      <button onclick="location.reload()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded-full shadow-lg w-full text-sm">トップへ戻る（最初から）</button>
+      <button onclick="window.confirmReset()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded-full shadow-lg w-full text-sm">トップへ戻る（最初から）</button>
     </div>
   </div>
 
@@ -1393,13 +1446,13 @@
       const winIdx = Math.floor(Math.random() * cTeams.length);
       const aiWinner = cTeams[winIdx];
 
-      alert(`【スキップ】\n抽選の結果、${aiWinner.name.replace('(AI)','')} が ${player.name} を獲得しました。`);
+      showAppAlert(`【スキップ】\n抽選の結果、${aiWinner.name.replace('(AI)','')} が ${player.name} を獲得しました。`, () => {
+        aiWinner.roster.push(player);
+        aiWinner.needsPick = false;
+        availablePlayers = availablePlayers.filter(p => p.id !== player.id);
 
-      aiWinner.roster.push(player);
-      aiWinner.needsPick = false;
-      availablePlayers = availablePlayers.filter(p => p.id !== player.id);
-
-      processConflict(currentConflictIndex + 1);
+        processConflict(currentConflictIndex + 1);
+      });
     };
 
     window.drawLottery = function(selectedIdx) {
@@ -1441,18 +1494,17 @@
       }
 
       setTimeout(() => {
-        if(winnerTeam.isUser) {
-          alert(`🎉 見事引き当てました！\n${player.name} を獲得！`);
-        } else {
-          const msgHead = isUserInvolved ? "😭 ハズレ...\n" : "🤖 抽選の結果...\n";
-          alert(`${msgHead}${winnerTeam.name.replace('(AI)','')} が ${player.name} を獲得しました！`);
-        }
+        const msg = winnerTeam.isUser
+          ? `🎉 見事引き当てました！\n${player.name} を獲得！`
+          : `${isUserInvolved ? "😭 ハズレ...\n" : "🤖 抽選の結果...\n"}${winnerTeam.name.replace('(AI)','')} が ${player.name} を獲得しました！`;
 
-        winnerTeam.roster.push(player);
-        winnerTeam.needsPick = false;
-        availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+        showAppAlert(msg, () => {
+          winnerTeam.roster.push(player);
+          winnerTeam.needsPick = false;
+          availablePlayers = availablePlayers.filter(p => p.id !== player.id);
 
-        processConflict(currentConflictIndex + 1);
+          processConflict(currentConflictIndex + 1);
+        });
       }, 2000);
     };
 
@@ -1542,7 +1594,7 @@
               lineupAssignments[slot.id] = pId;
               renderLineupPhase();
             } else {
-              alert("⚠️ 投手枠と野手枠が違います！");
+              showAppAlert("⚠️ 投手枠と野手枠が違います！");
             }
           });
         });
@@ -1559,6 +1611,14 @@
       renderLineupPhase();
       showScreen('screen-lineup');
     }
+
+    window.clearLineup = function() {
+      if (Object.keys(lineupAssignments).length === 0) return;
+      showAppConfirm('配置をすべて解除しますか？', () => {
+        lineupAssignments = {};
+        renderLineupPhase();
+      }, '全解除する');
+    };
 
     function renderLineupPhase() {
       const pool = document.getElementById('lineup-pool');
@@ -1652,7 +1712,7 @@
       const slots = document.querySelectorAll('.dnd-slot');
       let filledCount = 0;
       slots.forEach(s => { if(s.dataset.filled === "true") filledCount++; });
-      if(filledCount < 12) { alert("全12枠（打者9名、投手3名）に選手を配置してください！"); return; }
+      if(filledCount < 12) { showAppAlert("全12枠（打者9名、投手3名）に選手を配置してください！"); return; }
 
       teams.forEach(t => {
         let comboNames = [];
@@ -2528,7 +2588,7 @@
             <p class="text-2xl font-black ${champ.isUser ? 'text-yellow-400' : 'text-white'}">${champ.name.replace('(AI)','')}</p>
             <p class="mt-2 font-bold ${champ.isUser ? 'text-green-400' : 'text-gray-400'}">${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '健闘及ばず…来年に期待です。'}</p>
           </div>
-          <button onclick="location.reload()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
+          <button onclick="window.confirmReset()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
         `;
         return;
       }
