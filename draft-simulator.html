@@ -498,12 +498,24 @@
       "西武": { bg: "bg-[#06b6d4]", border: "border-[#06b6d4]" }
     };
 
-    const TEAM_POLICIES = {
-      "巨人": "能力重視", "ソフトバンク": "能力重視",
-      "広島": "投手重視", "中日": "投手重視", "オリックス": "投手重視", "西武": "投手重視",
-      "DeNA": "打撃重視", "ヤクルト": "打撃重視", "日本ハム": "打撃重視",
-      "阪神": "バランス重視", "楽天": "バランス重視", "ロッテ": "バランス重視"
+    // ★ 球団ごとのスカウト傾向 ★
+    // label: 画面表示用のフレーバー名。pow/meet/run/def: 野手の各能力値への重み（1.0が標準）。
+    // pitcher: 投手の総合力への重み。実際のNPB球団のドラフト・編成カラーを参考にした数値。
+    const TEAM_SCOUTING = {
+      "巨人":       { label: "長距離砲補強型",       pow: 1.30, meet: 1.00, run: 0.80, def: 0.80, pitcher: 1.15 },
+      "阪神":       { label: "投手王国・堅守巧打",   pow: 0.90, meet: 1.10, run: 1.00, def: 1.05, pitcher: 1.30 },
+      "DeNA":       { label: "長打指向スラッガー編成", pow: 1.25, meet: 1.00, run: 0.85, def: 0.85, pitcher: 1.00 },
+      "広島":       { label: "機動力・守備の育成路線", pow: 0.80, meet: 1.00, run: 1.30, def: 1.20, pitcher: 0.90 },
+      "中日":       { label: "伝統の投手陣・堅守型", pow: 0.85, meet: 1.00, run: 1.00, def: 1.20, pitcher: 1.30 },
+      "ヤクルト":   { label: "スワローズ打線・攻撃野球", pow: 1.20, meet: 1.20, run: 0.90, def: 0.75, pitcher: 0.80 },
+      "オリックス": { label: "エース輩出の投手王国", pow: 0.90, meet: 1.00, run: 0.90, def: 1.00, pitcher: 1.35 },
+      "ロッテ":     { label: "堅実な投手・守備育成型", pow: 0.90, meet: 1.00, run: 1.00, def: 1.10, pitcher: 1.20 },
+      "ソフトバンク": { label: "資金力で最強戦力を揃える", pow: 1.25, meet: 1.10, run: 1.00, def: 1.00, pitcher: 1.20 },
+      "楽天":       { label: "エース中心のバランス型", pow: 1.00, meet: 1.00, run: 1.00, def: 1.00, pitcher: 1.20 },
+      "日本ハム":   { label: "データ重視の逸材発掘型", pow: 1.00, meet: 1.00, run: 1.15, def: 1.00, pitcher: 1.00 },
+      "西武":       { label: "俊足強打の機動力野球", pow: 1.00, meet: 0.90, run: 1.30, def: 0.90, pitcher: 0.90 }
     };
+    const DEFAULT_SCOUTING = { label: "バランス重視", pow: 1.0, meet: 1.0, run: 1.0, def: 1.0, pitcher: 1.0 };
 
     function getValClass(val) {
       if(val >= 80) return 'val-A';
@@ -768,7 +780,8 @@
         color: TEAM_STYLE[userTeamSelect],
         roster: [],
         needsPick: true,
-        personality: TEAM_POLICIES[userTeamSelect] || "バランス重視"
+        scouting: TEAM_SCOUTING[userTeamSelect] || DEFAULT_SCOUTING,
+        personality: (TEAM_SCOUTING[userTeamSelect] || DEFAULT_SCOUTING).label
       }];
 
       let availableAiTeams = ALL_TEAMS.filter(t => t !== userTeamSelect).sort(() => 0.5 - Math.random());
@@ -783,7 +796,8 @@
           color: TEAM_STYLE[teamName],
           roster: [],
           needsPick: true,
-          personality: TEAM_POLICIES[teamName] || "バランス重視"
+          scouting: TEAM_SCOUTING[teamName] || DEFAULT_SCOUTING,
+          personality: (TEAM_SCOUTING[teamName] || DEFAULT_SCOUTING).label
         });
       }
 
@@ -1173,25 +1187,17 @@
       const openSlots = getOpenDefensiveSlots(team.roster);
       const openRoles = getOpenPitcherRoles(team.roster);
 
+      const scouting = team.scouting || DEFAULT_SCOUTING;
+
       candidates.forEach(p => {
         let score = Math.random() * 2;
 
-        let statAvg = getBaseStat(p);
-        let batPow = (p.fStats) ? (p.fStats.meet + p.fStats.pow) / 2 : 0;
-
-        const policy = team.personality;
-
-        if (policy === "能力重視") {
-          score += statAvg;
-        } else if (policy === "投手重視") {
-          if (p.pos === "投手") score += statAvg + 35;
-          else score += statAvg;
-        } else if (policy === "打撃重視") {
-          if (p.pos !== "投手") score += batPow + 35;
-          else score += statAvg;
-        } else {
-          score += statAvg;
-          if (missing.length > 0 && missing[0] === p.pos) score += 10;
+        // ★ 球団のスカウト傾向（能力ごとの重み）で評価する
+        if (p.fStats) {
+          score += (p.fStats.pow * scouting.pow + p.fStats.meet * scouting.meet +
+                    p.fStats.run * scouting.run + p.fStats.def * scouting.def) / 4;
+        } else if (p.pStats) {
+          score += getBaseStat(p) * scouting.pitcher;
         }
 
         // ★ 守備位置フィット：本当に必要な枠（一番相性の良い open slot）にどれだけ嵌るか
