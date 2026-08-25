@@ -85,7 +85,7 @@
 
   <!-- 結果シェアカード用モーダル -->
   <div id="share-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-80 z-[300] flex flex-col items-center justify-center px-4 fade-in">
-    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-sm p-4 text-white flex flex-col items-center max-h-[90vh] overflow-y-auto">
+    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-lg p-4 text-white flex flex-col items-center max-h-[90vh] overflow-y-auto">
       <p class="text-sm font-bold mb-3">📤 結果シェアカード</p>
       <img id="share-preview-img" class="w-full rounded shadow-lg mb-4 border border-gray-600" alt="シェア画像プレビュー" />
       <div class="flex gap-2 w-full">
@@ -174,163 +174,140 @@
       return lines;
     }
 
-    // 6軸のレーダーチャートをCanvasに手描きする（Chart.jsのインスタンスに依存しないため、
-    // プレーオフ優勝画面などレーダーチャートが表示されていない場面でも同じ見た目で生成できる）
-    function drawRadarPolygon(ctx, cx, cy, radius, data, colors, labels) {
-      const n = data.length;
-      const angleFor = i => -Math.PI / 2 + i * (2 * Math.PI / n);
-
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      [0.25, 0.5, 0.75, 1].forEach(frac => {
-        ctx.beginPath();
-        for (let i = 0; i <= n; i++) {
-          const a = angleFor(i % n);
-          const x = cx + Math.cos(a) * radius * frac;
-          const y = cy + Math.sin(a) * radius * frac;
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      });
-
-      ctx.fillStyle = '#e5e7eb';
-      ctx.font = 'bold 22px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      for (let i = 0; i < n; i++) {
-        const a = angleFor(i);
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius);
-        ctx.stroke();
-        if (labels) {
-          const lx = cx + Math.cos(a) * (radius + 32);
-          const ly = cy + Math.sin(a) * (radius + 32);
-          ctx.fillText(labels[i], lx, ly);
-        }
-      }
-
-      ctx.beginPath();
-      for (let i = 0; i <= n; i++) {
-        const idx = i % n;
-        const a = angleFor(idx);
-        const r = radius * Math.max(0, Math.min(100, data[idx])) / 100;
-        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = colors.fill;
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = colors.stroke;
-      ctx.stroke();
-
-      ctx.fillStyle = colors.stroke;
-      for (let i = 0; i < n; i++) {
-        const a = angleFor(i);
-        const r = radius * Math.max(0, Math.min(100, data[i])) / 100;
-        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
-      }
+    // 総合ptは6項目の合計そのもの（平均だと「長打力88なのに総合90」のように基準が分からなくなるため、
+    // シェア画像では素直に足し算した数字だけを見せる）。ランク文字は既存のfinalScore（平均）基準のまま。
+    function getGradeInfo(finalScore) {
+      if (finalScore >= 90) return { grade: 'S', tagline: '伝説級のドラフト采配！' };
+      if (finalScore >= 80) return { grade: 'A', tagline: '素晴らしい編成！' };
+      if (finalScore >= 70) return { grade: 'B', tagline: '堅実にまとまった編成' };
+      if (finalScore >= 60) return { grade: 'C', tagline: '及第点の編成' };
+      if (finalScore >= 50) return { grade: 'D', tagline: '来年に期待の編成' };
+      return { grade: 'E', tagline: '再建は来年から…' };
     }
 
+    // X（旧Twitter）のタイムラインで縮小表示されても数字とランクが一目で読める、
+    // 情報量を絞ったワイド（16:9）カード。詳細な内訳はアプリ本体側の画面で確認する前提。
     function buildShareCardCanvas(team, opts) {
       opts = opts || {};
-      const W = 900;
+      const W = 1200, H = 675;
       const canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = 100; // レイアウト計算用の仮サイズ
+      canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
       const styleHex = teamHexColor(team);
+
+      const radarData = team.radarData || [50, 50, 50, 50, 50, 50];
+      const statLabels = ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣'];
+      const totalSum = radarData.reduce((s, v) => s + v, 0);
+      const { grade, tagline } = getGradeInfo(team.finalScore);
 
       const lineupRows = team.shareLineup || [];
       const pitcherNames = team.sharePitchers || [];
 
-      // 先に本文の折り返し行数を測っておき、必要な高さを逆算する
-      ctx.font = '26px sans-serif';
-      const commentLines = team.comment ? wrapTextCJK(ctx, `「${team.comment}」`, W - 140) : [];
-
-      const RADAR_CY = 530, RADAR_R = 150;
-      const LINEUP_TITLE_Y = RADAR_CY + RADAR_R + 70;
-      const LINEUP_LINE_H = 36;
-      const lineupLineCount = lineupRows.length + (pitcherNames.length ? 1 : 0);
-      const LINEUP_START_Y = LINEUP_TITLE_Y + 42;
-      const COMMENT_LABEL_Y = LINEUP_START_Y + lineupLineCount * LINEUP_LINE_H + 40;
-      const COMMENT_TITLE_Y = COMMENT_LABEL_Y + 40;
-      const COMMENT_END_Y = COMMENT_TITLE_Y + commentLines.length * 38;
-      const H = COMMENT_END_Y + 70;
-
-      canvas.width = W; canvas.height = H; // 高さ確定後に本描画（サイズ変更でクリアされる）
-
-      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-      bgGrad.addColorStop(0, '#111827');
-      bgGrad.addColorStop(1, '#1f2937');
+      // 背景：紺のグラデーション＋バッジ裏のチームカラーのグロー
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      bgGrad.addColorStop(0, '#0f172a');
+      bgGrad.addColorStop(1, '#1e293b');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      ctx.fillStyle = hexToRgba(styleHex, 0.85);
-      ctx.fillRect(0, 0, W, 190);
+      const badgeCx = 250, badgeCy = 360, badgeR = 145;
+      const glow = ctx.createRadialGradient(badgeCx, badgeCy, 20, badgeCx, badgeCy, badgeR * 1.8);
+      glow.addColorStop(0, hexToRgba(styleHex, 0.55));
+      glow.addColorStop(1, hexToRgba(styleHex, 0));
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
 
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 32px sans-serif';
-      ctx.fillText(opts.headline || '⚾ ドラフト採点結果', W / 2, 55);
 
-      ctx.font = 'bold 58px sans-serif';
-      ctx.fillText(team.name.replace('(AI)', ''), W / 2, 130);
+      // 見出し・チーム名
+      ctx.fillStyle = '#93c5fd';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText(opts.headline || '⚾ ドラフト採点結果', badgeCx, 45);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 40px sans-serif';
+      ctx.fillText(team.name.replace('(AI)', ''), badgeCx, 90);
 
       if (opts.subtitle) {
-        ctx.font = 'bold 24px sans-serif';
-        ctx.fillText(opts.subtitle, W / 2, 168);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillText(opts.subtitle, badgeCx, 118);
       }
 
+      // ランクバッジ（一番の見せ場：大きな文字のランクが最初に目に入るようにする）
+      ctx.beginPath();
+      ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
+      ctx.fillStyle = hexToRgba(styleHex, 0.9);
+      ctx.fill();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 190px sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(grade, badgeCx, badgeCy + 10);
+      ctx.textBaseline = 'alphabetic';
+
       ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 88px sans-serif';
-      ctx.fillText(`${team.finalScore} pt`, W / 2, 270);
+      ctx.font = 'bold 42px sans-serif';
+      ctx.fillText(`${totalSum} pt`, badgeCx, badgeCy + badgeR + 55);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '18px sans-serif';
+      ctx.fillText('（6項目の合計）', badgeCx, badgeCy + badgeR + 82);
 
-      const radarData = team.radarData || [50, 50, 50, 50, 50, 50];
-      const radarLabels = ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣']
-        .map((label, i) => `${label} ${radarData[i]}`);
-      drawRadarPolygon(
-        ctx, W / 2, RADAR_CY, RADAR_R,
-        radarData,
-        { fill: hexToRgba(styleHex, 0.4), stroke: hexToRgba(styleHex, 1) },
-        radarLabels
-      );
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.fillText(tagline, badgeCx, badgeCy + badgeR + 122);
 
-      if (lineupRows.length) {
-        ctx.textAlign = 'left';
+      // 6項目の内訳バー（合計ptの根拠が一目で足し算できるよう、数字を主役にしたバー表示）
+      const barX0 = 540, barTrackX0 = 660, barTrackW = 350, barTrackH = 26, rowH = 68, firstRowY = 108;
+      ctx.textAlign = 'left';
+      statLabels.forEach((label, i) => {
+        const y = firstRowY + i * rowH;
+        const val = Math.max(0, Math.min(100, radarData[i]));
+
+        ctx.fillStyle = '#e2e8f0';
         ctx.font = 'bold 26px sans-serif';
-        ctx.fillStyle = '#93c5fd';
-        ctx.fillText('▼ オーダー', 70, LINEUP_TITLE_Y);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, barX0, y);
 
-        let y = LINEUP_START_Y;
-        ctx.font = 'bold 25px sans-serif';
-        ctx.fillStyle = '#e5e7eb';
-        lineupRows.forEach(r => {
-          ctx.fillText(`${r.order}番 [${r.pos}] ${r.name}`, 70, y);
-          y += LINEUP_LINE_H;
-        });
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.beginPath();
+        ctx.roundRect(barTrackX0, y - barTrackH / 2, barTrackW, barTrackH, 13);
+        ctx.fill();
+
+        ctx.fillStyle = styleHex;
+        ctx.beginPath();
+        ctx.roundRect(barTrackX0, y - barTrackH / 2, barTrackW * (val / 100), barTrackH, 13);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${radarData[i]}`, W - 60, y);
+        ctx.textAlign = 'left';
+      });
+      ctx.textBaseline = 'alphabetic';
+
+      // オーダーは9行のフル表示ではなく、1〜2行に収まる短い一覧にして情報過多を避ける
+      if (lineupRows.length) {
+        const orderText = lineupRows.map(r => `${r.order}[${r.pos}]${r.name}`).join(' ');
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillStyle = '#cbd5e1';
+        const orderLines = wrapTextCJK(ctx, orderText, W - barX0 - 60).slice(0, 2);
+        let y = firstRowY + 6 * rowH + 6;
+        orderLines.forEach(l => { ctx.fillText(l, barX0, y); y += 26; });
         if (pitcherNames.length) {
-          ctx.fillText(`(投) ${pitcherNames.join('、')}`, 70, y);
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillText(`(投) ${pitcherNames.join('、')}`, barX0, y);
         }
       }
 
-      if (commentLines.length) {
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 22px sans-serif';
-        ctx.fillStyle = '#93c5fd';
-        ctx.fillText('🤖 AIコメント', W / 2, COMMENT_LABEL_Y);
-
-        ctx.font = '26px sans-serif';
-        ctx.fillStyle = '#d1d5db';
-        let y = COMMENT_TITLE_Y;
-        commentLines.forEach(l => { ctx.fillText(l, W / 2, y); y += 38; });
-      }
-
       ctx.textAlign = 'center';
-      ctx.font = 'bold 22px sans-serif';
-      ctx.fillStyle = '#6b7280';
-      ctx.fillText('⚾ 野球ドラフトシミュレーター', W / 2, H - 30);
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('⚾ 野球ドラフトシミュレーター', W / 2, H - 22);
 
       return canvas;
     }
