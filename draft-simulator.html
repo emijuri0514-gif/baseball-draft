@@ -83,6 +83,19 @@
     </div>
   </div>
 
+  <!-- 結果シェアカード用モーダル -->
+  <div id="share-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-80 z-[300] flex flex-col items-center justify-center px-4 fade-in">
+    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-sm p-4 text-white flex flex-col items-center max-h-[90vh] overflow-y-auto">
+      <p class="text-sm font-bold mb-3">📤 結果シェアカード</p>
+      <img id="share-preview-img" class="w-full rounded shadow-lg mb-4 border border-gray-600" alt="シェア画像プレビュー" />
+      <div class="flex gap-2 w-full">
+        <button onclick="window.hideShareModal()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-full text-sm">閉じる</button>
+        <button id="share-download-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-full text-sm">画像を保存</button>
+      </div>
+      <p class="text-[10px] text-gray-400 mt-3 text-center leading-relaxed">スマホでは画像を長押しして保存すると、LINEなどでそのままシェアできます</p>
+    </div>
+  </div>
+
   <script>
     // 予期しない致命的エラー用の最終フォールバック。app-modal自体が壊れている可能性もあるため、
     // ここだけは確実に表示できるネイティブalertのままにしている。
@@ -124,6 +137,177 @@
     // 「最初から」ボタン共通：進行状況が消えることを確認してからリセットする
     window.confirmReset = function() {
       showAppConfirm('本当に最初からやり直しますか？\n現在の進行状況はすべて失われます。', () => location.reload(), '最初からやり直す');
+    };
+
+    // ==========================================
+    // 結果シェアカード（Canvasで画像を生成してモーダル表示・保存）
+    // ==========================================
+    window.__shareTeamsById = {};
+    function registerShareTeam(t) { window.__shareTeamsById[t.id] = t; }
+
+    function hexToRgba(hex, alpha) {
+      const m = /#([0-9a-f]{6})/i.exec(hex || '');
+      if (!m) return `rgba(250, 204, 21, ${alpha})`;
+      const n = parseInt(m[1], 16);
+      const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    function teamHexColor(t) {
+      const m = t.color && t.color.bg ? /#([0-9a-f]{6})/i.exec(t.color.bg) : null;
+      return m ? '#' + m[1] : '#facc15';
+    }
+
+    // 日本語は単語区切りが無いため、実測幅を見ながら1文字ずつ折り返す
+    function wrapTextCJK(ctx, text, maxWidth) {
+      const lines = [];
+      let line = '';
+      for (const ch of text) {
+        const test = line + ch;
+        if (line && ctx.measureText(test).width > maxWidth) {
+          lines.push(line);
+          line = ch;
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    // 6軸のレーダーチャートをCanvasに手描きする（Chart.jsのインスタンスに依存しないため、
+    // プレーオフ優勝画面などレーダーチャートが表示されていない場面でも同じ見た目で生成できる）
+    function drawRadarPolygon(ctx, cx, cy, radius, data, colors, labels) {
+      const n = data.length;
+      const angleFor = i => -Math.PI / 2 + i * (2 * Math.PI / n);
+
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      [0.25, 0.5, 0.75, 1].forEach(frac => {
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+          const a = angleFor(i % n);
+          const x = cx + Math.cos(a) * radius * frac;
+          const y = cy + Math.sin(a) * radius * frac;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+
+      ctx.fillStyle = '#e5e7eb';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 0; i < n; i++) {
+        const a = angleFor(i);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius);
+        ctx.stroke();
+        if (labels) {
+          const lx = cx + Math.cos(a) * (radius + 32);
+          const ly = cy + Math.sin(a) * (radius + 32);
+          ctx.fillText(labels[i], lx, ly);
+        }
+      }
+
+      ctx.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const idx = i % n;
+        const a = angleFor(idx);
+        const r = radius * Math.max(0, Math.min(100, data[idx])) / 100;
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = colors.fill;
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = colors.stroke;
+      ctx.stroke();
+
+      ctx.fillStyle = colors.stroke;
+      for (let i = 0; i < n; i++) {
+        const a = angleFor(i);
+        const r = radius * Math.max(0, Math.min(100, data[i])) / 100;
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    function buildShareCardCanvas(team, opts) {
+      opts = opts || {};
+      const W = 900, H = 1200;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      const styleHex = teamHexColor(team);
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+      bgGrad.addColorStop(0, '#111827');
+      bgGrad.addColorStop(1, '#1f2937');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = hexToRgba(styleHex, 0.85);
+      ctx.fillRect(0, 0, W, 190);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 32px sans-serif';
+      ctx.fillText(opts.headline || '⚾ ドラフト採点結果', W / 2, 55);
+
+      ctx.font = 'bold 58px sans-serif';
+      ctx.fillText(team.name.replace('(AI)', ''), W / 2, 130);
+
+      if (opts.subtitle) {
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillText(opts.subtitle, W / 2, 168);
+      }
+
+      ctx.fillStyle = '#facc15';
+      ctx.font = 'bold 100px sans-serif';
+      ctx.fillText(`${team.finalScore} pt`, W / 2, 320);
+
+      drawRadarPolygon(
+        ctx, W / 2, 560, 200,
+        team.radarData || [50, 50, 50, 50, 50, 50],
+        { fill: hexToRgba(styleHex, 0.4), stroke: hexToRgba(styleHex, 1) },
+        ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣']
+      );
+
+      if (team.comment) {
+        ctx.font = '26px sans-serif';
+        ctx.fillStyle = '#d1d5db';
+        const lines = wrapTextCJK(ctx, `「${team.comment}」`, W - 140);
+        let y = 850;
+        lines.forEach(l => { ctx.fillText(l, W / 2, y); y += 38; });
+      }
+
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillStyle = '#6b7280';
+      ctx.fillText('⚾ 野球ドラフトシミュレーター', W / 2, H - 40);
+
+      return canvas;
+    }
+
+    window.showShareCard = function(teamId, headline, subtitle) {
+      const t = window.__shareTeamsById[teamId];
+      if (!t) return;
+      const canvas = buildShareCardCanvas(t, { headline, subtitle });
+      const dataUrl = canvas.toDataURL('image/png');
+      document.getElementById('share-preview-img').src = dataUrl;
+      document.getElementById('share-download-btn').onclick = () => {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `${t.name.replace('(AI)', '')}_draft_result.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      };
+      document.getElementById('share-modal').classList.remove('hidden-screen');
+    };
+    window.hideShareModal = function() {
+      document.getElementById('share-modal').classList.add('hidden-screen');
     };
 
     function getBaseStat(p) {
@@ -1896,6 +2080,7 @@
 
       ranked.forEach((t, index) => {
         let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🔹";
+        registerShareTeam(t);
 
         const rows = t.isUser
           ? Array.from({length: 9}, (_, i) => {
@@ -1944,10 +2129,12 @@
               </div>
             </div>
 
-            <div class="bg-gray-700 p-2 rounded-lg flex gap-2 items-start">
+            <div class="bg-gray-700 p-2 rounded-lg flex gap-2 items-start mb-3">
               <div class="text-lg">🤖</div>
               <p class="text-xs italic text-gray-300">「${t.comment}」</p>
             </div>
+
+            <button onclick="window.showShareCard(${t.id}, '⚾ ドラフト採点結果', '${medal} ${index + 1}位')" class="w-full text-xs bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-full">📤 シェア画像を作成</button>
           </div>
         `;
       });
@@ -2019,7 +2206,8 @@
     }
 
     // buff（{pow,meet,run}）を与えると、選手本体を書き換えずに試合用の実効fStatsを底上げする
-    function initBatterStats(p, buff) {
+    // fieldPos: この試合での守備位置（盗塁阻止＝捕手判定や失策率＝チーム守備平均の算出に使う）
+    function initBatterStats(p, buff, fieldPos) {
       let fStats = p.fStats;
       if (fStats && buff) {
         fStats = {
@@ -2029,7 +2217,7 @@
           run: fStats.run + (buff.run || 0)
         };
       }
-      return { ...p, fStats, stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
+      return { ...p, fStats, fieldPos: fieldPos || (p.bestPos && p.bestPos[0]) || "外", stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
     }
     // delta（数値）を与えると、選手本体を書き換えずに試合用の実効pStats（pow/con）を底上げする
     function initPitcherStats(p, delta) {
@@ -2051,7 +2239,8 @@
           const pid = lineupAssignments[`slot-b${i}`];
           if(pid) {
             const p = team.roster.find(player => player.id === pid);
-            if(p) batters.push(initBatterStats(p, battingBuff));
+            const fieldPos = document.getElementById(`pos-b${i}`).value;
+            if(p) batters.push(initBatterStats(p, battingBuff, fieldPos));
           }
         }
         const spP = team.roster.find(p => p.id === lineupAssignments[`slot-p1`]);
@@ -2062,7 +2251,7 @@
         if(cpP) pitchers.cp = initPitcherStats(cpP, pitchingBuff.rp);
       } else {
         const al = team.aiLineup || buildAILineup(team);
-        batters = al.batters.map(b => initBatterStats(b.p, battingBuff));
+        batters = al.batters.map(b => initBatterStats(b.p, battingBuff, b.pos));
         if(al.sp) pitchers.sp = initPitcherStats(al.sp, pitchingBuff.sp);
         if(al.rp) pitchers.rp = initPitcherStats(al.rp, pitchingBuff.rp);
         if(al.cp) pitchers.cp = initPitcherStats(al.cp, pitchingBuff.rp);
@@ -2169,7 +2358,20 @@
       scoreRuns(state, 1, batter, pitcher, log);
     }
 
+    // 守備側チームの平均守備力（失策率・ファインプレー率の算出に使う）
+    function getTeamDefAvg(lineup) {
+      const arr = lineup.batters.filter(b => b.fStats);
+      if (!arr.length) return 50;
+      return arr.reduce((s, b) => s + b.fStats.def, 0) / arr.length;
+    }
+    // 守備側チームの捕手の守備力（いなければチーム平均で代用）
+    function getCatcherDef(lineup) {
+      const c = lineup.batters.find(b => b.fieldPos === '捕');
+      return c && c.fStats ? c.fStats.def : getTeamDefAvg(lineup);
+    }
+
     // 1塁走者の盗塁を試みる（2塁が空いている場合のみ）。走力が高いほど仕掛けやすく、成功しやすい。
+    // 相手捕手の守備力が高いほど阻止されやすい。
     function attemptSteal(state, log) {
       const runner = state.bases[0];
       if (!runner || state.bases[1]) return;
@@ -2180,7 +2382,12 @@
       if (Math.random() >= attemptChance) return;
 
       const atkTeam = state.isTop ? state.teamA : state.teamB;
-      const successChance = 0.55 + (runSpeed - 50) * 0.006;
+      const defLineup = state.isTop ? state.lineupB : state.lineupA;
+      const catcher = defLineup.batters.find(b => b.fieldPos === '捕');
+      const catcherDef = getCatcherDef(defLineup);
+
+      let successChance = 0.55 + (runSpeed - 50) * 0.006 - (catcherDef - 50) * 0.005;
+      successChance = Math.max(0.15, Math.min(0.9, successChance));
 
       if (Math.random() < successChance) {
         state.bases[1] = runner;
@@ -2189,7 +2396,8 @@
       } else {
         state.bases[0] = null;
         state.outs++;
-        if (log) log(`【${atkTeam.name.replace('(AI)','')}】<strong>${runner.name}</strong> 盗塁 → <span class="text-gray-600 font-bold">刺されてアウト</span>`);
+        const throwNote = catcher ? `${catcher.name}の好送球で` : '';
+        if (log) log(`【${atkTeam.name.replace('(AI)','')}】<strong>${runner.name}</strong> 盗塁 → <span class="text-gray-600 font-bold">${throwNote}刺されてアウト</span>`);
       }
     }
 
@@ -2280,10 +2488,20 @@
         processHit(state, 2, batter, pitcher, log);
       }
       else if (rand < hrProb + hitProb) {
-        resultStr = "ヒット！";
-        resultClass = "text-blue-600 font-bold";
-        batter.stats.hit++; pitcher.stats.hit++;
-        processHit(state, 1, batter, pitcher, log);
+        // ★ ファインプレー判定：守備力が高いほど、本来ヒットの当たりを好守備でアウトにする
+        const fDefLineup = state.isTop ? state.lineupB : state.lineupA;
+        const fDefAvg = getTeamDefAvg(fDefLineup);
+        const fineChance = Math.max(0, Math.min(0.18, (fDefAvg - 50) * 0.003));
+        if (Math.random() < fineChance) {
+          resultStr = "ファインプレー！打者アウト";
+          resultClass = "text-cyan-400 font-bold";
+          pitcher.stats.out++; state.outs++;
+        } else {
+          resultStr = "ヒット！";
+          resultClass = "text-blue-600 font-bold";
+          batter.stats.hit++; pitcher.stats.hit++;
+          processHit(state, 1, batter, pitcher, log);
+        }
       }
       else if (rand < hrProb + hitProb + bbProb) {
         resultStr = "フォアボール";
@@ -2307,9 +2525,19 @@
            state.bases[0] = null;
            if (state.outs >= 3) state.outs = 3;
         } else {
-           resultStr = "アウト";
-           resultClass = "text-gray-500 font-normal";
-           pitcher.stats.out++; state.outs++;
+           // ★ 失策判定：守備力が低いほど、アウトのはずの当たりが失策で出塁になる
+           const eDefLineup = state.isTop ? state.lineupB : state.lineupA;
+           const eDefAvg = getTeamDefAvg(eDefLineup);
+           const errorChance = Math.max(0.003, Math.min(0.05, 0.02 - (eDefAvg - 50) * 0.0006));
+           if (Math.random() < errorChance) {
+             resultStr = "エラー！";
+             resultClass = "text-yellow-500 font-bold";
+             processHit(state, 1, batter, pitcher, log); // 失策のため打者に安打・投手に被安打はつけない
+           } else {
+             resultStr = "アウト";
+             resultClass = "text-gray-500 font-normal";
+             pitcher.stats.out++; state.outs++;
+           }
         }
       }
 
@@ -2631,12 +2859,14 @@
 
       if (playoffState.champion) {
         const champ = playoffState.champion;
+        registerShareTeam(champ);
         nextPanel.innerHTML = `
           <div class="text-center py-3 px-3 rounded border-4 ${champ.color.border}">
             <p class="text-xs text-gray-400 mb-1">🏆 プレーオフ優勝</p>
             <p class="text-2xl font-black ${champ.isUser ? 'text-yellow-400' : 'text-white'}">${champ.name.replace('(AI)','')}</p>
             <p class="mt-2 font-bold ${champ.isUser ? 'text-green-400' : 'text-gray-400'}">${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '健闘及ばず…来年に期待です。'}</p>
           </div>
+          <button onclick="window.showShareCard(${champ.id}, '🏆 プレーオフ優勝', '${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '見事な戴冠です'}')" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 rounded-full w-full mt-3">📤 優勝シェア画像を作成</button>
           <button onclick="window.confirmReset()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
         `;
         return;
