@@ -819,6 +819,17 @@
       return Math.max(-12, Math.min(18, v));
     }
 
+    // 採点の最終値を確定する。85までは素通し、それ以上は指数関数で100に漸近させ、
+    // 複数の能力が同時に100へ張り付いて差がつかなくなる（＝レーダーチャートが頭打ちで
+    // 歪んで見える）のを防ぐ。100ちょうどに到達するにはとても大きな超過分が要る。
+    function scoreCurve(v) {
+      const floor = Math.max(0, v);
+      const knee = 85, span = 15;
+      if (floor <= knee) return floor;
+      const excess = floor - knee;
+      return knee + span * (1 - Math.exp(-excess / span));
+    }
+
     window.startGame = function() {
       const userTeamSelect = document.getElementById('user-team').value;
       const aiCount = parseInt(document.getElementById('ai-count').value);
@@ -1843,14 +1854,13 @@
           rp: clampBuff(rpDelta + uniformPitch)
         };
 
-        // --- 6. 最終値の確定 (Max 100) ---
-        const cl = v => Math.min(100, Math.max(0, v));
-        let final_pow  = cl(p_pow  + buffAll + posBuff + orderBuff);
-        let final_meet = cl(p_meet + buffAll + posBuff + orderBuff);
-        let final_run  = cl(p_run  + buffAll + posBuff + orderBuff);
-        let final_def  = cl(p_def  + buffAll + posBuff + orderBuff);
-        let final_sp   = cl(p_sp   + buffAll + posBuff);
-        let final_rp   = cl(p_rp   + buffAll + posBuff);
+        // --- 6. 最終値の確定（85を超えた分は逓減し、100は事実上到達困難にする） ---
+        let final_pow  = scoreCurve(p_pow  + buffAll + posBuff + orderBuff);
+        let final_meet = scoreCurve(p_meet + buffAll + posBuff + orderBuff);
+        let final_run  = scoreCurve(p_run  + buffAll + posBuff + orderBuff);
+        let final_def  = scoreCurve(p_def  + buffAll + posBuff + orderBuff);
+        let final_sp   = scoreCurve(p_sp   + buffAll + posBuff);
+        let final_rp   = scoreCurve(p_rp   + buffAll + posBuff);
 
         t.radarData = [
           Math.round(final_pow),
@@ -2064,7 +2074,7 @@
         teamA, teamB,
         scoreA: 0, scoreB: 0,
         inning: 1, isTop: true, outs: 0,
-        bases: [false, false, false],
+        bases: [null, null, null], // 各塁にいる走者（打者オブジェクト）。空いていればnull
         timer: null,
         lineupA: extractLineup(teamA),
         lineupB: extractLineup(teamB),
@@ -2123,30 +2133,74 @@
 
     function processHit(state, advance, batter, pitcher, log) {
       let runs = 0;
-      const runSpeed = (batter.fStats ? batter.fStats.run : 50);
 
       for (let i = 2; i >= 0; i--) {
-        if (!state.bases[i]) continue;
+        const runner = state.bases[i];
+        if (!runner) continue;
         let adv = advance;
-        // 単打での二塁走者、二塁打での一塁走者は足次第で1つ余分に進む
-        if (advance <= 2 && i >= 1 - (advance - 1) && Math.random() < 0.35 + (runSpeed - 50) * 0.006) adv += 1;
+        // 単打での二塁走者、二塁打での一塁走者は「その走者自身」の足の速さ次第で1つ余分に進む
+        const runnerSpeed = runner.fStats ? runner.fStats.run : 50;
+        if (advance <= 2 && i >= 1 - (advance - 1) && Math.random() < 0.35 + (runnerSpeed - 50) * 0.006) adv += 1;
 
-        if (i + adv >= 3) { runs++; state.bases[i] = false; }
-        else { state.bases[i + adv] = true; state.bases[i] = false; }
+        if (i + adv >= 3) { runs++; state.bases[i] = null; }
+        else { state.bases[i + adv] = runner; state.bases[i] = null; }
       }
 
       if (advance >= 4) runs++;
-      else state.bases[advance - 1] = true;
+      else state.bases[advance - 1] = batter;
 
       scoreRuns(state, runs, batter, pitcher, log);
     }
 
-    // ★ 四球は「詰まっている塁」だけを押し出す
+    // ★ 四球は「詰まっている塁」だけを押し出す（フォースで玉突きに走者を進める）
     function processWalk(state, batter, pitcher, log) {
-      if (!state.bases[0]) { state.bases[0] = true; return; }
-      if (!state.bases[1]) { state.bases[1] = true; return; }
-      if (!state.bases[2]) { state.bases[2] = true; return; }
-      scoreRuns(state, 1, batter, pitcher, log); // 満塁 → 押し出し
+      if (!state.bases[0]) { state.bases[0] = batter; return; }
+      if (!state.bases[1]) { state.bases[1] = state.bases[0]; state.bases[0] = batter; return; }
+      if (!state.bases[2]) { state.bases[2] = state.bases[1]; state.bases[1] = state.bases[0]; state.bases[0] = batter; return; }
+      // 満塁 → 押し出し
+      state.bases[2] = state.bases[1]; state.bases[1] = state.bases[0]; state.bases[0] = batter;
+      scoreRuns(state, 1, batter, pitcher, log);
+    }
+
+    // 1塁走者の盗塁を試みる（2塁が空いている場合のみ）。走力が高いほど仕掛けやすく、成功しやすい。
+    function attemptSteal(state, log) {
+      const runner = state.bases[0];
+      if (!runner || state.bases[1]) return;
+      const runSpeed = runner.fStats ? runner.fStats.run : 50;
+      if (runSpeed < 60) return; // 足の遅い選手は仕掛けない
+
+      const attemptChance = Math.min(0.4, (runSpeed - 60) * 0.012);
+      if (Math.random() >= attemptChance) return;
+
+      const atkTeam = state.isTop ? state.teamA : state.teamB;
+      const successChance = 0.55 + (runSpeed - 50) * 0.006;
+
+      if (Math.random() < successChance) {
+        state.bases[1] = runner;
+        state.bases[0] = null;
+        if (log) log(`【${atkTeam.name.replace('(AI)','')}】<strong>${runner.name}</strong> 盗塁！ <span class="text-blue-600 font-bold">セーフ（二盗成功）</span>`);
+      } else {
+        state.bases[0] = null;
+        state.outs++;
+        if (log) log(`【${atkTeam.name.replace('(AI)','')}】<strong>${runner.name}</strong> 盗塁 → <span class="text-gray-600 font-bold">刺されてアウト</span>`);
+      }
+    }
+
+    // 3アウトになっていれば攻守交代の処理を行う。試合が決着したら { done: true } を返す。
+    function handleHalfInningEnd(state, log) {
+      if (state.outs < 3) return { done: false };
+      if (log) log(`チェンジ。`);
+      state.outs = 0;
+      state.bases = [null, null, null];
+      if (state.isTop) {
+        state.isTop = false;
+        // ★ 9回以降、裏の攻撃前に後攻がリードしていれば試合終了
+        if (state.inning >= 9 && state.scoreB > state.scoreA) return { done: true };
+      } else {
+        state.isTop = true;
+        state.inning++;
+      }
+      return { done: false };
     }
 
     // 1打席分をシミュレートして状態を更新する。試合が決着したら { done: true } を返す。
@@ -2161,6 +2215,10 @@
 
       // 打席前に必ず投手を確認する（スタミナ切れならここで交代が起きる）
       checkPitcherChange(state, log);
+
+      // 盗塁の試行（3人目のアウトになったら、その打席は行わず即座に攻守交代する）
+      attemptSteal(state, log);
+      if (state.outs >= 3) return handleHalfInningEnd(state, log);
 
       const atkTeam = state.isTop ? state.teamA : state.teamB;
       const atkLineup = state.isTop ? state.lineupA : state.lineupB;
@@ -2239,7 +2297,7 @@
            resultStr = "ダブルプレー！";
            resultClass = "text-purple-600 font-bold";
            pitcher.stats.out += 2; state.outs += 2;
-           state.bases[0] = false;
+           state.bases[0] = null;
            if (state.outs >= 3) state.outs = 3;
         } else {
            resultStr = "アウト";
@@ -2259,23 +2317,7 @@
         return { done: true };
       }
 
-      if (state.outs >= 3) {
-        if (log) log(`チェンジ。`);
-        state.outs = 0;
-        state.bases = [false, false, false];
-        if (state.isTop) {
-          state.isTop = false;
-          // ★ 9回以降、裏の攻撃前に後攻がリードしていれば試合終了
-          if (state.inning >= 9 && state.scoreB > state.scoreA) {
-            return { done: true };
-          }
-        } else {
-          state.isTop = true;
-          state.inning++;
-        }
-      }
-
-      return { done: false };
+      return handleHalfInningEnd(state, log);
     }
 
     // AI同士の試合など、ユーザーが観戦しない試合を瞬時に決着させる
