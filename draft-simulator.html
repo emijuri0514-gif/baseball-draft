@@ -234,15 +234,6 @@
       }
     }
 
-    // orderMark()が返すTailwindクラス名 → Canvas描画用の実カラーコード
-    const ORDER_MARK_HEX = {
-      'text-pink-600': '#ec4899',
-      'text-blue-600': '#60a5fa',
-      'text-gray-500': '#9ca3af',
-      'text-orange-500': '#fb923c',
-      'text-red-600': '#f87171'
-    };
-
     function buildShareCardCanvas(team, opts) {
       opts = opts || {};
       const W = 900;
@@ -263,7 +254,8 @@
       const LINEUP_LINE_H = 36;
       const lineupLineCount = lineupRows.length + (pitcherNames.length ? 1 : 0);
       const LINEUP_START_Y = LINEUP_TITLE_Y + 42;
-      const COMMENT_TITLE_Y = LINEUP_START_Y + lineupLineCount * LINEUP_LINE_H + 30;
+      const COMMENT_LABEL_Y = LINEUP_START_Y + lineupLineCount * LINEUP_LINE_H + 40;
+      const COMMENT_TITLE_Y = COMMENT_LABEL_Y + 40;
       const COMMENT_END_Y = COMMENT_TITLE_Y + commentLines.length * 38;
       const H = COMMENT_END_Y + 70;
 
@@ -295,36 +287,40 @@
       ctx.font = 'bold 88px sans-serif';
       ctx.fillText(`${team.finalScore} pt`, W / 2, 270);
 
+      const radarData = team.radarData || [50, 50, 50, 50, 50, 50];
+      const radarLabels = ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣']
+        .map((label, i) => `${label} ${radarData[i]}`);
       drawRadarPolygon(
         ctx, W / 2, RADAR_CY, RADAR_R,
-        team.radarData || [50, 50, 50, 50, 50, 50],
+        radarData,
         { fill: hexToRgba(styleHex, 0.4), stroke: hexToRgba(styleHex, 1) },
-        ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣']
+        radarLabels
       );
 
       if (lineupRows.length) {
         ctx.textAlign = 'left';
         ctx.font = 'bold 26px sans-serif';
         ctx.fillStyle = '#93c5fd';
-        ctx.fillText('▼ 予想オーダー', 70, LINEUP_TITLE_Y);
+        ctx.fillText('▼ オーダー', 70, LINEUP_TITLE_Y);
 
         let y = LINEUP_START_Y;
         ctx.font = 'bold 25px sans-serif';
+        ctx.fillStyle = '#e5e7eb';
         lineupRows.forEach(r => {
-          ctx.fillStyle = r.markHex;
-          ctx.fillText(r.mark, 70, y);
-          ctx.fillStyle = '#e5e7eb';
-          ctx.fillText(`${r.order}番 [${r.pos}] ${r.name}`, 108, y);
+          ctx.fillText(`${r.order}番 [${r.pos}] ${r.name}`, 70, y);
           y += LINEUP_LINE_H;
         });
         if (pitcherNames.length) {
-          ctx.fillStyle = '#e5e7eb';
           ctx.fillText(`(投) ${pitcherNames.join('、')}`, 70, y);
         }
       }
 
       if (commentLines.length) {
         ctx.textAlign = 'center';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillStyle = '#93c5fd';
+        ctx.fillText('🤖 AIコメント', W / 2, COMMENT_LABEL_Y);
+
         ctx.font = '26px sans-serif';
         ctx.fillStyle = '#d1d5db';
         let y = COMMENT_TITLE_Y;
@@ -1964,11 +1960,13 @@
 
         // --- 1. コンボの判定 ---
         let teamCounts = {};
+        let teamLoveBonus = {}; // 「○○愛」は採点には含めず、試合中にそのチーム出身選手だけを微増させる
         t.roster.forEach(p => { if(p) teamCounts[p.team] = (teamCounts[p.team] || 0) + 1; });
         for (const [team, count] of Object.entries(teamCounts)) {
           if (count >= 3) {
             comboNames.push(`【${team}愛】`);
             comboBadges += `<span class="bg-yellow-500 text-yellow-900 px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-yellow-600">${team}愛</span>`;
+            teamLoveBonus[team] = 3;
           }
         }
 
@@ -2049,19 +2047,18 @@
         let p_sp = sp.length ? sp.reduce((sum, x) => sum + getPosScore(x.p, "先発"), 0) / sp.length : 40;
         let p_rp = rp.length ? rp.reduce((sum, x) => sum + getPosScore(x.p, "中継"), 0) / rp.length : 40;
 
-        // --- 4. コンボバフの適用 ---
+        // --- 4. コンボバフの算出（採点・レーダーチャートには含めない。試合エンジン側にのみ少しだけ反映する） ---
         let buffAll = 0;
-        let powDelta = 0, meetDelta = 0, runDelta = 0, spDelta = 0, rpDelta = 0;
+        let powDelta = 0, meetDelta = 0, runDelta = 0, defDelta = 0, spDelta = 0, rpDelta = 0;
         comboNames.forEach(name => {
-           if(name.includes('愛')) buffAll += 2;
-           if(name === '【超重量打線】') { p_pow += 12; powDelta += 12; }
-           if(name === '【機動力野球】') { p_run += 12; runDelta += 12; }
-           if(name === '【鉄壁の守備陣】') p_def += 12;
-           if(name === '【黄金の投手陣】') { p_sp += 10; p_rp += 10; spDelta += 10; rpDelta += 10; }
-           if(name === '【安打製造機】') { p_meet += 12; meetDelta += 12; }
-           if(name === '【勝利の方程式】') { p_rp += 12; rpDelta += 12; }
-           if(name === '【センターライン】') p_def += 8;
-           if(name === '【ユーティリティ】') buffAll += 3;
+           if(name === '【超重量打線】') powDelta += 6;
+           if(name === '【機動力野球】') runDelta += 6;
+           if(name === '【鉄壁の守備陣】') defDelta += 6;
+           if(name === '【黄金の投手陣】') { spDelta += 5; rpDelta += 5; }
+           if(name === '【安打製造機】') meetDelta += 6;
+           if(name === '【勝利の方程式】') rpDelta += 6;
+           if(name === '【センターライン】') defDelta += 4;
+           if(name === '【ユーティリティ】') buffAll += 1.5;
         });
 
         // --- 5. 配置適性 & 打順適性 ---
@@ -2073,14 +2070,17 @@
 
         t.posBuff = posBuff;
         t.orderBuff = orderBuff;
+        t.teamLoveBonus = teamLoveBonus;
 
-        // コンボ／守備適性／打順適性を試合エンジン側にも反映させる（見た目のptだけ盛れる状態を防ぐ）
+        // コンボ・守備適性・打順適性は試合エンジン側にのみ反映する（採点は素の実力＋配置・打順適性のみ）
         const uniformBat = buffAll + posBuff + orderBuff;
+        const uniformDef = buffAll + posBuff;
         const uniformPitch = buffAll + posBuff;
         t.battingBuff = {
           pow: clampBuff(powDelta + uniformBat),
           meet: clampBuff(meetDelta + uniformBat),
-          run: clampBuff(runDelta + uniformBat)
+          run: clampBuff(runDelta + uniformBat),
+          def: clampBuff(defDelta + uniformDef)
         };
         t.pitchingBuff = {
           sp: clampBuff(spDelta + uniformPitch),
@@ -2088,12 +2088,13 @@
         };
 
         // --- 6. 最終値の確定（85を超えた分は逓減し、100は事実上到達困難にする） ---
-        let final_pow  = scoreCurve(p_pow  + buffAll + posBuff + orderBuff);
-        let final_meet = scoreCurve(p_meet + buffAll + posBuff + orderBuff);
-        let final_run  = scoreCurve(p_run  + buffAll + posBuff + orderBuff);
-        let final_def  = scoreCurve(p_def  + buffAll + posBuff + orderBuff);
-        let final_sp   = scoreCurve(p_sp   + buffAll + posBuff);
-        let final_rp   = scoreCurve(p_rp   + buffAll + posBuff);
+        // ★ コンボはロマン要素として試合では少し効くが、採点自体は素の実力＋配置・打順適性で決まる
+        let final_pow  = scoreCurve(p_pow  + posBuff + orderBuff);
+        let final_meet = scoreCurve(p_meet + posBuff + orderBuff);
+        let final_run  = scoreCurve(p_run  + posBuff + orderBuff);
+        let final_def  = scoreCurve(p_def  + posBuff + orderBuff);
+        let final_sp   = scoreCurve(p_sp   + posBuff);
+        let final_rp   = scoreCurve(p_rp   + posBuff);
 
         t.radarData = [
           Math.round(final_pow),
@@ -2155,11 +2156,8 @@
         lineupStr += ` ／ (投)${pNames.join(",")}`;
         lineupStr += `<br><span class="text-[10px] text-yellow-300 font-black">打順適性 ${t.orderBuff >= 0 ? '+' : ''}${t.orderBuff.toFixed(1)}　守備適性 ${t.posBuff >= 0 ? '+' : ''}${t.posBuff.toFixed(1)}</span>`;
 
-        // シェアカード用に、打順・守備位置とAI採点の◎〜✕マークを保持しておく
-        t.shareLineup = rows.map(r => {
-          const om = orderMark(getOrderDiff(r.p, r.order));
-          return { order: r.order, pos: r.pos, name: r.p.name, mark: om.mark, markHex: ORDER_MARK_HEX[om.cls] || '#e5e7eb' };
-        });
+        // シェアカード用に、打順・守備位置だけを保持しておく（◎〜✕マークは画像だけ見ても意味が分からないため含めない）
+        t.shareLineup = rows.map(r => ({ order: r.order, pos: r.pos, name: r.p.name }));
         t.sharePitchers = pNames;
 
         container.innerHTML += `
@@ -2175,7 +2173,7 @@
 
             <div class="flex flex-col md:flex-row gap-4 mb-3">
               <div class="w-full md:w-1/2">
-                <p class="text-xs text-blue-300 font-bold mb-1">▼ 予想オーダー</p>
+                <p class="text-xs text-blue-300 font-bold mb-1">▼ オーダー</p>
                 <p class="text-xs bg-gray-900 p-2 rounded leading-relaxed text-gray-200">${lineupStr}</p>
               </div>
               <div class="w-full md:w-1/2 flex justify-center items-center">
@@ -2265,25 +2263,31 @@
       return 0;
     }
 
-    // buff（{pow,meet,run}）を与えると、選手本体を書き換えずに試合用の実効fStatsを底上げする
+    // buff（{pow,meet,run,def}）を与えると、選手本体を書き換えずに試合用の実効fStatsを底上げする
     // fieldPos: この試合での守備位置（盗塁阻止＝捕手判定や失策率＝チーム守備平均の算出に使う）
-    function initBatterStats(p, buff, fieldPos) {
+    // teamLoveBonus: {チーム名: 加算値}。選手の出身球団が一致する場合だけ、その球団愛コンボ分を上乗せする
+    function initBatterStats(p, buff, fieldPos, teamLoveBonus) {
       let fStats = p.fStats;
-      if (fStats && buff) {
+      if (fStats) {
+        const b = buff || {};
+        const love = (teamLoveBonus && p.team && teamLoveBonus[p.team]) || 0;
         fStats = {
           ...fStats,
-          pow: fStats.pow + (buff.pow || 0),
-          meet: fStats.meet + (buff.meet || 0),
-          run: fStats.run + (buff.run || 0)
+          pow: fStats.pow + (b.pow || 0) + love,
+          meet: fStats.meet + (b.meet || 0) + love,
+          run: fStats.run + (b.run || 0) + love,
+          def: fStats.def + (b.def || 0) + love
         };
       }
       return { ...p, fStats, fieldPos: fieldPos || (p.bestPos && p.bestPos[0]) || "外", stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
     }
     // delta（数値）を与えると、選手本体を書き換えずに試合用の実効pStats（pow/con）を底上げする
-    function initPitcherStats(p, delta) {
+    function initPitcherStats(p, delta, teamLoveBonus) {
       let pStats = p.pStats;
-      if (pStats && delta) {
-        pStats = { ...pStats, pow: pStats.pow + delta, con: pStats.con + delta };
+      if (pStats) {
+        const love = (teamLoveBonus && p.team && teamLoveBonus[p.team]) || 0;
+        const d = (delta || 0) + love;
+        if (d) pStats = { ...pStats, pow: pStats.pow + d, con: pStats.con + d };
       }
       return { ...p, pStats, stats: { out: 0, hit: 0, hr: 0, run: 0, so: 0, bb: 0, pitches: 0 } };
     }
@@ -2291,6 +2295,7 @@
     function extractLineup(team) {
       const battingBuff = team.battingBuff || null;
       const pitchingBuff = team.pitchingBuff || { sp: 0, rp: 0 };
+      const teamLoveBonus = team.teamLoveBonus || null;
       let batters = [];
       let pitchers = { sp: null, rp: null, cp: null };
 
@@ -2300,21 +2305,21 @@
           if(pid) {
             const p = team.roster.find(player => player.id === pid);
             const fieldPos = document.getElementById(`pos-b${i}`).value;
-            if(p) batters.push(initBatterStats(p, battingBuff, fieldPos));
+            if(p) batters.push(initBatterStats(p, battingBuff, fieldPos, teamLoveBonus));
           }
         }
         const spP = team.roster.find(p => p.id === lineupAssignments[`slot-p1`]);
         const rpP = team.roster.find(p => p.id === lineupAssignments[`slot-p2`]);
         const cpP = team.roster.find(p => p.id === lineupAssignments[`slot-p3`]);
-        if(spP) pitchers.sp = initPitcherStats(spP, pitchingBuff.sp);
-        if(rpP) pitchers.rp = initPitcherStats(rpP, pitchingBuff.rp);
-        if(cpP) pitchers.cp = initPitcherStats(cpP, pitchingBuff.rp);
+        if(spP) pitchers.sp = initPitcherStats(spP, pitchingBuff.sp, teamLoveBonus);
+        if(rpP) pitchers.rp = initPitcherStats(rpP, pitchingBuff.rp, teamLoveBonus);
+        if(cpP) pitchers.cp = initPitcherStats(cpP, pitchingBuff.rp, teamLoveBonus);
       } else {
         const al = team.aiLineup || buildAILineup(team);
-        batters = al.batters.map(b => initBatterStats(b.p, battingBuff, b.pos));
-        if(al.sp) pitchers.sp = initPitcherStats(al.sp, pitchingBuff.sp);
-        if(al.rp) pitchers.rp = initPitcherStats(al.rp, pitchingBuff.rp);
-        if(al.cp) pitchers.cp = initPitcherStats(al.cp, pitchingBuff.rp);
+        batters = al.batters.map(b => initBatterStats(b.p, battingBuff, b.pos, teamLoveBonus));
+        if(al.sp) pitchers.sp = initPitcherStats(al.sp, pitchingBuff.sp, teamLoveBonus);
+        if(al.rp) pitchers.rp = initPitcherStats(al.rp, pitchingBuff.rp, teamLoveBonus);
+        if(al.cp) pitchers.cp = initPitcherStats(al.cp, pitchingBuff.rp, teamLoveBonus);
       }
 
       while(batters.length < 9) batters.push(initBatterStats({ name: "代打", bestPos: ["外"], fStats: { meet: 50, pow: 50, run: 50, def: 50 } }));
