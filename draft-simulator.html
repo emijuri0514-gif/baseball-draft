@@ -234,13 +234,40 @@
       }
     }
 
+    // orderMark()が返すTailwindクラス名 → Canvas描画用の実カラーコード
+    const ORDER_MARK_HEX = {
+      'text-pink-600': '#ec4899',
+      'text-blue-600': '#60a5fa',
+      'text-gray-500': '#9ca3af',
+      'text-orange-500': '#fb923c',
+      'text-red-600': '#f87171'
+    };
+
     function buildShareCardCanvas(team, opts) {
       opts = opts || {};
-      const W = 900, H = 1200;
+      const W = 900;
       const canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = H;
+      canvas.width = W; canvas.height = 100; // レイアウト計算用の仮サイズ
       const ctx = canvas.getContext('2d');
       const styleHex = teamHexColor(team);
+
+      const lineupRows = team.shareLineup || [];
+      const pitcherNames = team.sharePitchers || [];
+
+      // 先に本文の折り返し行数を測っておき、必要な高さを逆算する
+      ctx.font = '26px sans-serif';
+      const commentLines = team.comment ? wrapTextCJK(ctx, `「${team.comment}」`, W - 140) : [];
+
+      const RADAR_CY = 530, RADAR_R = 150;
+      const LINEUP_TITLE_Y = RADAR_CY + RADAR_R + 70;
+      const LINEUP_LINE_H = 36;
+      const lineupLineCount = lineupRows.length + (pitcherNames.length ? 1 : 0);
+      const LINEUP_START_Y = LINEUP_TITLE_Y + 42;
+      const COMMENT_TITLE_Y = LINEUP_START_Y + lineupLineCount * LINEUP_LINE_H + 30;
+      const COMMENT_END_Y = COMMENT_TITLE_Y + commentLines.length * 38;
+      const H = COMMENT_END_Y + 70;
+
+      canvas.width = W; canvas.height = H; // 高さ確定後に本描画（サイズ変更でクリアされる）
 
       const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
       bgGrad.addColorStop(0, '#111827');
@@ -265,27 +292,49 @@
       }
 
       ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 100px sans-serif';
-      ctx.fillText(`${team.finalScore} pt`, W / 2, 320);
+      ctx.font = 'bold 88px sans-serif';
+      ctx.fillText(`${team.finalScore} pt`, W / 2, 270);
 
       drawRadarPolygon(
-        ctx, W / 2, 560, 200,
+        ctx, W / 2, RADAR_CY, RADAR_R,
         team.radarData || [50, 50, 50, 50, 50, 50],
         { fill: hexToRgba(styleHex, 0.4), stroke: hexToRgba(styleHex, 1) },
         ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣']
       );
 
-      if (team.comment) {
-        ctx.font = '26px sans-serif';
-        ctx.fillStyle = '#d1d5db';
-        const lines = wrapTextCJK(ctx, `「${team.comment}」`, W - 140);
-        let y = 850;
-        lines.forEach(l => { ctx.fillText(l, W / 2, y); y += 38; });
+      if (lineupRows.length) {
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.fillStyle = '#93c5fd';
+        ctx.fillText('▼ 予想オーダー', 70, LINEUP_TITLE_Y);
+
+        let y = LINEUP_START_Y;
+        ctx.font = 'bold 25px sans-serif';
+        lineupRows.forEach(r => {
+          ctx.fillStyle = r.markHex;
+          ctx.fillText(r.mark, 70, y);
+          ctx.fillStyle = '#e5e7eb';
+          ctx.fillText(`${r.order}番 [${r.pos}] ${r.name}`, 108, y);
+          y += LINEUP_LINE_H;
+        });
+        if (pitcherNames.length) {
+          ctx.fillStyle = '#e5e7eb';
+          ctx.fillText(`(投) ${pitcherNames.join('、')}`, 70, y);
+        }
       }
 
+      if (commentLines.length) {
+        ctx.textAlign = 'center';
+        ctx.font = '26px sans-serif';
+        ctx.fillStyle = '#d1d5db';
+        let y = COMMENT_TITLE_Y;
+        commentLines.forEach(l => { ctx.fillText(l, W / 2, y); y += 38; });
+      }
+
+      ctx.textAlign = 'center';
       ctx.font = 'bold 22px sans-serif';
       ctx.fillStyle = '#6b7280';
-      ctx.fillText('⚾ 野球ドラフトシミュレーター', W / 2, H - 40);
+      ctx.fillText('⚾ 野球ドラフトシミュレーター', W / 2, H - 30);
 
       return canvas;
     }
@@ -2105,6 +2154,13 @@
 
         lineupStr += ` ／ (投)${pNames.join(",")}`;
         lineupStr += `<br><span class="text-[10px] text-yellow-300 font-black">打順適性 ${t.orderBuff >= 0 ? '+' : ''}${t.orderBuff.toFixed(1)}　守備適性 ${t.posBuff >= 0 ? '+' : ''}${t.posBuff.toFixed(1)}</span>`;
+
+        // シェアカード用に、打順・守備位置とAI採点の◎〜✕マークを保持しておく
+        t.shareLineup = rows.map(r => {
+          const om = orderMark(getOrderDiff(r.p, r.order));
+          return { order: r.order, pos: r.pos, name: r.p.name, mark: om.mark, markHex: ORDER_MARK_HEX[om.cls] || '#e5e7eb' };
+        });
+        t.sharePitchers = pNames;
 
         container.innerHTML += `
           <div class="bg-gray-800 rounded-lg p-4 border-l-8 ${t.color.border} shadow-xl">
