@@ -176,13 +176,19 @@
 
     // 総合ptは6項目の合計そのもの（平均だと「長打力88なのに総合90」のように基準が分からなくなるため、
     // シェア画像では素直に足し算した数字だけを見せる）。ランク文字は既存のfinalScore（平均）基準のまま。
+    // 色・文字色はプロスピのランク配色に合わせ、基準点も一目で分かるようmin〜maxを持たせる。
+    const GRADE_TABLE = [
+      { grade: 'S', min: 90, max: 100, color: '#eab308', textColor: '#422006', tagline: '伝説級のドラフト采配！' },
+      { grade: 'A', min: 80, max: 89,  color: '#ec4899', textColor: '#ffffff', tagline: '素晴らしい編成！' },
+      { grade: 'B', min: 70, max: 79,  color: '#38bdf8', textColor: '#0c4a6e', tagline: '堅実にまとまった編成' },
+      { grade: 'C', min: 60, max: 69,  color: '#f97316', textColor: '#ffffff', tagline: '及第点の編成' },
+      { grade: 'D', min: 50, max: 59,  color: '#fde047', textColor: '#713f12', tagline: '伸びしろだらけの編成' },
+      { grade: 'E', min: 40, max: 49,  color: '#22c55e', textColor: '#ffffff', tagline: '来年に期待の編成' },
+      { grade: 'F', min: 30, max: 39,  color: '#3b82f6', textColor: '#ffffff', tagline: '再建は来年から…' },
+      { grade: 'G', min: 0,  max: 29,  color: '#9ca3af', textColor: '#1f2937', tagline: '一からの立て直しが必要' }
+    ];
     function getGradeInfo(finalScore) {
-      if (finalScore >= 90) return { grade: 'S', tagline: '伝説級のドラフト采配！' };
-      if (finalScore >= 80) return { grade: 'A', tagline: '素晴らしい編成！' };
-      if (finalScore >= 70) return { grade: 'B', tagline: '堅実にまとまった編成' };
-      if (finalScore >= 60) return { grade: 'C', tagline: '及第点の編成' };
-      if (finalScore >= 50) return { grade: 'D', tagline: '来年に期待の編成' };
-      return { grade: 'E', tagline: '再建は来年から…' };
+      return GRADE_TABLE.find(g => finalScore >= g.min) || GRADE_TABLE[GRADE_TABLE.length - 1];
     }
 
     // X（旧Twitter）のタイムラインで縮小表示されても数字とランクが一目で読める、
@@ -198,7 +204,7 @@
       const radarData = team.radarData || [50, 50, 50, 50, 50, 50];
       const statLabels = ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣'];
       const totalSum = radarData.reduce((s, v) => s + v, 0);
-      const { grade, tagline } = getGradeInfo(team.finalScore);
+      const gradeInfo = getGradeInfo(team.finalScore);
 
       const lineupRows = team.shareLineup || [];
       const pitcherNames = team.sharePitchers || [];
@@ -210,7 +216,7 @@
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      const badgeCx = 250, badgeCy = 360, badgeR = 145;
+      const badgeCx = 250, badgeCy = 345, badgeR = 135;
       const glow = ctx.createRadialGradient(badgeCx, badgeCy, 20, badgeCx, badgeCy, badgeR * 1.8);
       glow.addColorStop(0, hexToRgba(styleHex, 0.55));
       glow.addColorStop(1, hexToRgba(styleHex, 0));
@@ -234,31 +240,36 @@
         ctx.fillText(opts.subtitle, badgeCx, 118);
       }
 
-      // ランクバッジ（一番の見せ場：大きな文字のランクが最初に目に入るようにする）
+      // ランクバッジ（一番の見せ場：色はプロスピのランク配色に統一し、チームカラーは背景のグローと
+      // 内訳バーだけで表現する）
       ctx.beginPath();
       ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
-      ctx.fillStyle = hexToRgba(styleHex, 0.9);
+      ctx.fillStyle = gradeInfo.color;
       ctx.fill();
       ctx.lineWidth = 6;
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
       ctx.stroke();
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 190px sans-serif';
+      ctx.fillStyle = gradeInfo.textColor;
+      ctx.font = 'bold 170px sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText(grade, badgeCx, badgeCy + 10);
+      ctx.fillText(gradeInfo.grade, badgeCx, badgeCy + 8);
       ctx.textBaseline = 'alphabetic';
 
       ctx.fillStyle = '#facc15';
       ctx.font = 'bold 42px sans-serif';
-      ctx.fillText(`${totalSum} pt`, badgeCx, badgeCy + badgeR + 55);
+      ctx.fillText(`${totalSum} pt`, badgeCx, badgeCy + badgeR + 45);
       ctx.fillStyle = '#94a3b8';
       ctx.font = '18px sans-serif';
-      ctx.fillText('（6項目の合計）', badgeCx, badgeCy + badgeR + 82);
+      ctx.fillText('（6項目の合計）', badgeCx, badgeCy + badgeR + 71);
+
+      ctx.fillStyle = gradeInfo.color;
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(`${gradeInfo.grade}ランク基準：${gradeInfo.min}〜${gradeInfo.max}pt`, badgeCx, badgeCy + badgeR + 95);
 
       ctx.fillStyle = '#f1f5f9';
       ctx.font = 'bold 26px sans-serif';
-      ctx.fillText(tagline, badgeCx, badgeCy + badgeR + 122);
+      ctx.fillText(gradeInfo.tagline, badgeCx, badgeCy + badgeR + 129);
 
       // 6項目の内訳バー（合計ptの根拠が一目で足し算できるよう、数字を主役にしたバー表示）
       const barX0 = 540, barTrackX0 = 660, barTrackW = 350, barTrackH = 26, rowH = 68, firstRowY = 108;
@@ -2108,6 +2119,7 @@
       ranked.forEach((t, index) => {
         let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🔹";
         registerShareTeam(t);
+        const g = getGradeInfo(t.finalScore);
 
         const rows = t.isUser
           ? Array.from({length: 9}, (_, i) => {
@@ -2141,7 +2153,10 @@
           <div class="bg-gray-800 rounded-lg p-4 border-l-8 ${t.color.border} shadow-xl">
             <div class="flex justify-between items-center mb-2 border-b border-gray-600 pb-2">
               <h3 class="text-lg md:text-2xl font-black">${medal} ${index+1}位：${t.name.replace('(AI)','')} <span class="text-xs font-normal text-gray-400">[${t.personality}]</span></h3>
-              <div class="text-xl md:text-3xl font-black text-yellow-400">${t.finalScore} <span class="text-sm">pt</span></div>
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center font-black text-sm md:text-base" style="background:${g.color};color:${g.textColor}" title="${g.grade}ランク基準：${g.min}〜${g.max}pt">${g.grade}</span>
+                <div class="text-xl md:text-3xl font-black text-yellow-400">${t.finalScore} <span class="text-sm">pt</span></div>
+              </div>
             </div>
 
             <div class="flex flex-wrap gap-1 mb-3">
