@@ -2370,6 +2370,29 @@
       return c && c.fStats ? c.fStats.def : getTeamDefAvg(lineup);
     }
 
+    // 打球の方向とタイプ（ゴロ/フライ/ライナー）をランダムに決める
+    const FIELD_POS_LABEL = { "捕": "キャッチャー", "一": "ファースト", "二": "セカンド", "三": "サード", "遊": "ショート", "左": "レフト", "中": "センター", "右": "ライト" };
+    function rollBattedBall() {
+      const r = Math.random();
+      let type, posPool;
+      if (r < 0.55) { type = 'ゴロ'; posPool = ['一', '二', '三', '遊', '捕']; }
+      else if (r < 0.80) { type = 'フライ'; posPool = ['左', '中', '右', '一', '三', '捕']; }
+      else { type = 'ライナー'; posPool = ['遊', '二', '三', '中', '左', '右']; }
+      const pos = posPool[Math.floor(Math.random() * posPool.length)];
+      return { type, pos, label: FIELD_POS_LABEL[pos] + type };
+    }
+    // ダブルプレーは内野ゴロでのみ発生する
+    function rollGroundBallInfield() {
+      const posPool = ['一', '二', '三', '遊'];
+      const pos = posPool[Math.floor(Math.random() * posPool.length)];
+      return { type: 'ゴロ', pos, label: FIELD_POS_LABEL[pos] + 'ゴロ' };
+    }
+    // 守備側チームの、特定守備位置を守る選手の守備力（誰もいなければチーム平均で代用）
+    function getFielderDef(lineup, pos) {
+      const f = lineup.batters.find(b => b.fieldPos === pos);
+      return f && f.fStats ? { def: f.fStats.def, name: f.name } : { def: getTeamDefAvg(lineup), name: null };
+    }
+
     // 1塁走者の盗塁を試みる（2塁が空いている場合のみ）。走力が高いほど仕掛けやすく、成功しやすい。
     // 相手捕手の守備力が高いほど阻止されやすい。
     function attemptSteal(state, log) {
@@ -2488,12 +2511,13 @@
         processHit(state, 2, batter, pitcher, log);
       }
       else if (rand < hrProb + hitProb) {
-        // ★ ファインプレー判定：守備力が高いほど、本来ヒットの当たりを好守備でアウトにする
+        // ★ ファインプレー判定：打球が飛んだ位置の守備力が高いほど、本来ヒットの当たりを好守備でアウトにする
         const fDefLineup = state.isTop ? state.lineupB : state.lineupA;
-        const fDefAvg = getTeamDefAvg(fDefLineup);
-        const fineChance = Math.max(0, Math.min(0.18, (fDefAvg - 50) * 0.003));
+        const bb = rollBattedBall();
+        const fielder = getFielderDef(fDefLineup, bb.pos);
+        const fineChance = Math.max(0, Math.min(0.18, (fielder.def - 50) * 0.003));
         if (Math.random() < fineChance) {
-          resultStr = "ファインプレー！打者アウト";
+          resultStr = fielder.name ? `${bb.label}性の当たりを${fielder.name}がファインプレー！` : `${bb.label}性の当たりをファインプレー！`;
           resultClass = "text-cyan-400 font-bold";
           pitcher.stats.out++; state.outs++;
         } else {
@@ -2517,24 +2541,26 @@
         pitcher.stats.out++; state.outs++;
       }
       else {
-        // ★ ダブルプレーの判定 (1アウト以下、1塁にランナーがいる場合)
+        const eDefLineup = state.isTop ? state.lineupB : state.lineupA;
+        // ★ ダブルプレーの判定 (1アウト以下、1塁にランナーがいる場合、内野ゴロのみ)
         if (state.outs < 2 && state.bases[0] && Math.random() < 0.15 + ((50 - bStats.run)*0.002)) {
-           resultStr = "ダブルプレー！";
+           const bb = rollGroundBallInfield();
+           resultStr = `${bb.label}！ダブルプレー`;
            resultClass = "text-purple-600 font-bold";
            pitcher.stats.out += 2; state.outs += 2;
            state.bases[0] = null;
            if (state.outs >= 3) state.outs = 3;
         } else {
-           // ★ 失策判定：守備力が低いほど、アウトのはずの当たりが失策で出塁になる
-           const eDefLineup = state.isTop ? state.lineupB : state.lineupA;
-           const eDefAvg = getTeamDefAvg(eDefLineup);
-           const errorChance = Math.max(0.003, Math.min(0.05, 0.02 - (eDefAvg - 50) * 0.0006));
+           // ★ 失策判定：打球が飛んだ位置の守備力が低いほど、アウトのはずの当たりが失策で出塁になる
+           const bb = rollBattedBall();
+           const fielder = getFielderDef(eDefLineup, bb.pos);
+           const errorChance = Math.max(0.003, Math.min(0.05, 0.02 - (fielder.def - 50) * 0.0006));
            if (Math.random() < errorChance) {
-             resultStr = "エラー！";
+             resultStr = fielder.name ? `${bb.label}、${fielder.name}がエラー！` : `${bb.label}、エラー！`;
              resultClass = "text-yellow-500 font-bold";
              processHit(state, 1, batter, pitcher, log); // 失策のため打者に安打・投手に被安打はつけない
            } else {
-             resultStr = "アウト";
+             resultStr = bb.label;
              resultClass = "text-gray-500 font-normal";
              pitcher.stats.out++; state.outs++;
            }
