@@ -1953,6 +1953,10 @@
       });
       showScreen('screen-ranking');
 
+      // ★ showScreen直後だとカードがまだ display:none から切り替わった直後でレイアウト未確定のため、
+      // Chart.jsがCanvasのサイズを0扱いで初期化してしまい、歪んだ形のまま固まることがある。
+      // レイアウト確定後の次フレームまで生成を遅らせる。
+      requestAnimationFrame(() => {
       ranked.forEach(t => {
         const ctx = document.getElementById(`radar-${t.id}`);
         if(ctx) {
@@ -1975,13 +1979,16 @@
                   angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
                   grid: { color: 'rgba(255, 255, 255, 0.2)' },
                   pointLabels: { color: '#cbd5e1', font: { size: 10, weight: 'bold' } },
-                  ticks: { display: false, min: 40, max: 100 }
+                  // min:0を使う（40などに引き上げると、40〜100だけを目一杯引き伸ばすため、
+                  // 相対的に弱い項目がほぼ中心に潰れて見え、総合ptと見た目の大きさが食い違う）
+                  ticks: { display: false, min: 0, max: 100 }
                 }
               },
               plugins: { legend: { display: false } }
             }
           });
         }
+      });
       });
     };
 
