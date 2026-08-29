@@ -1655,6 +1655,15 @@
         if (p.fStats) {
           score += (p.fStats.pow * scouting.pow * BATTER_TOOL_WEIGHT.pow + p.fStats.meet * scouting.meet * BATTER_TOOL_WEIGHT.meet +
                     p.fStats.run * scouting.run * BATTER_TOOL_WEIGHT.run + p.fStats.def * scouting.def * BATTER_TOOL_WEIGHT.def) / 4;
+
+          // ★ DHとしての下支え価値：守備力・走力が低くても、長打力と確実性さえ高ければ
+          // 「守備につかせなくても指名打者として使える」という安全網の価値がある。
+          // 上の守備位置フィットは空き枠の埋まり具合（urgency）に応じて序盤ほど
+          // 弱めているため、守備の低さが足を引っ張るだけでDH適性の高さが評価に
+          // 反映されない状態になっていた。これは特定の枠の空き状況に関係なく常に
+          // 効かせることで、守備は苦手でも打力だけで価値のある選手を拾えるようにする。
+          const dhValue = (p.fStats.pow * 0.5 + p.fStats.meet * 0.5) - 50;
+          score += Math.max(0, dhValue) * 0.3;
         } else if (p.pStats) {
           // 投手のgetBaseStat()は野手の4能力平均よりデータ上そもそも数値が高めに出る
           // （このデータセットの平均で見ると投手76前後・野手70前後）。無調整だと
