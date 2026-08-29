@@ -1652,13 +1652,6 @@
       let rel80Count = team.roster.filter(p => p && p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))).length;
       let elitePitcherCount = team.roster.filter(p => p && p.pStats && getBaseStat(p) >= 75).length;
 
-      let teamCounts = {};
-      team.roster.forEach(p => { if(p) teamCounts[p.team] = (teamCounts[p.team] || 0) + 1; });
-
-      const userTeam = userTeamRef();
-      let userPowCount = userTeam.roster.filter(p => p && p.fStats && p.fStats.pow >= 75).length;
-      let userMeetCount = userTeam.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length;
-
       // ★ 実際にまだ埋まっていない守備位置・投手ロールを把握し、指名候補がそこにどれだけ嵌るかも評価する
       const openSlots = getOpenDefensiveSlots(team.roster);
       const openRoles = getOpenPitcherRoles(team.roster);
@@ -1721,32 +1714,25 @@
         // 「今取らないと他球団に先に獲られてしまう」価値があるとみなして加点する
         score += getPositionalStandoutBonus(p, candidates);
 
-        // ★ コンボ狙い：「あと1人」だけでなく、序盤の1人目・2人目からも段階的に加点。
-        // しきい値をまたぐかどうかの二択ではなく、しきい値付近ではproximityで滑らかに
-        // 立ち上げる（例：走力70と75の差はしきい値またぎで0 vs 満額ではなく、素点の
-        // 差なりの緩やかな差になる）
+        // ★ AIは「コンボを狙って組む」のではなく「素の実力・枠の必要性・希少性」で
+        // 勝てるチームを組むことを主目的にする。ただしタイプの近い好選手が結果的に
+        // 集まって自然にコンボが揃うのは歓迎したいので、あくまで僅かな後押し程度の
+        // 小さい重みだけ残す（以前の重みの半分以下）。ここを主要因にしてしまうと、
+        // 素の実力で劣る選手がしきい値を満たしているというだけで優先されてしまう。
         if (p.fStats) {
-           score += comboApproachBonus(pow75Count,  4, 20) * comboProximity(p.fStats.pow, 75);
-           score += comboApproachBonus(run75Count,  3, 15) * comboProximity(p.fStats.run, 75);
-           score += comboApproachBonus(def70Count,  4, 15) * comboProximity(p.fStats.def, 70);
-           score += comboApproachBonus(meet75Count, 3, 15) * comboProximity(p.fStats.meet, 75);
+           score += comboApproachBonus(pow75Count,  4, 8) * comboProximity(p.fStats.pow, 75);
+           score += comboApproachBonus(run75Count,  3, 6) * comboProximity(p.fStats.run, 75);
+           score += comboApproachBonus(def70Count,  4, 6) * comboProximity(p.fStats.def, 70);
+           score += comboApproachBonus(meet75Count, 3, 6) * comboProximity(p.fStats.meet, 75);
         }
-        // ★ 投手のコンボ狙いは「黄金の投手陣」（先発・中継ぎ問わず）と「勝利の方程式」
-        //   （中継ぎ・抑え限定）の両方に該当しうるが、両方を合算すると優れた中継ぎ・抑えだけが
-        //   二重にボーナスを受け取り、同格の先発より常に高く評価されてしまう。該当する方の
-        //   最大値だけを採用し、どちらの土台を狙うにせよ加点は1本分に揃える。
         if (p.pStats) {
            let pitcherComboBonus = 0;
            if (p.bestPos.includes("中継") || p.bestPos.includes("抑え")) {
-             pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(rel80Count, 2, 20) * comboProximity(p.pStats.pow, 80));
+             pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(rel80Count, 2, 8) * comboProximity(p.pStats.pow, 80));
            }
-           pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(elitePitcherCount, 2, 15) * comboProximity(getBaseStat(p), 75));
+           pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(elitePitcherCount, 2, 6) * comboProximity(getBaseStat(p), 75));
            score += pitcherComboBonus;
         }
-        score += comboApproachBonus(teamCounts[p.team] || 0, 3, 15);
-
-        if (userPowCount === 3 && p.fStats && p.fStats.pow >= 75) score += 10;
-        if (userMeetCount === 2 && p.fStats && p.fStats.meet >= 75) score += 10;
 
         if (score > maxScore) { maxScore = score; bestPlayer = p; }
       });
