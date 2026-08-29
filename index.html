@@ -2463,12 +2463,15 @@
 
     // 打球の方向とタイプ（ゴロ/フライ/ライナー）をランダムに決める
     const FIELD_POS_LABEL = { "捕": "キャッチャー", "一": "ファースト", "二": "セカンド", "三": "サード", "遊": "ショート", "左": "レフト", "中": "センター", "右": "ライト" };
-    function rollBattedBall() {
+    // includeCatcher: ファインプレー判定では「キャッチャーがヒット性の当たりを好守備で刺す」状況が
+    // 現実的にほぼ無いため、その用途ではfalseを渡して捕手を候補から除外する
+    function rollBattedBall(includeCatcher = true) {
       const r = Math.random();
       let type, posPool;
       if (r < 0.55) { type = 'ゴロ'; posPool = ['一', '二', '三', '遊', '捕']; }
       else if (r < 0.80) { type = 'フライ'; posPool = ['左', '中', '右', '一', '三', '捕']; }
       else { type = 'ライナー'; posPool = ['遊', '二', '三', '中', '左', '右']; }
+      if (!includeCatcher) posPool = posPool.filter(p => p !== '捕');
       const pos = posPool[Math.floor(Math.random() * posPool.length)];
       return { type, pos, label: FIELD_POS_LABEL[pos] + type };
     }
@@ -2604,11 +2607,11 @@
       else if (rand < hrProb + hitProb) {
         // ★ ファインプレー判定：打球が飛んだ位置の守備力が高いほど、本来ヒットの当たりを好守備でアウトにする
         const fDefLineup = state.isTop ? state.lineupB : state.lineupA;
-        const bb = rollBattedBall();
+        const bb = rollBattedBall(false); // 捕手が「ヒット性の当たり」を好守備で刺す状況は現実的でないため除外
         const fielder = getFielderDef(fDefLineup, bb.pos);
         const fineChance = Math.max(0, Math.min(0.18, (fielder.def - 50) * 0.003));
         if (Math.random() < fineChance) {
-          resultStr = fielder.name ? `${bb.label}性の当たりを${fielder.name}がファインプレー！` : `${bb.label}性の当たりをファインプレー！`;
+          resultStr = fielder.name ? `ヒット性の当たりを${fielder.name}がファインプレー！` : `ヒット性の当たりをファインプレー！`;
           resultClass = "text-cyan-400 font-bold";
           pitcher.stats.out++; state.outs++;
         } else {
