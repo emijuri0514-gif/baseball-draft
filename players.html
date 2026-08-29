@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>選手名鑑 | AI対戦型 究極ドラフト＆スタメンシミュレーター</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+  </style>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🧢 選手名鑑</h1>
+      <div class="flex items-center gap-2">
+        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6">
+    <p id="load-status" class="text-center text-sm text-gray-400 py-10">選手データを読み込み中...</p>
+
+    <div id="app" class="hidden">
+      <div class="bg-gray-800 rounded-lg p-3 mb-5 flex flex-col md:flex-row gap-3 md:items-center">
+        <input id="search-input" type="text" placeholder="選手名で検索" class="flex-1 bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500">
+        <select id="team-filter" class="bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none">
+          <option value="">全球団</option>
+        </select>
+        <select id="pos-filter" class="bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none">
+          <option value="">全ポジション</option>
+          <option value="投手">投手</option>
+          <option value="捕手">捕手</option>
+          <option value="内野手">内野手</option>
+          <option value="外野手">外野手</option>
+        </select>
+        <p id="result-count" class="text-xs text-gray-400 whitespace-nowrap"></p>
+      </div>
+
+      <div id="player-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      <p id="no-result" class="hidden text-center text-gray-400 py-10 text-sm">条件に一致する選手がいません。</p>
+    </div>
+  </main>
+
+  <script>
+    const TEAM_STYLE = {
+      "巨人": { bg: "bg-[#f97316]", text: "text-white" },
+      "阪神": { bg: "bg-[#eab308]", text: "text-gray-900" },
+      "DeNA": { bg: "bg-[#0ea5e9]", text: "text-white" },
+      "ヤクルト": { bg: "bg-[#22c55e]", text: "text-white" },
+      "中日": { bg: "bg-[#2563eb]", text: "text-white" },
+      "広島": { bg: "bg-[#dc2626]", text: "text-white" },
+      "オリックス": { bg: "bg-[#0f172a]", text: "text-white" },
+      "ロッテ": { bg: "bg-[#6b7280]", text: "text-white" },
+      "ソフトバンク": { bg: "bg-[#fde047]", text: "text-gray-900" },
+      "楽天": { bg: "bg-[#9f1239]", text: "text-white" },
+      "日本ハム": { bg: "bg-[#7dd3fc]", text: "text-gray-900" },
+      "西武": { bg: "bg-[#06b6d4]", text: "text-white" }
+    };
+
+    let allPlayers = [];
+
+    function statBadge(label, value) {
+      return `<span class="bg-gray-900 text-gray-200 text-[10px] font-bold px-2 py-0.5 rounded">${label} ${value}</span>`;
+    }
+
+    function renderCard(p) {
+      const style = TEAM_STYLE[p.team] || { bg: "bg-gray-700", text: "text-white" };
+      const stats = p.fStats
+        ? [statBadge('長打', p.fStats.pow), statBadge('確実性', p.fStats.meet), statBadge('走力', p.fStats.run), statBadge('守備', p.fStats.def)]
+        : [statBadge('球威', p.pStats.pow), statBadge('制球', p.pStats.con), statBadge('スタミナ', p.pStats.sta)];
+      return `
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow" data-name="${p.name}" data-team="${p.team}" data-pos="${p.pos}">
+          <div class="${style.bg} ${style.text} text-xs font-black px-3 py-1 flex justify-between items-center">
+            <span>${p.team}</span>
+            <span class="opacity-80">${p.eval}</span>
+          </div>
+          <div class="p-3">
+            <p class="font-black text-base mb-2 break-words">${p.name}</p>
+            <div class="flex flex-wrap gap-1 mb-2">${stats.join('')}</div>
+            <a href="https://sp.baseball.findfriends.jp/player/${p.id}/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-400 hover:underline">📊 選手詳細を見る</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('search-input').value.trim();
+      const team = document.getElementById('team-filter').value;
+      const pos = document.getElementById('pos-filter').value;
+      let visibleCount = 0;
+      document.querySelectorAll('#player-grid > div').forEach(card => {
+        const matchesName = !q || card.dataset.name.includes(q);
+        const matchesTeam = !team || card.dataset.team === team;
+        const matchesPos = !pos || card.dataset.pos === pos;
+        const show = matchesName && matchesTeam && matchesPos;
+        card.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+      });
+      document.getElementById('result-count').textContent = `${visibleCount} / ${allPlayers.length} 名`;
+      document.getElementById('no-result').classList.toggle('hidden', visibleCount !== 0);
+    }
+
+    function init(players) {
+      allPlayers = players;
+      const teamSelect = document.getElementById('team-filter');
+      [...new Set(players.map(p => p.team))].forEach(team => {
+        const opt = document.createElement('option');
+        opt.value = team; opt.textContent = team;
+        teamSelect.appendChild(opt);
+      });
+      document.getElementById('player-grid').innerHTML = players.map(renderCard).join('');
+      document.getElementById('search-input').addEventListener('input', applyFilters);
+      teamSelect.addEventListener('change', applyFilters);
+      document.getElementById('pos-filter').addEventListener('change', applyFilters);
+      applyFilters();
+      document.getElementById('load-status').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+    }
+
+    // index.html本体の選手データ(initialDatabase)を取得して常に最新のドラフト対象選手と
+    // 同期させる（このページ側にデータを複製すると、選手を追加した際に更新し忘れて
+    // 名鑑だけ古いままになる恐れがあるため）。
+    fetch('index.html')
+      .then(r => r.text())
+      .then(html => {
+        const start = html.indexOf('const initialDatabase');
+        const end = html.indexOf('];', start) + 2;
+        if (start === -1 || end === -1) throw new Error('parse-failed');
+        const src = html.slice(start, end);
+        const players = new Function(src + '; return initialDatabase;')();
+        init(players);
+      })
+      .catch(() => {
+        document.getElementById('load-status').textContent = '選手データの読み込みに失敗しました。GitHub Pages等のWebサーバー経由でアクセスしてください（ファイルを直接開くと読み込めません）。';
+      });
+  </script>
+</body>
+</html>
