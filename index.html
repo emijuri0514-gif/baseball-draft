@@ -191,6 +191,106 @@
       return GRADE_TABLE.find(g => finalScore >= g.min) || GRADE_TABLE[GRADE_TABLE.length - 1];
     }
 
+    // AIコメント：コンボの発動有無ではなく、実際の打線・投手力の数値（radarData）を見て
+    // 一番の武器と一番の課題を具体的に言及する。突出項目が無いチームは「バランス型」として扱う。
+    // 同じ項目が強み・弱みになるチームが続いても文面が単調にならないよう、各項目に複数の
+    // 言い回しを用意してランダムに選び、僅差の2番手項目があれば併せて触れる。
+    const STAT_LABELS = ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣'];
+    const STAT_STRONG_TEXT = {
+      '長打力': [
+        v => `長打力が${v}と抜群で、一振りで試合を決められるパンチ力のある打線です`,
+        v => `${v}という長打力の高さが光り、一発で流れを変えられる怖さがあります`
+      ],
+      '確実性': [
+        v => `確実性が${v}と高く、簡単に三振しないしぶとい打線です`,
+        v => `${v}というミート力の高さが持ち味で、粘り強くチャンスを作れます`
+      ],
+      '機動力': [
+        v => `機動力が${v}と際立ち、盗塁や走塁で得点機会を広げられる打線です`,
+        v => `${v}という走力の高さを活かし、一打を長打に変えるスピードがあります`
+      ],
+      '守備力': [
+        v => `守備力が${v}と鉄壁級で、失点を守りで防げるチームです`,
+        v => `${v}という堅い守備が光り、投手陣を後ろから支えられます`
+      ],
+      '先発陣': [
+        v => `先発陣の安定感が${v}と抜きん出ており、試合の入りで崩れにくい継投を作れます`,
+        v => `${v}という先発陣の完成度の高さで、試合を作れる投手が揃っています`
+      ],
+      '救援陣': [
+        v => `救援陣の完成度が${v}と高く、終盤のリードを守り切れるブルペンです`,
+        v => `${v}という救援陣の層の厚さで、僅差の展開を制しやすいチームです`
+      ]
+    };
+    const STAT_WEAK_TEXT = {
+      '長打力': [
+        v => `長打力は${v}とやや物足りず、一発に頼らない小技での得点力が求められます`,
+        v => `${v}という長打力の低さがネックで、単打をつなぐ我慢の攻撃になりそうです`
+      ],
+      '確実性': [
+        v => `確実性は${v}と課題が残り、当てにいく意識を持たせたい打線です`,
+        v => `${v}というミート力の低さが気がかりで、三振の多さが課題になりそうです`
+      ],
+      '機動力': [
+        v => `機動力は${v}と控えめで、走って揺さぶる攻撃は苦手そうです`,
+        v => `${v}という走力の低さから、一つ先の塁を狙う攻撃は難しそうです`
+      ],
+      '守備力': [
+        v => `守備力は${v}と不安が残り、エラーから失点を重ねるリスクがあります`,
+        v => `${v}という守備力の低さが心配で、守りのほころびが失点に直結しそうです`
+      ],
+      '先発陣': [
+        v => `先発陣は${v}とやや心もとなく、早めの継投を意識したいところです`,
+        v => `${v}という先発陣の弱さがネックで、試合の入りで苦しむ展開が心配です`
+      ],
+      '救援陣': [
+        v => `救援陣は${v}と層が薄く、終盤の接戦がやや不安です`,
+        v => `${v}という救援陣の頼りなさが気がかりで、リードを守り切れるか不安です`
+      ]
+    };
+    const pickText = (label, value, table) => {
+      const variants = table[label];
+      return variants[Math.floor(Math.random() * variants.length)](value);
+    };
+    function generateTeamComment(radarData, orderBuff, finalScore) {
+      const stats = STAT_LABELS.map((label, i) => ({ label, value: radarData[i] }));
+      const sorted = [...stats].sort((a, b) => b.value - a.value);
+      const best = sorted[0];
+      const secondBest = sorted[1];
+      const worst = sorted[sorted.length - 1];
+      const secondWorst = sorted[sorted.length - 2];
+      const spread = best.value - worst.value;
+
+      let opening;
+      if (finalScore >= 90) opening = '投打に隙のない、優勝候補と呼べる仕上がりです。';
+      else if (finalScore >= 80) opening = '上位を狙える、まとまりの良い編成です。';
+      else if (finalScore >= 70) opening = '堅実にまとまった、及第点以上の編成です。';
+      else if (finalScore >= 60) opening = '投打どちらかに伸びしろを残す編成です。';
+      else opening = 'まだ発展途上で、来年に向けて課題の見える編成です。';
+
+      const parts = [opening];
+      if (spread < 8) {
+        parts.push('突出した武器はありませんが、6項目とも大きく崩れていないバランス重視の編成と言えます。');
+      } else {
+        parts.push(pickText(best.label, best.value, STAT_STRONG_TEXT) + '。');
+        if (secondBest.value - worst.value >= 8 && best.value - secondBest.value <= 3) {
+          parts.push(`${secondBest.label}も${secondBest.value}と僅差で高く、あわせて武器にできそうです。`);
+        }
+        parts.push(pickText(worst.label, worst.value, STAT_WEAK_TEXT) + '。');
+        if (secondWorst.value - worst.value <= 3 && best.value - secondWorst.value >= 8) {
+          parts.push(`${secondWorst.label}も${secondWorst.value}と僅差で低く、あわせて課題です。`);
+        }
+      }
+
+      if (orderBuff <= -2.5) {
+        parts.push('打順と選手のタイプがやや噛み合っておらず、並び順を見直す余地がありそうです。');
+      } else if (orderBuff >= 3) {
+        parts.push('打順もそれぞれの持ち味を活かせる並びになっています。');
+      }
+
+      return parts.join('');
+    }
+
     // X（旧Twitter）のタイムラインで縮小表示されても数字とランクが一目で読める、
     // 情報量を絞ったワイド（16:9）カード。詳細な内訳はアプリ本体側の画面で確認する前提。
     function buildShareCardCanvas(team, opts) {
@@ -1008,6 +1108,19 @@
       return maxBonus * (currentCount + 1) / neededCount;
     }
 
+    // ★ ポジション内の突出度：「この枠で今取れる中で次善の選手」と比べてどれだけ抜けているか。
+    // 抜けているほど「今取っておかないと他球団に先に獲られる」価値が上がるので加点する。
+    // 同じ枠に代わりがいくらでもいる（次善との差が小さい）選手は、後回しにしても惜しくない。
+    function getPositionalStandoutBonus(p, pool) {
+      const primaryPos = Array.isArray(p.bestPos) ? p.bestPos[0] : p.bestPos;
+      const rivals = pool.filter(o => o !== p && (Array.isArray(o.bestPos) ? o.bestPos.includes(primaryPos) : o.bestPos === primaryPos));
+      const myScore = getPosScore(p, primaryPos);
+      if (rivals.length === 0) return 8; // 同枠に代わりがいない希少な存在
+      const nextBest = Math.max(...rivals.map(o => getPosScore(o, primaryPos)));
+      const gap = myScore - nextBest;
+      return Math.max(0, Math.min(15, gap * 0.5));
+    }
+
     function getOrderFit(p, order) {
       if (!p || !p.fStats) return 50;
       const w = ORDER_WEIGHTS[order], s = p.fStats;
@@ -1554,6 +1667,10 @@
           const urgency = (3 - openRoles.length) / 3;
           score += (Math.max(...openRoles.map(role => getPosScore(p, role))) - 50) * urgency;
         }
+
+        // ★ 抜きん出た存在は青田買いする：同じ枠の候補の中で次善の選手より頭一つ抜けているほど
+        // 「今取らないと他球団に先に獲られてしまう」価値があるとみなして加点する
+        score += getPositionalStandoutBonus(p, candidates);
 
         // ★ コンボ狙い：「あと1人」だけでなく、序盤の1人目・2人目からも段階的に加点
         if (p.fStats) {
@@ -2166,18 +2283,8 @@
         // ★ レーダーチャートの面積(平均)がそのまま総合ptになる ★
         t.finalScore = Math.round((final_pow + final_meet + final_run + final_def + final_sp + final_rp) / 6);
 
-        // コメント生成
-        if (orderBuff <= -2.5) {
-          t.comment = `能力は揃っていますが、打順と選手のタイプが噛み合っていません。足のある選手を上位に、長打力を中軸に置くだけで大きく変わります。`;
-        } else if (comboNames.length > 2) {
-          t.comment = `素晴らしい編成です！${comboNames.join('・')}が見事に発動し、強烈なシナジーを生み出しています！`;
-        } else if (t.finalScore >= 85) {
-          t.comment = `GMの完璧なタクト！打順・守備位置ともに計算し尽くされた驚異のオーダーです！`;
-        } else if (t.finalScore >= 75) {
-          t.comment = `投打に弱点が見当たらない、バランスの取れた素晴らしい編成です。`;
-        } else {
-          t.comment = `個々の能力は高いですが、不慣れなポジションを守っている選手がいるかもしれません。`;
-        }
+        // コメント生成：コンボの発動状況ではなく、実際の打線・投手力の数値を見て分析する
+        t.comment = generateTeamComment(t.radarData, orderBuff, t.finalScore);
       });
 
       // ★ teams本体は並べ替えず、表示用のコピーだけソートする
