@@ -14,7 +14,9 @@
   <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
       <h1 class="text-sm md:text-base font-black tracking-wider">🧢 選手名鑑</h1>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
+        <a href="changelog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🛠️ 更新履歴</a>
         <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
@@ -70,7 +72,7 @@
     function renderCard(p) {
       const style = TEAM_STYLE[p.team] || { bg: "bg-gray-700", text: "text-white" };
       const stats = p.fStats
-        ? [statBadge('長打', p.fStats.pow), statBadge('確実性', p.fStats.meet), statBadge('走力', p.fStats.run), statBadge('守備', p.fStats.def)]
+        ? [statBadge('ミート', p.fStats.meet), statBadge('パワー', p.fStats.pow), statBadge('走力', p.fStats.run), statBadge('守備力', p.fStats.def)]
         : [statBadge('球威', p.pStats.pow), statBadge('制球', p.pStats.con), statBadge('スタミナ', p.pStats.sta)];
       return `
         <div class="bg-gray-800 rounded-lg overflow-hidden shadow" data-name="${p.name}" data-team="${p.team}" data-pos="${p.pos}">

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>更新履歴 | AI対戦型 究極ドラフト＆スタメンシミュレーター</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+  </style>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🛠️ 更新履歴</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
+        <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
+        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <p class="text-sm text-gray-400 mb-6">思いついた順に直しているので番号やバージョンはありません。新しいものが上です。</p>
+
+    <ol class="relative border-l border-gray-700 space-y-8 ml-2">
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">選手名鑑ページを追加</h2>
+        <p class="text-sm text-gray-300">全96選手を球団・ポジションで検索、絞り込みできるページを追加。表記は「ミート／パワー／走力／守備力」の順に統一。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">遊び方・ルール説明ページを追加</h2>
+        <p class="text-sm text-gray-300">ドラフト方式やスタメン編成、コンボ条件などをまとめたページを新設。設定画面からリンクできるように。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">AI採点でS〜G全ランクが出るよう再調整</h2>
+        <p class="text-sm text-gray-300">選手データの下限が高く、実質どのチームを組んでもAランクに張り付いてしまっていた問題を修正。理想的な編成と最低な編成の実測値をもとにスコアを0〜100点へ引き伸ばし、ランクがきちんと分布するようにした。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">AIの指名ロジックをコンボ優先からチーム力優先へ</h2>
+        <p class="text-sm text-gray-300">「コンボを狙う」ことより「素の実力・枠の必要性・希少性」で勝てるチームを組むことを優先するよう調整。コンボはあくまで結果的に揃えばラッキー、くらいの副次要素に。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">AI採点コメントをデータドリブンな分析文に変更</h2>
+        <p class="text-sm text-gray-300">「素晴らしい採点です」のような定型文をやめ、実際の打線・投手力の数値を見て一番の武器と課題を具体的に言及するように。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">ポジション傑出度に応じた青田買いロジックを追加</h2>
+        <p class="text-sm text-gray-300">同じポジションのライバル選手と比べて頭一つ抜けている選手を、他球団に取られる前に優先指名するように。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">走力・守備型より打力型が評価されやすいよう調整／中継ぎ偏重を修正</h2>
+        <p class="text-sm text-gray-300">AIの上位指名が中継ぎ投手や俊足・堅守タイプに偏っていた問題を修正。打者は長打力・確実性を、投手は先発と中継ぎ・抑えを対等に評価するようスコア式を調整。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">ウェーバー指名にアナウンス演出を追加</h2>
+        <p class="text-sm text-gray-300">ウェーバー方式だと誰が指名されたか分かりにくかったため、AIの指名結果を1件ずつ表示する演出をデフォルトONで追加（ヘッダーからOFFにも切替可）。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">指名カードをNPBドラフト風のデザインに刷新</h2>
+        <p class="text-sm text-gray-300">球団カラーの帯＋白いカード本体という、実際の指名カードに近いデザインに変更。野球アイコンなどの装飾は撤去し、枠のサイズも統一。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">GitHub Pagesで公開</h2>
+        <p class="text-sm text-gray-300">誰でもブラウザからアクセスできるように公開。</p>
+      </li>
+
+    </ol>
+  </main>
+</body>
+</html>
