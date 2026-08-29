@@ -1542,21 +1542,18 @@
         if (!t.needsPick || !t.currentPick) return;
         let coverHtml = !t.isUser ? `
           <div id="cover-${t.id}" class="secret-cover absolute inset-0 bg-gray-800 flex flex-col items-center justify-center z-10 text-white">
-            <span class="text-[9px] font-bold text-gray-400 mb-1">${t.personality}</span>
             <p class="font-bold tracking-widest text-[10px] animate-pulse">開票中</p>
           </div>` : '';
-
-        const bestPosDisplay = Array.isArray(t.currentPick.bestPos) ? t.currentPick.bestPos.join('・') : t.currentPick.bestPos;
 
         container.innerHTML += `
           <div class="w-32 md:w-44 shadow-2xl rounded-lg overflow-hidden">
             <div class="${t.color.bg} ${t.color.text} text-[10px] md:text-xs font-black py-1.5 px-1 text-center truncate">${t.name.replace('(AI)','')}</div>
-            <div class="bg-white text-black border-2 md:border-4 border-t-0 ${t.color.border} relative overflow-hidden">
+            <div class="bg-white text-black border-2 md:border-4 border-t-0 ${t.color.border} relative overflow-hidden h-[112px] md:h-[136px]">
               ${coverHtml}
-              <div class="px-2 py-3 md:py-4 flex flex-col items-center justify-center min-h-[100px] md:min-h-[120px]">
+              <div class="px-2 py-3 md:py-4 h-full flex flex-col items-center justify-center overflow-hidden">
                 <p class="text-base md:text-2xl font-black leading-tight break-words w-full">${t.currentPick.name}</p>
                 <p class="text-[10px] md:text-xs font-bold text-gray-700 mt-2">${t.currentPick.pos}</p>
-                <p class="text-[9px] md:text-[11px] text-gray-500 truncate w-full">${t.currentPick.team} [${bestPosDisplay}]</p>
+                <p class="text-[9px] md:text-[11px] text-gray-500 truncate w-full">${t.currentPick.team}</p>
               </div>
             </div>
           </div>
