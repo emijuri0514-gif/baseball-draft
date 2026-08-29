@@ -747,7 +747,6 @@
   </div>
 
   <script>
-    const getPhotoUrl = (id) => `https://cdn.findfriends.jp/img.sp.baseball/player_image.php?player_id=${id}&type=t`;
     const QUOTAS = { "投手": 3, "捕手": 1, "内野手": 4, "外野手": 3 };
     const TOTAL_ROUNDS = 12;
     const ALL_TEAMS = ["巨人", "阪神", "DeNA", "ヤクルト", "中日", "広島", "オリックス", "ロッテ", "ソフトバンク", "楽天", "日本ハム", "西武"];
@@ -919,7 +918,6 @@
       { id: 19990016, name: "西川愛也", team: "西武", pos: "外野手", bestPos: ["中", "外"], eval: "外野手", fStats: {meet: 70, pow: 68, run: 76, def: 69} }
     ];
 
-    initialDatabase.forEach(p => p.img = getPhotoUrl(p.id));
 
     let availablePlayers = [];
     let teams = [];
@@ -1294,7 +1292,7 @@
           <div class="bg-white p-2 rounded shadow-sm border border-gray-200 flex justify-between items-center hover:bg-blue-50 transition">
             <div class="flex items-center gap-2">
               <div class="star-btn ${isFav ? 'active' : ''}" onclick="window.toggleFavorite(${p.id}, event)">★</div>
-              <img src="${p.img}" class="w-10 h-14 object-cover rounded border border-gray-300" onerror="this.style.display='none'">
+              <div class="w-10 h-14 rounded border border-gray-300 bg-gray-100 flex items-center justify-center text-gray-400 text-lg">👤</div>
               <div>
                 <span class="text-[9px] font-bold text-gray-500 bg-gray-200 px-1 py-0.5 rounded block w-max mb-0.5">${p.team} - ${p.pos}</span>
                 <span class="font-black text-sm md:text-base leading-tight">${p.name} <span class="text-[10px] text-gray-400 font-bold ml-1">[${bestPosDisplay}]</span></span>
@@ -1555,7 +1553,7 @@
             <p class="text-gray-400 font-bold mb-1 text-[10px] md:text-xs">${t.name.replace('(AI)','')}</p>
             <div class="bg-white text-black p-2 rounded shadow-2xl flex flex-col items-center border-2 md:border-4 ${t.color.border} relative overflow-hidden">
               ${coverHtml}
-              <img src="${t.currentPick.img}" class="w-12 h-16 md:w-16 md:h-24 object-cover border border-gray-300 mb-1 rounded-sm" onerror="this.style.display='none'">
+              <div class="w-12 h-16 md:w-16 md:h-24 border border-gray-300 mb-1 rounded-sm bg-gray-100 flex items-center justify-center text-gray-400 text-xl md:text-2xl">👤</div>
               <p class="text-[8px] md:text-[10px] font-bold text-gray-500 bg-gray-100 px-1 py-0.5 rounded w-full text-center truncate">${t.currentPick.team}/${t.currentPick.pos} <span class="font-normal">[${bestPosDisplay}]</span></p>
               <p class="text-xs md:text-base font-black mt-1 tracking-wider truncate w-full">${t.currentPick.name}</p>
             </div>
@@ -1865,7 +1863,7 @@
 
         card.innerHTML = `
           <div class="flex items-center gap-1 pointer-events-none">
-            <img src="${p.img}" class="w-8 h-8 object-cover rounded-full border">
+            <div class="w-8 h-8 rounded-full border bg-gray-100 flex items-center justify-center text-gray-400 text-sm">👤</div>
             <div><span class="text-[8px] font-bold text-gray-500">[${bestPosDisplay}]</span><br><span class="font-bold leading-tight">${p.name}</span></div>
           </div>
           <div class="drag-handle text-gray-400 text-xl px-2 py-1 active:text-blue-500 cursor-grab touch-none" draggable="true">≡</div>
