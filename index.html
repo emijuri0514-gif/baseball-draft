@@ -1119,6 +1119,14 @@
       return maxBonus * (currentCount + 1) / neededCount;
     }
 
+    // しきい値ちょうどで急に加点が発生する「崖」をなだらかにする。しきい値のwindow手前から
+    // 徐々に加点が立ち上がるようにすることで、例えば走力70の選手が走力75の選手に対して
+    // 「コンボ加点が0 vs 満額」という不自然な差をつけられるのを防ぐ（本来5点の差でしかない
+    // のに、しきい値をまたぐかどうかで実際の評価差がそれ以上に開いてしまっていた）。
+    function comboProximity(value, threshold, window = 10) {
+      return Math.max(0, Math.min(1, (value - (threshold - window)) / window));
+    }
+
     // ★ ポジション内の突出度：「この枠で今取れる中で次善の選手」と比べてどれだけ抜けているか。
     // 抜けているほど「今取っておかないと他球団に先に獲られる」価値が上がるので加点する。
     // 同じ枠に代わりがいくらでもいる（次善との差が小さい）選手は、後回しにしても惜しくない。
@@ -1713,12 +1721,15 @@
         // 「今取らないと他球団に先に獲られてしまう」価値があるとみなして加点する
         score += getPositionalStandoutBonus(p, candidates);
 
-        // ★ コンボ狙い：「あと1人」だけでなく、序盤の1人目・2人目からも段階的に加点
+        // ★ コンボ狙い：「あと1人」だけでなく、序盤の1人目・2人目からも段階的に加点。
+        // しきい値をまたぐかどうかの二択ではなく、しきい値付近ではproximityで滑らかに
+        // 立ち上げる（例：走力70と75の差はしきい値またぎで0 vs 満額ではなく、素点の
+        // 差なりの緩やかな差になる）
         if (p.fStats) {
-           if (p.fStats.pow  >= 75) score += comboApproachBonus(pow75Count,  4, 20);
-           if (p.fStats.run  >= 75) score += comboApproachBonus(run75Count,  3, 15);
-           if (p.fStats.def  >= 70) score += comboApproachBonus(def70Count,  4, 15);
-           if (p.fStats.meet >= 75) score += comboApproachBonus(meet75Count, 3, 15);
+           score += comboApproachBonus(pow75Count,  4, 20) * comboProximity(p.fStats.pow, 75);
+           score += comboApproachBonus(run75Count,  3, 15) * comboProximity(p.fStats.run, 75);
+           score += comboApproachBonus(def70Count,  4, 15) * comboProximity(p.fStats.def, 70);
+           score += comboApproachBonus(meet75Count, 3, 15) * comboProximity(p.fStats.meet, 75);
         }
         // ★ 投手のコンボ狙いは「黄金の投手陣」（先発・中継ぎ問わず）と「勝利の方程式」
         //   （中継ぎ・抑え限定）の両方に該当しうるが、両方を合算すると優れた中継ぎ・抑えだけが
@@ -1726,12 +1737,10 @@
         //   最大値だけを採用し、どちらの土台を狙うにせよ加点は1本分に揃える。
         if (p.pStats) {
            let pitcherComboBonus = 0;
-           if (p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))) {
-             pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(rel80Count, 2, 20));
+           if (p.bestPos.includes("中継") || p.bestPos.includes("抑え")) {
+             pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(rel80Count, 2, 20) * comboProximity(p.pStats.pow, 80));
            }
-           if (getBaseStat(p) >= 75) {
-             pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(elitePitcherCount, 2, 15));
-           }
+           pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(elitePitcherCount, 2, 15) * comboProximity(getBaseStat(p), 75));
            score += pitcherComboBonus;
         }
         score += comboApproachBonus(teamCounts[p.team] || 0, 3, 15);
