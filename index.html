@@ -1679,13 +1679,19 @@
            if (p.fStats.def  >= 70) score += comboApproachBonus(def70Count,  4, 15);
            if (p.fStats.meet >= 75) score += comboApproachBonus(meet75Count, 3, 15);
         }
-        if (p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))) {
-           score += comboApproachBonus(rel80Count, 2, 20);
-        }
-        // ★ 黄金の投手陣：先発・中継ぎ問わずコンボ加点を与える（これが無いと先発だけ
-        //   コンボ狙いの加点がなく、中継ぎ・抑えばかり評価されてしまう）
-        if (p.pStats && getBaseStat(p) >= 75) {
-           score += comboApproachBonus(elitePitcherCount, 2, 15);
+        // ★ 投手のコンボ狙いは「黄金の投手陣」（先発・中継ぎ問わず）と「勝利の方程式」
+        //   （中継ぎ・抑え限定）の両方に該当しうるが、両方を合算すると優れた中継ぎ・抑えだけが
+        //   二重にボーナスを受け取り、同格の先発より常に高く評価されてしまう。該当する方の
+        //   最大値だけを採用し、どちらの土台を狙うにせよ加点は1本分に揃える。
+        if (p.pStats) {
+           let pitcherComboBonus = 0;
+           if (p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))) {
+             pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(rel80Count, 2, 20));
+           }
+           if (getBaseStat(p) >= 75) {
+             pitcherComboBonus = Math.max(pitcherComboBonus, comboApproachBonus(elitePitcherCount, 2, 15));
+           }
+           score += pitcherComboBonus;
         }
         score += comboApproachBonus(teamCounts[p.team] || 0, 3, 15);
 
