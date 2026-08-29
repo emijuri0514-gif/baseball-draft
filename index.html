@@ -1200,13 +1200,20 @@
       renderDraftMatrix();
     }
 
+    // 外国人選手のフルネーム（例：「フランミル・レイエス」）は指名ボードでは姓だけにする
+    // （携帯だとセルが縦に伸びて指名ボードが見づらくなるため。他の画面はフルネームのまま）
+    function shortenForeignName(name) {
+      const idx = name.lastIndexOf('・');
+      return idx === -1 ? name : name.slice(idx + 1);
+    }
+
     function renderDraftMatrix() {
       const tbody = document.getElementById('draft-matrix-body');
       let html = '';
       for (let i = 0; i < TOTAL_ROUNDS; i++) {
         let rowHtml = `<td class="font-bold text-gray-500 bg-gray-100">${i + 1}</td>`;
         teams.forEach(t => {
-          const pickName = t.roster[i] ? t.roster[i].name : '-';
+          const pickName = t.roster[i] ? shortenForeignName(t.roster[i].name) : '-';
           rowHtml += `<td class="font-bold text-gray-800 text-xs">${pickName}</td>`;
         });
         html += `<tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} h-8">${rowHtml}</tr>`;
