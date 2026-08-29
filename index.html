@@ -1202,6 +1202,26 @@
       return knee + span * (1 - Math.exp(-excess / span));
     }
 
+    // 素点（能力値の平均＋配置/打順バフ）をそのままスコアに使うと、選手データの下限が
+    // 高いため「普通に組めばほぼ必ず素点85前後に達する」→ scoreCurveの膝(85)にほぼ全員が
+    // 張り付いてしまい、実質どのチームもAランク固定になる問題があった（実測：意図的に
+    // 最弱選手・最悪配置で組んでもB(73点)止まり、G/F/E/Dは事実上出現しない）。
+    // そこで「意図的に最弱選手・最悪配置で組んだ場合」と「理想の選手・配置で組んだ場合」の
+    // 素点を実測し、その幅を0〜100点に線形で割り当て直すことで、平均的な編成はC〜B相当、
+    // 下手な配置・貧弱な指名はD〜G、優れた指名・配置はA〜Sへときちんと分布するようにする。
+    const SCORE_RANGE = {
+      pow:  { low: 70, high: 90  },
+      meet: { low: 68, high: 95  },
+      run:  { low: 65, high: 98  },
+      def:  { low: 58, high: 93  },
+      sp:   { low: 76, high: 104 },
+      rp:   { low: 77, high: 97  }
+    };
+    function rescaleStat(raw, key) {
+      const { low, high } = SCORE_RANGE[key];
+      return Math.max(0, Math.min(100, (raw - low) / (high - low) * 100));
+    }
+
     window.startGame = function() {
       const userTeamSelect = document.getElementById('user-team').value;
       const aiCount = parseInt(document.getElementById('ai-count').value);
@@ -2307,12 +2327,12 @@
 
         // --- 6. 最終値の確定（85を超えた分は逓減し、100は事実上到達困難にする） ---
         // ★ コンボはロマン要素として試合では少し効くが、採点自体は素の実力＋配置・打順適性で決まる
-        let final_pow  = scoreCurve(p_pow  + posBuff + orderBuff);
-        let final_meet = scoreCurve(p_meet + posBuff + orderBuff);
-        let final_run  = scoreCurve(p_run  + posBuff + orderBuff);
-        let final_def  = scoreCurve(p_def  + posBuff + orderBuff);
-        let final_sp   = scoreCurve(p_sp   + posBuff);
-        let final_rp   = scoreCurve(p_rp   + posBuff);
+        let final_pow  = scoreCurve(rescaleStat(p_pow  + posBuff + orderBuff, 'pow'));
+        let final_meet = scoreCurve(rescaleStat(p_meet + posBuff + orderBuff, 'meet'));
+        let final_run  = scoreCurve(rescaleStat(p_run  + posBuff + orderBuff, 'run'));
+        let final_def  = scoreCurve(rescaleStat(p_def  + posBuff + orderBuff, 'def'));
+        let final_sp   = scoreCurve(rescaleStat(p_sp   + posBuff, 'sp'));
+        let final_rp   = scoreCurve(rescaleStat(p_rp   + posBuff, 'rp'));
 
         t.radarData = [
           Math.round(final_pow),
