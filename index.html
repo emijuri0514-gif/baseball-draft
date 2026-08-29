@@ -2222,7 +2222,7 @@
         container.innerHTML += `
           <div class="bg-gray-800 rounded-lg p-4 border-l-8 ${t.color.border} shadow-xl">
             <div class="flex justify-between items-center mb-2 border-b border-gray-600 pb-2">
-              <h3 class="text-lg md:text-2xl font-black">${medal} ${index+1}位：${t.name.replace('(AI)','')} <span class="text-xs font-normal text-gray-400">[${t.personality}]</span></h3>
+              <h3 class="text-lg md:text-2xl font-black">${medal} ${index+1}位：${t.name.replace('(AI)','')}</h3>
               <div class="flex items-center gap-2">
                 <span class="w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center font-black text-sm md:text-base" style="background:${g.color};color:${g.textColor}" title="${g.grade}ランク基準：${g.min}〜${g.max}pt">${g.grade}</span>
                 <div class="text-xl md:text-3xl font-black text-yellow-400">${t.finalScore} <span class="text-sm">pt</span></div>
