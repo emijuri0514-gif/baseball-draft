@@ -1918,7 +1918,7 @@
 
         card.innerHTML = `
           <div class="flex items-center gap-1 pointer-events-none">
-            <div><span class="text-[8px] font-bold text-gray-500">[${bestPosDisplay}]</span><br><span class="font-bold leading-tight">${p.name}</span></div>
+            <div><span class="text-[8px] font-bold text-gray-500">[${bestPosDisplay}]</span><br><span class="font-bold leading-tight">${shortenForeignName(p.name)}</span></div>
           </div>
           <div class="drag-handle text-gray-400 text-xl px-2 py-1 active:text-blue-500 cursor-grab touch-none" draggable="true">≡</div>
         `;
@@ -1953,7 +1953,7 @@
               badge = `<span class="ml-1 text-[10px] ${om.cls} font-black" title="${ORDER_WEIGHTS[oi].label}">打${om.mark}</span>` +
                       `<span class="ml-0.5 text-[10px] ${dm.cls} font-black">守${dm.mark}</span>`;
             }
-            slot.innerHTML = `<div class="bg-green-100 w-full h-full rounded flex items-center justify-center font-bold text-[10px] md:text-sm border border-green-500 text-green-900 truncate px-1 cursor-grab" draggable="true"><span class="truncate">${p.name}</span>${badge}</div>`;
+            slot.innerHTML = `<div class="bg-green-100 w-full h-full rounded flex items-center justify-center font-bold text-[10px] md:text-sm border border-green-500 text-green-900 truncate px-1 cursor-grab" draggable="true"><span class="truncate">${shortenForeignName(p.name)}</span>${badge}</div>`;
             slot.dataset.filled = "true";
 
             const assignedEl = slot.querySelector('div[draggable]');
