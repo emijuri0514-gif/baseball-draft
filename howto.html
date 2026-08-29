@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>遊び方・ルール説明 | AI対戦型 究極ドラフト＆スタメンシミュレーター</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+  </style>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-sm md:text-base font-black tracking-wider">⚾ DRAFT SIM 遊び方</h1>
+      <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-10">
+
+    <section class="text-center">
+      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">AI対戦型 究極ドラフト＆スタメンシミュレーターとは</h2>
+      <p class="text-sm md:text-base text-gray-300 leading-relaxed">
+        担当球団を1つ選び、AIが操る他球団と一緒に「ドラフト会議」でNPB選手を指名し合い、
+        獲得した選手でスタメンを編成、AIによる戦力採点を経てプレーオフで頂点を目指すシミュレーターです。
+      </p>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">① 全体の流れ</h3>
+      <ol class="space-y-2 text-sm md:text-base text-gray-200 list-decimal list-inside">
+        <li>担当球団・対戦AI球団数・ドラフト方式を選んでスタート</li>
+        <li>ドラフト会議：全12巡、選手を指名し合う</li>
+        <li>スタメン編成：獲得した選手をドラッグ＆ドロップで打順・守備位置に配置</li>
+        <li>AI採点：打線・投手陣を数値で評価し、S〜Gのランクが決定</li>
+        <li>プレーオフ：参加全球団によるトーナメントで優勝チームを決定</li>
+      </ol>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">② ドラフト方式</h3>
+      <div class="space-y-3 text-sm md:text-base text-gray-200">
+        <p><span class="font-black text-yellow-300">NPB方式（おすすめ）：</span>1巡目のみ全球団が同時に希望を出し、競合したら抽選。2巡目以降は順番指名（ウェーバー）になります。実際のNPBドラフトに最も近い形式です。</p>
+        <p><span class="font-black text-yellow-300">全巡 同時指名：</span>12巡すべてで同時入札と抽選を行う、最も運の要素が大きい形式です。</p>
+        <p><span class="font-black text-yellow-300">完全ウェーバー：</span>抽選なしで、決められた順番に1人ずつ指名していきます。読み合い重視の形式です。</p>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">③ ドラフト会議の操作</h3>
+      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
+        <li>選手リストから指名したい選手のボタンを押すと希望選手として登録されます</li>
+        <li>複数球団が同じ選手を希望した場合は抽選（またはウェーバー順）で獲得球団が決まります</li>
+        <li>ウェーバー指名中はAIの指名結果を1件ずつ演出付きで表示します（ヘッダーの「🔊 指名アナウンス」ボタンでON/OFF切り替え可能）</li>
+        <li>各選手名の横にある「📊 選手詳細を見る」から実際の成績データを外部サイトで確認できます</li>
+        <li>12巡が終了すると自動でスタメン編成画面に進みます</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">④ スタメン編成のルール</h3>
+      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
+        <li>野手9名（1〜9番）＋投手3名（先発・中継・抑え）の計12枠すべてを埋める必要があります</li>
+        <li>獲得選手カードを枠までドラッグ＆ドロップして配置します（外すのも自由）</li>
+        <li>打順ごとに守備位置を選択でき、「◎最適 ○good △普通 ▲不向き ✕ミスマッチ」の適性表示が出ます</li>
+        <li>適性の高い打順・守備位置に配置するほど、後のAI採点や試合内容が有利になります</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑤ AI採点とランク</h3>
+      <p class="text-sm md:text-base text-gray-200 mb-3">
+        長打力・確実性・機動力・守備力・先発陣・救援陣の6項目を素の実力＋打順・守備適性で採点し、
+        合計点に応じてS〜Gの8段階でチームがランク付けされます。
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs md:text-sm text-center border-collapse">
+          <thead>
+            <tr class="bg-gray-800">
+              <th class="p-2 border border-gray-700">ランク</th>
+              <th class="p-2 border border-gray-700">評価</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-200">
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#eab308">S</td><td class="p-2 border border-gray-700">伝説級のドラフト采配！</td></tr>
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#ec4899">A</td><td class="p-2 border border-gray-700">素晴らしい編成！</td></tr>
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#38bdf8">B</td><td class="p-2 border border-gray-700">堅実にまとまった編成</td></tr>
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#f97316">C</td><td class="p-2 border border-gray-700">及第点の編成</td></tr>
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#fde047">D</td><td class="p-2 border border-gray-700">伸びしろだらけの編成</td></tr>
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#22c55e">E</td><td class="p-2 border border-gray-700">来年に期待の編成</td></tr>
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#3b82f6">F</td><td class="p-2 border border-gray-700">再建は来年から…</td></tr>
+            <tr><td class="p-2 border border-gray-700 font-black" style="color:#9ca3af">G</td><td class="p-2 border border-gray-700">一からの立て直しが必要</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑥ コンボ（編成ボーナス）</h3>
+      <p class="text-sm md:text-base text-gray-200 mb-3">
+        特定の条件を満たすと「コンボ」が発動し、試合内容に少しだけプラスの効果が生まれます（採点自体には影響しません）。
+      </p>
+      <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs md:text-sm text-gray-200">
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-yellow-300">〇〇愛：</span>同一出身球団の選手が3人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-red-400">超重量打線：</span>長打力75以上の野手が4人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-blue-400">機動力野球：</span>走力75以上の野手が3人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-green-400">鉄壁の守備陣：</span>守備力70以上の野手が4人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-purple-400">黄金の投手陣：</span>総合力75以上の投手が2人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-pink-400">安打製造機：</span>確実性75以上の野手が3人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-orange-400">勝利の方程式：</span>球威80以上の中継ぎ・抑えが2人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-emerald-400">センターライン：</span>捕・二・遊・中で守備力70以上が4人以上</li>
+        <li class="bg-gray-800 rounded p-2"><span class="font-black text-teal-400">ユーティリティ：</span>複数守備位置に対応できる選手が5人以上</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑦ プレーオフ</h3>
+      <p class="text-sm md:text-base text-gray-200">
+        AI採点後、参加全球団のfinalScore順にシードされたトーナメントに進出できます。
+        2球団なら決勝のみ、3球団なら1位が準決勝を免除されて決勝から登場、4球団なら準決勝→決勝の総当たり方式です。
+        勝ち進んで優勝すると、結果をシェア画像として保存できます。
+      </p>
+    </section>
+
+    <div class="text-center pt-4 pb-10">
+      <a href="index.html" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-8 rounded-full shadow-lg">ゲームを始める</a>
+    </div>
+  </main>
+</body>
+</html>
