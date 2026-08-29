@@ -347,7 +347,10 @@
       if (p.pStats) {
         const primaryPos = Array.isArray(p.bestPos) ? p.bestPos[0] : p.bestPos;
         if (primaryPos === "中継" || primaryPos === "抑え") {
-          return p.pStats.pow * 0.65 + p.pStats.con * 0.35;
+          // ★ スタミナの重みを完全に0にすると、3項目平均の先発陣より構造的に平均点が
+          // 底上げされてしまい（低めになりがちな1項目が抜け落ちるため）、AIの指名が
+          // 中継ぎ・抑えに偏ってしまう。スタミナを軽くだけ効かせて先発と比較可能なスケールに揃える。
+          return p.pStats.pow * 0.55 + p.pStats.con * 0.30 + p.pStats.sta * 0.15;
         }
         return (p.pStats.pow + p.pStats.con + p.pStats.sta) / 3;
       } else if (p.fStats) {
@@ -362,7 +365,9 @@
 
       if (p.pStats) {
         if (pos === "先発") score = p.pStats.con * 0.4 + p.pStats.sta * 0.35 + p.pStats.pow * 0.25;
-        else if (pos === "中継" || pos === "抑え") score = p.pStats.pow * 0.65 + p.pStats.con * 0.35;
+        // ★ スタミナの重みを0にすると3項目平均の先発陣より構造的に平均点が底上げされるため、
+        // getBaseStat()と同じ配分でスタミナを軽く効かせて先発と比較可能なスケールに揃える
+        else if (pos === "中継" || pos === "抑え") score = p.pStats.pow * 0.55 + p.pStats.con * 0.30 + p.pStats.sta * 0.15;
 
         if (bestPositions[0] === pos) score += 5;
         else if (bestPositions.includes(pos)) score += 2;
@@ -1395,7 +1400,7 @@
       setTimeout(() => {
         showScreen('screen-draft');
         callback();
-      }, 2000);
+      }, 1500);
     }
 
     function proceedWaiver() {
@@ -1491,6 +1496,7 @@
       let def70Count = team.roster.filter(p => p && p.fStats && p.fStats.def >= 70).length;
       let meet75Count = team.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length;
       let rel80Count = team.roster.filter(p => p && p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))).length;
+      let elitePitcherCount = team.roster.filter(p => p && p.pStats && getBaseStat(p) >= 75).length;
 
       let teamCounts = {};
       team.roster.forEach(p => { if(p) teamCounts[p.team] = (teamCounts[p.team] || 0) + 1; });
@@ -1533,6 +1539,11 @@
         }
         if (p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))) {
            score += comboApproachBonus(rel80Count, 2, 20);
+        }
+        // ★ 黄金の投手陣：先発・中継ぎ問わずコンボ加点を与える（これが無いと先発だけ
+        //   コンボ狙いの加点がなく、中継ぎ・抑えばかり評価されてしまう）
+        if (p.pStats && getBaseStat(p) >= 75) {
+           score += comboApproachBonus(elitePitcherCount, 2, 15);
         }
         score += comboApproachBonus(teamCounts[p.team] || 0, 3, 15);
 
