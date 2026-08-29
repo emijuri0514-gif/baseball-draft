@@ -452,7 +452,10 @@
   <!-- ヘッダー -->
   <header class="bg-gray-900 text-white p-2 shadow-md flex justify-between items-center z-10 relative border-b-4 border-blue-600">
     <h1 class="text-sm font-black tracking-wider">⚾ DRAFT SIM</h1>
-    <div id="round-indicator" class="font-bold bg-blue-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
+    <div class="flex items-center gap-2">
+      <button id="announce-toggle-btn" onclick="window.toggleAnnounce()" class="text-[10px] font-bold bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded-full whitespace-nowrap">🔊 指名アナウンス</button>
+      <div id="round-indicator" class="font-bold bg-blue-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
+    </div>
   </header>
 
   <!-- 画面1: ドラフト検索＆指名画面 -->
@@ -551,7 +554,7 @@
 
   <!-- 画面2: リヴィール -->
   <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center text-white fade-in px-2">
-    <h2 class="text-xl md:text-3xl font-black mb-6 tracking-widest text-yellow-400">第 <span id="reveal-round">1</span> 巡 選択希望選手</h2>
+    <h2 class="text-xl md:text-3xl font-black mb-6 tracking-widest text-yellow-400">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
     <div id="reveal-cards-container" class="flex flex-wrap justify-center gap-4 max-w-5xl overflow-y-auto max-h-[60vh] py-2"></div>
     <div id="reveal-status" class="mt-6 text-lg md:text-2xl font-bold h-10"></div>
   </div>
@@ -940,6 +943,7 @@
     let waiverQueue = [];
     let waiverPos = 0;
     let waiverLog = [];
+    let waiverAnnounce = true; // ウェーバー中もAIの指名結果を1件ずつアナウンス表示するか
 
     const DRAFT_MODE_DESC = {
       npb: "実際のNPBに近い形式。1巡目だけ全球団が同時に入札し、競合したら抽選。2巡目からは順番指名（スネーク方式）になります。",
@@ -1363,6 +1367,37 @@
       renderDraftMatrix();
     }
 
+    window.toggleAnnounce = function() {
+      waiverAnnounce = !waiverAnnounce;
+      const btn = document.getElementById('announce-toggle-btn');
+      btn.textContent = waiverAnnounce ? '🔊 指名アナウンス' : '🔇 指名アナウンス';
+      btn.classList.toggle('bg-gray-700', waiverAnnounce);
+      btn.classList.toggle('bg-gray-600', !waiverAnnounce);
+      btn.classList.toggle('opacity-60', !waiverAnnounce);
+    };
+
+    // ウェーバー中、AIの指名結果を1件だけリヴィール画面で短く表示してから次に進む
+    function announceWaiverPick(team, player, callback) {
+      document.getElementById('reveal-round').textContent = currentRound;
+      document.getElementById('reveal-mode-label').textContent = 'ウェーバー指名';
+      document.getElementById('reveal-status').textContent = '';
+      document.getElementById('reveal-cards-container').innerHTML = `
+        <div class="w-40 md:w-52 shadow-2xl rounded-lg overflow-hidden">
+          <div class="${team.color.bg} ${team.color.text} text-sm md:text-base font-black py-2 px-1 text-center truncate">${team.name.replace('(AI)','')}</div>
+          <div class="bg-white text-black border-2 md:border-4 border-t-0 ${team.color.border} h-[130px] md:h-[160px] flex flex-col items-center justify-center px-2">
+            <p class="text-lg md:text-3xl font-black leading-tight break-words w-full text-center">${player.name}</p>
+            <p class="text-xs md:text-sm font-bold text-gray-700 mt-2">${player.pos}</p>
+            <p class="text-[10px] md:text-xs font-bold text-gray-500 truncate w-full text-center">${player.team}</p>
+          </div>
+        </div>
+      `;
+      showScreen('screen-reveal');
+      setTimeout(() => {
+        showScreen('screen-draft');
+        callback();
+      }, 1100);
+    }
+
     function proceedWaiver() {
       if (waiverPos >= waiverQueue.length) {
         currentRound++;
@@ -1382,9 +1417,11 @@
 
       if (!team.isUser) {
         setTimeout(() => {
-          commitPick(team, getAIPick(team));
-          waiverPos++;
-          proceedWaiver();
+          const pick = getAIPick(team);
+          commitPick(team, pick);
+          const advance = () => { waiverPos++; proceedWaiver(); };
+          if (waiverAnnounce && pick) announceWaiverPick(team, pick, advance);
+          else advance();
         }, 900);
       }
     }
@@ -1535,6 +1572,7 @@
 
     function executeReveal() {
       document.getElementById('reveal-round').textContent = currentRound;
+      document.getElementById('reveal-mode-label').textContent = '選択希望選手';
       const container = document.getElementById('reveal-cards-container');
       container.innerHTML = '';
 
