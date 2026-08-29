@@ -1124,12 +1124,27 @@
     // 同じ枠に代わりがいくらでもいる（次善との差が小さい）選手は、後回しにしても惜しくない。
     function getPositionalStandoutBonus(p, pool) {
       const primaryPos = Array.isArray(p.bestPos) ? p.bestPos[0] : p.bestPos;
-      const rivals = pool.filter(o => o !== p && (Array.isArray(o.bestPos) ? o.bestPos.includes(primaryPos) : o.bestPos === primaryPos));
-      const myScore = getPosScore(p, primaryPos);
-      if (rivals.length === 0) return 8; // 同枠に代わりがいない希少な存在
-      const nextBest = Math.max(...rivals.map(o => getPosScore(o, primaryPos)));
-      const gap = myScore - nextBest;
-      return Math.max(0, Math.min(15, gap * 0.5));
+      const sameSpot = o => Array.isArray(o.bestPos) ? o.bestPos.includes(primaryPos) : o.bestPos === primaryPos;
+
+      if (p.fStats) {
+        // ★ 野手は「そのポジションの選手の中で、打力（長打力・確実性）がどれだけ
+        // 突出しているか」で比べる。getPosScore()は守備力・走力を重く見る配分の
+        // ポジションが多く（二・遊・中など）、それで比べると「守備は平均的だが打てる」
+        // という牧秀悟のような選手が、真の守備型選手より低く出てしまい、実際の
+        // スカウティングで言う「そのポジションにしては打てる」という希少価値を
+        // 正しく拾えない。打力だけを見た方が、この"傑出度"の意図に合っている。
+        const battingValue = q => q.fStats.pow * 0.5 + q.fStats.meet * 0.5;
+        const rivals = pool.filter(o => o !== p && o.fStats && sameSpot(o));
+        if (rivals.length === 0) return 8; // 同枠に代わりがいない希少な存在
+        const gap = battingValue(p) - Math.max(...rivals.map(battingValue));
+        return Math.max(0, Math.min(15, gap * 0.5));
+      } else if (p.pStats) {
+        const rivals = pool.filter(o => o !== p && o.pStats && sameSpot(o));
+        if (rivals.length === 0) return 8;
+        const gap = getPosScore(p, primaryPos) - Math.max(...rivals.map(o => getPosScore(o, primaryPos)));
+        return Math.max(0, Math.min(15, gap * 0.5));
+      }
+      return 0;
     }
 
     function getOrderFit(p, order) {
