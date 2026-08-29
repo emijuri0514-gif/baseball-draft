@@ -1526,7 +1526,12 @@
           score += (p.fStats.pow * scouting.pow + p.fStats.meet * scouting.meet +
                     p.fStats.run * scouting.run + p.fStats.def * scouting.def) / 4;
         } else if (p.pStats) {
-          score += getBaseStat(p) * scouting.pitcher;
+          // 投手のgetBaseStat()は野手の4能力平均よりデータ上そもそも数値が高めに出る
+          // （このデータセットの平均で見ると投手76前後・野手70前後）。無調整だと
+          // 「同じ選手層の質」でも投手側が常に野手より高得点になり、打力の高い野手が
+          // 中盤まで残ってしまう。実測の平均差（約6点）を差し引いて、野手と対等な
+          // スケールで比較できるようにする。
+          score += (getBaseStat(p) - 6.3) * scouting.pitcher;
         }
 
         // ★ 守備位置フィット：本当に必要な枠（一番相性の良い open slot）にどれだけ嵌るか
@@ -1536,12 +1541,17 @@
         // （スカウト傾向×能力値）より先に守備適性だけでAIの指名が決まってしまう。
         // 空き枠が少なくなる＝本当にその枠が必要になるほど効果を強めることで、
         // 序盤は素の実力、終盤は残り枠の穴埋めを優先するようにする。
+        // urgencyは「その枠のカテゴリのうち何割が既に埋まっているか」で揃える（0〜1）。
+        // 野手は9枠・投手は3枠と母数が違うため、+1のような定数を混ぜると母数が小さい投手側の
+        // urgencyだけ序盤から不釣り合いに高くなってしまう（実際、そのせいで投手が野手より
+        // 早巡から指名され続けるという別の偏りを生んでいた）。単純な「埋まった割合」なら
+        // 野手・投手のどちらも1巡目はちょうど0から始まり、対等に比較できる。
         if (p.fStats && openSlots.length > 0) {
-          const urgency = (9 - openSlots.length + 1) / 9;
+          const urgency = (9 - openSlots.length) / 9;
           score += (Math.max(...openSlots.map(pos => getPosScore(p, pos))) - 50) * urgency;
         }
         if (p.pStats && openRoles.length > 0) {
-          const urgency = (3 - openRoles.length + 1) / 3;
+          const urgency = (3 - openRoles.length) / 3;
           score += (Math.max(...openRoles.map(role => getPosScore(p, role))) - 50) * urgency;
         }
 
