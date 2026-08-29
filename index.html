@@ -1101,6 +1101,13 @@
       return ["先発", "中継", "抑え"].filter(role => !pitchers.some(p => p.bestPos.includes(role)));
     }
 
+    // AIの指名評価の土台となる各能力の価値観。走攻守を均等に1.0で評価すると、
+    // 5ツール型（走力・守備力に優れる）選手ばかりが上位に来てしまい、長打力に
+    // 秀でた一本足打法タイプの打者が実態より低く評価されてしまう。現実のスカウティングに
+    // 近い形で、打力（長打力・確実性）をやや高め、走力・守備力をやや低めに評価する。
+    // 球団ごとの色（TEAM_SCOUTINGの重み）はこれとは別にかけ合わされる。
+    const BATTER_TOOL_WEIGHT = { pow: 1.15, meet: 1.05, run: 0.85, def: 0.80 };
+
     // コンボ達成に向けて段階的にボーナスを乗せる（「あと1人で発動」の瞬間だけでなく、
     // 序盤の1人目・2人目の時点から少しずつ狙って集めるようにする）
     function comboApproachBonus(currentCount, neededCount, maxBonus) {
@@ -1635,9 +1642,15 @@
         let score = Math.random() * 2;
 
         // ★ 球団のスカウト傾向（能力ごとの重み）で評価する
+        // BATTER_TOOL_WEIGHTは各球団のスカウト傾向とは別にかかる土台の価値観：
+        // 実際のスカウティングでは走力・守備力より打力（長打力・確実性）の方が
+        // 選手価値を大きく左右するとされるため、走攻守を均等な1.0で評価すると
+        // 5ツール型の選手ばかりが上位に来て、長打力に秀でた一本足打法タイプの
+        // 選手が不自然に評価されにくくなる。球団ごとの色（走力重視の球団など）は
+        // 引き続きscoutingの重みで表現しつつ、土台としては打力を高めに評価する。
         if (p.fStats) {
-          score += (p.fStats.pow * scouting.pow + p.fStats.meet * scouting.meet +
-                    p.fStats.run * scouting.run + p.fStats.def * scouting.def) / 4;
+          score += (p.fStats.pow * scouting.pow * BATTER_TOOL_WEIGHT.pow + p.fStats.meet * scouting.meet * BATTER_TOOL_WEIGHT.meet +
+                    p.fStats.run * scouting.run * BATTER_TOOL_WEIGHT.run + p.fStats.def * scouting.def * BATTER_TOOL_WEIGHT.def) / 4;
         } else if (p.pStats) {
           // 投手のgetBaseStat()は野手の4能力平均よりデータ上そもそも数値が高めに出る
           // （このデータセットの平均で見ると投手76前後・野手70前後）。無調整だと
