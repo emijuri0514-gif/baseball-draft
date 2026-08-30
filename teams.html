@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12球団のスカウト傾向｜NPBドラフト会議シミュレーション</title>
+  <meta name="description" content="NPBドラフト会議シミュレーションに登場する12球団それぞれのAIスカウト傾向（長距離砲補強型、投手王国、機動力野球など）を紹介。球団ごとに評価する能力値の重みが異なります。">
+  <meta property="og:title" content="12球団のスカウト傾向｜NPBドラフト会議シミュレーション">
+  <meta property="og:description" content="現役NPB選手をドラフトして最強のチームを作るシミュレーションの、12球団それぞれのAIスカウト傾向を紹介します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/teams.html">
+  <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+    .bar-track { background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; height: 6px; }
+    .bar-fill { height: 100%; border-radius: 999px; }
+  </style>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🏟️ 12球団のスカウト傾向</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
+        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <p class="text-sm text-gray-400 mb-8 text-center">
+      ゲーム内のAIは球団ごとに異なる「スカウト傾向」を持っており、能力値のどこを重視して指名するかが変わります。<br>
+      同じ選手でも、担当するAI球団によって評価が変わるのはこのためです。
+    </p>
+
+    <div id="team-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+  </main>
+
+  <script>
+    const TEAM_STYLE = {
+      "巨人": { bg: "bg-[#f97316]", text: "text-white" },
+      "阪神": { bg: "bg-[#eab308]", text: "text-gray-900" },
+      "DeNA": { bg: "bg-[#0ea5e9]", text: "text-white" },
+      "ヤクルト": { bg: "bg-[#22c55e]", text: "text-white" },
+      "中日": { bg: "bg-[#2563eb]", text: "text-white" },
+      "広島": { bg: "bg-[#dc2626]", text: "text-white" },
+      "オリックス": { bg: "bg-[#0f172a]", text: "text-white" },
+      "ロッテ": { bg: "bg-[#6b7280]", text: "text-white" },
+      "ソフトバンク": { bg: "bg-[#fde047]", text: "text-gray-900" },
+      "楽天": { bg: "bg-[#9f1239]", text: "text-white" },
+      "日本ハム": { bg: "bg-[#7dd3fc]", text: "text-gray-900" },
+      "西武": { bg: "bg-[#06b6d4]", text: "text-white" }
+    };
+
+    const TEAM_SCOUTING = {
+      "巨人":       { label: "長距離砲補強型",       pow: 1.30, meet: 1.00, run: 0.80, def: 0.80, pitcher: 1.15,
+                      desc: "長打力のある選手を最優先で指名する傾向。守備や走力は多少犠牲にしてでも、一発のあるパワーヒッターを集めようとします。" },
+      "阪神":       { label: "投手王国・堅守巧打",   pow: 0.90, meet: 1.10, run: 1.00, def: 1.05, pitcher: 1.30,
+                      desc: "投手力を最も重視しつつ、堅い守備とコンパクトな打撃を好む伝統的な編成方針です。" },
+      "DeNA":       { label: "長打指向スラッガー編成", pow: 1.25, meet: 1.00, run: 0.85, def: 0.85, pitcher: 1.00,
+                      desc: "長打力重視型。多少荒くても一発の魅力があるスラッガータイプの打者を好んで集めます。" },
+      "広島":       { label: "機動力・守備の育成路線", pow: 0.80, meet: 1.00, run: 1.30, def: 1.20, pitcher: 0.90,
+                      desc: "走力・守備力を重視し、堅実な守備固めと機動力を軸にしたチーム作りを志向します。" },
+      "中日":       { label: "伝統の投手陣・堅守型", pow: 0.85, meet: 1.00, run: 1.00, def: 1.20, pitcher: 1.30,
+                      desc: "投手力と守備を最優先。打撃力は多少低くても失点を防ぐ手堅い編成を好みます。" },
+      "ヤクルト":   { label: "スワローズ打線・攻撃野球", pow: 1.20, meet: 1.20, run: 0.90, def: 0.75, pitcher: 0.80,
+                      desc: "長打力・確実性ともに高水準を求める、打撃力全振り型の編成方針です。" },
+      "オリックス": { label: "エース輩出の投手王国", pow: 0.90, meet: 1.00, run: 0.90, def: 1.00, pitcher: 1.35,
+                      desc: "12球団で最も投手を重視するタイプ。とにかく好投手を集めたがる傾向があります。" },
+      "ロッテ":     { label: "堅実な投手・守備育成型", pow: 0.90, meet: 1.00, run: 1.00, def: 1.10, pitcher: 1.20,
+                      desc: "投手・守備を手堅く揃える堅実なタイプ。極端な偏りは少なめです。" },
+      "ソフトバンク": { label: "資金力で最強戦力を揃える", pow: 1.25, meet: 1.10, run: 1.00, def: 1.00, pitcher: 1.20,
+                      desc: "打力・投手力ともに高水準を求める、隙のない編成を目指す豊富な戦力補強型です。" },
+      "楽天":       { label: "エース中心のバランス型", pow: 1.00, meet: 1.00, run: 1.00, def: 1.00, pitcher: 1.20,
+                      desc: "極端な偏りのないバランス型。その中でもやや投手を重視する傾向があります。" },
+      "日本ハム":   { label: "データ重視の逸材発掘型", pow: 1.00, meet: 1.00, run: 1.15, def: 1.00, pitcher: 1.00,
+                      desc: "走力をやや重視しつつ全体的にバランスの良い、将来性のある選手を見出すタイプです。" },
+      "西武":       { label: "俊足強打の機動力野球", pow: 1.00, meet: 0.90, run: 1.30, def: 0.90, pitcher: 0.90,
+                      desc: "走力を最も重視するタイプ。機動力を活かした野球を志向する編成方針です。" }
+    };
+
+    function bar(label, val) {
+      const pct = Math.min(100, (val / 1.35) * 100);
+      const color = val >= 1.2 ? '#eab308' : val >= 1.05 ? '#38bdf8' : val >= 0.95 ? '#9ca3af' : '#f97316';
+      return `
+        <div class="flex items-center gap-2 text-[11px]">
+          <span class="w-12 text-gray-400 shrink-0">${label}</span>
+          <div class="bar-track flex-1"><div class="bar-fill" style="width:${pct}%; background:${color}"></div></div>
+          <span class="w-8 text-right text-gray-300 shrink-0">${val.toFixed(2)}</span>
+        </div>
+      `;
+    }
+
+    function renderCard(team) {
+      const s = TEAM_SCOUTING[team];
+      const style = TEAM_STYLE[team];
+      return `
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+          <div class="${style.bg} ${style.text} px-4 py-2 flex justify-between items-center">
+            <span class="font-black">${team}</span>
+            <span class="text-xs font-bold opacity-90">${s.label}</span>
+          </div>
+          <div class="p-4 space-y-2">
+            <p class="text-xs text-gray-300 mb-3">${s.desc}</p>
+            ${bar('パワー', s.pow)}
+            ${bar('ミート', s.meet)}
+            ${bar('走力', s.run)}
+            ${bar('守備', s.def)}
+            ${bar('投手', s.pitcher)}
+          </div>
+        </div>
+      `;
+    }
+
+    document.getElementById('team-grid').innerHTML = Object.keys(TEAM_SCOUTING).map(renderCard).join('');
+  </script>
+</body>
+</html>

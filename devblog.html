@@ -25,6 +25,8 @@
       <div class="flex items-center gap-2 flex-wrap">
         <a href="changelog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🛠️ 更新履歴</a>
         <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
+        <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
+        <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
     </div>
@@ -53,6 +55,7 @@
         <li><a href="#ep15" class="hover:underline">全チームがAランクになる、に気づいた日</a></li>
         <li><a href="#ep16" class="hover:underline">遊び方ページと選手名鑑を作った</a></li>
         <li><a href="#ep17" class="hover:underline">AIの指名ロジックにはこれからもこだわりたい</a></li>
+        <li><a href="#ep18" class="hover:underline">独自ドメインを取って、球団紹介とFAQページを作った</a></li>
       </ol>
     </nav>
 
@@ -156,6 +159,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第17回：AIの指名ロジックにはこれからもこだわりたい</h2>
       <p>ここまで振り返ってみると、中継ぎ偏重、走力・守備型の過大評価、佐藤輝明や牧秀悟が指名されない問題、コンボ狙いのやめどき……と、結局一番手を入れ続けているのはAIの指名ロジックだった気がする。正直、他の部分よりだいぶしつこく直している自覚がある。でもここが一番「本物のドラフトっぽさ」を左右する部分だと思っていて、だからこそ気になった瞬間に放置できない。</p>
       <p>実際、直したと思っても遊んでいるうちにまた別の偏りに気づくことの繰り返しだった。多分これで完成、というゴールはなくて、プレイする中で「これは違うだろ」と思ったらそのたびに調整していくんだと思う。地味な作業だけど、一番思い入れがある部分でもあるので、AIの指名ロジックはこれからも継続して手を入れ続けるつもりでいる。</p>
+    </article>
+
+    <article id="ep18" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第18回：独自ドメインを取って、球団紹介とFAQページを作った</h2>
+      <p>GitHub Pagesの初期URLには自分のアカウント名がそのまま入っていて、よく見ると名前っぽい文字列が含まれているのがちょっと気になっていた。というわけで独自ドメインを取ることにして、色々悩んだ末「dreamteam9.com」に決定。DNSの設定は正直よく分かっておらず、AレコードだのCNAMEだの言われても最初は何のことか全然ピンとこなかったけど、言われた通りに数字を打ち込んで、あとは反映されるのをじりじり待つだけだった。</p>
+      <p>反映待ちの間手持ち無沙汰だったので、その時間で「球団紹介ページ」と「FAQページ」を作ることにした。球団紹介は、もともとAIの指名ロジックの中に持っていた「球団ごとのスカウト傾向」のデータをそのまま見える化しただけなんだけど、こういう裏側の数値を表に出すのは初めてで、自分で見返しても意外と面白かった。FAQの方は、検索結果に質問と回答がそのまま表示される仕組み（構造化データというらしい）があると聞いて試しに入れてみた。効果があるかはまだ分からないけど、やらない理由もないので入れておいた。ついでに、そろそろ広告も検討したいという話もしていたので、プライバシーポリシーのページも先に用意しておくことにした。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
