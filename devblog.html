@@ -27,6 +27,8 @@
         <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
         <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
         <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
+        <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
+        <a href="rankings.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏆 ランキング</a>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
     </div>
@@ -57,6 +59,7 @@
         <li><a href="#ep17" class="hover:underline">AIの指名ロジックにはこれからもこだわりたい</a></li>
         <li><a href="#ep18" class="hover:underline">独自ドメインを取って、球団紹介とFAQページを作った</a></li>
         <li><a href="#ep19" class="hover:underline">似たツールを見て、オーダーカードを作りたくなった</a></li>
+        <li><a href="#ep20" class="hover:underline">用語集とランキングページを追加した</a></li>
       </ol>
     </nav>
 
@@ -172,6 +175,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第19回：似たツールを見て、オーダーカードを作りたくなった</h2>
       <p>ドメインの反映待ちで地味に時間を溶かしていたとき、似たようなドラフト系ツールで「自分で組んだチームをカード風の画像にしてシェアできる」機能があるのを見かけた。スタメンが1番から9番まで縦に並んでいて、各選手にどこの球団の何巡目指名か、みたいなバッジが付いている見た目で、これは単純にかっこいいなと思って、うちにも欲しくなった。</p>
       <p>採点結果のシェア画像は前からあったんだけど、あれはランクとレーダーチャートが主役で、実際に自分がどんな並びでチームを組んだかは文字がちょっと添えてあるだけだった。今回は逆に、編成そのものを主役にした縦長のカードを別で作ることにした。地味に手間だったのが、選手が「何巡目で指名されたか」をこれまで記録していなかったこと。指名が確定する場所が抽選ありなしで何箇所かに分かれていて、その全部に記録を仕込む必要があった。あと外国人選手の長い名前がバッジと重なってしまう問題があったので、名前の文字幅を測って、はみ出しそうならフォントサイズを自動で縮める処理を入れた。地味だけど、これがないと一発で見た目が崩れるので大事な部分だったと思う。</p>
+    </article>
+
+    <article id="ep20" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第20回：用語集とランキングページを追加した</h2>
+      <p>実はその前に一つ恥ずかしい訂正があって、FAQやプライバシーポリシーに「プロスピAの数値を参考にしつつ独自に調整している」と書いていたんだけど、よく考えたら数値はそのまま使っていて調整なんてしていなかった。書いた自分がなぜか話を盛ってしまっていたことに今さら気づいて、慌てて全部直した。地味だけど、自分の作ったものについての説明が事実と違っているのは良くないので、見つけた瞬間に直せてよかった。</p>
+      <p>気を取り直して、遊びに来てくれた人がもっと楽しめるように用語集とランキングページを追加した。用語集は「ウェーバー方式って何？」みたいな初心者向けの説明をまとめただけなんだけど、ランキングの方は実際にゲーム内で使っている適性計算式をそのまま流用して「二塁手なら誰が一番強いか」を出せるようにした。作ってみて改めて気づいたのが、牧秀悟が一塁やDHではぶっちぎりの1位に来るのに、二塁だと守備型の選手に負けて5位くらいになること。これはまさに以前AIの指名ロジックで悩んでいた「守備位置ごとの得意不得意」の話がそのまま数字に表れていて、自分で作った計算式なのに見返すとちょっと面白かった。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>

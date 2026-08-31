@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ポジション別最強選手ランキング｜NPBドラフト会議シミュレーション</title>
+  <meta name="description" content="NPBドラフト会議シミュレーション収録選手を、捕手・内野・外野・先発・中継ぎ・抑えなどポジション別に適性スコアでランキング。二塁手最強は誰？抑え最強は誰？">
+  <meta property="og:title" content="ポジション別最強選手ランキング｜NPBドラフト会議シミュレーション">
+  <meta property="og:description" content="収録選手をポジション別の適性スコアでランキング。あなたのドラフト戦略の参考にどうぞ。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/rankings.html">
+  <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+  </style>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🏆 ポジション別最強ランキング</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
+        <a href="changelog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🛠️ 更新履歴</a>
+        <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
+        <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
+        <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
+        <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
+        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <p id="load-status" class="text-center text-sm text-gray-400 py-10">選手データを読み込み中...</p>
+    <div id="app" class="hidden">
+      <p class="text-sm text-gray-400 mb-8 text-center">
+        本サイトの実際の適性計算式（守備・打順の得意不得意を反映したスコア）で、各ポジションの上位選手をランキングしています。<br>
+        ドラフトで迷ったときの参考にどうぞ。
+      </p>
+      <div id="ranking-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+  </main>
+  <footer class="text-center text-gray-500 text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
+  </footer>
+
+  <script>
+    // 本体(index.html)のgetPosScore()と全く同じ計算式。適性ボーナス／ペナルティも含めて実際の
+    // ゲーム内評価と一致させるため、値は決してここだけで独自に変えない。
+    function getPosScore(p, pos) {
+      let score = 50;
+      let bestPositions = Array.isArray(p.bestPos) ? p.bestPos : [p.bestPos];
+
+      if (p.pStats) {
+        if (pos === "先発") score = p.pStats.con * 0.4 + p.pStats.sta * 0.35 + p.pStats.pow * 0.25;
+        else if (pos === "中継" || pos === "抑え") score = p.pStats.pow * 0.55 + p.pStats.con * 0.30 + p.pStats.sta * 0.15;
+
+        if (bestPositions[0] === pos) score += 5;
+        else if (bestPositions.includes(pos)) score += 2;
+        else if (pos === "先発" && !bestPositions.includes("先発")) score -= 10;
+        else if (pos !== "先発" && bestPositions[0] === "先発") score -= 5;
+      } else if (p.fStats) {
+        const s = p.fStats;
+        if (pos === "DH") score = s.pow * 0.5 + s.meet * 0.5;
+        else if (pos === "捕") score = s.def * 0.5 + s.pow * 0.3 + s.meet * 0.1 + s.run * 0.1;
+        else if (pos === "一") score = s.pow * 0.5 + s.meet * 0.3 + s.def * 0.1 + s.run * 0.1;
+        else if (pos === "二" || pos === "遊") score = s.def * 0.45 + s.run * 0.35 + s.meet * 0.1 + s.pow * 0.1;
+        else if (pos === "三") score = s.meet * 0.4 + s.pow * 0.3 + s.def * 0.2 + s.run * 0.1;
+        else if (pos === "中") score = s.run * 0.4 + s.def * 0.3 + s.meet * 0.2 + s.pow * 0.1;
+        else if (pos === "左") score = s.pow * 0.4 + s.meet * 0.3 + s.run * 0.2 + s.def * 0.1;
+        else if (pos === "右") score = s.pow * 0.4 + s.meet * 0.3 + s.def * 0.2 + s.run * 0.1;
+
+        if (pos !== "DH") {
+          let expandedBestPos = [];
+          bestPositions.forEach(bp => {
+            if (bp === "外") expandedBestPos.push("左", "中", "右");
+            else expandedBestPos.push(bp);
+          });
+
+          if (expandedBestPos[0] === pos || (bestPositions[0] === "外" && ["左", "中", "右"].includes(pos))) {
+            score += 5;
+          } else if (expandedBestPos.includes(pos)) {
+            score += 2;
+          } else {
+            const isOut = ["左","中","右"].includes(pos);
+            const pIsOut = expandedBestPos.some(bp => ["左","中","右"].includes(bp));
+            const isIn = ["一","二","三","遊"].includes(pos);
+            const pIsIn = expandedBestPos.some(bp => ["一","二","三","遊"].includes(bp));
+
+            if (expandedBestPos[0] === "捕" && pos !== "捕") score -= 10;
+            else if (pos === "捕" && !expandedBestPos.includes("捕")) score -= 20;
+            else if (isOut && pIsOut) score -= 2;
+            else if (isIn && pIsIn) score -= 3;
+            else score -= 15;
+          }
+        }
+      }
+      return score;
+    }
+
+    const BATTER_POS = ["捕","一","二","三","遊","左","中","右","DH"];
+    const PITCHER_POS = ["先発","中継","抑え"];
+
+    function statLine(p) {
+      if (p.fStats) return `ミート${p.fStats.meet} パワー${p.fStats.pow} 走力${p.fStats.run} 守備${p.fStats.def}`;
+      return `球威${p.pStats.pow} 制球${p.pStats.con} スタミナ${p.pStats.sta}`;
+    }
+
+    function renderPosCard(pos, players) {
+      const top5 = [...players]
+        .map(p => ({ p, score: getPosScore(p, pos) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
+      const rows = top5.map((r, i) => `
+        <li class="flex items-start gap-2 py-1.5 border-b border-gray-700 last:border-0">
+          <span class="w-5 text-yellow-400 font-black text-sm shrink-0">${i + 1}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span class="font-bold">${r.p.name}</span>
+              <span class="text-[10px] text-gray-500 whitespace-nowrap">${r.p.team}</span>
+            </div>
+            <div class="text-[10px] text-gray-400">${statLine(r.p)}</div>
+          </div>
+        </li>
+      `).join('');
+      return `
+        <div class="bg-gray-800 rounded-lg p-4">
+          <h3 class="font-black text-yellow-400 mb-2">${pos}</h3>
+          <ul>${rows}</ul>
+        </div>
+      `;
+    }
+
+    function init(all) {
+      const batters = all.filter(p => p.fStats);
+      const pitchers = all.filter(p => p.pStats);
+      const cards = [
+        ...BATTER_POS.map(pos => renderPosCard(pos, batters)),
+        ...PITCHER_POS.map(pos => renderPosCard(pos, pitchers))
+      ];
+      document.getElementById('ranking-grid').innerHTML = cards.join('');
+      document.getElementById('load-status').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+    }
+
+    // index.html本体のinitialDatabaseをfetchして常に最新の選手データと同期させる
+    fetch('index.html')
+      .then(r => r.text())
+      .then(html => {
+        const start = html.indexOf('const initialDatabase');
+        const end = html.indexOf('];', start) + 2;
+        if (start === -1 || end === -1) throw new Error('parse-failed');
+        const src = html.slice(start, end);
+        const players = new Function(src + '; return initialDatabase;')();
+        init(players);
+      })
+      .catch(() => {
+        document.getElementById('load-status').textContent = '選手データの読み込みに失敗しました。GitHub Pages等のWebサーバー経由でアクセスしてください（ファイルを直接開くと読み込めません）。';
+      });
+  </script>
+</body>
+</html>
