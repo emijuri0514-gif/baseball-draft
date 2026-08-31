@@ -65,14 +65,15 @@
         else if (pos !== "先発" && bestPositions[0] === "先発") score -= 12;
       } else if (p.fStats) {
         const s = p.fStats;
-        if (pos === "DH") score = s.pow * 0.5 + s.meet * 0.5;
-        else if (pos === "捕") score = s.def * 0.5 + s.pow * 0.3 + s.meet * 0.1 + s.run * 0.1;
-        else if (pos === "一") score = s.pow * 0.5 + s.meet * 0.3 + s.def * 0.1 + s.run * 0.1;
-        else if (pos === "二" || pos === "遊") score = s.def * 0.30 + s.run * 0.20 + s.meet * 0.25 + s.pow * 0.25;
-        else if (pos === "三") score = s.meet * 0.4 + s.pow * 0.3 + s.def * 0.2 + s.run * 0.1;
-        else if (pos === "中") score = s.run * 0.4 + s.def * 0.3 + s.meet * 0.2 + s.pow * 0.1;
-        else if (pos === "左") score = s.pow * 0.4 + s.meet * 0.3 + s.run * 0.2 + s.def * 0.1;
-        else if (pos === "右") score = s.pow * 0.4 + s.meet * 0.3 + s.def * 0.2 + s.run * 0.1;
+        const bat = (s.pow + s.meet) / 2;
+        if (pos === "DH") score = bat * 1.0;
+        else if (pos === "捕") score = s.def * 0.5 + bat * 0.4 + s.run * 0.1;
+        else if (pos === "一") score = bat * 0.8 + s.def * 0.1 + s.run * 0.1;
+        else if (pos === "二" || pos === "遊") score = s.def * 0.30 + s.run * 0.20 + bat * 0.5;
+        else if (pos === "三") score = bat * 0.7 + s.def * 0.2 + s.run * 0.1;
+        else if (pos === "中") score = s.run * 0.4 + s.def * 0.3 + bat * 0.3;
+        else if (pos === "左") score = bat * 0.7 + s.run * 0.2 + s.def * 0.1;
+        else if (pos === "右") score = bat * 0.7 + s.def * 0.2 + s.run * 0.1;
 
         if (pos !== "DH") {
           let expandedBestPos = [];
