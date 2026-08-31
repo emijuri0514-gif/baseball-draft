@@ -166,6 +166,17 @@
       const m = t.color && t.color.bg ? /#([0-9a-f]{6})/i.exec(t.color.bg) : null;
       return m ? '#' + m[1] : '#facc15';
     }
+    // 選手の出身球団名（文字列）からバッジ色を引く。TEAM_STYLEはteamNameHexより後ろで定義されるため、
+    // 呼び出し時点（キャンバス描画時）には定義済みになっている想定で参照する。
+    function teamNameHex(teamName) {
+      const style = TEAM_STYLE[teamName];
+      const m = style ? /#([0-9a-f]{6})/i.exec(style.bg) : null;
+      return m ? '#' + m[1] : '#64748b';
+    }
+    function teamNameTextColor(teamName) {
+      const style = TEAM_STYLE[teamName];
+      return (style && style.text === 'text-gray-900') ? '#111827' : '#ffffff';
+    }
 
     // 日本語は単語区切りが無いため、実測幅を見ながら1文字ずつ折り返す
     function wrapTextCJK(ctx, text, maxWidth) {
@@ -421,7 +432,7 @@
         orderLines.forEach(l => { ctx.fillText(l, barX0, y); y += 26; });
         if (pitcherNames.length) {
           ctx.fillStyle = '#94a3b8';
-          ctx.fillText(`(投) ${pitcherNames.join('、')}`, barX0, y);
+          ctx.fillText(`(投) ${pitcherNames.map(x => x.name).join('、')}`, barX0, y);
         }
       }
 
@@ -432,6 +443,155 @@
 
       return canvas;
     }
+
+    // ★ オーダーカード：採点結果ではなく「自分が組んだチームそのもの」を、実際のドラフトカードの
+    // ような縦長の一覧カードとして見せるためのシェア画像。スタメン9人＋投手陣を、出身球団と
+    // 何巡目で指名したかのバッジ付きで並べる。
+    function buildLineupCardCanvas(team) {
+      const batters = team.shareLineup || [];
+      const pitchers = team.sharePitchers || [];
+
+      const W = 1000;
+      const topMargin = 45, headerH = 175, labelH = 50, rowH = 78, sectionGap = 40, footerH = 55, bottomMargin = 30;
+      const H = topMargin + headerH + labelH + batters.length * rowH + sectionGap + labelH + pitchers.length * rowH + footerH + bottomMargin;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = Math.max(400, H);
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, W, canvas.height);
+
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(18, 18, W - 36, canvas.height - 36);
+      ctx.strokeStyle = 'rgba(234,179,8,0.5)';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(28, 28, W - 56, canvas.height - 56);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#eab308';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText('⚾ NPBドラフト会議シミュレーション', W / 2, topMargin + 30);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 48px sans-serif';
+      ctx.fillText(team.name.replace('(AI)', ''), W / 2, topMargin + 88);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(`編成 ${batters.length + pitchers.length}/12`, W / 2, topMargin + 118);
+
+      const marginX = 55;
+      const colOrderX = marginX + 15;
+      const colPosX = marginX + 95;
+      const colNameX = marginX + 180;
+      const colPillRightX = W - marginX - 15;
+
+      function sectionLabel(text, y) {
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#eab308';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText(text, marginX, y);
+      }
+
+      function drawRow(label, pos, name, teamName, round, y) {
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
+        ctx.beginPath();
+        ctx.roundRect(marginX, y, W - marginX * 2, rowH - 16, 10);
+        ctx.fill();
+        const midY = y + (rowH - 16) / 2;
+        ctx.textBaseline = 'middle';
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#facc15';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText(label, colOrderX, midY);
+
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(colPosX, midY - 20, 46, 40);
+        ctx.fillStyle = '#facc15';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(pos, colPosX + 23, midY + 1);
+
+        // ピル（出身球団・巡目）を先に幅を測っておき、名前が長い場合はピルとぶつからない幅まで自動縮小する
+        const pillText = round ? `${teamName}・${round}巡目` : (teamName || '');
+        ctx.font = 'bold 17px sans-serif';
+        const pillPadX = 14;
+        const pillTextW = pillText ? ctx.measureText(pillText).width : 0;
+        const pillW = pillText ? pillTextW + pillPadX * 2 : 0;
+        const pillGap = pillText ? 20 : 0;
+        const nameMaxW = colPillRightX - pillW - pillGap - colNameX;
+
+        let nameFont = 30;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${nameFont}px sans-serif`;
+        while (nameFont > 16 && ctx.measureText(name).width > nameMaxW) {
+          nameFont -= 2;
+          ctx.font = `bold ${nameFont}px sans-serif`;
+        }
+        ctx.fillText(name, colNameX, midY);
+
+        if (pillText) {
+          const pillH = 32;
+          const pillX = colPillRightX - pillW;
+          const pillY = midY - pillH / 2;
+          ctx.fillStyle = teamNameHex(teamName);
+          ctx.beginPath();
+          ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+          ctx.fill();
+          ctx.fillStyle = teamNameTextColor(teamName);
+          ctx.font = 'bold 17px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(pillText, pillX + pillW / 2, midY + 1);
+        }
+
+        ctx.textBaseline = 'alphabetic';
+      }
+
+      let y = topMargin + headerH;
+      sectionLabel('スタメン', y);
+      y += labelH;
+      batters.forEach(r => {
+        drawRow(`${r.order}`, r.pos, r.name, r.team, r.round, y);
+        y += rowH;
+      });
+
+      y += sectionGap;
+      sectionLabel('投手陣', y);
+      y += labelH;
+      pitchers.forEach(p => {
+        drawRow(p.pos, '投', p.name, p.team, p.round, y);
+        y += rowH;
+      });
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('dreamteam9.com（非公式ファンメイドツール）', W / 2, canvas.height - 25);
+
+      return canvas;
+    }
+
+    window.showLineupCard = function(teamId) {
+      const t = window.__shareTeamsById[teamId];
+      if (!t) return;
+      const canvas = buildLineupCardCanvas(t);
+      const dataUrl = canvas.toDataURL('image/png');
+      document.getElementById('share-preview-img').src = dataUrl;
+      document.getElementById('share-download-btn').onclick = () => {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `${t.name.replace('(AI)', '')}_myteam.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      };
+      document.getElementById('share-modal').classList.remove('hidden-screen');
+    };
 
     window.showShareCard = function(teamId, headline, subtitle) {
       const t = window.__shareTeamsById[teamId];
@@ -1560,6 +1720,7 @@
 
     function commitPick(team, player) {
       if (!player) return;
+      player.pickedRound = currentRound;
       team.roster.push(player);
       team.needsPick = false;
       availablePlayers = availablePlayers.filter(p => p.id !== player.id);
@@ -1866,6 +2027,7 @@
         let player = availablePlayers.find(p => p.id == pIdStr) || cTeams[0].currentPick;
 
         if (cTeams.length === 1) {
+          player.pickedRound = currentRound;
           cTeams[0].roster.push(player);
           cTeams[0].needsPick = false;
           availablePlayers = availablePlayers.filter(p => p.id !== player.id);
@@ -1946,6 +2108,7 @@
       const aiWinner = cTeams[winIdx];
 
       showAppAlert(`【スキップ】\n抽選の結果、${aiWinner.name.replace('(AI)','')} が ${player.name} を獲得しました。`, () => {
+        player.pickedRound = currentRound;
         aiWinner.roster.push(player);
         aiWinner.needsPick = false;
         availablePlayers = availablePlayers.filter(p => p.id !== player.id);
@@ -1998,6 +2161,7 @@
           : `${isUserInvolved ? "😭 ハズレ...\n" : "🤖 抽選の結果...\n"}${winnerTeam.name.replace('(AI)','')} が ${player.name} を獲得しました！`;
 
         showAppAlert(msg, () => {
+          player.pickedRound = currentRound;
           winnerTeam.roster.push(player);
           winnerTeam.needsPick = false;
           availablePlayers = availablePlayers.filter(p => p.id !== player.id);
@@ -2395,19 +2559,25 @@
           return `<span class="${om.cls} font-black">${om.mark}</span>${r.order}番[${r.pos}]${r.p.name}`;
         }).join(' / ');
 
-        const pNames = t.isUser
-          ? ['p1','p2','p3'].map(k => {
+        const pitcherObjs = t.isUser
+          ? ['p1','p2','p3'].map((k, idx) => {
               const p = t.roster.find(x => x && x.id == lineupAssignments[`slot-${k}`]);
-              return p ? p.name : null;
+              return p ? { pos: ["先発","中継","抑え"][idx], p } : null;
             }).filter(Boolean)
-          : (t.aiLineup ? [t.aiLineup.sp, t.aiLineup.rp, t.aiLineup.cp].filter(Boolean).map(p => p.name) : []);
+          : (t.aiLineup ? [
+              t.aiLineup.sp ? { pos: "先発", p: t.aiLineup.sp } : null,
+              t.aiLineup.rp ? { pos: "中継", p: t.aiLineup.rp } : null,
+              t.aiLineup.cp ? { pos: "抑え", p: t.aiLineup.cp } : null
+            ].filter(Boolean) : []);
+        const pNames = pitcherObjs.map(x => x.p.name);
 
         lineupStr += ` ／ (投)${pNames.join(",")}`;
         lineupStr += `<br><span class="text-[10px] text-yellow-300 font-black">打順適性 ${t.orderBuff >= 0 ? '+' : ''}${t.orderBuff.toFixed(1)}　守備適性 ${t.posBuff >= 0 ? '+' : ''}${t.posBuff.toFixed(1)}</span>`;
 
-        // シェアカード用に、打順・守備位置だけを保持しておく（◎〜✕マークは画像だけ見ても意味が分からないため含めない）
-        t.shareLineup = rows.map(r => ({ order: r.order, pos: r.pos, name: r.p.name }));
-        t.sharePitchers = pNames;
+        // シェアカード用に、打順・守備位置だけを保持しておく（◎〜✕マークは画像だけ見ても意味が分からないため含めない）。
+        // オーダーカード（マイチーム風の縦長カード）用に、出身球団・何巡目で指名したかも合わせて持たせておく。
+        t.shareLineup = rows.map(r => ({ order: r.order, pos: r.pos, name: r.p.name, team: r.p.team, round: r.p.pickedRound }));
+        t.sharePitchers = pitcherObjs.map(x => ({ pos: x.pos, name: x.p.name, team: x.p.team, round: x.p.pickedRound }));
 
         container.innerHTML += `
           <div class="bg-gray-800 rounded-lg p-4 border-l-8 ${t.color.border} shadow-xl">
@@ -2440,7 +2610,10 @@
               <p class="text-xs italic text-gray-300">「${t.comment}」</p>
             </div>
 
-            <button onclick="window.showShareCard(${t.id}, '⚾ ドラフト採点結果', '${medal} ${index + 1}位')" class="w-full text-xs bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-full">📤 シェア画像を作成</button>
+            <div class="flex gap-2">
+              <button onclick="window.showShareCard(${t.id}, '⚾ ドラフト採点結果', '${medal} ${index + 1}位')" class="flex-1 text-xs bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-full">📤 シェア画像を作成</button>
+              <button onclick="window.showLineupCard(${t.id})" class="flex-1 text-xs bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-full">📇 オーダーカードを作る</button>
+            </div>
           </div>
         `;
       });
@@ -3213,6 +3386,7 @@
             <p class="mt-2 font-bold ${champ.isUser ? 'text-green-400' : 'text-gray-400'}">${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '健闘及ばず…来年に期待です。'}</p>
           </div>
           <button onclick="window.showShareCard(${champ.id}, '🏆 プレーオフ優勝', '${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '見事な戴冠です'}')" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 rounded-full w-full mt-3">📤 優勝シェア画像を作成</button>
+          <button onclick="window.showLineupCard(${champ.id})" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-full w-full mt-2">📇 オーダーカードを作る</button>
           <button onclick="window.confirmReset()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
         `;
         return;
