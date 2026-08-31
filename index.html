@@ -639,10 +639,13 @@
         // getBaseStat()と同じ配分でスタミナを軽く効かせて先発と比較可能なスケールに揃える
         else if (pos === "中継" || pos === "抑え") score = p.pStats.pow * 0.55 + p.pStats.con * 0.30 + p.pStats.sta * 0.15;
 
+        // ★ 本職（bestPos[0]）ではないサブポジションは「少し下がる」程度の軽いペナルティに、
+        // 適性が無いロールへの起用は「大幅に下がる」ようはっきり差をつける（本職の方がサブより
+        // 素点が高い選手にランキング等で負けてしまう逆転現象を防ぐ）
         if (bestPositions[0] === pos) score += 5;
-        else if (bestPositions.includes(pos)) score += 2;
-        else if (pos === "先発" && !bestPositions.includes("先発")) score -= 10;
-        else if (pos !== "先発" && bestPositions[0] === "先発") score -= 5;
+        else if (bestPositions.includes(pos)) score -= 4;
+        else if (pos === "先発" && !bestPositions.includes("先発")) score -= 20;
+        else if (pos !== "先発" && bestPositions[0] === "先発") score -= 12;
       } else if (p.fStats) {
         const s = p.fStats;
         if (pos === "DH") score = s.pow * 0.5 + s.meet * 0.5;
@@ -661,21 +664,23 @@
             else expandedBestPos.push(bp);
           });
 
+          // ★ 本職ではないサブポジションは「少し下がる」程度の軽いペナルティに、適性が
+          // 無い守備位置への配置は「大幅に下がる」ようはっきり差をつける
           if (expandedBestPos[0] === pos || (bestPositions[0] === "外" && ["左", "中", "右"].includes(pos))) {
             score += 5;
           } else if (expandedBestPos.includes(pos)) {
-            score += 2;
+            score -= 4;
           } else {
             const isOut = ["左","中","右"].includes(pos);
             const pIsOut = expandedBestPos.some(bp => ["左","中","右"].includes(bp));
             const isIn = ["一","二","三","遊"].includes(pos);
             const pIsIn = expandedBestPos.some(bp => ["一","二","三","遊"].includes(bp));
 
-            if (expandedBestPos[0] === "捕" && pos !== "捕") score -= 10;
-            else if (pos === "捕" && !expandedBestPos.includes("捕")) score -= 20;
-            else if (isOut && pIsOut) score -= 2;
-            else if (isIn && pIsIn) score -= 3;
-            else score -= 15;
+            if (expandedBestPos[0] === "捕" && pos !== "捕") score -= 18;
+            else if (pos === "捕" && !expandedBestPos.includes("捕")) score -= 30;
+            else if (isOut && pIsOut) score -= 10;
+            else if (isIn && pIsIn) score -= 12;
+            else score -= 22;
           }
         }
       }
