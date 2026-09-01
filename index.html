@@ -110,7 +110,7 @@
         <button onclick="window.hideShareModal()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-full text-sm">閉じる</button>
         <button id="share-download-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-full text-sm">画像を保存</button>
       </div>
-      <p class="text-[10px] text-gray-400 mt-3 text-center leading-relaxed">スマホでは画像を長押しして保存すると、LINEなどでそのままシェアできます</p>
+      <p class="text-[10px] text-gray-400 mt-3 text-center leading-relaxed">「画像を保存」で共有メニューが開いたら「写真に保存」などを選んでください。開かない場合は、画像を長押ししても保存・シェアできます</p>
     </div>
   </div>
 
@@ -453,7 +453,7 @@
       const bannerSubColor = isDarkText ? 'rgba(17,24,39,0.75)' : 'rgba(255,255,255,0.85)';
 
       const W = 1000;
-      const bannerH = 140, introGap = 26, labelH = 46, rowH = 76, sectionGap = 24, footerH = 44, bottomMargin = 20;
+      const bannerH = 124, introGap = 60, labelH = 84, rowH = 100, sectionGap = 44, footerH = 44, bottomMargin = 20;
       const H = bannerH + introGap + labelH + batters.length * rowH + sectionGap + labelH + pitchers.length * rowH + footerH + bottomMargin;
 
       const canvas = document.createElement('canvas');
@@ -488,48 +488,44 @@
 
       ctx.fillStyle = bannerTextColor;
       ctx.font = 'bold 50px sans-serif';
-      ctx.fillText(team.name.replace('(AI)', ''), W / 2, 92);
-
-      ctx.fillStyle = bannerSubColor;
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillText(`編成 ${batters.length + pitchers.length}/12`, W / 2, 122);
+      ctx.fillText(team.name.replace('(AI)', ''), W / 2, 94);
 
       const marginX = 50;
       const colLabelX = marginX;
-      const colNameX = marginX + 165;
+      const colNameX = marginX + 220;
       const colTeamRightX = W - marginX;
 
       function sectionLabel(text, y) {
         ctx.textAlign = 'left';
         ctx.fillStyle = styleHex;
-        ctx.font = 'bold 26px sans-serif';
+        ctx.font = 'bold 50px sans-serif';
         ctx.fillText(text, marginX, y);
         ctx.strokeStyle = hexToRgba(styleHex, 0.5);
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(marginX, y + 12);
-        ctx.lineTo(W - marginX, y + 12);
+        ctx.moveTo(marginX, y + 20);
+        ctx.lineTo(W - marginX, y + 20);
         ctx.stroke();
       }
 
       function drawRow(label, pos, name, teamName, y) {
-        const midY = y + rowH / 2 - 8;
+        const midY = y + rowH / 2 - 10;
         ctx.textBaseline = 'middle';
 
         ctx.textAlign = 'left';
         ctx.fillStyle = '#e2e8f0';
-        ctx.font = 'bold 30px sans-serif';
+        ctx.font = 'bold 40px sans-serif';
         ctx.fillText(`${label} ${pos}`, colLabelX, midY);
 
         // 選手名が長い場合は、右側の出身球団表記とぶつからない幅まで自動的にフォントサイズを縮める
-        ctx.font = 'bold 17px sans-serif';
+        ctx.font = 'bold 30px sans-serif';
         const teamTextW = teamName ? ctx.measureText(teamName).width : 0;
         const nameMaxW = colTeamRightX - teamTextW - 24 - colNameX;
 
-        let nameFont = 40;
+        let nameFont = 50;
         ctx.fillStyle = '#ffffff';
         ctx.font = `bold ${nameFont}px sans-serif`;
-        while (nameFont > 26 && ctx.measureText(name).width > nameMaxW) {
+        while (nameFont > 32 && ctx.measureText(name).width > nameMaxW) {
           nameFont -= 2;
           ctx.font = `bold ${nameFont}px sans-serif`;
         }
@@ -538,15 +534,15 @@
         if (teamName) {
           ctx.textAlign = 'right';
           ctx.fillStyle = '#94a3b8';
-          ctx.font = 'bold 17px sans-serif';
+          ctx.font = 'bold 30px sans-serif';
           ctx.fillText(teamName, colTeamRightX, midY);
         }
 
         ctx.strokeStyle = 'rgba(255,255,255,0.12)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(marginX, y + rowH - 12);
-        ctx.lineTo(W - marginX, y + rowH - 12);
+        ctx.moveTo(marginX, y + rowH - 16);
+        ctx.lineTo(W - marginX, y + rowH - 16);
         ctx.stroke();
 
         ctx.textBaseline = 'alphabetic';
@@ -576,6 +572,34 @@
       return canvas;
     }
 
+    // data URLをBlobに変換（fetch()を使わず同期処理にすることで、クリックイベント直後の
+    // navigator.share()呼び出しがユーザー操作起因のまま扱われるようにしている）
+    function dataURLtoBlob(dataUrl) {
+      const [header, base64] = dataUrl.split(',');
+      const mime = /:(.*?);/.exec(header)[1];
+      const binary = atob(base64);
+      const arr = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+      return new Blob([arr], { type: mime });
+    }
+
+    // iOS Safari等は<a download>が効かず「保存」ボタンを押しても何も起きないため、
+    // まずOSの共有シート（写真に保存が選べる）を試し、使えない環境だけ従来のダウンロードにする
+    function downloadCanvasImage(dataUrl, filename) {
+      const blob = dataURLtoBlob(dataUrl);
+      const file = new File([blob], filename, { type: blob.type });
+      if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).catch(() => {});
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
     window.showLineupCard = function(teamId) {
       const t = window.__shareTeamsById[teamId];
       if (!t) return;
@@ -583,12 +607,7 @@
       const dataUrl = canvas.toDataURL('image/png');
       document.getElementById('share-preview-img').src = dataUrl;
       document.getElementById('share-download-btn').onclick = () => {
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = `${t.name.replace('(AI)', '')}_myteam.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        downloadCanvasImage(dataUrl, `${t.name.replace('(AI)', '')}_myteam.png`);
       };
       document.getElementById('share-modal').classList.remove('hidden-screen');
     };
@@ -600,12 +619,7 @@
       const dataUrl = canvas.toDataURL('image/png');
       document.getElementById('share-preview-img').src = dataUrl;
       document.getElementById('share-download-btn').onclick = () => {
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = `${t.name.replace('(AI)', '')}_draft_result.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        downloadCanvasImage(dataUrl, `${t.name.replace('(AI)', '')}_draft_result.png`);
       };
       document.getElementById('share-modal').classList.remove('hidden-screen');
     };
