@@ -496,7 +496,7 @@
 
       const marginX = 55;
       const colLabelX = marginX;
-      const colNameX = marginX + 105;
+      const colNameX = marginX + 120;
       const colTeamRightX = W - marginX;
 
       function sectionLabel(text, y) {
@@ -518,7 +518,7 @@
 
         ctx.textAlign = 'left';
         ctx.fillStyle = '#e2e8f0';
-        ctx.font = 'bold 17px sans-serif';
+        ctx.font = 'bold 22px sans-serif';
         ctx.fillText(`${label} ${pos}`, colLabelX, midY);
 
         // 選手名が長い場合は、右側の出身球団表記とぶつからない幅まで自動的にフォントサイズを縮める
@@ -556,7 +556,7 @@
       sectionLabel('スタメン', y);
       y += labelH;
       batters.forEach(r => {
-        drawRow(`${r.order}番`, r.pos, r.name, r.team, y);
+        drawRow(`${r.order}番`, r.pos, shortenForeignName(r.name), r.team, y);
         y += rowH;
       });
 
@@ -564,7 +564,7 @@
       sectionLabel('投手陣', y);
       y += labelH;
       pitchers.forEach(p => {
-        drawRow(p.pos, '', p.name, p.team, y);
+        drawRow(p.pos, '', shortenForeignName(p.name), p.team, y);
         y += rowH;
       });
 
