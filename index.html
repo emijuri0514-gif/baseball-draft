@@ -441,61 +441,71 @@
       return canvas;
     }
 
-    // ★ オーダーカード：採点結果ではなく「自分が組んだチームそのもの」を、実際のドラフトカードの
-    // ような縦長の一覧カードとして見せるためのシェア画像。スタメン9人＋投手陣を、出身球団と
-    // 何巡目で指名したかのバッジ付きで並べる。
+    // ★ オーダーカード：採点結果ではなく「自分が組んだチームそのもの」を、スタメン9人＋投手陣の
+    // 一覧カードとして見せるためのシェア画像。他のシェア画像と同じ紺グラデーション＋球団カラーの
+    // トーンを踏襲しつつ、上部を球団カラーの帯にして一目でどの球団かわかるようにしている。
     function buildLineupCardCanvas(team) {
       const batters = team.shareLineup || [];
       const pitchers = team.sharePitchers || [];
       const styleHex = teamHexColor(team);
+      const isDarkText = team.color && team.color.text === 'text-gray-900';
+      const bannerTextColor = isDarkText ? '#111827' : '#ffffff';
+      const bannerSubColor = isDarkText ? 'rgba(17,24,39,0.75)' : 'rgba(255,255,255,0.85)';
 
       const W = 1000;
-      const topMargin = 40, headerH = 150, labelH = 46, rowH = 64, sectionGap = 30, footerH = 50, bottomMargin = 30;
-      const H = topMargin + headerH + labelH + batters.length * rowH + sectionGap + labelH + pitchers.length * rowH + footerH + bottomMargin;
+      const bannerH = 132, introGap = 22, labelH = 38, rowH = 54, sectionGap = 20, footerH = 40, bottomMargin = 18;
+      const H = bannerH + introGap + labelH + batters.length * rowH + sectionGap + labelH + pitchers.length * rowH + footerH + bottomMargin;
 
       const canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = Math.max(400, H);
+      canvas.width = W; canvas.height = Math.max(360, H);
       const ctx = canvas.getContext('2d');
 
-      // 背景：他のシェア画像と同じ紺のグラデーション＋チームカラーのグローで、サイト全体の
-      // トーンと統一する（トレーディングカード風の縁取りや、球団色つきピルバッジは使わない）
       const bgGrad = ctx.createLinearGradient(0, 0, W, canvas.height);
       bgGrad.addColorStop(0, '#0f172a');
       bgGrad.addColorStop(1, '#1e293b');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, canvas.height);
 
-      const glow = ctx.createRadialGradient(W / 2, 0, 20, W / 2, 0, W * 0.7);
-      glow.addColorStop(0, hexToRgba(styleHex, 0.35));
+      const glow = ctx.createRadialGradient(W / 2, 0, 10, W / 2, 0, W * 0.9);
+      glow.addColorStop(0, hexToRgba(styleHex, 0.55));
       glow.addColorStop(1, hexToRgba(styleHex, 0));
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, W, canvas.height);
 
+      // 球団カラーの帯（バナー）
+      ctx.fillStyle = styleHex;
+      ctx.fillRect(0, 0, W, bannerH);
+      const bannerSheen = ctx.createLinearGradient(0, 0, 0, bannerH);
+      bannerSheen.addColorStop(0, 'rgba(255,255,255,0.14)');
+      bannerSheen.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = bannerSheen;
+      ctx.fillRect(0, 0, W, bannerH);
+
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#93c5fd';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.fillText('⚾ NPBドラフト会議シミュレーション', W / 2, topMargin + 28);
+      ctx.fillStyle = bannerSubColor;
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText('⚾ NPBドラフト会議シミュレーション', W / 2, 34);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 44px sans-serif';
-      ctx.fillText(team.name.replace('(AI)', ''), W / 2, topMargin + 82);
+      ctx.fillStyle = bannerTextColor;
+      ctx.font = 'bold 46px sans-serif';
+      ctx.fillText(team.name.replace('(AI)', ''), W / 2, 88);
 
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = bannerSubColor;
       ctx.font = 'bold 16px sans-serif';
-      ctx.fillText(`編成 ${batters.length + pitchers.length}/12`, W / 2, topMargin + 110);
+      ctx.fillText(`編成 ${batters.length + pitchers.length}/12`, W / 2, 116);
 
       const marginX = 55;
       const colLabelX = marginX;
-      const colNameX = marginX + 110;
+      const colNameX = marginX + 105;
       const colTeamRightX = W - marginX;
 
       function sectionLabel(text, y) {
         ctx.textAlign = 'left';
-        ctx.fillStyle = '#facc15';
+        ctx.fillStyle = styleHex;
         ctx.font = 'bold 20px sans-serif';
         ctx.fillText(text, marginX, y);
-        ctx.strokeStyle = 'rgba(250,204,21,0.4)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = hexToRgba(styleHex, 0.5);
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(marginX, y + 10);
         ctx.lineTo(W - marginX, y + 10);
@@ -503,12 +513,12 @@
       }
 
       function drawRow(label, pos, name, teamName, y) {
-        const midY = y + rowH / 2 - 8;
+        const midY = y + rowH / 2 - 6;
         ctx.textBaseline = 'middle';
 
         ctx.textAlign = 'left';
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = 'bold 18px sans-serif';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = 'bold 17px sans-serif';
         ctx.fillText(`${label} ${pos}`, colLabelX, midY);
 
         // 選手名が長い場合は、右側の出身球団表記とぶつからない幅まで自動的にフォントサイズを縮める
@@ -516,10 +526,10 @@
         const teamTextW = teamName ? ctx.measureText(teamName).width : 0;
         const nameMaxW = colTeamRightX - teamTextW - 24 - colNameX;
 
-        let nameFont = 28;
+        let nameFont = 26;
         ctx.fillStyle = '#ffffff';
         ctx.font = `bold ${nameFont}px sans-serif`;
-        while (nameFont > 15 && ctx.measureText(name).width > nameMaxW) {
+        while (nameFont > 14 && ctx.measureText(name).width > nameMaxW) {
           nameFont -= 2;
           ctx.font = `bold ${nameFont}px sans-serif`;
         }
@@ -527,22 +537,22 @@
 
         if (teamName) {
           ctx.textAlign = 'right';
-          ctx.fillStyle = '#64748b';
+          ctx.fillStyle = '#94a3b8';
           ctx.font = 'bold 16px sans-serif';
           ctx.fillText(teamName, colTeamRightX, midY);
         }
 
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(marginX, y + rowH - 14);
-        ctx.lineTo(W - marginX, y + rowH - 14);
+        ctx.moveTo(marginX, y + rowH - 10);
+        ctx.lineTo(W - marginX, y + rowH - 10);
         ctx.stroke();
 
         ctx.textBaseline = 'alphabetic';
       }
 
-      let y = topMargin + headerH;
+      let y = bannerH + introGap;
       sectionLabel('スタメン', y);
       y += labelH;
       batters.forEach(r => {
@@ -559,9 +569,9 @@
       });
 
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#94a3b8';
       ctx.font = 'bold 15px sans-serif';
-      ctx.fillText('dreamteam9.com', W / 2, canvas.height - 22);
+      ctx.fillText('dreamteam9.com', W / 2, canvas.height - 16);
 
       return canvas;
     }
