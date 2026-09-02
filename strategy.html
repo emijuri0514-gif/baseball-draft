@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <title>ドラフト攻略ガイド｜勝てるチーム編成のコツ｜NPBドラフト会議シミュレーション</title>
+  <meta name="description" content="NPBドラフト会議シミュレーションでS〜Aランクの最強チームを作るための攻略ガイド。序盤の指名戦略、ポジションバランス、スタメン打順・守備配置のコツ、コンボの狙い方、AI球団のスカウト傾向を読んだ立ち回りまで解説します。">
+  <meta property="og:title" content="ドラフト攻略ガイド｜勝てるチーム編成のコツ｜NPBドラフト会議シミュレーション">
+  <meta property="og:description" content="S〜Aランクの最強チームを作るための指名戦略・スタメン編成・コンボ活用のコツをまとめました。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/strategy.html">
+  <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+  </style>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🎯 ドラフト攻略ガイド</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
+        <a href="changelog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🛠️ 更新履歴</a>
+        <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
+        <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
+        <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
+        <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
+        <a href="rankings.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏆 ランキング</a>
+        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-10">
+
+    <section class="text-center">
+      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">S〜Aランクの最強チームを作るコツ</h2>
+      <p class="text-sm md:text-base text-gray-300 leading-relaxed">
+        ルール自体は<a href="howto.html" class="text-blue-400 hover:underline">遊び方ページ</a>で解説していますが、ここでは「どう指名して、どう編成すればAI採点で高評価をもらえるか」という実戦的なコツをまとめました。<br>
+        初心者の方はもちろん、なかなかB〜Cランクから抜け出せないという方もぜひ参考にしてください。
+      </p>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">① 序盤（1〜3巡目）の指名戦略</h3>
+      <div class="space-y-3 text-sm md:text-base text-gray-200">
+        <p><span class="font-black text-yellow-300">エースか主砲か、悩んだら「他球団が欲しがるかどうか」で選ぶ：</span>1巡目は競合が起きやすく、抽選で外れると次善手に回されてしまいます。総合力が飛び抜けた選手は他のAI球団も狙っている可能性が高いので、抽選運に頼りたくない場合はあえて「強いが一極集中で人気が割れそうな選手」を先に押さえるのも手です。</p>
+        <p><span class="font-black text-yellow-300">投手は早めに1〜2枚確保：</span>先発・中継ぎ・抑えの3枠は必ず埋める必要があります。終盤まで投手を後回しにすると、残っている投手の質が落ちて「黄金の投手陣」コンボが狙いにくくなります。特に総合力の高い投手は中盤で枯渇しやすいので、3巡目までに最低1枚は指名しておくと安全です。</p>
+        <p><span class="font-black text-yellow-300">守備位置がかぶる指名は避ける：</span>野手はDH込みで9枠ですが、同じ守備位置に強い選手が集中しても使えるのは1人だけです。序盤は「まだ誰も取っていないポジションの好選手」を優先すると、後半で枠を埋めやすくなります。</p>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">② ポジションバランスの考え方</h3>
+      <p class="text-sm md:text-base text-gray-200 mb-3">
+        野手9枠は「打力があれば誰でもいい」わけではなく、守備位置ごとに求められる能力が違います。<a href="rankings.html" class="text-blue-400 hover:underline">ポジション別ランキング</a>も参考にしつつ、特に以下の点を意識すると編成のバランスが崩れにくくなります。
+      </p>
+      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
+        <li><span class="font-black text-yellow-300">捕手・二塁・遊撃・中堅（センターライン）</span>は守備力が低いとスコアが伸びにくいポジションです。打力だけで無理に埋めるより、守備力とのバランスが取れた選手を優先しましょう。</li>
+        <li><span class="font-black text-yellow-300">一塁・DH</span>は打力がそのまま評価に直結するので、走力・守備力に不安がある強打者の置き場所として活用できます。</li>
+        <li>ドラフトの終盤で枠が余りそうな守備位置が見えてきたら、多少評価が落ちても「その位置に対応できる選手」を優先指名した方が、後で無理な配置をするより結果的にスコアが伸びます。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">③ スタメン打順・守備配置で採点を伸ばすコツ</h3>
+      <p class="text-sm md:text-base text-gray-200 mb-3">
+        指名した選手をどう並べるかでも最終スコアは変わります。編成画面の「◎最適 ○good △普通 ▲不向き ✕ミスマッチ」の適性表示を必ず確認してください。
+      </p>
+      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
+        <li>複数の守備位置に対応できる選手（ユーティリティ性の高い選手）は、他の選手が✕ミスマッチになりそうな枠に回すと編成全体の底上げになります。</li>
+        <li>打力は高いが守備が苦手な選手は、無理に外野や内野の要衝に置かず、DHや一塁など守備負担の軽い枠に回した方がトータルで評価が上がりやすいです。</li>
+        <li>投手は先発・中継ぎ・抑えで求められる能力の比率が異なります（先発はスタミナ・制球寄り、抑えは球威寄り）。獲得した投手の得意分野を見極めてから枠に当てはめましょう。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">④ コンボ発動を狙った編成の組み方</h3>
+      <p class="text-sm md:text-base text-gray-200 mb-3">
+        コンボは採点そのものには影響しませんが、試合内容を有利にする隠し味です。狙いすぎて無理な編成を組むと逆に採点が下がるので、あくまで「結果的に条件を満たしていたらラッキー」くらいの温度感で意識するのがおすすめです。詳しい条件は<a href="howto.html" class="text-blue-400 hover:underline">遊び方ページ</a>の一覧を参照してください。
+      </p>
+      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
+        <li><span class="font-black text-emerald-400">センターライン</span>は前述のポジションバランスと相性がよく、守備力重視で指名しているとそのまま条件を満たしやすいコンボです。</li>
+        <li><span class="font-black text-purple-400">黄金の投手陣</span>を狙うなら、序盤で投手を早めに確保する戦略とセットで考えると実現しやすくなります。</li>
+        <li><span class="font-black text-teal-400">ユーティリティ</span>は複数守備位置に対応できる選手を集めるコンボで、③で触れた「守備の穴を埋める選手」を優先していると自然と条件に近づきます。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑤ AI球団のスカウト傾向を読んだ立ち回り</h3>
+      <p class="text-sm md:text-base text-gray-200">
+        <a href="teams.html" class="text-blue-400 hover:underline">12球団のスカウト傾向</a>で紹介している通り、AI球団は球団ごとに重視する能力値が異なります。長距離砲補強型の球団と対戦する回はパワー型の打者が競合しやすく、投手王国タイプの球団と当たる回は好投手の争奪戦が激しくなります。対戦相手の顔ぶれを見て「今回はどのタイプの選手が競合しやすいか」を先読みできると、抽選に頼らず狙った選手を確保しやすくなります。
+      </p>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑥ ドラフト方式別の立ち回りの違い</h3>
+      <div class="space-y-3 text-sm md:text-base text-gray-200">
+        <p><span class="font-black text-yellow-300">NPB方式：</span>1巡目は抽選が絡むので、外れた場合の2番手候補まで決めておくと慌てずに済みます。2巡目以降は順番指名なので、自分の指名順が回ってくるまでに「誰が残っていそうか」を予測しておくと有利です。</p>
+        <p><span class="font-black text-yellow-300">全巡 同時指名：</span>毎巡くじ引きが発生するため、運の要素を割り切って「競合が予想される人気選手」よりも「確実に取れそうな選手」を積み上げる方が安定しやすい形式です。</p>
+        <p><span class="font-black text-yellow-300">完全ウェーバー：</span>抽選がない分、自分の指名順を把握した読み合いが重要になります。自分の順番の直前でライバル球団に取られそうな選手を先回りして押さえる、という判断がスコアに直結します。</p>
+      </div>
+    </section>
+
+    <div class="text-center pt-4 pb-10">
+      <a href="index.html" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-8 rounded-full shadow-lg">ゲームを始める</a>
+    </div>
+  </main>
+  <footer class="text-center text-gray-500 text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>
