@@ -37,6 +37,7 @@
         <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
         <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
         <a href="rankings.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏆 ランキング</a>
+        <a href="strategy.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🎯 攻略ガイド</a>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
     </div>
@@ -73,6 +74,7 @@
         <li><a href="#ep23" class="hover:underline">パワーとミートを分けて評価するのをやめた</a></li>
         <li><a href="#ep24" class="hover:underline">オーダーカードを二度作り直した話</a></li>
         <li><a href="#ep25" class="hover:underline">「保存できない」の一言で気づいたこと</a></li>
+        <li><a href="#ep26" class="hover:underline">検索流入を見ていて気づいた、足りないページ</a></li>
       </ol>
     </nav>
 
@@ -225,6 +227,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第25回：「保存できない」の一言で気づいたこと</h2>
       <p>オーダーカードの見た目を調整した直後、「画像を保存を押しても保存されない、写真フォルダに入ってない」という報告をもらった。試してみると、スマホの「保存」ボタンは「&lt;a download&gt;」というよくある方法で実装していたんだけど、これがiPhoneのSafariだとほぼ機能しない。ボタンを押しても画面上は何も起きたように見えず、実際どこにも保存されていなかった。実はモーダルの説明文には前から「長押しで保存してください」と書いてあったんだけど、それはこの問題を根本的に直さずに回避していただけだったんだなと今更ながら気づいた。</p>
       <p>調べてみたら、navigator.share()というブラウザ標準の機能を使うと、OSの共有シートを直接呼び出せて、そこから「写真に保存」が選べるらしい。canvasの画像をBlobに変換してファイルとして渡すだけで動くようになったので、保存ボタンはこの共有シートを最優先にして、対応していない環境だけ今まで通りのダウンロード処理にフォールバックする形にした。ついでに、「打順・ポジションはもっと大きくていい、名前は50、所属球団は30くらいで」という具体的な数字での要望ももらったので、そのまま文字サイズを底上げして、絶対に12/12にしかならない「編成12/12」の表示も削除した。数字がでかいだけで、タイムラインを指でスクロールしながらでも中身が読めるようになった気がする。地味な機能ほど、実際に使ってもらうまで壊れてることに気づけないんだなと思った回だった。</p>
+    </article>
+
+    <article id="ep26" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第26回：検索流入を見ていて気づいた、足りないページ</h2>
+      <p>暇な時間にGoogleサーチコンソールをぼんやり眺めるのが習慣になっていたんだけど、ある日「ドラフト シミュレーション 攻略」とか「スタメン編成 コツ」みたいな検索語で来てくれている人が地味にいることに気づいた。うれしい反面、よく考えたらそのワードで来た人が着地するページがなかった。遊び方ページはルールの説明はしっかりしているんだけど、「じゃあ実際どう指名すればS〜Aランクが取れるのか」という実戦的な話は一言も書いていなかった。ランキングページと球団紹介ページはあるのに、それをどう組み合わせて使えばいいのかを誰も教えてくれない状態だったんだと思う。</p>
+      <p>それで攻略ガイドのページを新しく作ることにした。中身は自分がドラフトするときに実際に考えていることをそのまま言語化しただけで、序盤の投手確保、センターラインの守備バランス、コンボは狙いすぎない方がいいこと、あたりを書き出した。書きながら「これ結局遊び方ページと内容がかぶるのでは」と一瞬手が止まったんだけど、ルール自体の説明と、そのルールをどう使えば勝てるかの話は別物だと割り切って進めた。あとナビゲーションのリンクを全ページに足す作業が地味に多くて、1ページ更新し忘れるだけでサイト内の導線が歯抜けになるので、8ページ分くらい機械的に追加して回った。こういう横展開が必要な作業ほど、後で漏れに気づいて青ざめるパターンが多いので、今回はちゃんと一つずつ確認しながらやった。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
