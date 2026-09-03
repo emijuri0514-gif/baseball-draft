@@ -25,7 +25,12 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
     .post p + p { margin-top: 0.85rem; }
-  </style>
+  
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
 </head>
 <body class="text-gray-100">
   <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
@@ -45,6 +50,9 @@
   </header>
 
   <main class="max-w-2xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
     <p class="text-sm text-gray-400 mb-8">趣味でドラフトシミュレーターを作っている過程を、思い出せる範囲でつらつら書いていく連載です。技術的な話も混ざりますが、基本は日記です。</p>
 
     <nav class="bg-gray-800 rounded-lg p-4 mb-10 text-sm">
@@ -272,6 +280,9 @@
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
+  
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
   </main>
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com

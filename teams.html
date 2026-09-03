@@ -26,7 +26,12 @@
     body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
     .bar-track { background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; height: 6px; }
     .bar-fill { height: 100%; border-radius: 999px; }
-  </style>
+  
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
 </head>
 <body class="text-gray-100">
   <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
@@ -44,12 +49,18 @@
   </header>
 
   <main class="max-w-4xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
     <p class="text-sm text-gray-400 mb-8 text-center">
       ゲーム内のAIは球団ごとに異なる「スカウト傾向」を持っており、能力値のどこを重視して指名するかが変わります。<br>
       同じ選手でも、担当するAI球団によって評価が変わるのはこのためです。
     </p>
 
     <div id="team-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+  
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
   </main>
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
