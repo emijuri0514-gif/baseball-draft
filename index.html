@@ -90,6 +90,18 @@
     /* スコアブック用のテーブルスタイル */
     .scorebook-table th { background-color: #374151; color: #9ca3af; font-size: 0.7rem; padding: 4px; border: 1px solid #4b5563; }
     .scorebook-table td { font-size: 0.75rem; padding: 4px; border: 1px solid #4b5563; text-align: center; }
+
+    /* ★ 実績解除トースト ★ */
+    .achievement-toast {
+      position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      border: 2px solid #facc15; border-radius: 12px;
+      padding: 10px 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      color: white; z-index: 400; transition: top 0.4s ease-out;
+      pointer-events: none; max-width: 90vw;
+    }
+    .achievement-toast.show { top: 16px; }
   </style>
   <script type="application/ld+json">
   {
@@ -135,6 +147,21 @@
     </div>
   </div>
 
+  <!-- 実績一覧モーダル（localStorageにこのブラウザだけの達成状況を保存する） -->
+  <div id="achievements-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-80 z-[300] flex flex-col items-center justify-center px-4 fade-in">
+    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-md p-4 text-white flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-sm font-black">🏅 実績 <span id="achievements-count" class="text-yellow-400"></span></p>
+        <button onclick="window.hideAchievementsModal()" class="text-gray-400 hover:text-white text-xl leading-none">×</button>
+      </div>
+      <div id="achievements-list" class="space-y-2 overflow-y-auto pr-1"></div>
+      <p class="text-[10px] text-gray-500 mt-3 text-center leading-relaxed">実績はこの端末・このブラウザだけに保存されます。他の端末には引き継がれません。</p>
+    </div>
+  </div>
+
+  <!-- 実績解除トースト -->
+  <div id="achievement-toast" class="achievement-toast"></div>
+
   <script>
     // 予期しない致命的エラー用の最終フォールバック。app-modal自体が壊れている可能性もあるため、
     // ここだけは確実に表示できるネイティブalertのままにしている。
@@ -177,6 +204,92 @@
     window.confirmReset = function() {
       showAppConfirm('本当に最初からやり直しますか？\n現在の進行状況はすべて失われます。', () => location.reload(), '最初からやり直す');
     };
+
+    // ==========================================
+    // 実績（アチーブメント）：このブラウザのlocalStorageだけに保存する自己満足要素。
+    // サーバーには何も送らず、他の端末には引き継がれない。
+    // ==========================================
+    const ACHIEVEMENTS = [
+      { id: 'first_play',     emoji: '🎉', title: 'はじめの一歩',   desc: '初めてドラフト＆スタメン編成を完了する' },
+      { id: 'rank_s',         emoji: '🥇', title: '伝説の采配',     desc: 'AI採点でSランクを獲得する' },
+      { id: 'rank_a5',        emoji: '📈', title: '常勝の資格',     desc: 'Aランク以上を通算5回獲得する' },
+      { id: 'champion',       emoji: '🏆', title: '頂点に立つ者',   desc: 'プレーオフで優勝する' },
+      { id: 'combo_power',    emoji: '💪', title: '超重量打線',     desc: '「超重量打線」コンボを発動する' },
+      { id: 'combo_speed',    emoji: '🏃', title: '機動力野球',     desc: '「機動力野球」コンボを発動する' },
+      { id: 'combo_defense',  emoji: '🧤', title: '鉄壁の守備陣',   desc: '「鉄壁の守備陣」コンボを発動する' },
+      { id: 'combo_pitching', emoji: '⚾', title: '黄金の投手陣',   desc: '「黄金の投手陣」コンボを発動する' },
+      { id: 'combo_multi',    emoji: '🎇', title: 'コンボ乱発',     desc: '1回の編成で3つ以上のコンボを同時発動する' },
+      { id: 'all_teams',      emoji: '🗾', title: '全球団制覇',     desc: '12球団すべてを担当球団としてプレーする' }
+    ];
+    const ACH_STORAGE_KEY = 'dt9_achievements_v1';
+
+    function loadAchievementState() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(ACH_STORAGE_KEY));
+        return {
+          unlocked: (raw && raw.unlocked) || {},
+          stats: {
+            aRankCount: (raw && raw.stats && raw.stats.aRankCount) || 0,
+            playedTeams: (raw && raw.stats && raw.stats.playedTeams) || []
+          }
+        };
+      } catch (e) {
+        return { unlocked: {}, stats: { aRankCount: 0, playedTeams: [] } };
+      }
+    }
+    let achState = loadAchievementState();
+    function saveAchievementState() {
+      try { localStorage.setItem(ACH_STORAGE_KEY, JSON.stringify(achState)); } catch (e) {}
+    }
+
+    function showAchievementToast(id) {
+      const a = ACHIEVEMENTS.find(x => x.id === id);
+      if (!a) return;
+      const el = document.getElementById('achievement-toast');
+      el.innerHTML = `<div class="text-2xl">${a.emoji}</div><div><div class="text-[10px] text-yellow-300 font-black">実績解除</div><div class="text-sm font-black">${a.title}</div></div>`;
+      el.classList.add('show');
+      clearTimeout(window.__achToastTimer);
+      window.__achToastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+    }
+
+    function unlockAchievement(id) {
+      if (achState.unlocked[id]) return;
+      achState.unlocked[id] = true;
+      saveAchievementState();
+      showAchievementToast(id);
+      updateAchievementsBadge();
+    }
+
+    window.showAchievementsModal = function() {
+      const list = document.getElementById('achievements-list');
+      list.innerHTML = ACHIEVEMENTS.map(a => {
+        const done = !!achState.unlocked[a.id];
+        return `
+          <div class="flex items-center gap-3 p-3 rounded-lg ${done ? 'bg-gray-700' : 'bg-gray-900 opacity-50'}">
+            <div class="text-2xl">${done ? a.emoji : '🔒'}</div>
+            <div>
+              <div class="text-sm font-black ${done ? 'text-yellow-300' : 'text-gray-400'}">${a.title}</div>
+              <div class="text-[11px] text-gray-400">${a.desc}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      const count = ACHIEVEMENTS.filter(a => achState.unlocked[a.id]).length;
+      document.getElementById('achievements-count').textContent = `${count} / ${ACHIEVEMENTS.length}`;
+      document.getElementById('achievements-modal').classList.remove('hidden-screen');
+    };
+    window.hideAchievementsModal = function() {
+      document.getElementById('achievements-modal').classList.add('hidden-screen');
+    };
+
+    function updateAchievementsBadge() {
+      const count = ACHIEVEMENTS.filter(a => achState.unlocked[a.id]).length;
+      const el = document.getElementById('achievements-badge-count');
+      if (el) el.textContent = `(${count}/${ACHIEVEMENTS.length})`;
+    }
+    // このscriptブロックの実行時点では下部の実績ボタンがまだDOMに存在しないため、
+    // パース完了を待ってからバッジを初期表示する
+    document.addEventListener('DOMContentLoaded', updateAchievementsBadge);
 
     // ==========================================
     // 結果シェアカード（Canvasで画像を生成してモーダル表示・保存）
@@ -775,6 +888,7 @@
       <p id="draft-mode-desc" class="text-[11px] text-left text-gray-500 mb-6 leading-snug"></p>
 
       <button onclick="window.startGame()" class="w-full bg-blue-600 hover:bg-blue-800 text-white font-black py-4 rounded-lg text-lg shadow-lg">ドラフト会議を開始する</button>
+      <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
       <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3">
         <a href="howto.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">📖 遊び方・ルールを見る</a>
         <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">🎯 攻略ガイド</a>
@@ -2584,6 +2698,31 @@
 
         // コメント生成：コンボの発動状況ではなく、実際の打線・投手力の数値を見て分析する
         t.comment = generateTeamComment(t.radarData, orderBuff, t.finalScore);
+
+        // --- 実績判定（担当球団のみ。AI球団の結果では解除しない） ---
+        if (t.isUser) {
+          unlockAchievement('first_play');
+
+          const grade = getGradeInfo(t.finalScore).grade;
+          if (grade === 'S') unlockAchievement('rank_s');
+          if (grade === 'S' || grade === 'A') {
+            achState.stats.aRankCount++;
+            saveAchievementState();
+            if (achState.stats.aRankCount >= 5) unlockAchievement('rank_a5');
+          }
+
+          if (comboNames.includes('【超重量打線】')) unlockAchievement('combo_power');
+          if (comboNames.includes('【機動力野球】')) unlockAchievement('combo_speed');
+          if (comboNames.includes('【鉄壁の守備陣】')) unlockAchievement('combo_defense');
+          if (comboNames.includes('【黄金の投手陣】')) unlockAchievement('combo_pitching');
+          if (comboNames.length >= 3) unlockAchievement('combo_multi');
+
+          if (!achState.stats.playedTeams.includes(t.baseName)) {
+            achState.stats.playedTeams.push(t.baseName);
+            saveAchievementState();
+            if (achState.stats.playedTeams.length >= 12) unlockAchievement('all_teams');
+          }
+        }
       });
 
       // ★ teams本体は並べ替えず、表示用のコピーだけソートする
@@ -3431,6 +3570,7 @@
       if (playoffState.champion) {
         const champ = playoffState.champion;
         registerShareTeam(champ);
+        if (champ.isUser) unlockAchievement('champion');
         nextPanel.innerHTML = `
           <div class="text-center py-3 px-3 rounded border-4 ${champ.color.border}">
             <p class="text-xs text-gray-400 mb-1">🏆 プレーオフ優勝</p>
