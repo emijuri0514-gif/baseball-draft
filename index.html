@@ -2073,6 +2073,14 @@
 
       const scouting = team.scouting || DEFAULT_SCOUTING;
 
+      // ★ 野手側は4項目の加重平均で評価するため、1項目だけ極端な重みにしても他の3項目に
+      // 薄められ、TEAM_SCOUTINGの実際の値（0.75〜1.30）に対して最終スコアへの影響は
+      // ±10%程度に収まる。投手側はscouting.pitcherを基礎点にそのまま掛けるだけだったため、
+      // 同じ0.80〜1.35という値の範囲がそのまま±35%も効いてしまい、「投手王国」系の球団だけ
+      // 打者偏重の球団よりずっと強く投手に偏る、という野手・投手間で不公平な偏りを生んでいた。
+      // 野手と同程度の影響幅になるよう、中立(1.0)からのズレを3割に圧縮して使う。
+      const pitcherScoutMult = 1 + (scouting.pitcher - 1) * 0.3;
+
       candidates.forEach(p => {
         let score = Math.random() * 2;
 
@@ -2101,7 +2109,7 @@
           // 「同じ選手層の質」でも投手側が常に野手より高得点になり、打力の高い野手が
           // 中盤まで残ってしまう。実測の平均差（約6点）を差し引いて、野手と対等な
           // スケールで比較できるようにする。
-          score += (getBaseStat(p) - 6.3) * scouting.pitcher;
+          score += (getBaseStat(p) - 6.3) * pitcherScoutMult;
         }
 
         // ★ 守備位置フィット：本当に必要な枠（一番相性の良い open slot）にどれだけ嵌るか
