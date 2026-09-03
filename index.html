@@ -1226,6 +1226,19 @@
   </div>
 
   <script>
+    // ★ 均等シャッフル（Fisher-Yates）★
+    // `array.sort(() => 0.5 - Math.random())` は一見ランダムに見えるが実際には偏りがあり、
+    // 配列の先頭・末尾の要素が中間の順位より極端な順位（1番手や最下位）になりやすい。
+    // 指名順・対戦相手決定など「本当に均等な確率であってほしい」箇所は必ずこちらを使う。
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
     const QUOTAS = { "投手": 3, "捕手": 1, "内野手": 4, "外野手": 3 };
     const TOTAL_ROUNDS = 12;
     const ALL_TEAMS = ["巨人", "阪神", "DeNA", "ヤクルト", "中日", "広島", "オリックス", "ロッテ", "ソフトバンク", "楽天", "日本ハム", "西武"];
@@ -1621,7 +1634,7 @@
         personality: (TEAM_SCOUTING[userTeamSelect] || DEFAULT_SCOUTING).label
       }];
 
-      let availableAiTeams = ALL_TEAMS.filter(t => t !== userTeamSelect).sort(() => 0.5 - Math.random());
+      let availableAiTeams = shuffleArray(ALL_TEAMS.filter(t => t !== userTeamSelect));
 
       for (let i = 1; i <= aiCount; i++) {
         const teamName = availableAiTeams[i-1];
@@ -1641,7 +1654,7 @@
       initDraftMatrix();
 
       draftMode = document.getElementById('draft-mode').value;
-      waiverBaseOrder = teams.map(t => t.id).sort(() => 0.5 - Math.random());
+      waiverBaseOrder = shuffleArray(teams.map(t => t.id));
       waiverLog = [];
 
       window.switchDraftView('list');
@@ -2267,7 +2280,7 @@
       const isUserInvolved = cTeams.some(t => t.isUser);
       document.getElementById('lottery-instruction').textContent = isUserInvolved ? "あなたの封筒を選んでクリック" : "AI球団が抽選を行っています...";
 
-      currentLotteryContext.shuffledTeams = [...cTeams].sort(() => 0.5 - Math.random());
+      currentLotteryContext.shuffledTeams = shuffleArray(cTeams);
 
       const skipBtn = document.getElementById('lottery-skip-btn');
       if (!isUserInvolved) {
@@ -2327,7 +2340,7 @@
       let assignedTeams = [];
       if (isUserInvolved) {
         const userTeam = cTeams.find(t => t.isUser);
-        const aiTeams = cTeams.filter(t => !t.isUser).sort(() => 0.5 - Math.random());
+        const aiTeams = shuffleArray(cTeams.filter(t => !t.isUser));
         for(let i=0; i<total; i++) {
           if (i === selectedIdx) {
             assignedTeams[i] = userTeam;
