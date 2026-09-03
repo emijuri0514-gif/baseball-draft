@@ -128,7 +128,10 @@
         <button onclick="window.hideShareModal()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-full text-sm">閉じる</button>
         <button id="share-download-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-full text-sm">画像を保存</button>
       </div>
-      <p class="text-[10px] text-gray-400 mt-3 text-center leading-relaxed">「画像を保存」で共有メニューが開いたら「写真に保存」などを選んでください。開かない場合は、画像を長押ししても保存・シェアできます</p>
+      <button onclick="window.openXShare()" class="w-full mt-2 bg-black hover:bg-gray-900 text-white font-black py-3 rounded-full text-sm flex items-center justify-center gap-2">
+        <span>𝕏でシェア</span>
+      </button>
+      <p class="text-[10px] text-gray-400 mt-3 text-center leading-relaxed">「画像を保存」で共有メニューが開いたら「写真に保存」などを選んでください。開かない場合は、画像を長押ししても保存・シェアできます。保存した画像は「𝕏でシェア」で開いた投稿画面に添付してください</p>
     </div>
   </div>
 
@@ -643,6 +646,15 @@
     };
     window.hideShareModal = function() {
       document.getElementById('share-modal').classList.add('hidden-screen');
+    };
+
+    // 文章は自動生成せず、リンクとタグだけ入れた投稿画面を新規タブで開く（画像は各自で添付）
+    window.openXShare = function() {
+      const params = new URLSearchParams({
+        url: 'https://dreamteam9.com/',
+        hashtags: 'NPBドラフトシミュレーション'
+      });
+      window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
     };
 
     function getBaseStat(p) {
