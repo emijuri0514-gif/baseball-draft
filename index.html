@@ -1596,6 +1596,15 @@
       const userTeamSelect = document.getElementById('user-team').value;
       const aiCount = parseInt(document.getElementById('ai-count').value);
 
+      // ★ 何人がドラフトを開始したかをGA4で計測する（担当球団・AI球団数・ドラフト方式も一緒に送る）
+      if (typeof gtag === 'function') {
+        gtag('event', 'draft_start', {
+          team: userTeamSelect,
+          ai_count: aiCount,
+          draft_mode: document.getElementById('draft-mode').value
+        });
+      }
+
       userHadSRankThisRun = false;
       availablePlayers = [...initialDatabase];
 
