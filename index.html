@@ -328,6 +328,13 @@
       return m ? '#' + m[1] : '#facc15';
     }
 
+    // オーダーカードは紺のグラデーション背景（#0f172a〜#1e293b）の上に球団カラーをそのまま
+    // 文字色として使っているため、オリックスの球団カラー(#0f172a)は背景と同色になり見出しが
+    // 見えなくなる。文字として使う場合はこちらを通し、背景に溶け込む色だけ読みやすい金色に差し替える。
+    function readableAccentColor(hex) {
+      return hex.toLowerCase() === '#0f172a' ? '#a47b01' : hex;
+    }
+
     // 日本語は単語区切りが無いため、実測幅を見ながら1文字ずつ折り返す
     function wrapTextCJK(ctx, text, maxWidth) {
       const lines = [];
@@ -601,6 +608,7 @@
       const batters = team.shareLineup || [];
       const pitchers = team.sharePitchers || [];
       const styleHex = teamHexColor(team);
+      const labelHex = readableAccentColor(styleHex);
       const isDarkText = team.color && team.color.text === 'text-gray-900';
       const bannerTextColor = isDarkText ? '#111827' : '#ffffff';
       const bannerSubColor = isDarkText ? 'rgba(17,24,39,0.75)' : 'rgba(255,255,255,0.85)';
@@ -650,10 +658,10 @@
 
       function sectionLabel(text, y) {
         ctx.textAlign = 'left';
-        ctx.fillStyle = styleHex;
+        ctx.fillStyle = labelHex;
         ctx.font = 'bold 50px sans-serif';
         ctx.fillText(text, marginX, y);
-        ctx.strokeStyle = hexToRgba(styleHex, 0.5);
+        ctx.strokeStyle = hexToRgba(labelHex, 0.5);
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(marginX, y + 20);
