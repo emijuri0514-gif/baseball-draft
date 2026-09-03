@@ -209,17 +209,19 @@
     // 実績（アチーブメント）：このブラウザのlocalStorageだけに保存する自己満足要素。
     // サーバーには何も送らず、他の端末には引き継がれない。
     // ==========================================
+    const ACH_TIERS = ['初級', '中級', '上級'];
     const ACHIEVEMENTS = [
-      { id: 'first_play',     emoji: '🎉', title: 'はじめの一歩',   desc: '初めてドラフト＆スタメン編成を完了する' },
-      { id: 'rank_s',         emoji: '🥇', title: '伝説の采配',     desc: 'AI採点でSランクを獲得する' },
-      { id: 'rank_a5',        emoji: '📈', title: '常勝の資格',     desc: 'Aランク以上を通算5回獲得する' },
-      { id: 'champion',       emoji: '🏆', title: '頂点に立つ者',   desc: 'プレーオフで優勝する' },
-      { id: 'combo_power',    emoji: '💪', title: '超重量打線',     desc: '「超重量打線」コンボを発動する' },
-      { id: 'combo_speed',    emoji: '🏃', title: '機動力野球',     desc: '「機動力野球」コンボを発動する' },
-      { id: 'combo_defense',  emoji: '🧤', title: '鉄壁の守備陣',   desc: '「鉄壁の守備陣」コンボを発動する' },
-      { id: 'combo_pitching', emoji: '⚾', title: '黄金の投手陣',   desc: '「黄金の投手陣」コンボを発動する' },
-      { id: 'combo_multi',    emoji: '🎇', title: 'コンボ乱発',     desc: '1回の編成で3つ以上のコンボを同時発動する' },
-      { id: 'all_teams',      emoji: '🗾', title: '全球団制覇',     desc: '12球団すべてを担当球団としてプレーする' }
+      { id: 'first_play',     tier: '初級', emoji: '🎉', title: 'はじめの一歩',       desc: '初めてドラフト＆スタメン編成を完了する' },
+      { id: 'combo_power',    tier: '初級', emoji: '💪', title: '超重量打線',         desc: '「超重量打線」コンボを発動する' },
+      { id: 'combo_speed',    tier: '初級', emoji: '🏃', title: '機動力野球',         desc: '「機動力野球」コンボを発動する' },
+      { id: 'combo_defense',  tier: '初級', emoji: '🧤', title: '鉄壁の守備陣',       desc: '「鉄壁の守備陣」コンボを発動する' },
+      { id: 'combo_pitching', tier: '初級', emoji: '⚾', title: '黄金の投手陣',       desc: '「黄金の投手陣」コンボを発動する' },
+      { id: 'rank_s',         tier: '中級', emoji: '🥇', title: '伝説の采配',         desc: 'AI採点でSランクを獲得する' },
+      { id: 'champion',       tier: '中級', emoji: '🏆', title: '頂点に立つ者',       desc: 'プレーオフで優勝する' },
+      { id: 'rank_a5',        tier: '中級', emoji: '📈', title: '常勝の資格',         desc: 'Aランク以上を通算5回獲得する' },
+      { id: 'all_teams',      tier: '中級', emoji: '🗾', title: '全球団制覇',         desc: '12球団すべてを担当球団としてプレーする' },
+      { id: 'combo_multi',    tier: '上級', emoji: '🎇', title: 'パーフェクトロマン', desc: '1回の編成で8つ以上のコンボを同時発動する' },
+      { id: 's_and_champion', tier: '上級', emoji: '👑', title: '完全制覇',           desc: 'Sランクを獲得したチームでプレーオフも優勝する（同じプレイ内で達成）' }
     ];
     const ACH_STORAGE_KEY = 'dt9_achievements_v1';
 
@@ -260,17 +262,34 @@
       updateAchievementsBadge();
     }
 
+    const ACH_TIER_STYLE = {
+      '初級': { badge: 'bg-green-600',  text: 'text-green-400' },
+      '中級': { badge: 'bg-blue-600',   text: 'text-blue-400' },
+      '上級': { badge: 'bg-red-600',    text: 'text-red-400' }
+    };
+
     window.showAchievementsModal = function() {
       const list = document.getElementById('achievements-list');
-      list.innerHTML = ACHIEVEMENTS.map(a => {
-        const done = !!achState.unlocked[a.id];
-        return `
-          <div class="flex items-center gap-3 p-3 rounded-lg ${done ? 'bg-gray-700' : 'bg-gray-900 opacity-50'}">
-            <div class="text-2xl">${done ? a.emoji : '🔒'}</div>
-            <div>
-              <div class="text-sm font-black ${done ? 'text-yellow-300' : 'text-gray-400'}">${a.title}</div>
-              <div class="text-[11px] text-gray-400">${a.desc}</div>
+      list.innerHTML = ACH_TIERS.map(tier => {
+        const items = ACHIEVEMENTS.filter(a => a.tier === tier);
+        const doneCount = items.filter(a => achState.unlocked[a.id]).length;
+        const style = ACH_TIER_STYLE[tier];
+        const rows = items.map(a => {
+          const done = !!achState.unlocked[a.id];
+          return `
+            <div class="flex items-center gap-3 p-3 rounded-lg ${done ? 'bg-gray-700' : 'bg-gray-900 opacity-50'}">
+              <div class="text-2xl">${done ? a.emoji : '🔒'}</div>
+              <div>
+                <div class="text-sm font-black ${done ? 'text-yellow-300' : 'text-gray-400'}">${a.title}</div>
+                <div class="text-[11px] text-gray-400">${a.desc}</div>
+              </div>
             </div>
+          `;
+        }).join('');
+        return `
+          <div class="mb-4">
+            <p class="text-xs font-black mb-2"><span class="${style.badge} text-white px-2 py-0.5 rounded-full">${tier}</span> <span class="${style.text} ml-1">${doneCount} / ${items.length}</span></p>
+            <div class="space-y-2">${rows}</div>
           </div>
         `;
       }).join('');
@@ -1380,6 +1399,7 @@
 
     let availablePlayers = [];
     let teams = [];
+    let userHadSRankThisRun = false; // 「Sランク＋優勝」の上級実績用に、この1プレイ内での達成状況を覚えておく
     let currentRound = 1;
     let isHazurePhase = false;
     let isDrawingLottery = false;
@@ -1576,6 +1596,7 @@
       const userTeamSelect = document.getElementById('user-team').value;
       const aiCount = parseInt(document.getElementById('ai-count').value);
 
+      userHadSRankThisRun = false;
       availablePlayers = [...initialDatabase];
 
       teams = [{
@@ -2704,7 +2725,7 @@
           unlockAchievement('first_play');
 
           const grade = getGradeInfo(t.finalScore).grade;
-          if (grade === 'S') unlockAchievement('rank_s');
+          if (grade === 'S') { unlockAchievement('rank_s'); userHadSRankThisRun = true; }
           if (grade === 'S' || grade === 'A') {
             achState.stats.aRankCount++;
             saveAchievementState();
@@ -2715,7 +2736,7 @@
           if (comboNames.includes('【機動力野球】')) unlockAchievement('combo_speed');
           if (comboNames.includes('【鉄壁の守備陣】')) unlockAchievement('combo_defense');
           if (comboNames.includes('【黄金の投手陣】')) unlockAchievement('combo_pitching');
-          if (comboNames.length >= 3) unlockAchievement('combo_multi');
+          if (comboNames.length >= 8) unlockAchievement('combo_multi');
 
           if (!achState.stats.playedTeams.includes(t.baseName)) {
             achState.stats.playedTeams.push(t.baseName);
@@ -3570,7 +3591,10 @@
       if (playoffState.champion) {
         const champ = playoffState.champion;
         registerShareTeam(champ);
-        if (champ.isUser) unlockAchievement('champion');
+        if (champ.isUser) {
+          unlockAchievement('champion');
+          if (userHadSRankThisRun) unlockAchievement('s_and_champion');
+        }
         nextPanel.innerHTML = `
           <div class="text-center py-3 px-3 rounded border-4 ${champ.color.border}">
             <p class="text-xs text-gray-400 mb-1">🏆 プレーオフ優勝</p>
