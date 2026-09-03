@@ -24,7 +24,12 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
-  </style>
+  
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -87,6 +92,7 @@
         <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
         <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
         <a href="strategy.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🎯 攻略ガイド</a>
+        <a href="draft-system.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🗒️ 本物のドラフトとは</a>
         <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
         <a href="rankings.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏆 ランキング</a>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
@@ -95,6 +101,9 @@
   </header>
 
   <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
     <div class="space-y-4">
 
       <details class="bg-gray-800 rounded-lg p-4" open>
@@ -143,6 +152,9 @@
       </details>
 
     </div>
+  
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
   </main>
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com

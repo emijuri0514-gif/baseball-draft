@@ -24,7 +24,12 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
-  </style>
+  
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
 </head>
 <body class="text-gray-100">
   <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
@@ -35,6 +40,7 @@
         <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
         <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
         <a href="strategy.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🎯 攻略ガイド</a>
+        <a href="draft-system.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🗒️ 本物のドラフトとは</a>
         <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
         <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
         <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
@@ -45,12 +51,21 @@
   </header>
 
   <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
     <p class="text-sm text-gray-400 mb-6">思いついた順に直しているので番号やバージョンはありません。新しいものが上です。</p>
 
     <ol class="relative border-l border-gray-700 space-y-8 ml-2">
 
       <li class="ml-6">
         <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">「本物のドラフト会議とは」ページを追加</h2>
+        <p class="text-sm text-gray-300">実際のNPBドラフト会議の指名方式（1巡目抽選＋2巡目以降ウェーバー）、支配下選手と育成選手の違い、FA制度との違いなどを解説する新ページを追加。本サイトのシミュレーションとの違いも明記した。全ページのナビゲーションからアクセスできる。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
         <h2 class="font-black text-base mb-1">実績（アチーブメント）機能を追加（初級・中級・上級）</h2>
         <p class="text-sm text-gray-300">Sランク獲得やプレーオフ優勝、各種コンボ発動、全12球団制覇など11種類の実績を、難易度別（初級・中級・上級）に分けて追加。上級には「1回の編成で8つ以上のコンボを同時発動」「Sランク獲得チームで優勝」という特に難しい実績を用意した。トップ画面の「🏅 実績を見る」から達成状況を確認できる。記録はこの端末のブラウザだけに保存され、他の端末には引き継がれない。</p>
       </li>
@@ -194,6 +209,9 @@
       </li>
 
     </ol>
+  
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
   </main>
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
