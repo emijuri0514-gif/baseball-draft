@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%E2%9A%BE%3C/text%3E%3C/svg%3E">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <title>本物のNPBドラフト会議の仕組みを解説｜NPBドラフト会議シミュレーション</title>
+  <meta name="description" content="実際のNPBドラフト会議はどんな仕組みで行われているのか。1巡目抽選・2巡目以降ウェーバーの指名方式、支配下選手と育成選手の違い、FA制度との違いなどを解説。本サイトのシミュレーションとの違いもまとめました。">
+  <meta property="og:title" content="本物のNPBドラフト会議の仕組みを解説｜NPBドラフト会議シミュレーション">
+  <meta property="og:description" content="実際のNPBドラフト会議の指名方式や支配下・育成選手の違いなど、本物の制度を解説します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/draft-system.html">
+  <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "本物のNPBドラフト会議の仕組みを解説",
+    "description": "実際のNPBドラフト会議の指名方式、支配下選手と育成選手の違い、FA制度との違いなどをまとめた解説記事。",
+    "image": "https://dreamteam9.com/ogp.jpg",
+    "mainEntityOfPage": "https://dreamteam9.com/draft-system.html",
+    "inLanguage": "ja",
+    "publisher": { "@type": "Organization", "name": "dreamteam9.com" }
+  }
+  </script>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🗒️ 本物のドラフト会議とは</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
+        <a href="changelog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🛠️ 更新履歴</a>
+        <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
+        <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
+        <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
+        <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
+        <a href="rankings.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏆 ランキング</a>
+        <a href="strategy.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🎯 攻略ガイド</a>
+        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-10">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="text-center">
+      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">本物のNPBドラフト会議はどんな仕組み？</h2>
+      <p class="text-sm md:text-base text-gray-300 leading-relaxed">
+        本サイトは現役のNPB選手を12球団のAIと奪い合う「if」のシミュレーションですが、実際のドラフト会議はまったく違うルールで行われています。<br>
+        ここでは本物のNPBドラフト会議の仕組みを解説します。<a href="howto.html" class="text-blue-400 hover:underline">本サイトの遊び方</a>と比べてみるのも面白いはずです。
+      </p>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">① NPBドラフト会議とは</h3>
+      <p class="text-sm md:text-base text-gray-200">
+        正式名称は「新人選手選択会議」。プロ野球12球団が、その年にプロ入りを希望する高校生・大学生・社会人・独立リーグの選手など「アマチュア選手」を指名する会議です。毎年秋（例年10月頃）に開催され、プロ野球界の一大イベントとして中継・報道されます。本サイトのように現役のプロ選手を指名し合うものではなく、あくまで「これからプロ入りする新人」を対象にしている点が最大の違いです。
+      </p>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">② 指名方式：1巡目は抽選、2巡目以降はウェーバー</h3>
+      <div class="space-y-3 text-sm md:text-base text-gray-200">
+        <p><span class="font-black text-yellow-300">1巡目：</span>全12球団が同時に「1位指名」の選手名を発表します。同じ選手に複数球団の指名が重複した場合は、くじ引きで交渉権を獲得する球団を決定します。くじを外した球団は「外れ1位」として、改めて別の選手を指名し直します。</p>
+        <p><span class="font-black text-yellow-300">2巡目以降：</span>抽選は行わず、あらかじめ決められた順番で1人ずつ指名していく「ウェーバー方式」が採用されます。指名順は前年度の成績が絡む形で決められます。</p>
+        <p class="text-xs text-gray-400">※本サイトの「NPB方式」は、この本物の方式をベースにしたゲーム内ルールです。</p>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">③ 支配下選手と育成選手の違い</h3>
+      <p class="text-sm md:text-base text-gray-200 mb-3">
+        ドラフトで指名される選手には、大きく分けて「支配下選手」と「育成選手」の2種類があります。
+      </p>
+      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
+        <li><span class="font-black text-yellow-300">支配下選手：</span>各球団が登録できる人数に上限がある正式契約の選手。一軍の公式戦に出場できます。</li>
+        <li><span class="font-black text-yellow-300">育成選手：</span>支配下枠とは別の契約で、まずは二軍などで育成される選手。一軍公式戦に出場するには、支配下選手への「昇格（支配下登録）」が必要です。背番号に3桁の番号が付くのが特徴で、そこから育成出身選手が一軍で活躍すると大きな話題になります。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">④ ドラフトとFA制度の違い</h3>
+      <p class="text-sm md:text-base text-gray-200">
+        ドラフトとよく混同される制度に「FA（フリーエージェント）」があります。ドラフトが「新人選手を新たに獲得する」仕組みなのに対し、FAは一定期間の一軍登録日数などの条件を満たした<span class="font-black text-yellow-300">現役選手</span>が、所属球団の枠を離れて他球団と自由に契約交渉できる制度です。ドラフトは10月の会議で一括して行われますが、FAは毎年オフシーズンに権利を取得した選手が個別に権利行使を宣言する、という違いもあります。
+      </p>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑤ 本サイトのシミュレーションとの違い</h3>
+      <p class="text-sm md:text-base text-gray-200">
+        本物のドラフト会議は「まだプロの実績がないアマチュア選手」を、球団のスカウトが実際に見極めて指名する仕組みです。一方、本サイトは「もし現役のNPB選手を12球団で自由に奪い合えたら」という、実在しない設定で楽しむシミュレーションゲームです。指名方式（1巡目抽選＋2巡目以降ウェーバー）は本物を参考にしていますが、対象選手・指名の目的はまったくの別物としてお楽しみください。
+      </p>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+
+    <div class="text-center pt-4 pb-10">
+      <a href="index.html" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-8 rounded-full shadow-lg">ゲームを始める</a>
+    </div>
+  </main>
+  <footer class="text-center text-gray-500 text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>
