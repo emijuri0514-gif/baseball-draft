@@ -1064,6 +1064,7 @@
     <div class="w-3/5 md:w-2/3 flex flex-col items-center p-2 md:p-6 relative overflow-y-auto h-full">
       <div class="w-full max-w-md bg-green-800 rounded-lg shadow-2xl p-2 md:p-4 border-2 border-white mb-4 shrink-0">
         <h2 class="text-white text-center font-black text-sm md:text-xl mb-1 tracking-widest border-b border-green-600 pb-1">スタメン編成 (守備位置を選択)</h2>
+        <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-1">選手をタップして選択→配置したい枠をタップで配置（ドラッグでも配置できます）</p>
         <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-1">打＝打順適性 ／ 守＝守備適性　◎最適 ○good △普通 ▲不向き ✕ミスマッチ</p>
         <div class="text-center mb-2">
           <button onclick="window.clearLineup()" class="text-[10px] md:text-xs text-green-200 underline underline-offset-2">配置を全解除してやり直す</button>
@@ -1434,6 +1435,7 @@
 
     let lineupAssignments = {};
     let lineupPhaseInitialized = false;
+    let selectedPoolPlayerId = null; // タップ配置：選手プールで選択中の選手（ドラッグが苦手な人向けの代替操作）
 
     // ★ ドラフト方式・ウェーバー管理 ★
     let draftMode = 'npb';
@@ -2486,6 +2488,30 @@
               showAppAlert("⚠️ 投手枠と野手枠が違います！");
             }
           });
+
+          // ★ タップ配置：ドラッグが苦手な人向けの代替操作。
+          // プールで選手をタップ選択→配置したい枠をタップ、で移動できる（ドラッグと共存）。
+          slot.addEventListener('click', () => {
+            if (selectedPoolPlayerId) {
+              const p = userTeamRef().roster.find(x => x.id === selectedPoolPlayerId);
+              if (!p) { selectedPoolPlayerId = null; renderLineupPhase(); return; }
+              const type = p.pos === "投手" ? "pitcher" : "batter";
+              if (slot.dataset.type !== type) {
+                showAppAlert("⚠️ 投手枠と野手枠が違います！");
+                return;
+              }
+              for (let key in lineupAssignments) {
+                if (lineupAssignments[key] === selectedPoolPlayerId) delete lineupAssignments[key];
+              }
+              lineupAssignments[slot.id] = selectedPoolPlayerId;
+              selectedPoolPlayerId = null;
+              renderLineupPhase();
+            } else if (slot.dataset.filled === "true") {
+              // 選択中の選手がいない状態で配置済みの枠をタップ→プールに戻す
+              delete lineupAssignments[slot.id];
+              renderLineupPhase();
+            }
+          });
         });
 
         // 守備位置を変えたら適性マークを更新
@@ -2497,6 +2523,7 @@
       }
 
       lineupAssignments = {};
+      selectedPoolPlayerId = null;
       renderLineupPhase();
       showScreen('screen-lineup');
     }
@@ -2505,6 +2532,7 @@
       if (Object.keys(lineupAssignments).length === 0) return;
       showAppConfirm('配置をすべて解除しますか？', () => {
         lineupAssignments = {};
+        selectedPoolPlayerId = null;
         renderLineupPhase();
       }, '全解除する');
     };
@@ -2519,8 +2547,10 @@
       user.roster.forEach(p => {
         if (!p || assignedIds.includes(p.id)) return;
 
+        const isSelected = selectedPoolPlayerId === p.id;
         const card = document.createElement('div');
-        card.className = 'player-card text-xs flex items-center justify-between gap-1 bg-white p-1.5 rounded shadow-sm border border-gray-200';
+        card.className = 'player-card text-xs flex items-center justify-between gap-1 bg-white p-1.5 rounded shadow-sm border cursor-pointer ' +
+          (isSelected ? 'border-blue-500 ring-2 ring-blue-400 bg-blue-50' : 'border-gray-200');
 
         const bestPosDisplay = Array.isArray(p.bestPos) ? p.bestPos.join('・') : p.bestPos;
 
@@ -2530,6 +2560,13 @@
           </div>
           <div class="drag-handle text-gray-400 text-xl px-2 py-1 active:text-blue-500 cursor-grab touch-none" draggable="true">≡</div>
         `;
+
+        // ★ タップ配置：カードをタップすると選択（もう一度タップで解除）。
+        // 選択中に配置したい枠をタップすると移動する（ドラッグ操作と共存）。
+        card.addEventListener('click', () => {
+          selectedPoolPlayerId = isSelected ? null : p.id;
+          renderLineupPhase();
+        });
 
         const handle = card.querySelector('.drag-handle');
         handle.addEventListener('dragstart', e => {
@@ -2546,7 +2583,14 @@
 
       let orderDiffs = [];
 
+      // タップ配置中、選択選手が置ける枠だけ枠線を光らせてどこに置けるか分かるようにする
+      const selectedPlayer = selectedPoolPlayerId ? user.roster.find(x => x.id === selectedPoolPlayerId) : null;
+      const selectedType = selectedPlayer ? (selectedPlayer.pos === "投手" ? "pitcher" : "batter") : null;
+
       document.querySelectorAll('.dnd-slot').forEach(slot => {
+        slot.classList.toggle('ring-2', !!selectedType && slot.dataset.type === selectedType);
+        slot.classList.toggle('ring-blue-400', !!selectedType && slot.dataset.type === selectedType);
+
         const pId = lineupAssignments[slot.id];
         if (pId) {
           const p = user.roster.find(player => player.id === pId);
