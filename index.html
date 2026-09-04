@@ -1165,6 +1165,7 @@
   <div id="screen-ranking" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
     <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-6 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 ドラフト結果</h2>
     <div id="ranking-container" class="w-full max-w-4xl space-y-4 pb-20"></div>
+    <p class="text-sm text-gray-400 mb-2">もっと高いランクを狙うなら <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a> をチェック</p>
     <div class="mt-6 flex flex-col md:flex-row gap-4 mb-10 w-full max-w-md">
       <button onclick="window.startPlayoff()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse">
         🏆 プレーオフに進出する
@@ -3701,6 +3702,7 @@
           <button onclick="window.showShareCard(${champ.id}, '🏆 プレーオフ優勝', '${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '見事な戴冠です'}')" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 rounded-full w-full mt-3">📤 優勝シェア画像を作成</button>
           <button onclick="window.showLineupCard(${champ.id})" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-full w-full mt-2">📇 オーダーカードを作る</button>
           <button onclick="window.confirmReset()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
+          <p class="text-xs text-gray-400 text-center mt-3">${champ.isUser ? 'お見事！次はパーフェクトロマンも狙ってみよう。' : '次こそ優勝を掴むなら'} <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a> をチェック</p>
         `;
         return;
       }
