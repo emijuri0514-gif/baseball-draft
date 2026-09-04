@@ -124,8 +124,11 @@
 <body class="text-gray-800 h-screen overflow-hidden flex flex-col">
 
   <!-- 汎用モーダル（alert/confirmの置き換え。アプリの見た目に合わせた通知・確認ダイアログ） -->
-  <div id="app-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-70 z-[300] flex items-center justify-center px-6 fade-in">
-    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-sm p-5 text-white">
+  <div id="app-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-70 z-[300] flex items-center px-6 overflow-y-auto fade-in">
+    <!-- ★ justify-centerだけで中央寄せすると、メッセージが長くて画面より高くなった時に上端が
+         スクロールしても届かなくなる（screen-setupで実際に起きた不具合と同じ原因）。
+         my-autoなら入りきらない時は自動で上詰めになり、常に全文を読めるようにできる ★ -->
+    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-sm p-5 text-white my-auto">
       <p id="app-modal-message" class="text-sm font-bold leading-relaxed mb-5 text-center" style="white-space: pre-line;"></p>
       <div id="app-modal-buttons" class="flex gap-2"></div>
     </div>
@@ -1044,14 +1047,17 @@
   </div>
 
   <!-- 画面2: リヴィール -->
-  <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center text-white fade-in px-2">
+  <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center text-white fade-in px-2 overflow-y-auto">
+    <div class="w-full flex flex-col items-center my-auto">
     <h2 class="text-xl md:text-3xl font-black mb-6 tracking-widest text-yellow-400">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
     <div id="reveal-cards-container" class="flex flex-wrap justify-center gap-4 max-w-5xl overflow-y-auto max-h-[60vh] py-2"></div>
     <div id="reveal-status" class="mt-6 text-lg md:text-2xl font-bold h-10"></div>
+    </div>
   </div>
 
   <!-- 画面3: クジ引き -->
-  <div id="screen-lottery" class="hidden-screen fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center text-white fade-in px-4">
+  <div id="screen-lottery" class="hidden-screen fixed inset-0 bg-gray-900 z-50 flex flex-col items-center text-white fade-in px-4 overflow-y-auto">
+    <div class="w-full flex flex-col items-center my-auto">
     <h2 class="text-3xl md:text-4xl font-black text-red-500 mb-2 tracking-widest">競合発生！</h2>
     <p id="lottery-target-name" class="text-xl md:text-2xl font-black mb-4 text-white text-center"></p>
     <p id="lottery-instruction" class="text-sm md:text-lg font-bold mb-4 text-yellow-300">あなたの封筒を選んでクリック</p>
@@ -1059,6 +1065,7 @@
     <button id="lottery-skip-btn" class="hidden bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full mb-2 shadow-lg" onclick="window.skipAILottery()">スキップ (結果のみ表示)</button>
 
     <div id="lottery-envelopes" class="lottery-area"></div>
+    </div>
   </div>
 
   <!-- 画面4: スタメンボード -->
