@@ -877,7 +877,13 @@
   </script>
 
   <!-- 画面0: 初期設定画面 -->
-  <div id="screen-setup" class="fixed inset-0 bg-blue-900 z-[100] flex flex-col items-center justify-center text-white fade-in px-4 overflow-y-auto py-8">
+  <div id="screen-setup" class="fixed inset-0 bg-blue-900 z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto py-8">
+    <!-- ★ 中身がビューポートより高いと、親のjustify-centerとoverflow-y-autoの組み合わせで
+         上端（タイトルなど）がスクロールで届かない位置まで見切れる不具合があった（Pixel等で発生）。
+         justify-centerで中央寄せする代わりに、このラッパーにmy-autoを使う。
+         auto marginは入りきらない時は0に潰れて上詰めになるため、どんな高さでも上端から確実に
+         スクロールして辿り着ける（safe centerと同じ効果を、より広いブラウザ互換性で実現する）。 -->
+    <div class="w-full flex flex-col items-center my-auto">
     <h1 class="text-2xl md:text-4xl font-black tracking-widest text-yellow-400 text-center">⚾ DRAFT SIMULATOR</h1>
     <p class="text-blue-200 text-xs md:text-sm text-center mb-6">現役NPB選手をドラフトして、最強のチームを作ろう</p>
     <div class="bg-white text-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-md text-center">
@@ -930,6 +936,7 @@
       </div>
       <a href="privacy.html" target="_blank" rel="noopener noreferrer" class="block mt-3 text-[11px] text-gray-400 hover:underline">プライバシーポリシー</a>
       <p class="text-[10px] text-gray-400 mt-1">© 2026 dreamteam9.com</p>
+    </div>
     </div>
   </div>
 
