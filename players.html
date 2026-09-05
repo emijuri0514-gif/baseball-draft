@@ -78,7 +78,16 @@
   
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
-  </main>
+  
+    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
+      <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
+      <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
+        <a href="rankings.html" class="text-sm text-blue-400 hover:underline font-bold">🏆 ランキング</a>
+        <a href="teams.html" class="text-sm text-blue-400 hover:underline font-bold">🏟️ 球団紹介</a>
+        <a href="strategy.html" class="text-sm text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a>
+      </div>
+    </section>
+</main>
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
   </footer>
@@ -101,6 +110,14 @@
 
     let allPlayers = [];
 
+    const POS_SLUG = { "捕":"catcher","一":"1b","二":"2b","三":"3b","遊":"ss","左":"lf","中":"cf","右":"rf","DH":"dh","先発":"sp","中継":"mid","抑え":"cl" };
+
+    function rankingLink(p) {
+      const slugPos = (p.bestPos || []).find(pos => POS_SLUG[pos]);
+      if (!slugPos) return '';
+      return `<a href="rankings.html#pos-${POS_SLUG[slugPos]}" class="text-[11px] text-blue-400 hover:underline">🏆 ランキングを見る</a>`;
+    }
+
     function statBadge(label, value) {
       return `<span class="bg-gray-900 text-gray-200 text-[10px] font-bold px-2 py-0.5 rounded">${label} ${value}</span>`;
     }
@@ -119,7 +136,10 @@
           <div class="p-3">
             <p class="font-black text-base mb-2 break-words">${p.name}</p>
             <div class="flex flex-wrap gap-1 mb-2">${stats.join('')}</div>
-            <a href="https://sp.baseball.findfriends.jp/player/${p.id}/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-400 hover:underline">📊 選手詳細を見る</a>
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <a href="https://sp.baseball.findfriends.jp/player/${p.id}/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-400 hover:underline">📊 選手詳細を見る</a>
+              ${rankingLink(p)}
+            </div>
           </div>
         </div>
       `;
@@ -154,6 +174,10 @@
       document.getElementById('search-input').addEventListener('input', applyFilters);
       teamSelect.addEventListener('change', applyFilters);
       document.getElementById('pos-filter').addEventListener('change', applyFilters);
+      const teamParam = new URLSearchParams(location.search).get('team');
+      if (teamParam && [...teamSelect.options].some(opt => opt.value === teamParam)) {
+        teamSelect.value = teamParam;
+      }
       applyFilters();
       document.getElementById('load-status').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');

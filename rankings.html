@@ -65,7 +65,16 @@
   
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
-  </main>
+  
+    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
+      <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
+      <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
+        <a href="strategy.html" class="text-sm text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a>
+        <a href="players.html" class="text-sm text-blue-400 hover:underline font-bold">🧢 選手名鑑</a>
+        <a href="teams.html" class="text-sm text-blue-400 hover:underline font-bold">🏟️ 球団紹介</a>
+      </div>
+    </section>
+</main>
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
   </footer>
@@ -127,6 +136,7 @@
 
     const BATTER_POS = ["捕","一","二","三","遊","左","中","右","DH"];
     const PITCHER_POS = ["先発","中継","抑え"];
+    const POS_SLUG = { "捕":"catcher","一":"1b","二":"2b","三":"3b","遊":"ss","左":"lf","中":"cf","右":"rf","DH":"dh","先発":"sp","中継":"mid","抑え":"cl" };
 
     function statLine(p) {
       if (p.fStats) return `ミート${p.fStats.meet} パワー${p.fStats.pow} 走力${p.fStats.run} 守備${p.fStats.def}`;
@@ -151,7 +161,7 @@
         </li>
       `).join('');
       return `
-        <div class="bg-gray-800 rounded-lg p-4">
+        <div id="pos-${POS_SLUG[pos] || pos}" class="bg-gray-800 rounded-lg p-4 scroll-mt-20">
           <h3 class="font-black text-yellow-400 mb-2">${pos}</h3>
           <ul>${rows}</ul>
         </div>
