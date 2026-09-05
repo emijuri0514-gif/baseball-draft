@@ -98,6 +98,7 @@
         <li><a href="#ep37" class="hover:underline">Pixelでタイトルが見えない、という報告</a></li>
         <li><a href="#ep38" class="hover:underline">同じ落とし穴が他に3箇所も埋まっていた</a></li>
         <li><a href="#ep39" class="hover:underline">結果画面から攻略ガイドへの導線を足した</a></li>
+        <li><a href="#ep40" class="hover:underline">ページ同士がぶつ切りだったのをつなげた</a></li>
       </ol>
     </nav>
 
@@ -336,11 +337,25 @@
       <p>採点結果の画面には「もっと高いランクを狙うなら攻略ガイドをチェック」の一文を、プレーオフの結果画面には勝ったか負けたかで文言を変えて（優勝したら「次はパーフェクトロマンも狙ってみよう」、負けたら「次こそ優勝を掴むなら」）攻略ガイドへのリンクを添えた。押し付けがましくならない程度の、控えめな一行リンクにしたつもりだけど、遊び終わった直後の「もっと上手くなりたい」という気持ちのタイミングに刺さってくれるといいなと思う。</p>
     </article>
 
+    <article id="ep40" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第40回：ページ同士がぶつ切りだったのをつなげた</h2>
+      <p>アクセス解析を眺めていて気づいたんだけど、読み物ページ（攻略ガイドとか用語集とか）に来た人のほとんどが、そのページだけ見て他のページに行かずに離脱していた。各ページの下の方に「ゲームを始める」ボタンは置いてあるけど、それ以外に他のコンテンツへのリンクがほぼなくて、考えてみれば当然の結果だった。せっかく攻略ガイドや用語集や球団紹介をちゃんと書いても、お互いが完全に孤立していたら、来た人が偶然そのページに辿り着いた1回きりで終わってしまう。</p>
+      <p>まず全ページの一番下に「こちらのページもどうぞ」という関連リンクを付けて、内容が近いページ同士を回遊できるようにした。それだけだと機械的すぎる気がしたので、用語集の「先発」「中継ぎ」「抑え」の説明文からランキングページの該当ポジションへ直接飛べるようにしたり、球団紹介の各球団カードから「〇〇の選手を見る」で選手名鑑をその球団だけに絞り込んだ状態で開けるようにしたりもした。選手名鑑のカードにも、その選手の一番得意なポジションのランキングへ飛べるリンクを添えている。文脈のある場所に文脈のあるリンクを置く方が、下にリンク集をまとめるより自然に読み進めてもらえるんじゃないかと思う。効果が出るかはもう少し数字を見てみないと分からないけど、少なくとも「見て終わり」の一方通行は減らせたはず。</p>
+    </article>
+
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
   
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
-  </main>
+  
+    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
+      <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
+      <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
+        <a href="changelog.html" class="text-sm text-blue-400 hover:underline font-bold">🛠️ 更新履歴</a>
+        <a href="howto.html" class="text-sm text-blue-400 hover:underline font-bold">📖 遊び方</a>
+      </div>
+    </section>
+</main>
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
   </footer>
