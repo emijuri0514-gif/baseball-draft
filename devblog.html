@@ -44,8 +44,8 @@
         <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
         <a href="rankings.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏆 ランキング</a>
         <a href="strategy.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🎯 攻略ガイド</a>
-        <a href="draft-2026.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📅 2026年ドラフト</a>
-        <a href="draft-watch.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">👀 注目選手</a>
+        <a href="draft-2026.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📅 2026ドラフト放送予定</a>
+        <a href="draft-watch.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">👀 2026ドラフト注目選手</a>
         <a href="draft-system.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🗒️ ドラフト会議とは</a>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
@@ -102,6 +102,7 @@
         <li><a href="#ep39" class="hover:underline">結果画面から攻略ガイドへの導線を足した</a></li>
         <li><a href="#ep40" class="hover:underline">ページ同士がぶつ切りだったのをつなげた</a></li>
         <li><a href="#ep41" class="hover:underline">ゲーム本体だけ、どこまで進んだか分からなかった</a></li>
+        <li><a href="#ep42" class="hover:underline">本物のドラフトの盛り上がりに便乗したかった話</a></li>
       </ol>
     </nav>
 
@@ -350,6 +351,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第41回：ゲーム本体だけ、どこまで進んだか分からなかった</h2>
       <p>読み物ページの回遊は改善したものの、Googleアナリティクスをよく見返してみると、もっと根本的な穴があった。攻略ガイドや用語集みたいな別ページはちゃんと「どのページが見られたか」が出るのに、肝心のゲーム本体だけそれが分からない。理由は単純で、ゲームはドラフト→指名結果→くじ引き→スタメン編成→採点結果、と画面がどんどん切り替わっていくのに、URLは`index.html`のまま一度も変わらないから、アナリティクス側からは「1ページ見て終わった人」も「最後まで遊び切った人」も同じ1回のページビューにしか見えていなかった。</p>
       <p>直したいのはURLを変えることではなく、あくまで内部の状態遷移だから、画面を切り替えている`showScreen()`という共通関数に手を入れて、切り替わるたびに画面ごとのラベル付きでページビューを送るようにした。実際のURLは変えずに「仮想的なページ」として送る形なので、ブラウザの見た目や戻るボタンの挙動には一切影響しない。これで「ドラフト会議までは来るけど、くじ引きの手前で離脱する人が多い」みたいな、ゲームの中の脱落ポイントが初めて数字で見えるようになるはず。今まで感覚でしか語れなかった部分に、ようやく根拠が付けられそうで楽しみにしている。</p>
+    </article>
+
+    <article id="ep42" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第42回：本物のドラフトの盛り上がりに便乗したかった話</h2>
+      <p>9月に入って、SNSで本物のNPBドラフト会議（今年は10月22日開催）の話題がちらほら出始めていることに気づいた。せっかく毎年盛り上がる話題があるんだから、乗っからない手はない。まずは日程と放送予定をまとめたページを作った。会場や開始時刻がまだ正式発表されていなかったので、そこは「暫定」と正直に書いて、公式サイトへのリンクも添えた。ついでに今年注目の候補選手を6人紹介するコーナーも足した。候補選手のリンクを教えてもらったんだけど、サンドボックスのネットワーク制限でそのサイトには繋げなかったので、代わりに検索で複数の記事を突き合わせて裏取りしながら書いた。手間はかかったけど、変な情報を載せるよりはずっといい。</p>
+      <p>ページを作った後、「今年のドラフトが終わったらこのカウンターはどこに行くの？」と聞かれてハッとした。日程ページに開催日までのカウントダウンを仕込んでいたんだけど、日数の計算自体は年をまたいでも自動でロールオーバーするようにしていた一方で、ページの見出しや放送予定の中身は「2026年」を前提にベタ書きしていたから、ドラフトが終わった瞬間にカウンターだけ来年の日付を指して、周りの文章とチグハグになる未来が見えた。注目選手も来年にはもう現役選手になっているだろうから、なおさら古い情報のまま置いておくのはまずい。というわけで、カウントダウンと注目選手だけを新しいページに切り出して、日程・放送予定のページはこれまで通り今年の記録として残すことにした。ページを分けたことで、「随時更新していく場所」と「今年のスナップショットとして残す場所」の役割がはっきりして、自分でも管理しやすくなったと思う。トップ画面にも専用ボタンを置いて、残り日数がそのまま見えるようにしたので、遊びに来るたびに「もうこんなに近いのか」と感じてもらえたら嬉しい。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
