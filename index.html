@@ -233,7 +233,8 @@
       { id: 'played_10',      tier: '中級', emoji: '📅', title: '継続は力なり',       desc: 'ドラフト＆スタメン編成を通算10回完了する' },
       { id: 'combo_multi',    tier: '上級', emoji: '🎇', title: 'パーフェクトロマン', desc: '1回の編成で8つ以上のコンボを同時発動する' },
       { id: 's_and_champion', tier: '上級', emoji: '👑', title: '完全制覇',           desc: 'Sランクを獲得したチームでプレーオフも優勝する（同じプレイ内で達成）' },
-      { id: 'hardest_champion', tier: '上級', emoji: '⚔️', title: '強豪ひしめく頂点', desc: 'AI球団3つ（計4球団）が相手の対戦でプレーオフ優勝する' }
+      { id: 'hardest_champion', tier: '上級', emoji: '⚔️', title: '強豪ひしめく頂点', desc: 'AI球団3つ（計4球団）が相手の対戦でプレーオフ優勝する' },
+      { id: 'all_teams_a_rank', tier: '上級', emoji: '🌟', title: '全球団エース級',   desc: '12球団すべてで、それぞれ一度はAランク以上を獲得する' }
     ];
     const ACH_STORAGE_KEY = 'dt9_achievements_v1';
 
@@ -246,11 +247,12 @@
             aRankCount: (raw && raw.stats && raw.stats.aRankCount) || 0,
             playedTeams: (raw && raw.stats && raw.stats.playedTeams) || [],
             playCount: (raw && raw.stats && raw.stats.playCount) || 0,
-            draftModesUsed: (raw && raw.stats && raw.stats.draftModesUsed) || []
+            draftModesUsed: (raw && raw.stats && raw.stats.draftModesUsed) || [],
+            aRankTeams: (raw && raw.stats && raw.stats.aRankTeams) || []
           }
         };
       } catch (e) {
-        return { unlocked: {}, stats: { aRankCount: 0, playedTeams: [], playCount: 0, draftModesUsed: [] } };
+        return { unlocked: {}, stats: { aRankCount: 0, playedTeams: [], playCount: 0, draftModesUsed: [], aRankTeams: [] } };
       }
     }
     let achState = loadAchievementState();
@@ -2916,6 +2918,12 @@
             achState.stats.aRankCount++;
             saveAchievementState();
             if (achState.stats.aRankCount >= 5) unlockAchievement('rank_a5');
+
+            if (!achState.stats.aRankTeams.includes(t.baseName)) {
+              achState.stats.aRankTeams.push(t.baseName);
+              saveAchievementState();
+              if (achState.stats.aRankTeams.length >= 12) unlockAchievement('all_teams_a_rank');
+            }
           }
 
           if (comboNames.includes('【超重量打線】')) unlockAchievement('combo_power');
