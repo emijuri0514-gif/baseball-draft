@@ -33,21 +33,37 @@
 </style>
 </head>
 <body class="text-gray-100">
-  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
-    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
       <h1 class="text-sm md:text-base font-black tracking-wider">📝 開発ブログ</h1>
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="changelog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🛠️ 更新履歴</a>
+        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
         <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
-        <a href="teams.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏟️ 球団紹介</a>
-        <a href="faq.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">❓ FAQ</a>
-        <a href="glossary.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📚 用語集</a>
-        <a href="rankings.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🏆 ランキング</a>
-        <a href="strategy.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🎯 攻略ガイド</a>
-        <a href="draft-2026.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📅 2026ドラフト放送予定</a>
-        <a href="draft-watch.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">👀 2026ドラフト注目選手</a>
-        <a href="draft-system.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🗒️ ドラフト会議とは</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
+            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
+            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定</a>
+            <a href="draft-watch.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">👀 2026ドラフト注目選手</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+          </div>
       </div>
     </div>
   </header>
@@ -103,6 +119,7 @@
         <li><a href="#ep40" class="hover:underline">ページ同士がぶつ切りだったのをつなげた</a></li>
         <li><a href="#ep41" class="hover:underline">ゲーム本体だけ、どこまで進んだか分からなかった</a></li>
         <li><a href="#ep42" class="hover:underline">本物のドラフトの盛り上がりに便乗したかった話</a></li>
+        <li><a href="#ep43" class="hover:underline">ボタンが増えすぎてヘッダーが渋滞していた</a></li>
       </ol>
     </nav>
 
@@ -357,6 +374,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第42回：本物のドラフトの盛り上がりに便乗したかった話</h2>
       <p>9月に入って、SNSで本物のNPBドラフト会議（今年は10月22日開催）の話題がちらほら出始めていることに気づいた。せっかく毎年盛り上がる話題があるんだから、乗っからない手はない。まずは日程と放送予定をまとめたページを作った。会場や開始時刻がまだ正式発表されていなかったので、そこは「暫定」と正直に書いて、公式サイトへのリンクも添えた。ついでに今年注目の候補選手を6人紹介するコーナーも足した。候補選手のリンクを教えてもらったんだけど、サンドボックスのネットワーク制限でそのサイトには繋げなかったので、代わりに検索で複数の記事を突き合わせて裏取りしながら書いた。手間はかかったけど、変な情報を載せるよりはずっといい。</p>
       <p>ページを作った後、「今年のドラフトが終わったらこのカウンターはどこに行くの？」と聞かれてハッとした。日程ページに開催日までのカウントダウンを仕込んでいたんだけど、日数の計算自体は年をまたいでも自動でロールオーバーするようにしていた一方で、ページの見出しや放送予定の中身は「2026年」を前提にベタ書きしていたから、ドラフトが終わった瞬間にカウンターだけ来年の日付を指して、周りの文章とチグハグになる未来が見えた。注目選手も来年にはもう現役選手になっているだろうから、なおさら古い情報のまま置いておくのはまずい。というわけで、カウントダウンと注目選手だけを新しいページに切り出して、日程・放送予定のページはこれまで通り今年の記録として残すことにした。ページを分けたことで、「随時更新していく場所」と「今年のスナップショットとして残す場所」の役割がはっきりして、自分でも管理しやすくなったと思う。トップ画面にも専用ボタンを置いて、残り日数がそのまま見えるようにしたので、遊びに来るたびに「もうこんなに近いのか」と感じてもらえたら嬉しい。</p>
+    </article>
+
+    <article id="ep43" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第43回：ボタンが増えすぎてヘッダーが渋滞していた</h2>
+      <p>用語集、ランキング、ドラフト特集2ページ……と読み物ページをどんどん増やしてきた結果、各ページのヘッダーには気づけば11個ものボタンが並んでいた。パソコンならまだ横一列に収まるからいいんだけど、スマホで開くとピルボタンが3段にも4段にも折り返して、肝心のページタイトルまで下に押し出されてしまう有様だった。「今後もコンテンツは増やしていきたいから、今のうちに直したい」という話になり、さすがにこれは放置できないと腹をくくった。</p>
+      <p>直し方としては、「遊び方」「選手名鑑」「開発ブログ」の3つだけを今まで通りボタンで常時表示し、残り8つは「☰ メニュー」を押したときだけ開くドロップダウンにまとめることにした。ドロップダウンの中も「遊ぶ」「選手・球団を調べる」「2026年ドラフト特集」「開発情報」とカテゴリ分けして、どこに何があるか探しやすくした。地味に手間だったのは、各ページの自分自身へのリンクは表示しない、という既存のルールをこの新しい構造でも律儀に守ること。例えば更新履歴ページを開いたときは「開発情報」カテゴリの中身が「更新履歴」1つだけになって空っぽになるので、カテゴリごと非表示にする、みたいな細かい調整が12ページ分必要だった。おかげでヘッダーの常時表示ボタンは11個から5個まで減って、これでコンテンツをまだまだ増やしても大丈夫なはず。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
