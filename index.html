@@ -219,12 +219,21 @@
       { id: 'combo_speed',    tier: '初級', emoji: '🏃', title: '機動力野球',         desc: '「機動力野球」コンボを発動する' },
       { id: 'combo_defense',  tier: '初級', emoji: '🧤', title: '鉄壁の守備陣',       desc: '「鉄壁の守備陣」コンボを発動する' },
       { id: 'combo_pitching', tier: '初級', emoji: '⚾', title: '黄金の投手陣',       desc: '「黄金の投手陣」コンボを発動する' },
+      { id: 'combo_hits',     tier: '初級', emoji: '🥎', title: '安打製造機',         desc: '「安打製造機」コンボを発動する' },
+      { id: 'combo_bullpen',  tier: '初級', emoji: '🔥', title: '勝利の方程式',       desc: '「勝利の方程式」コンボを発動する' },
+      { id: 'combo_centerline', tier: '初級', emoji: '🛡️', title: 'センターライン',   desc: '「センターライン」コンボを発動する' },
+      { id: 'combo_utility',  tier: '初級', emoji: '🔧', title: 'ユーティリティ',     desc: '「ユーティリティ」コンボを発動する' },
+      { id: 'combo_love',     tier: '初級', emoji: '❤️', title: '推し球団愛',         desc: '同じ球団出身の選手を3人以上編成する（「○○愛」コンボ）' },
+      { id: 'grade_g',        tier: '初級', emoji: '🌱', title: '伸びしろ全開',       desc: 'AI採点でGランクを経験する' },
       { id: 'rank_s',         tier: '中級', emoji: '🥇', title: '伝説の采配',         desc: 'AI採点でSランクを獲得する' },
       { id: 'champion',       tier: '中級', emoji: '🏆', title: '頂点に立つ者',       desc: 'プレーオフで優勝する' },
       { id: 'rank_a5',        tier: '中級', emoji: '📈', title: '常勝の資格',         desc: 'Aランク以上を通算5回獲得する' },
       { id: 'all_teams',      tier: '中級', emoji: '🗾', title: '全球団制覇',         desc: '12球団すべてを担当球団としてプレーする' },
+      { id: 'all_draft_modes', tier: '中級', emoji: '🎲', title: '方式マスター',      desc: 'NPB方式・全巡同時指名・完全ウェーバーの3方式すべてでプレーする' },
+      { id: 'played_10',      tier: '中級', emoji: '📅', title: '継続は力なり',       desc: 'ドラフト＆スタメン編成を通算10回完了する' },
       { id: 'combo_multi',    tier: '上級', emoji: '🎇', title: 'パーフェクトロマン', desc: '1回の編成で8つ以上のコンボを同時発動する' },
-      { id: 's_and_champion', tier: '上級', emoji: '👑', title: '完全制覇',           desc: 'Sランクを獲得したチームでプレーオフも優勝する（同じプレイ内で達成）' }
+      { id: 's_and_champion', tier: '上級', emoji: '👑', title: '完全制覇',           desc: 'Sランクを獲得したチームでプレーオフも優勝する（同じプレイ内で達成）' },
+      { id: 'hardest_champion', tier: '上級', emoji: '⚔️', title: '強豪ひしめく頂点', desc: 'AI球団3つ（計4球団）が相手の対戦でプレーオフ優勝する' }
     ];
     const ACH_STORAGE_KEY = 'dt9_achievements_v1';
 
@@ -235,11 +244,13 @@
           unlocked: (raw && raw.unlocked) || {},
           stats: {
             aRankCount: (raw && raw.stats && raw.stats.aRankCount) || 0,
-            playedTeams: (raw && raw.stats && raw.stats.playedTeams) || []
+            playedTeams: (raw && raw.stats && raw.stats.playedTeams) || [],
+            playCount: (raw && raw.stats && raw.stats.playCount) || 0,
+            draftModesUsed: (raw && raw.stats && raw.stats.draftModesUsed) || []
           }
         };
       } catch (e) {
-        return { unlocked: {}, stats: { aRankCount: 0, playedTeams: [] } };
+        return { unlocked: {}, stats: { aRankCount: 0, playedTeams: [], playCount: 0, draftModesUsed: [] } };
       }
     }
     let achState = loadAchievementState();
@@ -1677,14 +1688,22 @@
     window.startGame = function() {
       const userTeamSelect = document.getElementById('user-team').value;
       const aiCount = parseInt(document.getElementById('ai-count').value);
+      const draftModeSelect = document.getElementById('draft-mode').value;
 
       // ★ 何人がドラフトを開始したかをGA4で計測する（担当球団・AI球団数・ドラフト方式も一緒に送る）
       if (typeof gtag === 'function') {
         gtag('event', 'draft_start', {
           team: userTeamSelect,
           ai_count: aiCount,
-          draft_mode: document.getElementById('draft-mode').value
+          draft_mode: draftModeSelect
         });
+      }
+
+      // 実績「方式マスター」：3つのドラフト方式をすべて使ったかどうかを記録する
+      if (!achState.stats.draftModesUsed.includes(draftModeSelect)) {
+        achState.stats.draftModesUsed.push(draftModeSelect);
+        saveAchievementState();
+        if (achState.stats.draftModesUsed.length >= 3) unlockAchievement('all_draft_modes');
       }
 
       userHadSRankThisRun = false;
@@ -2886,8 +2905,13 @@
         if (t.isUser) {
           unlockAchievement('first_play');
 
+          achState.stats.playCount++;
+          saveAchievementState();
+          if (achState.stats.playCount >= 10) unlockAchievement('played_10');
+
           const grade = getGradeInfo(t.finalScore).grade;
           if (grade === 'S') { unlockAchievement('rank_s'); userHadSRankThisRun = true; }
+          if (grade === 'G') unlockAchievement('grade_g');
           if (grade === 'S' || grade === 'A') {
             achState.stats.aRankCount++;
             saveAchievementState();
@@ -2898,6 +2922,11 @@
           if (comboNames.includes('【機動力野球】')) unlockAchievement('combo_speed');
           if (comboNames.includes('【鉄壁の守備陣】')) unlockAchievement('combo_defense');
           if (comboNames.includes('【黄金の投手陣】')) unlockAchievement('combo_pitching');
+          if (comboNames.includes('【安打製造機】')) unlockAchievement('combo_hits');
+          if (comboNames.includes('【勝利の方程式】')) unlockAchievement('combo_bullpen');
+          if (comboNames.includes('【センターライン】')) unlockAchievement('combo_centerline');
+          if (comboNames.includes('【ユーティリティ】')) unlockAchievement('combo_utility');
+          if (comboNames.some(name => name.endsWith('愛】'))) unlockAchievement('combo_love');
           if (comboNames.length >= 8) unlockAchievement('combo_multi');
 
           if (!achState.stats.playedTeams.includes(t.baseName)) {
@@ -3756,6 +3785,7 @@
         if (champ.isUser) {
           unlockAchievement('champion');
           if (userHadSRankThisRun) unlockAchievement('s_and_champion');
+          if (teams.length >= 4) unlockAchievement('hardest_champion');
         }
         nextPanel.innerHTML = `
           <div class="text-center py-3 px-3 rounded border-4 ${champ.color.border}">
