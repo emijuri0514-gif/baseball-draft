@@ -75,6 +75,12 @@
       </p>
     </section>
 
+    <div class="bg-gray-800 border-2 border-yellow-500 rounded-lg py-4 px-4 text-center">
+      <p id="countdown-label" class="text-xs text-gray-400 mb-1"></p>
+      <p id="countdown-days" class="text-3xl md:text-4xl font-black text-yellow-400"></p>
+      <p id="countdown-note" class="text-[11px] text-gray-500 mt-1 hidden">※開催日はまだ正式発表されていないため、例年の傾向（10月第4木曜開催）から算出した暫定日です</p>
+    </div>
+
     <section>
       <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">📅 日程・放送予定</h3>
       <div class="bg-gray-800 rounded-lg p-4 space-y-3 text-sm md:text-base text-gray-200">
@@ -167,5 +173,40 @@
   <footer class="text-center text-gray-500 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ © 2026 dreamteam9.com
   </footer>
+
+  <script>
+    // ドラフト開催日カウントダウン：2026年は公式発表済みの日付を使い、それ以降は
+    // 過去の開催実績（2024年10/24・2025年10/23・2026年10/22＝いずれも10月第4木曜）
+    // から算出した暫定日を使う。正式発表され次第、KNOWN_DRAFT_DATESに追記すること。
+    const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
+
+    function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
+      const first = new Date(year, monthIndex, 1);
+      const offset = (weekday - first.getDay() + 7) % 7;
+      return new Date(year, monthIndex, 1 + offset + (n - 1) * 7);
+    }
+
+    function getDraftDate(year) {
+      if (KNOWN_DRAFT_DATES[year]) return new Date(KNOWN_DRAFT_DATES[year]);
+      return nthWeekdayOfMonth(year, 9, 4, 4); // 10月・木曜(4)・第4週
+    }
+
+    function renderDraftCountdown() {
+      const today = new Date();
+      const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      let year = today.getFullYear();
+      let draftDate = getDraftDate(year);
+      if (todayMid > draftDate) {
+        year += 1;
+        draftDate = getDraftDate(year);
+      }
+      const diffDays = Math.round((draftDate - todayMid) / 86400000);
+      document.getElementById('countdown-label').textContent = `${year}年のドラフト会議まで`;
+      document.getElementById('countdown-days').textContent = diffDays === 0 ? '本日開催！' : `あと${diffDays}日`;
+      document.getElementById('countdown-note').classList.toggle('hidden', !!KNOWN_DRAFT_DATES[year]);
+    }
+
+    renderDraftCountdown();
+  </script>
 </body>
 </html>
