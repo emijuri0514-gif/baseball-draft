@@ -151,9 +151,15 @@
       `;
     }
 
+    // ★ アフィリエイトリンク：担当者が実際に選んだ商品のみ掲載。全球団分揃うまでは順次追加していく。
+    const TEAM_GOODS_LINK = {
+      "中日": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f410e.74a2df3a.573f410f.092c90b5/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fselection-j%2Fnpb-220719new11%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "中日ドラゴンズ 公式キャップ" }
+    };
+
     function renderCard(team) {
       const s = TEAM_SCOUTING[team];
       const style = TEAM_STYLE[team];
+      const goods = TEAM_GOODS_LINK[team];
       return `
         <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
           <div class="${style.bg} ${style.text} px-4 py-2 flex justify-between items-center">
@@ -168,6 +174,7 @@
             ${bar('守備', s.def)}
             ${bar('投手', s.pitcher)}
             <a href="players.html?team=${encodeURIComponent(team)}" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 ${team}の選手を見る</a>
+            ${goods ? `<a href="${goods.url}" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 ${goods.label}（PR）</a>` : ''}
           </div>
         </div>
       `;
