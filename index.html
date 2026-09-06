@@ -2205,12 +2205,33 @@
       executeReveal();
     };
 
+    // ★ ゲーム内の各画面（ドラフト・指名結果・くじ引き・スタメン編成・採点結果・試合・プレーオフ）は
+    //   URLが変わらないSPAのため、GA4のPages and screensレポートにはこのラベルで仮想ページビューを送る。
+    //   初期表示のscreen-setupだけはページ読み込み時の自動page_viewでカバーされるので対象外。
+    const SCREEN_GA_LABEL = {
+      'screen-draft': 'ドラフト会議',
+      'screen-reveal': '指名結果発表',
+      'screen-lottery': 'くじ引き',
+      'screen-lineup': 'スタメン編成',
+      'screen-ranking': 'AI採点結果',
+      'screen-match': '試合',
+      'screen-playoff': 'プレーオフ'
+    };
+
     function showScreen(screenId) {
       ['screen-setup', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-ranking', 'screen-playoff', 'screen-match'].forEach(id => {
         const el = document.getElementById(id);
         if(el) el.classList.add('hidden-screen');
       });
       document.getElementById(screenId).classList.remove('hidden-screen');
+
+      const label = SCREEN_GA_LABEL[screenId];
+      if (label && typeof gtag === 'function') {
+        gtag('event', 'page_view', {
+          page_title: document.title + '｜' + label,
+          page_location: location.origin + location.pathname + '#' + screenId
+        });
+      }
     }
 
     function executeReveal() {
