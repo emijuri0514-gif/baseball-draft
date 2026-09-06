@@ -313,6 +313,33 @@
     // パース完了を待ってからバッジを初期表示する
     document.addEventListener('DOMContentLoaded', updateAchievementsBadge);
 
+    // ★ draft-watch.htmlのカウントダウンと全く同じ計算式（複製）。開催日を更新する際は
+    //   両方のKNOWN_DRAFT_DATESに追記すること。
+    function updateHomeDraftCountdown() {
+      const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
+      function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
+        const first = new Date(year, monthIndex, 1);
+        const offset = (weekday - first.getDay() + 7) % 7;
+        return new Date(year, monthIndex, 1 + offset + (n - 1) * 7);
+      }
+      function getDraftDate(year) {
+        if (KNOWN_DRAFT_DATES[year]) return new Date(KNOWN_DRAFT_DATES[year]);
+        return nthWeekdayOfMonth(year, 9, 4, 4); // 10月・木曜(4)・第4週
+      }
+      const today = new Date();
+      const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      let year = today.getFullYear();
+      let draftDate = getDraftDate(year);
+      if (todayMid > draftDate) {
+        year += 1;
+        draftDate = getDraftDate(year);
+      }
+      const diffDays = Math.round((draftDate - todayMid) / 86400000);
+      const el = document.getElementById('home-draft-countdown');
+      if (el) el.textContent = diffDays === 0 ? '(本日開催！)' : `(あと${diffDays}日)`;
+    }
+    document.addEventListener('DOMContentLoaded', updateHomeDraftCountdown);
+
     // ==========================================
     // 結果シェアカード（Canvasで画像を生成してモーダル表示・保存）
     // ==========================================
@@ -925,12 +952,12 @@
 
       <button onclick="window.startGame()" class="w-full bg-blue-600 hover:bg-blue-800 text-white font-black py-4 rounded-lg text-lg shadow-lg">ドラフト会議を開始する</button>
       <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
+      <a href="draft-watch.html" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-white font-black py-2.5 rounded-lg text-sm shadow text-center">👀 ドラフト注目選手 <span id="home-draft-countdown"></span></a>
       <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3">
         <a href="howto.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">📖 遊び方・ルールを見る</a>
         <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">🎯 攻略ガイド</a>
         <a href="draft-system.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">🗒️ ドラフト会議とは</a>
         <a href="draft-2026.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">📅 2026年ドラフト</a>
-        <a href="draft-watch.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">👀 注目選手</a>
         <a href="players.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">🧢 選手名鑑を見る</a>
         <a href="teams.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">🏟️ 球団紹介</a>
         <a href="faq.html" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-700 hover:underline font-bold">❓ FAQ</a>

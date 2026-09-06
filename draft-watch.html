@@ -125,7 +125,8 @@
     // ドラフト開催日カウントダウン：確定している年はKNOWN_DRAFT_DATESの日付を使い、
     // それ以外の年は過去の開催実績（2024年10/24・2025年10/23・2026年10/22＝
     // いずれも10月第4木曜）から算出した暫定日を使う。正式発表され次第、
-    // KNOWN_DRAFT_DATESに追記すること。
+    // ここと、index.html内のupdateHomeDraftCountdown()内のKNOWN_DRAFT_DATESの
+    // 両方に追記すること。
     const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
 
     function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
