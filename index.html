@@ -3105,6 +3105,7 @@
     // teamLoveBonus: {チーム名: 加算値}。選手の出身球団が一致する場合だけ、その球団愛コンボ分を上乗せする
     function initBatterStats(p, buff, fieldPos, teamLoveBonus) {
       let fStats = p.fStats;
+      const baseRun = fStats ? fStats.run : 50; // ★ コンボ等のチーム全体バフをかける前の素の走力。盗塁判定はこちらを使う。
       if (fStats) {
         const b = buff || {};
         const love = (teamLoveBonus && p.team && teamLoveBonus[p.team]) || 0;
@@ -3116,7 +3117,7 @@
           def: fStats.def + (b.def || 0) + love
         };
       }
-      return { ...p, fStats, fieldPos: fieldPos || (p.bestPos && p.bestPos[0]) || "外", stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
+      return { ...p, fStats, baseRun, fieldPos: fieldPos || (p.bestPos && p.bestPos[0]) || "外", stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
     }
     // delta（数値）を与えると、選手本体を書き換えずに試合用の実効pStats（pow/con）を底上げする
     function initPitcherStats(p, delta, teamLoveBonus) {
@@ -3303,7 +3304,9 @@
     function attemptSteal(state, log) {
       const runner = state.bases[0];
       if (!runner || state.bases[1]) return;
-      const runSpeed = runner.fStats ? runner.fStats.run : 50;
+      // ★ ここは素の走力（baseRun）で判定する。fStats.runはコンボ等のチーム全体バフがかかっているため、
+      //   それをそのまま使うと機動力野球コンボを組んだだけで長距離砲まで盗塁を仕掛けてしまう。
+      const runSpeed = runner.baseRun != null ? runner.baseRun : (runner.fStats ? runner.fStats.run : 50);
       if (runSpeed < 60) return; // 足の遅い選手は仕掛けない
 
       const attemptChance = Math.min(0.4, (runSpeed - 60) * 0.012);
