@@ -51,6 +51,10 @@
     .envelope-container.open .letter .stamp { opacity: 1; }
     .envelope-container.disabled { opacity: 0.5; pointer-events: none; }
 
+    /* === スタメン発表：カードが1枚ずつめくれて登場する演出 === */
+    @keyframes cardReveal { 0% { opacity: 0; transform: rotateY(90deg) scale(0.85); } 100% { opacity: 1; transform: rotateY(0deg) scale(1); } }
+    .stamen-card { animation: cardReveal 0.45s ease-out both; transform-style: preserve-3d; }
+
     /* === ドラッグ＆ドロップ === */
     .dnd-slot { border: 2px dashed #cbd5e1; background-color: #f8fafc; transition: all 0.2s; }
     .dnd-slot.drag-over { background-color: #dbeafe; border-color: #3b82f6; }
@@ -1218,6 +1222,14 @@
     </div>
   </div>
 
+  <!-- 画面4b: スタメン発表 -->
+  <div id="screen-stamen" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
+    <h2 id="stamen-title" class="text-xl md:text-3xl font-black text-yellow-400 mb-1 tracking-widest mt-4 text-center"></h2>
+    <p class="text-xs text-gray-400 mb-6">スターティングメンバー発表</p>
+    <div id="stamen-cards" class="flex flex-wrap justify-center gap-3 max-w-4xl pb-6"></div>
+    <button id="stamen-next-btn" onclick="window.stamenAnnounceContinue()" class="mt-4 mb-10 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-10 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-500">次へ</button>
+  </div>
+
   <!-- 画面5: ランキング＆戦力評価 -->
   <div id="screen-ranking" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
     <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-6 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 ドラフト結果</h2>
@@ -2278,13 +2290,14 @@
       'screen-reveal': '指名結果発表',
       'screen-lottery': 'くじ引き',
       'screen-lineup': 'スタメン編成',
+      'screen-stamen': 'スタメン発表',
       'screen-ranking': 'AI採点結果',
       'screen-match': '試合',
       'screen-playoff': 'プレーオフ'
     };
 
     function showScreen(screenId) {
-      ['screen-setup', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-ranking', 'screen-playoff', 'screen-match'].forEach(id => {
+      ['screen-setup', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-stamen', 'screen-ranking', 'screen-playoff', 'screen-match'].forEach(id => {
         const el = document.getElementById(id);
         if(el) el.classList.add('hidden-screen');
       });
@@ -2298,6 +2311,49 @@
         });
       }
     }
+
+    // スタメン発表：チームの9打者＋3投手を、指名発表カードと同じ見た目で1枚ずつめくれるように表示する。
+    // 自分の編成完了直後、および（相手が絡む）プレーオフの試合前に呼び出す。
+    let stamenContinueCallback = null;
+
+    function buildStamenCard(label, p, team, delayMs) {
+      return `
+        <div class="stamen-card w-24 md:w-28 shadow-2xl rounded-lg overflow-hidden" style="animation-delay:${delayMs}ms">
+          <div class="${team.color.bg} ${team.color.text} text-[10px] md:text-xs font-black py-1 px-1 text-center truncate">${label}</div>
+          <div class="bg-white text-black border-2 ${team.color.border} border-t-0 h-[90px] md:h-[110px] flex flex-col items-center justify-center px-1">
+            <p class="text-sm md:text-base font-black leading-tight break-words w-full text-center">${p.name}</p>
+            <p class="text-[10px] md:text-xs font-bold text-gray-500 truncate w-full text-center">${p.team}</p>
+          </div>
+        </div>`;
+    }
+
+    function showStartingLineupAnnouncement(team, onContinue) {
+      const batters = team.shareLineup || [];
+      const pitchers = team.sharePitchers || [];
+      const staggerMs = 100;
+
+      document.getElementById('stamen-title').textContent = `${team.name.replace('(AI)','')} スタメン発表`;
+
+      let html = '';
+      batters.forEach((b, i) => { html += buildStamenCard(`${b.order}番 ${b.pos}`, b, team, i * staggerMs); });
+      pitchers.forEach((p, i) => { html += buildStamenCard(p.pos, p, team, (batters.length + i) * staggerMs); });
+      document.getElementById('stamen-cards').innerHTML = html;
+
+      const btn = document.getElementById('stamen-next-btn');
+      btn.classList.add('opacity-0', 'pointer-events-none');
+      const totalCards = batters.length + pitchers.length;
+      const revealDelay = totalCards * staggerMs + 450 + 200;
+      setTimeout(() => { btn.classList.remove('opacity-0', 'pointer-events-none'); }, revealDelay);
+
+      stamenContinueCallback = onContinue;
+      showScreen('screen-stamen');
+    }
+
+    window.stamenAnnounceContinue = function() {
+      const cb = stamenContinueCallback;
+      stamenContinueCallback = null;
+      if (cb) cb();
+    };
 
     function executeReveal() {
       document.getElementById('reveal-round').textContent = currentRound;
@@ -3029,48 +3085,53 @@
           </div>
         `;
       });
-      showScreen('screen-ranking');
 
-      // ★ showScreen直後だとカードがまだ display:none から切り替わった直後でレイアウト未確定のため、
-      // Chart.jsがCanvasのサイズを0扱いで初期化してしまい、歪んだ形のまま固まることがある。
-      // レイアウト確定後の次フレームまで生成を遅らせる。
-      requestAnimationFrame(() => {
-      ranked.forEach(t => {
-        const ctx = document.getElementById(`radar-${t.id}`);
-        if(ctx) {
-          new Chart(ctx, {
-            type: 'radar',
-            data: {
-              labels: ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣'],
-              datasets: [{
-                label: 'チーム戦力',
-                data: t.radarData,
-                backgroundColor: 'rgba(250, 204, 21, 0.4)',
-                borderColor: 'rgba(250, 204, 21, 1)',
-                pointBackgroundColor: 'rgba(250, 204, 21, 1)',
-                borderWidth: 2,
-              }]
-            },
-            options: {
-              scales: {
-                r: {
-                  angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
-                  grid: { color: 'rgba(255, 255, 255, 0.2)' },
-                  pointLabels: { color: '#cbd5e1', font: { size: 10, weight: 'bold' } },
-                  // ★ min/maxはticksの中ではなくスケール本体(r)に置かないとChart.jsに無視され、
-                  // データの実際のmin〜maxにオートスケールされてしまう（例：96〜99点しかない
-                  // チームは96が中心=0点であるかのように潰れ、チーム同士の見た目も比較不能になる）。
-                  // min:0を使う（40などに引き上げると、40〜100だけを目一杯引き伸ばすため、
-                  // 相対的に弱い項目がほぼ中心に潰れて見え、総合ptと見た目の大きさが食い違う）
-                  min: 0, max: 100,
-                  ticks: { display: false }
-                }
+      // ★ ランキング発表の前に、自分のスタメンをカードで1枚ずつ発表する演出を挟む。
+      const userTeam = teams.find(t => t.isUser);
+      showStartingLineupAnnouncement(userTeam, () => {
+        showScreen('screen-ranking');
+
+        // ★ showScreen直後だとカードがまだ display:none から切り替わった直後でレイアウト未確定のため、
+        // Chart.jsがCanvasのサイズを0扱いで初期化してしまい、歪んだ形のまま固まることがある。
+        // レイアウト確定後の次フレームまで生成を遅らせる。
+        requestAnimationFrame(() => {
+        ranked.forEach(t => {
+          const ctx = document.getElementById(`radar-${t.id}`);
+          if(ctx) {
+            new Chart(ctx, {
+              type: 'radar',
+              data: {
+                labels: ['パワー', 'ミート', '機動力', '守備力', '先発陣', '救援陣'],
+                datasets: [{
+                  label: 'チーム戦力',
+                  data: t.radarData,
+                  backgroundColor: 'rgba(250, 204, 21, 0.4)',
+                  borderColor: 'rgba(250, 204, 21, 1)',
+                  pointBackgroundColor: 'rgba(250, 204, 21, 1)',
+                  borderWidth: 2,
+                }]
               },
-              plugins: { legend: { display: false } }
-            }
-          });
-        }
-      });
+              options: {
+                scales: {
+                  r: {
+                    angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                    pointLabels: { color: '#cbd5e1', font: { size: 10, weight: 'bold' } },
+                    // ★ min/maxはticksの中ではなくスケール本体(r)に置かないとChart.jsに無視され、
+                    // データの実際のmin〜maxにオートスケールされてしまう（例：96〜99点しかない
+                    // チームは96が中心=0点であるかのように潰れ、チーム同士の見た目も比較不能になる）。
+                    // min:0を使う（40などに引き上げると、40〜100だけを目一杯引き伸ばすため、
+                    // 相対的に弱い項目がほぼ中心に潰れて見え、総合ptと見た目の大きさが食い違う）
+                    min: 0, max: 100,
+                    ticks: { display: false }
+                  }
+                },
+                plugins: { legend: { display: false } }
+              }
+            });
+          }
+        });
+        });
       });
     };
 
@@ -3833,7 +3894,9 @@
       if (!match) return;
 
       if (match.a.isUser || match.b.isUser) {
-        startLiveMatch(match.a, match.b);
+        // ★ 対戦相手のスタメンを先に発表してから試合を開始する。
+        const opponent = match.a.isUser ? match.b : match.a;
+        showStartingLineupAnnouncement(opponent, () => startLiveMatch(match.a, match.b));
       } else {
         const result = runInstantGame(match.a, match.b);
         match.scoreA = result.scoreA;
