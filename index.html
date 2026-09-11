@@ -330,8 +330,8 @@
     // パース完了を待ってからバッジを初期表示する
     document.addEventListener('DOMContentLoaded', updateAchievementsBadge);
 
-    // ★ draft-watch.htmlのカウントダウンと全く同じ計算式（複製）。開催日を更新する際は
-    //   両方のKNOWN_DRAFT_DATESに追記すること。
+    // ★ draft-watch.html・draft-2026.htmlのカウントダウンと全く同じ計算式（複製）。
+    //   開催日を更新する際は3箇所すべてのKNOWN_DRAFT_DATESに追記すること。
     function updateHomeDraftCountdown() {
       const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
       function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
