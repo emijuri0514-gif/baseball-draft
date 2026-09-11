@@ -2368,6 +2368,11 @@
       pitchers.forEach((p, i) => { html += buildStamenRow(STAMEN_PITCHER_BADGE[p.pos] || p.pos, p.pos, p, team, (batters.length + 2 + i) * staggerMs); });
       document.getElementById('stamen-cards').innerHTML = html;
 
+      // ★ この画面は自チーム発表とプレーオフ前の相手チーム発表で使い回すため、
+      //   前回スクロールした位置が残ったまま開くと中途半端な位置から始まってしまう。
+      //   毎回必ず先頭に戻しておく。
+      document.getElementById('screen-stamen').scrollTop = 0;
+
       // ★ スマホだと画面に全員入りきらないため、行が登場するタイミングに合わせて
       //   自動で追従スクロールする（すでに見えている行なら何もしない）。
       document.querySelectorAll('#stamen-cards .stamen-row').forEach((row, i) => {
