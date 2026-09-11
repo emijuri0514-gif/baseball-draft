@@ -1008,7 +1008,6 @@
   <header class="bg-gray-900 text-white p-2 shadow-md flex justify-between items-center z-10 relative border-b-4 border-blue-600">
     <h1 class="text-sm font-black tracking-wider">⚾ DRAFT SIM</h1>
     <div class="flex items-center gap-2">
-      <button onclick="window.toggleAnnounce()" class="announce-toggle-btn hidden md:inline-flex text-[10px] font-bold bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded-full whitespace-nowrap">🔊 アナウンス</button>
       <div id="round-indicator" class="font-bold bg-blue-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
     </div>
   </header>
@@ -1019,9 +1018,10 @@
     <!-- ▼ 選手リストエリア ▼ -->
     <div id="view-player-list" class="w-full md:w-3/5 h-full flex flex-col border-r border-gray-300 bg-white">
       <div class="bg-gray-50 border-b border-gray-200 shadow-sm z-10">
-        <div class="flex border-b border-gray-300 px-2 pt-1 gap-2">
+        <div class="flex items-center border-b border-gray-300 px-2 pt-1 gap-2">
           <div id="tab-all" class="tab-btn active" onclick="switchTab('all')">全選手</div>
           <div id="tab-fav" class="tab-btn flex items-center" onclick="switchTab('fav')"><span class="text-yellow-500 mr-1">★</span>リスト</div>
+          <button onclick="window.toggleAnnounce()" class="announce-toggle-btn ml-auto mb-1 text-[10px] font-bold bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded-full whitespace-nowrap">🔊 アナウンス</button>
         </div>
         <div class="p-2">
           <div id="turn-bar" class="hidden"></div>
@@ -1103,8 +1103,7 @@
     <!-- スマホ用ボトムナビゲーション -->
     <div class="fixed bottom-0 left-0 w-full flex bg-gray-900 text-white md:hidden z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
       <button id="nav-list-btn" onclick="window.switchDraftView('list')" class="flex-1 py-3 font-bold text-sm bg-blue-700 text-white transition-colors duration-200 border-r border-gray-700">🔍 選手検索</button>
-      <button id="nav-board-btn" onclick="window.switchDraftView('board')" class="flex-1 py-3 font-bold text-sm bg-gray-800 text-gray-400 transition-colors duration-200 border-r border-gray-700">📋 指名ボード</button>
-      <button onclick="window.toggleAnnounce()" class="announce-toggle-btn flex-1 py-3 font-bold text-xs bg-gray-700 text-white transition-colors duration-200">🔊 アナウンス</button>
+      <button id="nav-board-btn" onclick="window.switchDraftView('board')" class="flex-1 py-3 font-bold text-sm bg-gray-800 text-gray-400 transition-colors duration-200">📋 指名ボード</button>
     </div>
   </div>
 
