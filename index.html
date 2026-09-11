@@ -128,7 +128,7 @@
 <body class="text-gray-800 h-screen overflow-hidden flex flex-col">
 
   <!-- 汎用モーダル（alert/confirmの置き換え。アプリの見た目に合わせた通知・確認ダイアログ） -->
-  <div id="app-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-70 z-[300] flex items-center px-6 overflow-y-auto fade-in">
+  <div id="app-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-70 z-[300] flex items-center justify-center px-6 overflow-y-auto fade-in">
     <!-- ★ justify-centerだけで中央寄せすると、メッセージが長くて画面より高くなった時に上端が
          スクロールしても届かなくなる（screen-setupで実際に起きた不具合と同じ原因）。
          my-autoなら入りきらない時は自動で上詰めになり、常に全文を読めるようにできる ★ -->
@@ -2367,6 +2367,11 @@
       html += buildStamenSectionLabel('▼ 投手陣', (batters.length + 1) * staggerMs);
       pitchers.forEach((p, i) => { html += buildStamenRow(STAMEN_PITCHER_BADGE[p.pos] || p.pos, p.pos, p, team, (batters.length + 2 + i) * staggerMs); });
       document.getElementById('stamen-cards').innerHTML = html;
+
+      // ★ この画面は自チーム発表とプレーオフ前の相手チーム発表で使い回すため、
+      //   前回スクロールした位置が残ったまま開くと中途半端な位置から始まってしまう。
+      //   毎回必ず先頭に戻しておく。
+      document.getElementById('screen-stamen').scrollTop = 0;
 
       // ★ スマホだと画面に全員入りきらないため、行が登場するタイミングに合わせて
       //   自動で追従スクロールする（すでに見えている行なら何もしない）。
