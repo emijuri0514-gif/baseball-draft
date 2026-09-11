@@ -1008,7 +1008,7 @@
   <header class="bg-gray-900 text-white p-2 shadow-md flex justify-between items-center z-10 relative border-b-4 border-blue-600">
     <h1 class="text-sm font-black tracking-wider">⚾ DRAFT SIM</h1>
     <div class="flex items-center gap-2">
-      <button id="announce-toggle-btn" onclick="window.toggleAnnounce()" class="text-[10px] font-bold bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded-full whitespace-nowrap">🔊 指名アナウンス</button>
+      <button onclick="window.toggleAnnounce()" class="announce-toggle-btn hidden md:inline-flex text-[10px] font-bold bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded-full whitespace-nowrap">🔊 アナウンス</button>
       <div id="round-indicator" class="font-bold bg-blue-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
     </div>
   </header>
@@ -1103,7 +1103,8 @@
     <!-- スマホ用ボトムナビゲーション -->
     <div class="fixed bottom-0 left-0 w-full flex bg-gray-900 text-white md:hidden z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
       <button id="nav-list-btn" onclick="window.switchDraftView('list')" class="flex-1 py-3 font-bold text-sm bg-blue-700 text-white transition-colors duration-200 border-r border-gray-700">🔍 選手検索</button>
-      <button id="nav-board-btn" onclick="window.switchDraftView('board')" class="flex-1 py-3 font-bold text-sm bg-gray-800 text-gray-400 transition-colors duration-200">📋 指名ボード</button>
+      <button id="nav-board-btn" onclick="window.switchDraftView('board')" class="flex-1 py-3 font-bold text-sm bg-gray-800 text-gray-400 transition-colors duration-200 border-r border-gray-700">📋 指名ボード</button>
+      <button onclick="window.toggleAnnounce()" class="announce-toggle-btn flex-1 py-3 font-bold text-xs bg-gray-700 text-white transition-colors duration-200">🔊 アナウンス</button>
     </div>
   </div>
 
@@ -2045,11 +2046,12 @@
 
     window.toggleAnnounce = function() {
       waiverAnnounce = !waiverAnnounce;
-      const btn = document.getElementById('announce-toggle-btn');
-      btn.textContent = waiverAnnounce ? '🔊 指名アナウンス' : '🔇 指名アナウンス';
-      btn.classList.toggle('bg-gray-700', waiverAnnounce);
-      btn.classList.toggle('bg-gray-600', !waiverAnnounce);
-      btn.classList.toggle('opacity-60', !waiverAnnounce);
+      document.querySelectorAll('.announce-toggle-btn').forEach(btn => {
+        btn.textContent = waiverAnnounce ? '🔊 アナウンス' : '🔇 アナウンス';
+        btn.classList.toggle('bg-gray-700', waiverAnnounce);
+        btn.classList.toggle('bg-gray-600', !waiverAnnounce);
+        btn.classList.toggle('opacity-60', !waiverAnnounce);
+      });
     };
 
     // ウェーバー中、AIの指名結果を1件だけリヴィール画面で短く表示してから次に進む
