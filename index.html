@@ -1335,6 +1335,11 @@
 
     const QUOTAS = { "投手": 3, "捕手": 1, "内野手": 4, "外野手": 3 };
     const TOTAL_ROUNDS = 12;
+    // ★ 外国人枠：1球団が指名できる外国人選手は最大3人まで（実際のNPBの試合出場枠を意識した人数）。
+    //   外国人選手かどうかは、フルネーム表記（例：「フランミル・レイエス」）に含まれる「・」で判定する。
+    const FOREIGN_PLAYER_LIMIT = 3;
+    function isForeignPlayer(p) { return p.name.includes('・'); }
+    function foreignCount(team) { return team.roster.filter(isForeignPlayer).length; }
     const ALL_TEAMS = ["巨人", "阪神", "DeNA", "ヤクルト", "中日", "広島", "オリックス", "ロッテ", "ソフトバンク", "楽天", "日本ハム", "西武"];
 
     // ★ 球団ごとのテーマカラー定義 ★
@@ -1854,6 +1859,11 @@
       html += `<span class="pos-badge ${counts["外野手"]>=3?'pos-ok':'pos-need'}">外: ${Math.min(counts["外野手"],3)}/3</span>`;
       html += `<span class="pos-badge ${dhFilled?'pos-ok':'pos-need'}">DH: ${dhFilled}/1</span>`;
 
+      // ★ 外国人枠は「埋めるべき最低数」ではなく「これ以上は指名できない上限」なので、
+      //   他の枠バッジとは逆に、上限に達したら赤（pos-need）にする。
+      const fCount = foreignCount(userTeamRef());
+      html += `<span class="pos-badge ${fCount>=FOREIGN_PLAYER_LIMIT?'pos-need':'pos-ok'}">外国人: ${fCount}/${FOREIGN_PLAYER_LIMIT}</span>`;
+
       document.getElementById('pos-status-bar').innerHTML = html;
     }
 
@@ -2156,9 +2166,14 @@
     }
 
     function getAIPick(team) {
+      // ★ 外国人枠の上限に達している場合は、候補プール自体から外国人選手を除外しておく。
+      const pool = foreignCount(team) >= FOREIGN_PLAYER_LIMIT
+        ? availablePlayers.filter(p => !isForeignPlayer(p))
+        : availablePlayers;
+
       const missing = getMissingPositions(team.roster);
-      let candidates = availablePlayers.filter(p => missing.includes(p.pos));
-      if (candidates.length === 0) candidates = [...availablePlayers]; // 枠が枯れたら全体から
+      let candidates = pool.filter(p => missing.includes(p.pos));
+      if (candidates.length === 0) candidates = [...pool]; // 枠が枯れたら全体から
       if (candidates.length === 0) return null;
 
       let bestPlayer = candidates[0];
@@ -2271,6 +2286,11 @@
       if (!user.needsPick) return;
       const selected = availablePlayers.find(p => p.id === playerId);
       if (!selected) return;
+
+      if (isForeignPlayer(selected) && foreignCount(user) >= FOREIGN_PLAYER_LIMIT) {
+        showAppAlert(`外国人選手は1球団最大${FOREIGN_PLAYER_LIMIT}人までしか指名できません。`);
+        return;
+      }
 
       if (isWaiverRound(currentRound)) {
         commitPick(user, selected);
