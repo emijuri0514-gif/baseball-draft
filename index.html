@@ -51,9 +51,9 @@
     .envelope-container.open .letter .stamp { opacity: 1; }
     .envelope-container.disabled { opacity: 0.5; pointer-events: none; }
 
-    /* === スタメン発表：カードが1枚ずつめくれて登場する演出 === */
-    @keyframes cardReveal { 0% { opacity: 0; transform: rotateY(90deg) scale(0.85); } 100% { opacity: 1; transform: rotateY(0deg) scale(1); } }
-    .stamen-card { animation: cardReveal 0.45s ease-out both; transform-style: preserve-3d; }
+    /* === スタメン発表：打順が一目でわかるよう、リストの行が1つずつスライドして登場する演出 === */
+    @keyframes rowReveal { 0% { opacity: 0; transform: translateX(-24px); } 100% { opacity: 1; transform: translateX(0); } }
+    .stamen-row { animation: rowReveal 0.4s ease-out both; }
 
     /* === ドラッグ＆ドロップ === */
     .dnd-slot { border: 2px dashed #cbd5e1; background-color: #f8fafc; transition: all 0.2s; }
@@ -1226,7 +1226,7 @@
   <div id="screen-stamen" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
     <h2 id="stamen-title" class="text-xl md:text-3xl font-black text-yellow-400 mb-1 tracking-widest mt-4 text-center"></h2>
     <p class="text-xs text-gray-400 mb-6">スターティングメンバー発表</p>
-    <div id="stamen-cards" class="flex flex-wrap justify-center gap-3 max-w-4xl pb-6"></div>
+    <div id="stamen-cards" class="w-full max-w-md space-y-1.5 pb-6"></div>
     <button id="stamen-next-btn" onclick="window.stamenAnnounceContinue()" class="mt-4 mb-10 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-10 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-500">次へ</button>
   </div>
 
@@ -2312,37 +2312,45 @@
       }
     }
 
-    // スタメン発表：チームの9打者＋3投手を、指名発表カードと同じ見た目で1枚ずつめくれるように表示する。
-    // 自分の編成完了直後、および（相手が絡む）プレーオフの試合前に呼び出す。
+    // スタメン発表：チームの9打者＋3投手を、打順が一目でわかる縦並びのリスト形式で
+    // 1行ずつスライドしながら発表する。自分の編成完了直後、および
+    // （相手が絡む）プレーオフの試合前に呼び出す。
     let stamenContinueCallback = null;
+    const STAMEN_PITCHER_BADGE = { '先発': '先', '中継': '中', '抑え': '抑' };
 
-    function buildStamenCard(label, p, team, delayMs) {
+    function buildStamenRow(badgeText, posLabel, p, team, delayMs) {
       return `
-        <div class="stamen-card w-24 md:w-28 shadow-2xl rounded-lg overflow-hidden" style="animation-delay:${delayMs}ms">
-          <div class="${team.color.bg} ${team.color.text} text-[10px] md:text-xs font-black py-1 px-1 text-center truncate">${label}</div>
-          <div class="bg-white text-black border-2 ${team.color.border} border-t-0 h-[90px] md:h-[110px] flex flex-col items-center justify-center px-1">
-            <p class="text-sm md:text-base font-black leading-tight break-words w-full text-center">${p.name}</p>
-            <p class="text-[10px] md:text-xs font-bold text-gray-500 truncate w-full text-center">${p.team}</p>
+        <div class="stamen-row flex items-center gap-3 bg-white text-black rounded-lg shadow-lg overflow-hidden border-l-8 ${team.color.border}" style="animation-delay:${delayMs}ms">
+          <div class="${team.color.bg} ${team.color.text} w-12 h-12 md:w-14 md:h-14 flex items-center justify-center font-black text-lg md:text-xl shrink-0">${badgeText}</div>
+          <div class="flex-1 min-w-0 py-2 pr-3">
+            <p class="text-[10px] md:text-xs font-bold text-gray-500">${posLabel}</p>
+            <p class="text-base md:text-lg font-black truncate">${p.name}</p>
+            <p class="text-[10px] text-gray-400 truncate">${p.team}</p>
           </div>
         </div>`;
+    }
+
+    function buildStamenSectionLabel(text, delayMs) {
+      return `<p class="stamen-row text-xs font-bold text-gray-400 pt-2 pb-0.5" style="animation-delay:${delayMs}ms">${text}</p>`;
     }
 
     function showStartingLineupAnnouncement(team, onContinue) {
       const batters = team.shareLineup || [];
       const pitchers = team.sharePitchers || [];
-      const staggerMs = 100;
+      const staggerMs = 90;
 
       document.getElementById('stamen-title').textContent = `${team.name.replace('(AI)','')} スタメン発表`;
 
-      let html = '';
-      batters.forEach((b, i) => { html += buildStamenCard(`${b.order}番 ${b.pos}`, b, team, i * staggerMs); });
-      pitchers.forEach((p, i) => { html += buildStamenCard(p.pos, p, team, (batters.length + i) * staggerMs); });
+      let html = buildStamenSectionLabel('▼ 打者', 0);
+      batters.forEach((b, i) => { html += buildStamenRow(String(b.order), b.pos, b, team, (i + 1) * staggerMs); });
+      html += buildStamenSectionLabel('▼ 投手陣', (batters.length + 1) * staggerMs);
+      pitchers.forEach((p, i) => { html += buildStamenRow(STAMEN_PITCHER_BADGE[p.pos] || p.pos, p.pos, p, team, (batters.length + 2 + i) * staggerMs); });
       document.getElementById('stamen-cards').innerHTML = html;
 
       const btn = document.getElementById('stamen-next-btn');
       btn.classList.add('opacity-0', 'pointer-events-none');
-      const totalCards = batters.length + pitchers.length;
-      const revealDelay = totalCards * staggerMs + 450 + 200;
+      const totalRows = batters.length + pitchers.length + 2; // +2はセクション見出し2行ぶん
+      const revealDelay = totalRows * staggerMs + 400 + 200;
       setTimeout(() => { btn.classList.remove('opacity-0', 'pointer-events-none'); }, revealDelay);
 
       stamenContinueCallback = onContinue;
