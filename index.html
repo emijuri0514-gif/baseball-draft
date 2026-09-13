@@ -2179,6 +2179,20 @@
       const missing = getMissingPositions(team.roster);
       let candidates = pool.filter(p => missing.includes(p.pos));
       if (candidates.length === 0) candidates = [...pool]; // 枠が枯れたら全体から
+
+      // ★ 野手9人（スタメン分）を最優先で確保する。投手の最低必要数(3)を満たした後、
+      // 上のmissingが空になって全体候補に開放されると、その後の自由枠が投手ばかりに
+      // 流れてしまうことがあった。その場合、スタメン編成時に野手が9人に届かず、
+      // 実在しない「代打」ダミー選手（能力値50固定）で頭数を埋めることになり、
+      // 編成ランクの計算には反映されないのに実際の試合には出てくる、というズレが生じていた。
+      // 投手の最低数(3)をすでに満たしているなら、野手が9人揃うまでは投手を候補から外す。
+      const batterCount = team.roster.filter(p => p && p.fStats).length;
+      const pitcherCount = team.roster.filter(p => p && p.pStats).length;
+      if (batterCount < 9 && pitcherCount >= 3) {
+        const battersOnly = candidates.filter(p => p.fStats);
+        if (battersOnly.length > 0) candidates = battersOnly;
+      }
+
       if (candidates.length === 0) return null;
 
       let bestPlayer = candidates[0];
@@ -3301,24 +3315,29 @@
       return Math.max(0.7, 1.0 - ((pitches - sta * 1.5) * 0.01));
     }
 
-    function scheduledPitcherStage(inning) {
-      if (inning <= 6) return 0;
-      if (inning <= 8) return 1;
-      return 2;
+    // 9回は必ず抑えを送るが、7〜8回はまだ球数的に余裕がある投手（疲労0.9超）なら
+    // 続投させる。fatigueを渡さない（先発未登板など）場合は1.0＝万全として扱う。
+    function scheduledPitcherStage(inning, fatigue = 1.0) {
+      if (inning >= 9) return 2;
+      if (inning >= 7 && fatigue <= 0.9) return 1;
+      return 0;
     }
 
-    // 通常はイニング経過で先発→中継→抑えと起用するが、現在の投手がスタミナ切れ(疲労0.8以下)
-    // なら予定より早く次の投手へスイッチする。段階は進むだけで後戻りはしない。
+    // 通常はイニング経過（球数の目安）で先発→中継→抑えと起用するが、現在の投手が
+    // まだ球数的に余裕がある（疲労0.9超）なら予定のイニングを過ぎても続投させ、
+    // 逆にスタミナ切れ(疲労0.8以下)なら予定より早く次の投手へスイッチする。
+    // 段階は進むだけで後戻りはしない。
     function checkPitcherChange(state, log) {
       const defLineup = state.isTop ? state.lineupB : state.lineupA;
       const defTeam = state.isTop ? state.teamB : state.teamA;
       const stageKey = state.isTop ? 'stageB' : 'stageA';
       const currentPitcherRef = state.isTop ? 'currentPitcherB' : 'currentPitcherA';
 
-      let stage = Math.max(state[stageKey], scheduledPitcherStage(state.inning));
-
       const current = state[currentPitcherRef];
-      const dueToFatigue = !!current && stage < 2 && getPitcherFatigue(current) <= 0.8;
+      const fatigue = current ? getPitcherFatigue(current) : 1.0;
+      let stage = Math.max(state[stageKey], scheduledPitcherStage(state.inning, fatigue));
+
+      const dueToFatigue = !!current && stage < 2 && fatigue <= 0.8;
       if (dueToFatigue) stage++;
 
       state[stageKey] = stage;
