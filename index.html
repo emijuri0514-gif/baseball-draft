@@ -2740,9 +2740,22 @@
       const out = [];
       for (let o = 1; o <= 9; o++) if (slots[o]) out.push(slots[o]);
 
-      const sp = pitchers.find(p => p.bestPos.includes("先発")) || pitchers[0];
-      const rp = pitchers.find(p => p.bestPos.includes("中継") && p !== sp) || pitchers.find(p => p !== sp) || sp;
-      const cp = pitchers.find(p => p.bestPos.includes("抑え") && p !== sp && p !== rp) || pitchers.find(p => p !== sp && p !== rp) || rp;
+      // ★ ロール別の投手選び：まずそのロールに適性(bestPos)がある投手から探し、
+      // 本当に誰も適性を持たない場合だけ、残り全員をgetPosScore()の役割適性込みの
+      // スコアで比べて一番マシな投手を選ぶ。以前は適性の有無を見ずに「ロースター内の
+      // 最初の余り投手」を機械的に割り当てていたため、先発適性しかない投手が抑えに
+      // 回されるような不自然な起用が起きていた（getPosScore()はミスマッチな起用に
+      // ペナルティを掛ける作りなので、これで自然と適性のある投手が優先されるようになる）。
+      function pickPitcherForRole(role, excluded) {
+        const candidates = pitchers.filter(p => !excluded.includes(p));
+        if (candidates.length === 0) return null;
+        const withAptitude = candidates.filter(p => p.bestPos.includes(role));
+        const pool = withAptitude.length > 0 ? withAptitude : candidates;
+        return pool.reduce((best, p) => getPosScore(p, role) > getPosScore(best, role) ? p : best, pool[0]);
+      }
+      const sp = pickPitcherForRole("先発", []);
+      const rp = pickPitcherForRole("中継", [sp]);
+      const cp = pickPitcherForRole("抑え", [sp, rp]);
 
       return { batters: out, sp, rp, cp };
     }
