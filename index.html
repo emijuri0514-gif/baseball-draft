@@ -3432,14 +3432,19 @@
       let stage = Math.max(state[stageKey], scheduledPitcherStage(state.inning, fatigue));
 
       const dueToFatigue = !!current && stage < 2 && fatigue <= 0.8;
-      if (dueToFatigue) stage++;
+      // ★ 大量失点による緊急降板：3回を投げ切らないうちに5失点以上した場合は、
+      // 球数やイニングの予定に関係なく次の投手に代える。中継ぎ・抑えは1人ずつしか
+      // いないため、しきい値はあくまで「明らかな大炎上」だけに絞った控えめな設定にして
+      // いる（安易に早めすぎると、今度は少ない中継ぎ陣に負担が集中してしまうため）。
+      const dueToBlowout = !!current && stage < 2 && current.stats.out < 9 && current.stats.run >= 5;
+      if (dueToFatigue || dueToBlowout) stage++;
 
       state[stageKey] = stage;
       const expectedPitcher = [defLineup.pitchers.sp, defLineup.pitchers.rp, defLineup.pitchers.cp][stage];
 
       if (state[currentPitcherRef] !== expectedPitcher) {
         state[currentPitcherRef] = expectedPitcher;
-        const reason = dueToFatigue ? '（スタミナ切れ）' : '';
+        const reason = dueToBlowout ? '（大量失点）' : (dueToFatigue ? '（スタミナ切れ）' : '');
         if (log) log(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代${reason}: ${expectedPitcher.name} がマウンドに上がります。</span>`);
       }
     }
