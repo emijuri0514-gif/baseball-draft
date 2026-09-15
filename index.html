@@ -238,7 +238,11 @@
       { id: 'combo_multi',    tier: '上級', emoji: '🎇', title: 'パーフェクトロマン', desc: '1回の編成で8つ以上のコンボを同時発動する' },
       { id: 's_and_champion', tier: '上級', emoji: '👑', title: '完全制覇',           desc: 'Sランクを獲得したチームでプレーオフも優勝する（同じプレイ内で達成）' },
       { id: 'hardest_champion', tier: '上級', emoji: '⚔️', title: '強豪ひしめく頂点', desc: 'AI球団3つ（計4球団）が相手の対戦でプレーオフ優勝する' },
-      { id: 'all_teams_a_rank', tier: '上級', emoji: '🌟', title: '全球団エース級',   desc: '12球団すべてで、それぞれ一度はAランク以上を獲得する' }
+      { id: 'all_teams_a_rank', tier: '上級', emoji: '🌟', title: '全球団エース級',   desc: '12球団すべてで、それぞれ一度はAランク以上を獲得する' },
+      { id: 'foreigners_full', tier: '中級', emoji: '🌎', title: 'フォーリナーズ',    desc: '外国人選手を上限の3人フル指名して編成する' },
+      { id: 'few_teams',      tier: '中級', emoji: '🎯', title: '一点集中',           desc: '野手9人を4球団以下の出身選手だけで編成する' },
+      { id: 'total_away',     tier: '中級', emoji: '🚪', title: '完全アウェー',       desc: '担当球団の選手を1人も指名せずに編成する' },
+      { id: 'weeds_spirit',   tier: '上級', emoji: '🌾', title: '雑草魂',             desc: '打者・投手ともに能力値の平均が68未満の選手だけで編成し、Cランク以上を取る' }
     ];
     const ACH_STORAGE_KEY = 'dt9_achievements_v1';
 
@@ -3155,6 +3159,25 @@
             achState.stats.playedTeams.push(t.baseName);
             saveAchievementState();
             if (achState.stats.playedTeams.length >= 12) unlockAchievement('all_teams');
+          }
+
+          if (foreignCount(t) >= FOREIGN_PLAYER_LIMIT) unlockAchievement('foreigners_full');
+
+          const rosterBatters = t.roster.filter(p => p && p.fStats);
+          const rosterTeamCount = new Set(t.roster.filter(Boolean).map(p => p.team)).size;
+          if (rosterBatters.length === 9 && rosterTeamCount <= 4) unlockAchievement('few_teams');
+
+          if (t.roster.every(p => p && p.team !== t.baseName)) unlockAchievement('total_away');
+
+          const allUnderThreshold = t.roster.every(p => {
+            if (!p) return false;
+            const avg = p.fStats
+              ? (p.fStats.meet + p.fStats.pow + p.fStats.run + p.fStats.def) / 4
+              : (p.pStats.pow + p.pStats.con + p.pStats.sta) / 3;
+            return avg < 68;
+          });
+          if (allUnderThreshold && (grade === 'C' || grade === 'B' || grade === 'A' || grade === 'S')) {
+            unlockAchievement('weeds_spirit');
           }
         }
       });
