@@ -3730,7 +3730,7 @@
         }
       }
 
-      if (log) log(`【${atkTeam.name.replace('(AI)','')}】${batterIdx + 1}番打者 <strong>${batter.name}</strong> : <span class="${resultClass}">${resultStr}</span>`);
+      if (log) log(`【${atkTeam.name.replace('(AI)','')}】${batterIdx + 1}番 <strong>${batter.name}</strong> : <span class="${resultClass}">${resultStr}</span>`);
 
       if (state.isTop) state.batterIdxA = (state.batterIdxA + 1) % 9;
       else state.batterIdxB = (state.batterIdxB + 1) % 9;
