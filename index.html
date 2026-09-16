@@ -963,6 +963,8 @@
         <option value="3" selected>3球団（計4球団で対戦）</option>
         <option value="4">4球団（計5球団で対戦）</option>
         <option value="5">5球団（計6球団で対戦）</option>
+        <option value="6">6球団（計7球団で対戦）</option>
+        <option value="7">7球団（計8球団で対戦）</option>
       </select>
 
       <p class="font-bold mb-2 text-sm text-left text-blue-800">③ ドラフト方式</p>
@@ -3941,7 +3943,7 @@
       return { a, b, scoreA: null, scoreB: null, winner: null, resolved: false, feedsTo: null };
     }
 
-    // finalScore順にシードし、参加チーム数（2〜6）に応じたブラケットを組む。
+    // finalScore順にシードし、参加チーム数（2〜8）に応じたブラケットを組む。
     // 上位シードほど不戦勝（bye）で早いラウンドを免除され、後のラウンドから登場する。
     function buildPlayoffBracket() {
       const seeded = [...teams].sort((a, b) => b.finalScore - a.finalScore);
@@ -3980,7 +3982,7 @@
           { name: '準決勝',   matches: [ semi0, semi1 ] },
           { name: '決勝',     matches: [ makeMatch(null, null) ] }
         ];
-      } else {
+      } else if (n === 6) {
         // 6チーム：上位2シードは準々決勝を不戦勝で免除し、準決勝から登場する
         const qf0 = makeMatch(seeded[2], seeded[5]);
         const qf1 = makeMatch(seeded[3], seeded[4]);
@@ -3992,6 +3994,42 @@
         semi1.feedsTo = { round: 2, match: 0, slot: 'b' };
         rounds = [
           { name: '準々決勝', matches: [ qf0, qf1 ] },
+          { name: '準決勝',   matches: [ semi0, semi1 ] },
+          { name: '決勝',     matches: [ makeMatch(null, null) ] }
+        ];
+      } else if (n === 7) {
+        // 7チーム：1位シードのみ準々決勝を不戦勝で免除し、準決勝から登場する
+        const qf0 = makeMatch(seeded[1], seeded[6]);
+        const qf1 = makeMatch(seeded[2], seeded[5]);
+        const qf2 = makeMatch(seeded[3], seeded[4]);
+        const semi0 = makeMatch(seeded[0], null);
+        const semi1 = makeMatch(null, null);
+        qf0.feedsTo = { round: 1, match: 0, slot: 'b' };
+        qf1.feedsTo = { round: 1, match: 1, slot: 'a' };
+        qf2.feedsTo = { round: 1, match: 1, slot: 'b' };
+        semi0.feedsTo = { round: 2, match: 0, slot: 'a' };
+        semi1.feedsTo = { round: 2, match: 0, slot: 'b' };
+        rounds = [
+          { name: '準々決勝', matches: [ qf0, qf1, qf2 ] },
+          { name: '準決勝',   matches: [ semi0, semi1 ] },
+          { name: '決勝',     matches: [ makeMatch(null, null) ] }
+        ];
+      } else {
+        // 8チーム：不戦勝なしのフラットな8強トーナメント
+        const qf0 = makeMatch(seeded[0], seeded[7]);
+        const qf1 = makeMatch(seeded[3], seeded[4]);
+        const qf2 = makeMatch(seeded[2], seeded[5]);
+        const qf3 = makeMatch(seeded[1], seeded[6]);
+        const semi0 = makeMatch(null, null);
+        const semi1 = makeMatch(null, null);
+        qf0.feedsTo = { round: 1, match: 0, slot: 'a' };
+        qf1.feedsTo = { round: 1, match: 0, slot: 'b' };
+        qf2.feedsTo = { round: 1, match: 1, slot: 'a' };
+        qf3.feedsTo = { round: 1, match: 1, slot: 'b' };
+        semi0.feedsTo = { round: 2, match: 0, slot: 'a' };
+        semi1.feedsTo = { round: 2, match: 0, slot: 'b' };
+        rounds = [
+          { name: '準々決勝', matches: [ qf0, qf1, qf2, qf3 ] },
           { name: '準決勝',   matches: [ semi0, semi1 ] },
           { name: '決勝',     matches: [ makeMatch(null, null) ] }
         ];
