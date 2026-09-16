@@ -3436,10 +3436,13 @@
       return Math.max(0.7, 1.0 - ((pitches - sta * 1.5) * 0.01));
     }
 
-    // 9回は必ず抑えを送るが、7〜8回はまだ球数的に余裕がある投手（疲労0.9超）なら
-    // 続投させる。fatigueを渡さない（先発未登板など）場合は1.0＝万全として扱う。
-    function scheduledPitcherStage(inning, fatigue = 1.0) {
-      if (inning >= 9) return 2;
+    // 中継ぎ以降に進んでいる状態で9回を迎えたら必ず抑えを送る。ただし先発がまだ
+    // 一度も交代していない（currentStageが0の）場合は、9回だからといっていきなり
+    // 抑えへ飛ばさず、まず中継ぎに任せる（中継ぎが一度も登板しないまま終わるのを防ぐ）。
+    // 7〜8回はまだ球数的に余裕がある投手（疲労0.9超）なら続投させる。fatigueを渡さない
+    // （先発未登板など）場合は1.0＝万全として扱う。
+    function scheduledPitcherStage(inning, fatigue = 1.0, currentStage = 0) {
+      if (currentStage >= 1 && inning >= 9) return 2;
       if (inning >= 7 && fatigue <= 0.9) return 1;
       return 0;
     }
@@ -3456,7 +3459,15 @@
 
       const current = state[currentPitcherRef];
       const fatigue = current ? getPitcherFatigue(current) : 1.0;
-      let stage = Math.max(state[stageKey], scheduledPitcherStage(state.inning, fatigue));
+      // ★ 予定表（scheduledPitcherStage）が「まだ中継ぎを一度も使っていないのに9回だから
+      // 抑えへ」のように一気に2段階先を返すと、そのままMath.maxを取った場合に先発→抑えへ
+      // 一気に飛んでしまい、中継ぎが一度も登板しないまま試合が終わってしまう
+      // （余っている投手がいるのに使われない）不具合があった。scheduledPitcherStage自体に
+      // 現在の段階を渡して「中継ぎを経由してからでないと抑えへは進めない」ようにし、
+      // 念のためここでも進める場合は必ず1段階ずつにする。
+      const scheduled = scheduledPitcherStage(state.inning, fatigue, state[stageKey]);
+      let stage = state[stageKey];
+      if (scheduled > stage) stage++;
 
       const dueToFatigue = !!current && stage < 2 && fatigue <= 0.8;
       // ★ 大量失点による緊急降板：3回を投げ切らないうちに5失点以上した場合は、
