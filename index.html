@@ -4111,17 +4111,19 @@
           <span class="text-gray-500 text-sm">vs</span>
           <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full ${match.b.color.bg}"></span>${match.b.name.replace('(AI)','')}</span>
         </p>
-        <button onclick="window.playNextPlayoffMatch()" class="w-full ${involvesUser ? 'bg-red-600 hover:bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500'} text-white font-black py-3 rounded-full shadow-lg">
+        <button onclick="window.playNextPlayoffMatch(${involvesUser ? 'false' : 'true'})" class="w-full ${involvesUser ? 'bg-red-600 hover:bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500'} text-white font-black py-3 rounded-full shadow-lg">
           ${involvesUser ? '🎮 試合開始（観戦する）' : '⚡ 結果を見る'}
         </button>
+        ${involvesUser ? `<button onclick="window.playNextPlayoffMatch(true)" class="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 font-bold py-2.5 rounded-full mt-2 text-sm">⚡ 結果だけ見る（観戦をスキップ）</button>` : ''}
       `;
     }
 
-    window.playNextPlayoffMatch = function() {
+    // skip=trueなら（自分の試合でも）観戦せず結果だけ即座に反映する
+    window.playNextPlayoffMatch = function(skip) {
       const match = getCurrentPlayoffMatch();
       if (!match) return;
 
-      if (match.a.isUser || match.b.isUser) {
+      if ((match.a.isUser || match.b.isUser) && !skip) {
         // ★ 対戦相手のスタメンを先に発表してから試合を開始する。
         const opponent = match.a.isUser ? match.b : match.a;
         showStartingLineupAnnouncement(opponent, () => startLiveMatch(match.a, match.b));
