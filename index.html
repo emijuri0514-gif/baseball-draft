@@ -1202,12 +1202,14 @@
   <!-- 画面2: リヴィール -->
   <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-[#0a1122] z-50 flex flex-col items-center text-white fade-in px-2 overflow-y-auto">
     <div class="reveal-bg w-full min-h-full flex flex-col items-center justify-center py-8" style="position: relative;">
-    <h2 class="font-sport text-xl md:text-3xl font-bold mb-6 tracking-widest text-yellow-400" style="text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 4px 14px rgba(0,0,0,0.85);">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
+    <h2 class="font-sport text-xl md:text-3xl font-bold mb-6 tracking-widest text-yellow-400 bg-black bg-opacity-60 rounded-full px-5 py-1.5">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
     <!-- ★ 写真背景の上に直接カラフルな指名カードを置くと、暖色の写真との対比で
-         球団カラーが濁って見えてしまう不具合があった。カードの直下だけ黒に近い
-         半透明パネルを敷くことで、球団カラーは元の鮮やかさを保ちつつ、
-         画面全体としては写真の雰囲気も出るようにしている。 -->
-    <div class="bg-black bg-opacity-50 rounded-2xl p-3 md:p-4">
+         球団カラーが濁って見えてしまう不具合があった。カードの直下だけほぼ不透明な
+         黒パネルを敷くことで、球団カラーは元の鮮やかさを保ちつつ、
+         画面全体としては写真の雰囲気も出るようにしている。
+         ★ 以前bg-opacity-50で試したところ、写真が50%透けて見えてしまい球団カラーが
+         濁る問題が再発したため、bg-opacity-90まで上げてほぼ不透明にしている。 -->
+    <div class="bg-black bg-opacity-90 rounded-2xl p-3 md:p-4">
     <div id="reveal-cards-container" class="flex flex-wrap justify-center gap-4 max-w-5xl overflow-y-auto max-h-[60vh] py-2"></div>
     </div>
     <div id="reveal-status" class="mt-6 text-lg md:text-2xl font-bold h-10" style="text-shadow: 0 2px 6px rgba(0,0,0,0.8);"></div>
