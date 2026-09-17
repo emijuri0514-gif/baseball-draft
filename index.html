@@ -30,12 +30,40 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@500;700;900&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; background-color: #f1f5f9; user-select: none; -webkit-user-select: none; }
 
     .fade-in { animation: fadeIn 0.5s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .hidden-screen { display: none !important; }
+
+    /* === 野球のスタジアム/革のような質感を出すための共通パーツ === */
+    .font-sport { font-family: 'Oswald', 'Noto Sans JP', sans-serif; }
+    .stadium-bg {
+      position: relative;
+      background:
+        radial-gradient(ellipse 120% 55% at 50% -10%, rgba(220,38,38,0.22), transparent 60%),
+        linear-gradient(180deg, #0a1122 0%, #101b33 50%, #0a1122 100%);
+    }
+    .stadium-bg::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 16px);
+    }
+    .stadium-bg::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      box-shadow: inset 0 0 120px 40px rgba(0,0,0,0.6);
+    }
+    .stitch-card { position: relative; border: 1px solid #e7dfc9; }
+    .stitch-card::before {
+      content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+      border: 2px dashed #c81d25; border-radius: 6px; opacity: 0.3; pointer-events: none;
+    }
+    .btn-mvp {
+      background: #c81d25; border: none;
+      box-shadow: 0 4px 0 #8f1319, 0 10px 18px rgba(0,0,0,0.35);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn-mvp:active { transform: translateY(3px); box-shadow: 0 1px 0 #8f1319, 0 4px 10px rgba(0,0,0,0.3); }
 
     /* === 3D クジ引き封筒 === */
     .lottery-area { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 10px; }
@@ -928,17 +956,20 @@
   </script>
 
   <!-- 画面0: 初期設定画面 -->
-  <div id="screen-setup" class="fixed inset-0 bg-blue-900 z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto py-8">
+  <div id="screen-setup" class="stadium-bg fixed inset-0 z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto py-8">
     <!-- ★ 中身がビューポートより高いと、親のjustify-centerとoverflow-y-autoの組み合わせで
          上端（タイトルなど）がスクロールで届かない位置まで見切れる不具合があった（Pixel等で発生）。
          justify-centerで中央寄せする代わりに、このラッパーにmy-autoを使う。
          auto marginは入りきらない時は0に潰れて上詰めになるため、どんな高さでも上端から確実に
          スクロールして辿り着ける（safe centerと同じ効果を、より広いブラウザ互換性で実現する）。 -->
-    <div class="w-full flex flex-col items-center my-auto">
-    <p class="text-blue-300 text-[10px] md:text-xs tracking-[0.3em] text-center font-bold mb-1">DRAFT SIMULATOR</p>
-    <h1 class="text-2xl md:text-4xl font-black tracking-widest text-yellow-400 text-center">⚾ AIドラフト</h1>
+    <div class="w-full flex flex-col items-center my-auto relative">
+    <p class="font-sport text-red-400 text-[10px] md:text-xs tracking-[0.35em] text-center font-bold mb-1">DRAFT SIMULATOR</p>
+    <h1 class="font-sport text-3xl md:text-5xl font-bold tracking-wide text-center" style="text-shadow: 0 4px 10px rgba(0,0,0,0.6);">⚾ <span class="text-yellow-400">AI</span>ドラフト</h1>
+    <p class="font-sport text-blue-300 text-[10px] md:text-xs tracking-[0.25em] text-center mt-2 mb-1">BUILD YOUR BEST NINE</p>
     <p class="text-blue-200 text-xs md:text-sm text-center mb-6">現役NPB選手をAI球団と取り合う、無料のドラフト会議シミュレーション</p>
-    <div class="bg-white text-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-md text-center">
+    <div class="stitch-card bg-[#faf6ec] text-gray-800 rounded-lg shadow-2xl w-full max-w-md text-center overflow-hidden">
+      <div class="h-1.5 bg-gradient-to-r from-red-700 via-red-500 to-red-700"></div>
+      <div class="p-6">
       <h2 class="text-lg font-bold mb-4 border-b pb-2">ドラフト設定</h2>
 
       <p class="font-bold mb-2 text-sm text-left text-blue-800">① あなたの担当球団</p>
@@ -976,7 +1007,7 @@
       </select>
       <p id="draft-mode-desc" class="text-[11px] text-left text-gray-500 mb-6 leading-snug"></p>
 
-      <button onclick="window.startGame()" class="w-full bg-blue-600 hover:bg-blue-800 text-white font-black py-4 rounded-lg text-lg shadow-lg">ドラフト会議を開始する</button>
+      <button onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
       <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
       <a href="draft-watch.html" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-white font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
       <button onclick="document.getElementById('home-nav-menu').classList.toggle('hidden')" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-sm border border-gray-300">☰ その他のページ</button>
@@ -1015,15 +1046,16 @@
       <a href="privacy.html" target="_blank" rel="noopener noreferrer" class="block mt-3 text-[11px] text-gray-400 hover:underline">プライバシーポリシー</a>
       <p class="text-[10px] text-gray-400 mt-1">本サイトはアフィリエイト広告を利用しています</p>
       <p class="text-[10px] text-gray-400 mt-1">© 2026 dreamteam9.com</p>
+      </div>
     </div>
     </div>
   </div>
 
   <!-- ヘッダー -->
-  <header class="bg-gray-900 text-white p-2 shadow-md flex justify-between items-center z-10 relative border-b-4 border-blue-600">
-    <h1 class="text-sm font-black tracking-wider">⚾ DRAFT SIM</h1>
+  <header class="bg-[#0d1526] text-white p-2 shadow-md flex justify-between items-center z-10 relative border-b-4 border-red-600">
+    <h1 class="font-sport text-sm font-bold tracking-wider">⚾ DRAFT SIM</h1>
     <div class="flex items-center gap-2">
-      <div id="round-indicator" class="font-bold bg-blue-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
+      <div id="round-indicator" class="font-bold bg-red-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
     </div>
   </header>
 
