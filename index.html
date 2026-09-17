@@ -81,6 +81,15 @@
       content: ''; position: absolute; inset: 0; pointer-events: none;
       box-shadow: inset 0 0 90px 30px rgba(6,20,10,0.7);
     }
+    .field-card {
+      background: linear-gradient(165deg, #1f4d24 0%, #143318 100%);
+      border: 1px solid rgba(250,204,21,0.3);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.55);
+    }
+    .field-card::before {
+      content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+      border: 1.5px dashed rgba(255,255,255,0.25); border-radius: 6px; pointer-events: none;
+    }
     .stitch-card { position: relative; border: 1px solid #e7dfc9; }
     .stitch-card::before {
       content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
@@ -1212,7 +1221,9 @@
     </div>
 
     <div class="lineup-bg w-3/5 md:w-2/3 flex flex-col items-center p-2 md:p-6 relative overflow-y-auto h-full">
-      <div class="w-full max-w-md bg-green-800 rounded-lg shadow-2xl p-2 md:p-4 border-2 border-white mb-4 shrink-0" style="position: relative; z-index: 1;">
+      <div class="field-card w-full max-w-md rounded-lg mb-4 shrink-0 overflow-hidden" style="position: relative; z-index: 1;">
+        <div class="h-1.5 bg-gradient-to-r from-red-700 via-yellow-500 to-red-700"></div>
+        <div class="p-2 md:p-4">
         <h2 class="text-white text-center font-black text-sm md:text-xl mb-1 tracking-widest border-b border-green-600 pb-1">スタメン編成 (守備位置を選択)</h2>
         <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-1">選手をタップして選択→配置したい枠をタップで配置（ドラッグでも配置できます）</p>
         <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-1">打＝打順適性 ／ 守＝守備適性　◎最適 ○good △普通 ▲不向き ✕ミスマッチ</p>
@@ -1292,8 +1303,9 @@
         </div>
 
         <div id="order-summary" class="mt-2 pt-2 border-t border-green-600 text-[10px] md:text-xs text-white font-bold text-center"></div>
+        </div>
       </div>
-      <button onclick="finishLineup()" class="bg-red-600 hover:bg-red-800 text-white font-black py-3 px-4 w-full rounded-full shadow-lg text-sm md:text-lg shrink-0 mb-4">AI採点を見る</button>
+      <button onclick="finishLineup()" class="btn-mvp text-white font-black py-3 px-4 w-full rounded-full text-sm md:text-lg shrink-0 mb-4">AI採点を見る</button>
     </div>
   </div>
 
