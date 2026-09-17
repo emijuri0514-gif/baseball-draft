@@ -2613,8 +2613,8 @@
       teams.forEach(t => {
         if (!t.needsPick || !t.currentPick) return;
         let coverHtml = !t.isUser ? `
-          <div id="cover-${t.id}" class="secret-cover absolute inset-0 bg-gray-800 flex flex-col items-center justify-center z-10 text-white">
-            <p class="font-bold tracking-widest text-[10px] animate-pulse">開票中</p>
+          <div id="cover-${t.id}" class="secret-cover absolute inset-0 bg-slate-600 flex flex-col items-center justify-center z-10 text-white">
+            <p class="font-black tracking-widest text-xs animate-pulse">開票中</p>
           </div>` : '';
 
         container.innerHTML += `
