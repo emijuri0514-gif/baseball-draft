@@ -993,17 +993,27 @@
   </script>
 
   <!-- 画面0: 初期設定画面 -->
-  <div id="screen-setup" class="stadium-bg fixed inset-0 z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto py-8">
+  <div id="screen-setup" class="fixed inset-0 bg-[#0a1122] z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto py-8">
     <!-- ★ 中身がビューポートより高いと、親のjustify-centerとoverflow-y-autoの組み合わせで
          上端（タイトルなど）がスクロールで届かない位置まで見切れる不具合があった（Pixel等で発生）。
          justify-centerで中央寄せする代わりに、このラッパーにmy-autoを使う。
          auto marginは入りきらない時は0に潰れて上詰めになるため、どんな高さでも上端から確実に
-         スクロールして辿り着ける（safe centerと同じ効果を、より広いブラウザ互換性で実現する）。 -->
+         スクロールして辿り着ける（safe centerと同じ効果を、より広いブラウザ互換性で実現する）。
+         ★ 写真背景(stadium-bg)は、以前この#screen-setup自体（fixed + overflow-y-autoで中身が
+         ビューポートより長くなる）に直接付けていたところ、背景画像とグラデーションが要素自身の
+         ボックス基準で固定され、中身をスクロールしても背景だけ動かない状態になり、下の方の
+         ボタンやフッターに暗いグラデーションが被って見える不具合があった。stadium-bgは
+         この見出しブロックだけを囲む、通常のフロー内のブロックに付け直し、コンテンツと
+         一緒にスクロールするようにしている。 -->
     <div class="w-full flex flex-col items-center my-auto relative">
+    <div class="stadium-bg w-full rounded-lg py-8 px-4 mb-4" style="position: relative;">
+    <div style="position: relative; z-index: 1;">
     <p class="font-sport text-red-400 text-[10px] md:text-xs tracking-[0.35em] text-center font-bold mb-1">DRAFT SIMULATOR</p>
     <h1 class="font-sport text-3xl md:text-5xl font-bold tracking-wide text-center" style="text-shadow: 0 4px 10px rgba(0,0,0,0.6);">⚾ <span class="text-yellow-400">AI</span>ドラフト</h1>
     <p class="font-sport text-blue-300 text-[10px] md:text-xs tracking-[0.25em] text-center mt-2 mb-1">BUILD YOUR BEST NINE</p>
-    <p class="text-blue-200 text-xs md:text-sm text-center mb-6">現役NPB選手をAI球団と取り合う、無料のドラフト会議シミュレーション</p>
+    <p class="text-blue-200 text-xs md:text-sm text-center">現役NPB選手をAI球団と取り合う、無料のドラフト会議シミュレーション</p>
+    </div>
+    </div>
     <div class="stitch-card bg-[#faf6ec] text-gray-800 rounded-lg shadow-2xl w-full max-w-md text-center overflow-hidden">
       <div class="h-1.5 bg-gradient-to-r from-red-700 via-red-500 to-red-700"></div>
       <div class="p-6">
@@ -1192,8 +1202,8 @@
   </div>
 
   <!-- 画面2: リヴィール -->
-  <div id="screen-reveal" class="reveal-bg hidden-screen fixed inset-0 z-50 flex flex-col items-center text-white fade-in px-2 overflow-y-auto">
-    <div class="w-full flex flex-col items-center my-auto">
+  <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-[#0a1122] z-50 flex flex-col items-center text-white fade-in px-2 overflow-y-auto">
+    <div class="reveal-bg w-full min-h-full flex flex-col items-center justify-center py-8" style="position: relative;">
     <h2 class="font-sport text-xl md:text-3xl font-bold mb-6 tracking-widest text-yellow-400" style="text-shadow: 0 4px 10px rgba(0,0,0,0.7);">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
     <div id="reveal-cards-container" class="flex flex-wrap justify-center gap-4 max-w-5xl overflow-y-auto max-h-[60vh] py-2"></div>
     <div id="reveal-status" class="mt-6 text-lg md:text-2xl font-bold h-10"></div>
@@ -1201,8 +1211,8 @@
   </div>
 
   <!-- 画面3: クジ引き -->
-  <div id="screen-lottery" class="lottery-bg hidden-screen fixed inset-0 z-50 flex flex-col items-center text-white fade-in px-4 overflow-y-auto">
-    <div class="w-full flex flex-col items-center my-auto">
+  <div id="screen-lottery" class="hidden-screen fixed inset-0 bg-[#0a1122] z-50 flex flex-col items-center text-white fade-in px-4 overflow-y-auto">
+    <div class="lottery-bg w-full min-h-full flex flex-col items-center justify-center py-8" style="position: relative;">
     <h2 class="font-sport text-3xl md:text-4xl font-bold text-red-500 mb-2 tracking-widest" style="text-shadow: 0 4px 10px rgba(0,0,0,0.7);">競合発生！</h2>
     <p id="lottery-target-name" class="text-xl md:text-2xl font-black mb-4 text-white text-center" style="text-shadow: 0 2px 6px rgba(0,0,0,0.7);"></p>
     <p id="lottery-instruction" class="text-sm md:text-lg font-bold mb-4 text-yellow-300" style="text-shadow: 0 2px 6px rgba(0,0,0,0.7);">あなたの封筒を選んでクリック</p>
@@ -1220,8 +1230,14 @@
       <div id="lineup-pool" class="flex-1 p-2 overflow-y-auto space-y-2 bg-gray-50 pb-20"></div>
     </div>
 
-    <div class="lineup-bg w-3/5 md:w-2/3 flex flex-col items-center p-2 md:p-6 relative overflow-y-auto h-full">
-      <div class="field-card w-full max-w-md rounded-lg mb-4 shrink-0 overflow-hidden" style="position: relative; z-index: 1;">
+    <div class="w-3/5 md:w-2/3 flex flex-col items-center p-2 md:p-6 relative overflow-y-auto h-full">
+    <!-- ★ lineup-bgの背景写真は、このスクロールする親(overflow-y-auto h-full)ではなく、
+         中身をそのまま包むこの内側のブロックに付けている。親に直接付けると、写真とその
+         グラデーションが要素自身のボックス基準で固定され、中身をスクロールしても背景だけ
+         動かない状態になってしまう（stadium-bgで実際に起きた不具合と同じ原因）。 -->
+    <div class="lineup-bg w-full min-h-full flex flex-col items-center rounded-lg py-2" style="position: relative;">
+    <div class="w-full flex flex-col items-center" style="position: relative; z-index: 1;">
+      <div class="field-card w-full max-w-md rounded-lg mb-4 shrink-0 overflow-hidden">
         <div class="h-1.5 bg-gradient-to-r from-red-700 via-yellow-500 to-red-700"></div>
         <div class="p-2 md:p-4">
         <h2 class="text-white text-center font-black text-sm md:text-xl mb-1 tracking-widest border-b border-green-600 pb-1">スタメン編成 (守備位置を選択)</h2>
@@ -1306,6 +1322,8 @@
         </div>
       </div>
       <button onclick="finishLineup()" class="btn-mvp text-white font-black py-3 px-4 w-full rounded-full text-sm md:text-lg shrink-0 mb-4">AI採点を見る</button>
+    </div>
+    </div>
     </div>
   </div>
 
