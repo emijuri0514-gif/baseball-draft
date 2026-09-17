@@ -60,13 +60,6 @@
       content: ''; position: absolute; inset: 0; pointer-events: none;
       background: linear-gradient(180deg, rgba(10,17,34,0.55) 0%, rgba(10,17,34,0.45) 40%, rgba(10,17,34,0.92) 100%);
     }
-    .reveal-bg {
-      background: #0a1122 url('images/lottery-box-detail.jpg') center / cover no-repeat;
-    }
-    .reveal-bg::before {
-      content: ''; position: absolute; inset: 0; pointer-events: none;
-      background: linear-gradient(180deg, rgba(10,17,34,0.55) 0%, rgba(10,17,34,0.4) 35%, rgba(10,17,34,0.88) 100%);
-    }
     .lineup-bg {
       background: #0d1f10 url('images/reveal-stitching.jpg') 70% center / cover no-repeat;
     }
@@ -1200,9 +1193,9 @@
   </div>
 
   <!-- 画面2: リヴィール -->
-  <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-[#0a1122] z-50 flex flex-col items-center text-white fade-in px-2 overflow-y-auto">
-    <div class="reveal-bg w-full min-h-full flex flex-col items-center justify-center py-8" style="position: relative;">
-    <h2 class="font-sport text-xl md:text-3xl font-bold mb-6 tracking-widest text-yellow-400" style="text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 4px 14px rgba(0,0,0,0.85);">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
+  <div id="screen-reveal" class="hidden-screen fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center text-white fade-in px-2 overflow-y-auto">
+    <div class="w-full flex flex-col items-center my-auto">
+    <h2 class="font-sport text-xl md:text-3xl font-bold mb-6 tracking-widest text-yellow-400">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
     <div id="reveal-cards-container" class="flex flex-wrap justify-center gap-4 max-w-5xl overflow-y-auto max-h-[60vh] py-2"></div>
     <div id="reveal-status" class="mt-6 text-lg md:text-2xl font-bold h-10"></div>
     </div>
@@ -2616,7 +2609,7 @@
           </div>` : '';
 
         container.innerHTML += `
-          <div class="w-32 md:w-44 rounded-lg overflow-hidden" style="box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+          <div class="w-32 md:w-44 shadow-2xl rounded-lg overflow-hidden">
             <div class="${t.color.bg} ${t.color.text} text-[10px] md:text-xs font-black py-1.5 px-1 text-center truncate">${t.name.replace('(AI)','')}</div>
             <div class="bg-white text-black border-2 md:border-4 border-t-0 ${t.color.border} relative overflow-hidden h-[112px] md:h-[136px]">
               ${coverHtml}
