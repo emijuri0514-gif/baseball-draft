@@ -2616,7 +2616,7 @@
           </div>` : '';
 
         container.innerHTML += `
-          <div class="w-32 md:w-44 shadow-2xl rounded-lg overflow-hidden">
+          <div class="w-32 md:w-44 shadow-2xl rounded-lg overflow-hidden ring-2 ring-white ring-opacity-70">
             <div class="${t.color.bg} ${t.color.text} text-[10px] md:text-xs font-black py-1.5 px-1 text-center truncate">${t.name.replace('(AI)','')}</div>
             <div class="bg-white text-black border-2 md:border-4 border-t-0 ${t.color.border} relative overflow-hidden h-[112px] md:h-[136px]">
               ${coverHtml}
@@ -2722,7 +2722,7 @@
 
         container.innerHTML += `
         <div class="flex flex-col items-center">
-          <div class="text-white font-bold mb-2 h-5 text-sm md:text-base text-shadow">${teamName}</div>
+          <div class="text-white font-bold mb-2 h-6 px-3 py-0.5 text-sm md:text-base bg-black bg-opacity-60 rounded-full">${teamName}</div>
           <div class="envelope-container" id="env-${i}" ${clickEvent}>
             <div class="envelope-body"></div><div class="flap"></div><div class="letter" id="letter-${i}"></div><div class="pocket"></div>
           </div>
