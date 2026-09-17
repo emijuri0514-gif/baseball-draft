@@ -40,18 +40,27 @@
     /* === 野球のスタジアム/革のような質感を出すための共通パーツ === */
     .font-sport { font-family: 'Oswald', 'Noto Sans JP', sans-serif; }
     .stadium-bg {
-      position: relative;
-      background:
-        radial-gradient(ellipse 120% 55% at 50% -10%, rgba(220,38,38,0.22), transparent 60%),
-        linear-gradient(180deg, #0a1122 0%, #101b33 50%, #0a1122 100%);
+      background: #0a1122 url('images/hero-draft-stage.jpg') 78% 35% / cover no-repeat;
+    }
+    @media (min-width: 768px) {
+      .stadium-bg { background-position: center 35%; }
     }
     .stadium-bg::before {
       content: ''; position: absolute; inset: 0; pointer-events: none;
-      background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 16px);
+      background:
+        radial-gradient(ellipse 90% 60% at 50% 15%, rgba(10,17,34,0.35), rgba(10,17,34,0.85) 70%),
+        linear-gradient(180deg, rgba(10,17,34,0.55) 0%, rgba(10,17,34,0.35) 28%, rgba(10,17,34,0.85) 72%, rgba(10,17,34,0.97) 100%);
     }
     .stadium-bg::after {
       content: ''; position: absolute; inset: 0; pointer-events: none;
-      box-shadow: inset 0 0 120px 40px rgba(0,0,0,0.6);
+      box-shadow: inset 0 0 140px 50px rgba(0,0,0,0.65);
+    }
+    .lottery-bg {
+      background: #0a1122 url('images/lottery-box-detail.jpg') center / cover no-repeat;
+    }
+    .lottery-bg::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(180deg, rgba(10,17,34,0.55) 0%, rgba(10,17,34,0.45) 40%, rgba(10,17,34,0.92) 100%);
     }
     .stitch-card { position: relative; border: 1px solid #e7dfc9; }
     .stitch-card::before {
@@ -1164,11 +1173,11 @@
   </div>
 
   <!-- 画面3: クジ引き -->
-  <div id="screen-lottery" class="hidden-screen fixed inset-0 bg-gray-900 z-50 flex flex-col items-center text-white fade-in px-4 overflow-y-auto">
+  <div id="screen-lottery" class="lottery-bg hidden-screen fixed inset-0 z-50 flex flex-col items-center text-white fade-in px-4 overflow-y-auto">
     <div class="w-full flex flex-col items-center my-auto">
-    <h2 class="text-3xl md:text-4xl font-black text-red-500 mb-2 tracking-widest">競合発生！</h2>
-    <p id="lottery-target-name" class="text-xl md:text-2xl font-black mb-4 text-white text-center"></p>
-    <p id="lottery-instruction" class="text-sm md:text-lg font-bold mb-4 text-yellow-300">あなたの封筒を選んでクリック</p>
+    <h2 class="font-sport text-3xl md:text-4xl font-bold text-red-500 mb-2 tracking-widest" style="text-shadow: 0 4px 10px rgba(0,0,0,0.7);">競合発生！</h2>
+    <p id="lottery-target-name" class="text-xl md:text-2xl font-black mb-4 text-white text-center" style="text-shadow: 0 2px 6px rgba(0,0,0,0.7);"></p>
+    <p id="lottery-instruction" class="text-sm md:text-lg font-bold mb-4 text-yellow-300" style="text-shadow: 0 2px 6px rgba(0,0,0,0.7);">あなたの封筒を選んでクリック</p>
 
     <button id="lottery-skip-btn" class="hidden bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full mb-2 shadow-lg" onclick="window.skipAILottery()">スキップ (結果のみ表示)</button>
 
