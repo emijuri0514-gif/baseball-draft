@@ -3685,6 +3685,8 @@
       } else {
         state.bases[0] = null;
         state.outs++;
+        const pitcher = state.isTop ? state.currentPitcherB : state.currentPitcherA;
+        if (pitcher) pitcher.stats.out++;
         const throwNote = catcher ? `${catcher.name}の好送球で` : '';
         if (log) log(`【${atkTeam.name.replace('(AI)','')}】<strong>${runner.name}</strong> 盗塁 → <span class="text-gray-600 font-bold">${throwNote}刺されてアウト</span>`);
       }
