@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-html.sh\"",
+            "statusMessage": "HTMLのタグバランス・JS構文をチェック中...",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
