@@ -3626,14 +3626,23 @@
       const atkScore = state.isTop ? state.scoreA : state.scoreB;
       const isLosing = defScore < atkScore;
       const dueToBlowout = !!current && stage < 2 && current.stats.run >= 5 && (current.stats.out < 9 || isLosing);
-      if (dueToFatigue || dueToBlowout) stage++;
+      // ★ 球数そのものによる降板：getPitcherFatigueはスタミナ比でしか球数を見ないため、
+      // スタミナの高い投手だと130球を超えても「万全」判定のままになってしまい、現代野球の
+      // 感覚からするとかなり引っ張りすぎに見える不具合があった。現代の先発は100〜110球が
+      // 交代の目安になることが多いので、スタミナに関係なく110球を超えたら降板対象にする。
+      // すでに崩れ始めている（3失点以上）か負けている場合は、その目安を100球まで早める。
+      const pitches = current ? current.stats.pitches : 0;
+      const dueToPitchCount = !!current && stage < 2 && (
+        pitches >= 110 || (pitches >= 100 && (current.stats.run >= 3 || isLosing))
+      );
+      if (dueToFatigue || dueToBlowout || dueToPitchCount) stage++;
 
       state[stageKey] = stage;
       const expectedPitcher = [defLineup.pitchers.sp, defLineup.pitchers.rp, defLineup.pitchers.cp][stage];
 
       if (state[currentPitcherRef] !== expectedPitcher) {
         state[currentPitcherRef] = expectedPitcher;
-        const reason = dueToBlowout ? '（大量失点）' : (dueToFatigue ? '（スタミナ切れ）' : '');
+        const reason = dueToBlowout ? '（大量失点）' : (dueToPitchCount ? '（球数超過）' : (dueToFatigue ? '（スタミナ切れ）' : ''));
         if (log) log(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代${reason}: ${expectedPitcher.name} がマウンドに上がります。</span>`);
       }
     }
