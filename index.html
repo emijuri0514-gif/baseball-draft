@@ -28,6 +28,36 @@
   <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
   <!-- レーダーチャート用ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- ★ 人対人対戦（Firestore）用のブートストラップ。Firebase v9+のSDKはESモジュール
+       前提だが、本体のゲームロジックはHTML側の onclick="..." から直接呼べるよう
+       グローバル関数（classicな<script>）で書かれている。モジュール化すると全onclickを
+       書き換える大改修になるため、Firebase側だけこの独立したtype="module"スクリプトに
+       閉じ込め、必要な関数群を window.MP に橋渡しする形にする。 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+    import {
+      getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
+      onSnapshot, runTransaction, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAczy84xFBJ8r1-SEYe6LsXnOhYxZaUEY8",
+      authDomain: "baseball-draft-ccb32.firebaseapp.com",
+      projectId: "baseball-draft-ccb32",
+      storageBucket: "baseball-draft-ccb32.firebasestorage.app",
+      messagingSenderId: "855597815532",
+      appId: "1:855597815532:web:99398f6b3ff9c069b537c9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ★ window.MP: 本体の非モジュールスクリプトからFirestoreを叩くための橋渡し。
+    // ここではプリミティブなSDK関数をそのまま渡すだけに留め、「ルーム作成」「参加」
+    // 「指名の送信」のような対戦ロジックそのものは本体側（人対人対戦の実装時）に書く。
+    window.MP = { db, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp };
+    window.dispatchEvent(new Event('mp-ready'));
+  </script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@500;700;900&display=swap');
