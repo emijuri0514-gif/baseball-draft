@@ -37,7 +37,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
     import {
       getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
-      onSnapshot, runTransaction, serverTimestamp
+      onSnapshot, runTransaction, serverTimestamp, arrayUnion
     } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -52,10 +52,119 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // ★ ルームの部屋番号＝Firestoreのドキュメント名そのものにする。こうすると「合言葉で
+    // 参加」が単純なID直取得（get）だけで済み、コレクション全体のlistクエリが不要になる。
+    // list権限をルールで塞いでおけば、合言葉を知らない第三者は他人のルームを覗けない。
+    function generateRoomCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 紛らわしい0/O・1/Iは除外
+      let code = '';
+      for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+      return code;
+    }
+
+    // このブラウザ自身を識別するID（Firebase Authは使わないので、localStorageに
+    // 保存した乱数で代用する。同じ端末でルームを作り直しても自分の枠を再認識できる）。
+    function getClientId() {
+      let id = localStorage.getItem('mp_client_id');
+      if (!id) {
+        id = 'c' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem('mp_client_id', id);
+      }
+      return id;
+    }
+
+    // ★ 部屋を作る：自分を枠0（本職球団）に置き、残りは空き枠。1対1は totalSlots=2 で使う。
+    async function createRoom({ teamName, totalSlots, draftMode }) {
+      const clientId = getClientId();
+      let code;
+      let ref;
+      // 衝突はほぼ起きないはずだが、念のため既存チェックしてから作成する
+      for (let tries = 0; tries < 5; tries++) {
+        code = generateRoomCode();
+        ref = doc(db, 'rooms', code);
+        const existing = await getDoc(ref);
+        if (!existing.exists()) break;
+      }
+      const slots = Array.from({ length: totalSlots }, (_, i) => (
+        i === 0
+          ? { teamName, control: 'human', clientId, ready: true }
+          : { teamName: null, control: 'open', clientId: null, ready: false }
+      ));
+      await setDoc(ref, {
+        code, status: 'waiting', draftMode, hostClientId: clientId,
+        slots, picks: [], pendingPick: null, lotteryResult: null,
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      });
+      return { roomId: code, clientId, isHost: true };
+    }
+
+    // ★ 参加：空いている枠を見つけて自分のものにする。同時に複数人が押しても衝突しない
+    // よう、読み取り→判定→書き込みをrunTransactionで一つの操作にまとめる。
+    async function joinRoom(code, teamName) {
+      const clientId = getClientId();
+      const ref = doc(db, 'rooms', code.toUpperCase());
+      let claimedSlotIndex = -1;
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists()) throw new Error('ROOM_NOT_FOUND');
+        const data = snap.data();
+        if (data.status !== 'waiting') throw new Error('ROOM_ALREADY_STARTED');
+        // すでに自分が入っている枠があればそれを再利用（再読み込み対策）
+        let idx = data.slots.findIndex(s => s.clientId === clientId);
+        if (idx === -1) idx = data.slots.findIndex(s => s.control === 'open');
+        if (idx === -1) throw new Error('ROOM_FULL');
+        const newSlots = data.slots.map((s, i) => i === idx ? { teamName, control: 'human', clientId, ready: true } : s);
+        tx.update(ref, { slots: newSlots, updatedAt: serverTimestamp() });
+        claimedSlotIndex = idx;
+      });
+      return { roomId: code.toUpperCase(), clientId, isHost: false, slotIndex: claimedSlotIndex };
+    }
+
+    function subscribeRoom(roomId, callback) {
+      return onSnapshot(doc(db, 'rooms', roomId), (snap) => {
+        if (snap.exists()) callback(snap.data());
+      });
+    }
+
+    // ★ 開始：ホストのみが呼ぶ。まだ空いている枠はAIで埋めて確定させる。
+    async function startRoom(roomId) {
+      const ref = doc(db, 'rooms', roomId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+      const data = snap.data();
+      const finalSlots = data.slots.map(s => s.control === 'open' ? { ...s, control: 'ai', teamName: null } : s);
+      await updateDoc(ref, { slots: finalSlots, status: 'drafting', updatedAt: serverTimestamp() });
+    }
+
+    // ★ ゲストが自分の指名を「郵便受け」に投函する。確定はホスト側が行う（commitPick参照）。
+    async function submitPendingPick(roomId, slotIndex, playerId) {
+      await updateDoc(doc(db, 'rooms', roomId), {
+        pendingPick: { slotIndex, playerId }, updatedAt: serverTimestamp()
+      });
+    }
+
+    // ★ ホストのみが呼ぶ：指名を指名ログ(picks)に確定して追記し、郵便受けを空にする。
+    async function commitPick(roomId, entry) {
+      await updateDoc(doc(db, 'rooms', roomId), {
+        picks: arrayUnion(entry), pendingPick: null, updatedAt: serverTimestamp()
+      });
+    }
+
+    // ★ 競合抽選の結果を全員に配信する（封筒の見た目はローカルでそれぞれ再生するだけで、
+    // 当選確率には関与しない。当選者はホストがMath.randomで決めてここに書き込む）。
+    async function postLotteryResult(roomId, result) {
+      await updateDoc(doc(db, 'rooms', roomId), { lotteryResult: result, updatedAt: serverTimestamp() });
+    }
+    async function clearLotteryResult(roomId) {
+      await updateDoc(doc(db, 'rooms', roomId), { lotteryResult: null, updatedAt: serverTimestamp() });
+    }
+
     // ★ window.MP: 本体の非モジュールスクリプトからFirestoreを叩くための橋渡し。
-    // ここではプリミティブなSDK関数をそのまま渡すだけに留め、「ルーム作成」「参加」
-    // 「指名の送信」のような対戦ロジックそのものは本体側（人対人対戦の実装時）に書く。
-    window.MP = { db, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp };
+    window.MP = {
+      db, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp, arrayUnion,
+      getClientId, createRoom, joinRoom, subscribeRoom, startRoom, submitPendingPick, commitPick,
+      postLotteryResult, clearLotteryResult
+    };
     window.dispatchEvent(new Event('mp-ready'));
   </script>
 
@@ -1124,6 +1233,7 @@
       <p id="draft-mode-desc" class="text-[11px] text-left text-gray-500 mb-6 leading-snug"></p>
 
       <button onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
+      <button onclick="window.openMpLobby()" class="w-full mt-2 bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg text-sm shadow">🤝 友達と対戦（β版）</button>
       <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
       <a href="draft-watch.html" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-white font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
       <button onclick="document.getElementById('home-nav-menu').classList.toggle('hidden')" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-sm border border-gray-300">☰ その他のページ</button>
@@ -1162,6 +1272,61 @@
       <a href="privacy.html" target="_blank" rel="noopener noreferrer" class="block mt-3 text-[11px] text-gray-400 hover:underline">プライバシーポリシー</a>
       <p class="text-[10px] text-gray-400 mt-1">本サイトはアフィリエイト広告を利用しています</p>
       <p class="text-[10px] text-gray-400 mt-1">© 2026 dreamteam9.com</p>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- 画面0b: 友達と対戦（ルーム作成/参加/待機） -->
+  <div id="screen-mp-lobby" class="hidden-screen fixed inset-0 bg-[#0a1122] z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto py-8">
+    <div class="w-full flex flex-col items-center my-auto">
+    <div class="stitch-card bg-[#faf6ec] text-gray-800 rounded-lg shadow-2xl w-full max-w-md text-center overflow-hidden">
+      <div class="h-1.5 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700"></div>
+      <div class="p-6">
+
+      <!-- 選択パネル：作る/参加する -->
+      <div id="mp-panel-choice">
+        <h2 class="text-lg font-bold mb-1 border-b pb-2">🤝 友達と対戦（β版）</h2>
+        <p class="text-xs text-gray-500 mb-4 leading-snug text-left">1対1のオンライン対戦です。同じ合言葉を知っている人同士で、それぞれの手番のときだけ指名できます。</p>
+        <button onclick="window.mpShowPanel('create')" class="btn-mvp w-full text-white font-black py-3 rounded-lg mb-2">ルームを作る（ホスト）</button>
+        <button onclick="window.mpShowPanel('join')" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg">合言葉で参加する</button>
+        <button onclick="window.closeMpLobby()" class="w-full mt-4 text-sm text-gray-500 hover:underline">戻る</button>
+      </div>
+
+      <!-- 作成パネル -->
+      <div id="mp-panel-create" class="hidden">
+        <h2 class="text-lg font-bold mb-4 border-b pb-2">ルームを作る</h2>
+        <p class="font-bold mb-2 text-sm text-left text-blue-800">あなたの担当球団</p>
+        <select id="mp-create-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500"></select>
+        <button onclick="window.mpCreateRoom()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">この設定でルームを作る</button>
+        <button onclick="window.mpShowPanel('choice')" class="w-full mt-3 text-sm text-gray-500 hover:underline">戻る</button>
+      </div>
+
+      <!-- 参加パネル -->
+      <div id="mp-panel-join" class="hidden">
+        <h2 class="text-lg font-bold mb-4 border-b pb-2">合言葉で参加する</h2>
+        <p class="font-bold mb-2 text-sm text-left text-blue-800">合言葉（5文字）</p>
+        <input id="mp-join-code" type="text" maxlength="5" placeholder="例：AB3F9" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base tracking-[0.3em] text-center uppercase focus:outline-none focus:border-blue-500">
+        <p class="font-bold mb-2 text-sm text-left text-blue-800">あなたの担当球団</p>
+        <select id="mp-join-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500"></select>
+        <p id="mp-join-error" class="hidden text-xs text-red-600 font-bold mb-3"></p>
+        <button onclick="window.mpJoinRoom()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">参加する</button>
+        <button onclick="window.mpShowPanel('choice')" class="w-full mt-3 text-sm text-gray-500 hover:underline">戻る</button>
+      </div>
+
+      <!-- 待機ロビー -->
+      <div id="mp-panel-waiting" class="hidden">
+        <h2 class="text-lg font-bold mb-4 border-b pb-2">対戦相手を待っています</h2>
+        <div id="mp-waiting-host-only" class="hidden mb-4">
+          <p class="text-xs text-gray-500 mb-2">この合言葉を相手に伝えてください</p>
+          <p id="mp-room-code" class="text-3xl font-black tracking-[0.3em] text-blue-800 mb-1"></p>
+        </div>
+        <div id="mp-slot-list" class="text-left space-y-2 mb-4"></div>
+        <button id="mp-start-btn" onclick="window.mpStartRoom()" class="hidden btn-mvp w-full text-white font-black py-3 rounded-lg mb-2">対戦を開始する</button>
+        <p id="mp-waiting-guest-msg" class="hidden text-sm text-gray-500 mb-2">⏳ ホストが開始するのを待っています...</p>
+        <button onclick="window.closeMpLobby()" class="w-full mt-2 text-sm text-gray-500 hover:underline">やめて戻る</button>
+      </div>
+
       </div>
     </div>
     </div>
@@ -1793,6 +1958,22 @@
     let waiverLog = [];
     let waiverAnnounce = true; // ウェーバー中もAIの指名結果を1件ずつアナウンス表示するか
 
+    // ★ 人対人対戦（Firestore同期）の状態。mpRoomId!=nullで対戦中。mpIsHost=trueが
+    // ゲーム進行の権威（指名確定・抽選の判定）を持つ側、falseは相手の指名を
+    // リアルタイムに受け取って画面に反映するだけの側。詳細はcheckNextStep()の下にある
+    // 「人対人対戦（Firestore同期）」セクションの★コメントを参照。
+    let mpRoomId = null;
+    let mpIsHost = false;
+    let mpMySlotIndex = null;
+    let mpUnsubRoom = null;
+    let mpGameStarted = false;
+    let mpLineupStarted = false;
+    let mpAwaitingSlot = null;        // ホスト側：この枠のリモート指名を待っている
+    let mpAwaitingCallback = null;    // ホスト側：届いたら呼ぶコールバック
+    let mpPendingRemotePick = null;   // { slotIndex, playerId, player } ゲストから届いたがまだ消費していない指名
+    let mpAppliedPickCount = 0;       // ゲスト側：picksログのうち何件まで反映済みか
+    let mpSubmittedThisCycle = false; // ゲスト側：今の自分の手番ですでに送信済みか
+
     const DRAFT_MODE_DESC = {
       npb: "実際のNPBに近い形式。1巡目だけ全球団が同時に入札し、競合したら抽選。2巡目からは順番指名（スネーク方式）になります。",
       lottery: "全12巡すべてで同時入札と抽選を行います。運の要素が最も大きい形式です。",
@@ -2240,9 +2421,10 @@
       let html = '';
       displayPlayers.forEach(p => {
         const isFav = favoriteIds.includes(p.id);
-        const btnHtml = user.needsPick
+        const isMpGuestWaiting = mpRoomId && !mpIsHost && mpSubmittedThisCycle;
+        const btnHtml = user.needsPick && !isMpGuestWaiting
           ? `<button onclick="window.handleDraftSubmit(${p.id})" class="btn-nominate text-white font-black py-2 px-3 text-xs rounded ml-1 flex-shrink-0 h-10">指名</button>`
-          : `<button class="bg-gray-400 text-white font-bold py-2 px-3 text-xs rounded shadow ml-1 flex-shrink-0 cursor-not-allowed h-10" disabled>待機中</button>`;
+          : `<button class="bg-gray-400 text-white font-bold py-2 px-3 text-xs rounded shadow ml-1 flex-shrink-0 cursor-not-allowed h-10" disabled>${isMpGuestWaiting ? '送信済み' : '待機中'}</button>`;
 
         const statsHtml = generateStatsHtml(p);
         const bestPosDisplay = Array.isArray(p.bestPos) ? p.bestPos.join('・') : p.bestPos;
@@ -2320,6 +2502,7 @@
       availablePlayers = availablePlayers.filter(p => p.id !== player.id);
       waiverLog.push(`<strong>${team.name.replace('(AI)','')}</strong>→${player.name}`);
       renderDraftMatrix();
+      mpHostRecordPick(team, player);
     }
 
     window.toggleAnnounce = function() {
@@ -2365,6 +2548,7 @@
       const team = teams.find(t => t.id === waiverQueue[waiverPos]);
       teams.forEach(t => t.needsPick = false);
       team.needsPick = true;
+      mpBroadcastTurn();
 
       renderTurnBar(team);
       renderPosStatus();
@@ -2372,6 +2556,15 @@
       document.getElementById('status-alert').className = "hidden";
 
       if (!team.isUser) {
+        if (team.control === 'remote') {
+          mpAwaitRemotePick(team, (player) => {
+            commitPick(team, player);
+            const advance = () => { waiverPos++; proceedWaiver(); };
+            if (waiverAnnounce && player) announceWaiverPick(team, player, advance);
+            else advance();
+          });
+          return;
+        }
         setTimeout(() => {
           const pick = getAIPick(team);
           commitPick(team, pick);
@@ -2413,6 +2606,7 @@
       renderPosStatus();
       renderSearchList();
       renderTurnBar();
+      mpBroadcastTurn();
 
       const alertBox = document.getElementById('status-alert');
       const user = userTeamRef();
@@ -2425,8 +2619,8 @@
         alertBox.className = "mb-2 p-2 font-bold text-xs rounded border-l-4 bg-yellow-100 border-yellow-500 text-yellow-700 block";
 
         setTimeout(() => {
-          teams.forEach(t => { if (!t.isUser && t.needsPick) t.currentPick = getAIPick(t); });
-          executeReveal();
+          teams.forEach(t => { if (!t.isUser && t.needsPick && t.control !== 'remote') t.currentPick = getAIPick(t); });
+          mpMaybeExecuteReveal();
         }, 1500);
       } else {
         alertBox.className = "hidden";
@@ -2564,6 +2758,13 @@
     }
 
     window.handleDraftSubmit = function(playerId) {
+      // ★ ゲスト側は指名の確定権限を持たないので、Firestoreの郵便受けに送信するだけにする
+      //   （確定はホスト側のmpHostRecordPick経由でpicksログに書き込まれる）。
+      if (mpRoomId && !mpIsHost) { mpGuestSubmitPick(playerId); return; }
+      localHandleDraftSubmit(playerId);
+    };
+
+    function localHandleDraftSubmit(playerId) {
       const user = userTeamRef();
       if (!user.needsPick) return;
       const selected = availablePlayers.find(p => p.id === playerId);
@@ -2582,9 +2783,9 @@
       }
 
       user.currentPick = selected;
-      teams.forEach(t => { if (!t.isUser && t.needsPick) t.currentPick = getAIPick(t); });
-      executeReveal();
-    };
+      teams.forEach(t => { if (!t.isUser && t.needsPick && t.control !== 'remote') t.currentPick = getAIPick(t); });
+      mpMaybeExecuteReveal();
+    }
 
     // ★ ゲーム内の各画面（ドラフト・指名結果・くじ引き・スタメン編成・採点結果・試合・プレーオフ）は
     //   URLが変わらないSPAのため、GA4のPages and screensレポートにはこのラベルで仮想ページビューを送る。
@@ -2601,7 +2802,7 @@
     };
 
     function showScreen(screenId) {
-      ['screen-setup', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-stamen', 'screen-ranking', 'screen-playoff', 'screen-match'].forEach(id => {
+      ['screen-setup', 'screen-mp-lobby', 'screen-draft', 'screen-reveal', 'screen-lottery', 'screen-lineup', 'screen-stamen', 'screen-ranking', 'screen-playoff', 'screen-match'].forEach(id => {
         const el = document.getElementById(id);
         if(el) el.classList.add('hidden-screen');
       });
@@ -2744,6 +2945,7 @@
           cTeams[0].roster.push(player);
           cTeams[0].needsPick = false;
           availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+          mpHostRecordPick(cTeams[0], player);
         } else {
           currentConflicts.push({ player: player, teams: cTeams });
         }
@@ -2824,6 +3026,7 @@
         aiWinner.roster.push(player);
         aiWinner.needsPick = false;
         availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+        mpHostRecordPick(aiWinner, player);
 
         processConflict(currentConflictIndex + 1);
       });
@@ -2876,6 +3079,7 @@
           winnerTeam.roster.push(player);
           winnerTeam.needsPick = false;
           availablePlayers = availablePlayers.filter(p => p.id !== player.id);
+          mpHostRecordPick(winnerTeam, player);
 
           processConflict(currentConflictIndex + 1);
         });
@@ -2895,6 +3099,345 @@
         if (currentRound > TOTAL_ROUNDS) startLineupPhase();
         else beginRound();
       }
+    }
+
+    // ==========================================
+    // 人対人対戦（Firestore同期）
+    // ==========================================
+    // ★ 設計方針：ルームを作成したブラウザ（ホスト）だけが、これまでの単独プレイと
+    // 全く同じロジック（AI採点・抽選のMath.random()など）をそのまま動かし、指名や
+    // 抽選の確定に関する「権威」を持つ。ゲスト側は自分の手番だけ指名をFirestoreの
+    // 郵便受け（pendingPick）に投函する薄いクライアントで、ホストが確定した結果
+    // （picksログ・turn状態）をそのまま自分の画面に反映するだけにする。
+    // 抽選封筒の演出はホスト側のブラウザでのみ再生される（誰の封筒をクリックしても
+    // 当選確率に影響しないコスメティックな演出であることは既存コードで確認済み）。
+    // ゲスト側は演出を待たず、確定後の結果が指名ボードに反映されるのを見る形になる。
+    // ※ このバージョンはホスト1人＋ゲスト1人（1対1）専用。3人以上・AI混在の対戦は
+    //   スロット数を増やす形で将来拡張できるよう、Firestore側のslots配列は
+    //   可変長で設計してあるが、ここでの進行ロジックは1対1のみを前提にしている。
+
+    function mpSlotIndexForTeam(team) {
+      return team.id; // teams[].idは常にFirestoreのslots配列の添字と一致させている
+    }
+
+    function mpTeardownRoom() {
+      if (mpUnsubRoom) { mpUnsubRoom(); mpUnsubRoom = null; }
+      mpRoomId = null; mpIsHost = false; mpMySlotIndex = null;
+      mpGameStarted = false; mpLineupStarted = false;
+      mpAwaitingSlot = null; mpAwaitingCallback = null; mpPendingRemotePick = null;
+      mpAppliedPickCount = 0; mpSubmittedThisCycle = false;
+    }
+
+    window.openMpLobby = function() {
+      const teamOptions = document.getElementById('user-team').innerHTML;
+      document.getElementById('mp-create-team').innerHTML = teamOptions;
+      document.getElementById('mp-join-team').innerHTML = teamOptions;
+      document.getElementById('mp-join-code').value = '';
+      window.mpShowPanel('choice');
+      showScreen('screen-mp-lobby');
+    };
+
+    window.closeMpLobby = function() {
+      mpTeardownRoom();
+      showScreen('screen-setup');
+    };
+
+    window.mpShowPanel = function(name) {
+      ['choice', 'create', 'join', 'waiting'].forEach(n => {
+        document.getElementById('mp-panel-' + n).classList.toggle('hidden', n !== name);
+      });
+      document.getElementById('mp-join-error').classList.add('hidden');
+    };
+
+    window.mpCreateRoom = async function() {
+      if (!window.MP) { showAppAlert('通信の準備中です。少し待ってからもう一度お試しください。'); return; }
+      const teamName = document.getElementById('mp-create-team').value;
+      try {
+        const { roomId } = await window.MP.createRoom({ teamName, totalSlots: 2, draftMode: document.getElementById('draft-mode').value });
+        mpRoomId = roomId; mpIsHost = true; mpMySlotIndex = 0;
+        mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomUpdate);
+        document.getElementById('mp-room-code').textContent = roomId;
+        document.getElementById('mp-waiting-host-only').classList.remove('hidden');
+        document.getElementById('mp-waiting-guest-msg').classList.add('hidden');
+        window.mpShowPanel('waiting');
+        if (typeof gtag === 'function') gtag('event', 'mp_room_create', { team: teamName });
+      } catch (e) {
+        showAppAlert('ルームの作成に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+      }
+    };
+
+    window.mpJoinRoom = async function() {
+      if (!window.MP) { showAppAlert('通信の準備中です。少し待ってからもう一度お試しください。'); return; }
+      const errEl = document.getElementById('mp-join-error');
+      errEl.classList.add('hidden');
+      const code = document.getElementById('mp-join-code').value.trim().toUpperCase();
+      if (code.length !== 5) {
+        errEl.textContent = '合言葉は5文字で入力してください。';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const teamName = document.getElementById('mp-join-team').value;
+      try {
+        const { roomId, slotIndex } = await window.MP.joinRoom(code, teamName);
+        mpRoomId = roomId; mpIsHost = false; mpMySlotIndex = slotIndex;
+        mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomUpdate);
+        document.getElementById('mp-waiting-host-only').classList.add('hidden');
+        document.getElementById('mp-waiting-guest-msg').classList.remove('hidden');
+        window.mpShowPanel('waiting');
+        if (typeof gtag === 'function') gtag('event', 'mp_room_join', { team: teamName });
+      } catch (e) {
+        const msgMap = {
+          ROOM_NOT_FOUND: 'その合言葉のルームが見つかりませんでした。',
+          ROOM_ALREADY_STARTED: 'そのルームはすでに対戦が始まっています。',
+          ROOM_FULL: 'そのルームはすでに満員です。'
+        };
+        errEl.textContent = msgMap[e.message] || '参加に失敗しました。通信環境をご確認のうえ、もう一度お試しください。';
+        errEl.classList.remove('hidden');
+      }
+    };
+
+    window.mpStartRoom = async function() {
+      if (!mpRoomId || !mpIsHost) return;
+      try {
+        await window.MP.startRoom(mpRoomId);
+      } catch (e) {
+        showAppAlert('開始に失敗しました。もう一度お試しください。');
+      }
+    };
+
+    function mpRenderSlotList(data) {
+      const html = data.slots.map((s, i) => {
+        const isMe = i === mpMySlotIndex;
+        const label = s.control === 'open' ? '空き（参加待ち）' : (s.teamName || '（未定）');
+        const cls = s.control === 'open' ? 'text-gray-400' : 'text-gray-800 font-bold';
+        const badge = i === 0 ? '<span class="text-[10px] text-blue-600 font-bold ml-2">ホスト</span>' : '';
+        const meBadge = isMe ? '<span class="text-[10px] text-green-600 font-bold ml-2">あなた</span>' : '';
+        return `<div class="flex justify-between items-center px-3 py-2 bg-white border border-gray-200 rounded"><span class="${cls}">${label}</span><span>${badge}${meBadge}</span></div>`;
+      }).join('');
+      document.getElementById('mp-slot-list').innerHTML = html;
+
+      const startBtn = document.getElementById('mp-start-btn');
+      if (mpIsHost) {
+        const hasGuest = data.slots.some((s, i) => i !== 0 && s.control === 'human');
+        startBtn.classList.remove('hidden');
+        startBtn.textContent = hasGuest ? '対戦を開始する' : 'AI相手に開始する';
+      } else {
+        startBtn.classList.add('hidden');
+      }
+    }
+
+    function mpOnRoomUpdate(data) {
+      if (!data) return;
+      if (data.status === 'waiting') {
+        mpRenderSlotList(data);
+        return;
+      }
+      if (data.status !== 'drafting') return;
+
+      if (!mpGameStarted) {
+        mpGameStarted = true;
+        mpBeginGame(data);
+      }
+
+      if (mpIsHost) {
+        mpHostHandlePendingPick(data);
+      } else {
+        mpGuestApplyPicks(data);
+        mpGuestApplyTurn(data);
+      }
+    }
+
+    // ★ 対戦開始：Firestoreのslots情報から、ホスト・ゲストどちらのブラウザでも
+    //   同じteams配列を組み立てる（team.id＝スロット番号で常に一致させる）。
+    function mpBeginGame(data) {
+      userHadSRankThisRun = false;
+      availablePlayers = [...initialDatabase];
+      favoriteIds = [];
+
+      const humanNames = data.slots.filter(s => s.control === 'human').map(s => s.teamName);
+      let aiPool = shuffleArray(ALL_TEAMS.filter(t => !humanNames.includes(t)));
+
+      teams = data.slots.map((slot, i) => {
+        const isMe = i === mpMySlotIndex;
+        const isAiSlot = slot.control === 'ai';
+        const teamName = isAiSlot ? (aiPool.shift() || ALL_TEAMS[0]) : slot.teamName;
+        return {
+          id: i,
+          name: teamName + (isAiSlot ? '(AI)' : ''),
+          baseName: teamName,
+          isUser: isMe,
+          control: isMe ? 'local' : (isAiSlot ? 'ai' : 'remote'),
+          color: TEAM_STYLE[teamName] || TEAM_STYLE[ALL_TEAMS[0]],
+          roster: [],
+          needsPick: true,
+          scouting: TEAM_SCOUTING[teamName] || DEFAULT_SCOUTING,
+          personality: (TEAM_SCOUTING[teamName] || DEFAULT_SCOUTING).label
+        };
+      });
+
+      initDraftMatrix();
+
+      draftMode = data.draftMode;
+      document.getElementById('draft-mode').value = draftMode;
+      // ★ ウェーバー順を毎回ランダムにするとホスト/ゲストの計算がズレてしまうため、
+      //   スロット順（＝team.id順）で固定する。1対1のみなのでこれで公平性は保てる。
+      waiverBaseOrder = teams.map(t => t.id);
+      waiverLog = [];
+      currentRound = 1;
+      mpAppliedPickCount = 0;
+      mpSubmittedThisCycle = false;
+
+      window.switchDraftView('list');
+
+      if (typeof gtag === 'function') gtag('event', 'mp_draft_start', { draft_mode: draftMode, is_host: mpIsHost });
+
+      if (mpIsHost) {
+        beginRound();
+      } else {
+        showScreen('screen-draft');
+        renderPosStatus();
+        renderSearchList();
+        renderTurnBar();
+      }
+    }
+
+    // ★ ホスト側：相手（リモート）チームの指名を待つ必要がある地点で呼ぶ。すでに
+    //   Firestoreから届いていれば即座に消費して続行し、まだなら待機状態にして
+    //   mpHostHandlePendingPick()からの再開を待つ。
+    function mpAwaitRemotePick(remoteTeam, onArrive) {
+      const slot = mpSlotIndexForTeam(remoteTeam);
+      if (mpPendingRemotePick && mpPendingRemotePick.slotIndex === slot) {
+        const player = mpPendingRemotePick.player;
+        mpPendingRemotePick = null;
+        mpAwaitingSlot = null;
+        mpAwaitingCallback = null;
+        onArrive(player);
+      } else {
+        mpAwaitingSlot = slot;
+        mpAwaitingCallback = onArrive;
+      }
+    }
+
+    function mpHostHandlePendingPick(data) {
+      const pp = data.pendingPick;
+      if (!pp) return;
+      if (mpPendingRemotePick && mpPendingRemotePick.slotIndex === pp.slotIndex && mpPendingRemotePick.playerId === pp.playerId) return;
+      const player = availablePlayers.find(p => p.id === pp.playerId) || initialDatabase.find(p => p.id === pp.playerId);
+      if (!player) return;
+
+      mpPendingRemotePick = { slotIndex: pp.slotIndex, playerId: pp.playerId, player };
+      if (mpAwaitingSlot !== null && mpAwaitingSlot === pp.slotIndex && mpAwaitingCallback) {
+        const cb = mpAwaitingCallback;
+        const arrivedPlayer = mpPendingRemotePick.player;
+        mpPendingRemotePick = null;
+        mpAwaitingSlot = null;
+        mpAwaitingCallback = null;
+        cb(arrivedPlayer);
+      }
+    }
+
+    // ★ 同時指名（1巡目・ハズレ含む）で、相手がリモートならその指名が届くまで
+    //   executeReveal()を遅らせる。シングルプレイ時はremoteチームが存在しないので
+    //   即座にexecuteReveal()するだけになり、既存の挙動と完全に一致する。
+    function mpMaybeExecuteReveal() {
+      const remoteTeam = teams.find(t => t.control === 'remote' && t.needsPick && !t.currentPick);
+      if (!remoteTeam) { executeReveal(); return; }
+      mpAwaitRemotePick(remoteTeam, (player) => {
+        remoteTeam.currentPick = player;
+        mpMaybeExecuteReveal();
+      });
+    }
+
+    // ★ ホスト側：指名が確定した瞬間に必ず呼ばれる（commitPick/resolveDraftPicks/
+    //   抽選の当選判定の4箇所すべてから）。picksログに1件追記し、続けて現在の
+    //   手番状況をゲストへ配信する。ゲスト・シングルプレイ時は何もしない。
+    function mpHostRecordPick(team, player) {
+      if (!mpRoomId || !mpIsHost || !window.MP) return;
+      const slotIndex = mpSlotIndexForTeam(team);
+      window.MP.commitPick(mpRoomId, { round: currentRound, slotIndex, playerId: player.id })
+        .then(() => mpBroadcastTurn())
+        .catch(() => {});
+    }
+
+    // ★ ホスト側：現在どの枠が指名待ちか／何巡目か／ウェーバー中かをFirestoreへ
+    //   書き込み、ゲスト画面の「指名」「待機中」表示や巡目表示に反映させる。
+    function mpBroadcastTurn() {
+      if (!mpRoomId || !mpIsHost || !window.MP) return;
+      window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+        turn: { round: currentRound, needsPick: teams.map(t => !!t.needsPick), waiver: isWaiverRound(currentRound) },
+        updatedAt: window.MP.serverTimestamp()
+      }).catch(() => {});
+    }
+
+    // ★ ゲスト側：自分の手番の指名はローカルで確定させず、Firestoreの郵便受けに
+    //   送信するだけにする（ホストがpicksログに書き込むのを待つ）。
+    function mpGuestSubmitPick(playerId) {
+      const user = userTeamRef();
+      if (!user || !user.needsPick || mpSubmittedThisCycle) return;
+      const selected = availablePlayers.find(p => p.id === playerId);
+      if (!selected) return;
+
+      if (isForeignPlayer(selected) && foreignCount(user) >= FOREIGN_PLAYER_LIMIT) {
+        showAppAlert(`外国人選手は1球団最大${FOREIGN_PLAYER_LIMIT}人までしか指名できません。`);
+        return;
+      }
+
+      mpSubmittedThisCycle = true;
+      renderSearchList();
+      window.MP.submitPendingPick(mpRoomId, mpMySlotIndex, selected.id).catch(() => {
+        mpSubmittedThisCycle = false;
+        renderSearchList();
+        showAppAlert('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+      });
+    }
+
+    // ★ ゲスト側：ホストのpicksログに新しく追加された分だけ、既存のcommitPick()を
+    //   使って自分のteams/availablePlayersに反映する（単独プレイのロジックを
+    //   そのまま再利用するので、指名ボード等の表示も自然に更新される）。
+    function mpGuestApplyPicks(data) {
+      const picks = data.picks || [];
+      if (picks.length <= mpAppliedPickCount) return;
+      for (let i = mpAppliedPickCount; i < picks.length; i++) {
+        const entry = picks[i];
+        const team = teams.find(t => t.id === entry.slotIndex);
+        const player = availablePlayers.find(p => p.id === entry.playerId) || initialDatabase.find(p => p.id === entry.playerId);
+        if (!team || !player) continue;
+        commitPick(team, player);
+      }
+      mpAppliedPickCount = picks.length;
+    }
+
+    // ★ ゲスト側：ホストが配信したturn状態（何巡目か／どの枠が指名待ちか）を
+    //   自分のteams/画面に反映する。ドラフト終了後は自分でスタメン編成を進める。
+    function mpGuestApplyTurn(data) {
+      const turn = data.turn;
+      if (!turn) return;
+      currentRound = turn.round;
+      teams.forEach((t, i) => {
+        const needs = !!turn.needsPick[i];
+        if (t.needsPick !== needs) {
+          t.needsPick = needs;
+          if (t.isUser) mpSubmittedThisCycle = false;
+        }
+      });
+
+      if (currentRound > TOTAL_ROUNDS) {
+        if (!mpLineupStarted) { mpLineupStarted = true; startLineupPhase(); }
+        return;
+      }
+
+      if (turn.waiver) {
+        const base = [...waiverBaseOrder];
+        waiverQueue = (currentRound % 2 === 0) ? base : base.reverse();
+        const activeIdx = waiverQueue.findIndex(tid => { const t = teams.find(x => x.id === tid); return t && t.needsPick; });
+        waiverPos = activeIdx === -1 ? waiverQueue.length : activeIdx;
+      }
+
+      document.getElementById('round-indicator').textContent =
+        `第 ${currentRound} 巡 ${turn.waiver ? 'ウェーバー指名' : '選択希望選手'}`;
+      renderPosStatus();
+      renderSearchList();
+      renderTurnBar(teams.find(t => t.needsPick));
     }
 
     // ==========================================
@@ -2946,6 +3489,7 @@
     // スタメンボード
     // ==========================================
     function startLineupPhase() {
+      mpBroadcastTurn();
       if (!lineupPhaseInitialized) {
         const poolContainer = document.getElementById('lineup-pool-container');
         poolContainer.addEventListener('dragover', e => { e.preventDefault(); poolContainer.classList.add('bg-blue-50'); });
