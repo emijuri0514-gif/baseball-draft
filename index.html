@@ -159,11 +159,20 @@
       await updateDoc(doc(db, 'rooms', roomId), { lotteryResult: null, updatedAt: serverTimestamp() });
     }
 
+    // ★ ゲストが「どの封筒を選んだか」をホストへ伝える郵便受け（submitPendingPickと同じ
+    // パターン）。当選確率には関与しないが、両者が選び終えるまでホストが開票を待つために使う
+    // （「一緒にくじを選ぶ」ドキドキ感が対人戦の一番の見せ場なので、これは省略しない）。
+    async function submitLotteryChoice(roomId, slotIndex, key, envelopeIdx) {
+      await updateDoc(doc(db, 'rooms', roomId), {
+        lotteryChoice: { slotIndex, key, envelopeIdx }, updatedAt: serverTimestamp()
+      });
+    }
+
     // ★ window.MP: 本体の非モジュールスクリプトからFirestoreを叩くための橋渡し。
     window.MP = {
       db, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp, arrayUnion,
       getClientId, createRoom, joinRoom, subscribeRoom, startRoom, submitPendingPick, commitPick,
-      postLotteryResult, clearLotteryResult
+      postLotteryResult, clearLotteryResult, submitLotteryChoice
     };
     window.dispatchEvent(new Event('mp-ready'));
   </script>
@@ -1974,6 +1983,14 @@
     let mpAppliedPickCount = 0;       // ゲスト側：picksログのうち何件まで反映済みか
     let mpSubmittedThisCycle = false; // ゲスト側：今の自分の手番ですでに送信済みか
 
+    // ★ 競合抽選（封筒くじ）を対人戦でも省略せずホスト・ゲスト両方に見せるための状態。
+    // 「一緒に封筒を選ぶ」瞬間が対人戦の一番の見せ場なので、開票（当選判定）は
+    // 両者が封筒を選び終えるまで待ってから行う（詳細はsetupLottery()付近の★コメント参照）。
+    let mpCurrentLotteryKey = null;      // 進行中のくじの識別子（新しいくじが始まったかの判定に使う）
+    let mpMyLotteryChoice = null;        // このブラウザの利用者が選んだ封筒番号
+    let mpLotteryOpponentChoice = null;  // ホスト側のみ使用：ゲストから届いた封筒選択
+    let mpLotteryRevealTriggered = false; // 現在のキーについて開票済みか（ホスト/ゲスト共通ガード）
+
     const DRAFT_MODE_DESC = {
       npb: "実際のNPBに近い形式。1巡目だけ全球団が同時に入札し、競合したら抽選。2巡目からは順番指名（スネーク方式）になります。",
       lottery: "全12巡すべてで同時入札と抽選を行います。運の要素が最も大きい形式です。",
@@ -2475,7 +2492,9 @@
       document.getElementById('round-indicator').textContent =
         `第 ${currentRound} 巡 ${isWaiverRound(currentRound) ? 'ウェーバー指名' : '選択希望選手'}`;
       document.getElementById('search-input').value = "";
-      teams.forEach(t => t.needsPick = true);
+      // ★ currentPickも一緒にリセットする（前巡の値が残っていると、対人戦でmpMaybeExecuteReveal()が
+      //   「まだ届いていない」と正しく判定できなくなるため。単独プレイでは毎回上書きされるだけなので影響なし）。
+      teams.forEach(t => { t.needsPick = true; t.currentPick = null; });
 
       if (isWaiverRound(currentRound)) {
         startWaiverRound();
@@ -2981,9 +3000,25 @@
       document.getElementById('lottery-target-name').textContent = `${player.name} (${cTeams.length}球団)`;
 
       const isUserInvolved = cTeams.some(t => t.isUser);
-      document.getElementById('lottery-instruction').textContent = isUserInvolved ? "あなたの封筒を選んでクリック" : "AI球団が抽選を行っています...";
+      const remoteInvolved = mpRoomId && cTeams.some(t => t.control === 'remote');
+      document.getElementById('lottery-instruction').textContent = remoteInvolved
+        ? "あなたの封筒を選んでクリック（相手も同時に選んでいます）"
+        : (isUserInvolved ? "あなたの封筒を選んでクリック" : "AI球団が抽選を行っています...");
 
       currentLotteryContext.shuffledTeams = shuffleArray(cTeams);
+
+      // ★ ホスト側だけがくじの開始をFirestoreへ配信する（ゲストはこれを受けて自分の画面にも
+      //   同じ封筒くじを表示し、実際に選んでもらう。詳細はmpHandleMyLotteryClick等を参照）。
+      if (mpRoomId && mpIsHost && remoteInvolved) {
+        mpCurrentLotteryKey = 'L' + currentRound + '-' + player.id + '-' + Date.now();
+        mpMyLotteryChoice = null;
+        mpLotteryOpponentChoice = null;
+        mpLotteryRevealTriggered = false;
+        window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+          lottery: { key: mpCurrentLotteryKey, playerId: player.id, teamSlots: cTeams.map(t => t.id) },
+          updatedAt: window.MP.serverTimestamp()
+        }).catch(() => {});
+      }
 
       const skipBtn = document.getElementById('lottery-skip-btn');
       if (!isUserInvolved) {
@@ -3032,8 +3067,22 @@
       });
     };
 
+    // ★ 対人戦で相手（リモート）が絡むくじは、自分が封筒を選んだだけでは開票しない。
+    //   相手も選び終えるまで待ってから一斉に開票する（詳細はmpTryRevealLottery参照）。
+    //   それ以外（単独プレイ・AI同士の競合）は、これまで通りクリック即開票する。
     window.drawLottery = function(selectedIdx) {
-      if(isDrawingLottery) return; isDrawingLottery = true;
+      if (isDrawingLottery) return;
+      const cTeams = currentLotteryContext.teams;
+      const remoteInvolved = mpRoomId && cTeams.some(t => t.control === 'remote');
+      if (remoteInvolved) {
+        mpHandleMyLotteryClick(selectedIdx);
+        return;
+      }
+      performLotteryReveal(selectedIdx);
+    };
+
+    function performLotteryReveal(selectedIdx) {
+      isDrawingLottery = true;
       if(autoLotteryTimer) clearTimeout(autoLotteryTimer);
 
       const cTeams = currentLotteryContext.teams;
@@ -3062,6 +3111,7 @@
 
       const winIdx = Math.floor(Math.random() * total);
       const winnerTeam = assignedTeams[winIdx];
+      mpBroadcastLotteryWinner(cTeams, winnerTeam);
 
       for(let i=0; i<total; i++) {
         const env = document.getElementById(`env-${i}`);
@@ -3084,13 +3134,19 @@
           processConflict(currentConflictIndex + 1);
         });
       }, 2000);
-    };
+    }
 
     function checkNextStep() {
       renderDraftMatrix();
 
       if (teams.some(t => t.needsPick)) {
         isHazurePhase = true;
+        // ★ 抽選に負けてまだ指名が必要なチームは、前サイクルのcurrentPickを消しておく。
+        //   単独プレイでは毎回handleDraftSubmit/getAIPickが上書きするので影響ないが、
+        //   対人戦ではmpMaybeExecuteReveal()が「currentPickが未設定＝まだ届いていない」
+        //   という判定で相手の新しい指名を待つため、古い値が残っていると新しい指名を
+        //   待たずに前回のハズレ指名を再度確定させてしまう不具合があった。
+        teams.forEach(t => { if (t.needsPick) t.currentPick = null; });
         startTurn();
         showScreen('screen-draft');
       } else {
@@ -3126,6 +3182,7 @@
       mpGameStarted = false; mpLineupStarted = false;
       mpAwaitingSlot = null; mpAwaitingCallback = null; mpPendingRemotePick = null;
       mpAppliedPickCount = 0; mpSubmittedThisCycle = false;
+      mpCurrentLotteryKey = null; mpMyLotteryChoice = null; mpLotteryOpponentChoice = null; mpLotteryRevealTriggered = false;
     }
 
     window.openMpLobby = function() {
@@ -3241,8 +3298,10 @@
 
       if (mpIsHost) {
         mpHostHandlePendingPick(data);
+        mpHostHandleLotteryChoice(data);
       } else {
         mpGuestApplyPicks(data);
+        mpGuestHandleLottery(data);
         mpGuestApplyTurn(data);
       }
     }
@@ -3326,6 +3385,13 @@
       if (!player) return;
 
       mpPendingRemotePick = { slotIndex: pp.slotIndex, playerId: pp.playerId, player };
+      // ★ Firestore側の郵便受け（pendingPick）は、指名が競合してすぐには確定しない場合
+      //   （抽選待ちなど）そのまま残ってしまう。空にしないまま次の指名サイクルに進むと、
+      //   この古い投函内容を新しい指名だと誤認してすぐに確定させてしまう不具合があったため、
+      //   読み取った時点でこちらから空にしておく。
+      window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+        pendingPick: null, updatedAt: window.MP.serverTimestamp()
+      }).catch(() => {});
       if (mpAwaitingSlot !== null && mpAwaitingSlot === pp.slotIndex && mpAwaitingCallback) {
         const cb = mpAwaitingCallback;
         const arrivedPlayer = mpPendingRemotePick.player;
@@ -3369,6 +3435,124 @@
       }).catch(() => {});
     }
 
+    // ★ 対人戦の封筒くじ：自分が封筒をクリックした瞬間に呼ばれる（ホスト・ゲスト共通）。
+    //   選んだ封筒を光らせて「相手を待っています」表示にするだけで、まだ開票しない。
+    //   ホスト側は自分の選択を覚えて即座に開票判定へ、ゲスト側は自分の選択を
+    //   Firestoreの郵便受け（lotteryChoice）に送信してホストからの開票を待つ。
+    function mpHandleMyLotteryClick(selectedIdx) {
+      if (mpMyLotteryChoice !== null) return; // 二重クリック防止
+      mpMyLotteryChoice = selectedIdx;
+
+      const envEl = document.getElementById(`env-${selectedIdx}`);
+      if (envEl) envEl.style.outline = '4px solid #facc15';
+      const instruction = document.getElementById('lottery-instruction');
+      if (instruction) instruction.textContent = "相手が封筒を選ぶのを待っています...";
+
+      if (mpIsHost) {
+        mpTryRevealLottery();
+      } else {
+        window.MP.submitLotteryChoice(mpRoomId, mpMySlotIndex, mpCurrentLotteryKey, selectedIdx).catch(() => {
+          showAppAlert('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+        });
+      }
+    }
+
+    // ★ ホスト側：自分の選択と相手の選択が両方揃ったら、既存のperformLotteryReveal()で
+    //   実際の当選判定・開票アニメーションを行う（当選確率のロジック自体は単独プレイと同じ）。
+    function mpTryRevealLottery() {
+      if (!mpIsHost || mpLotteryRevealTriggered) return;
+      if (mpMyLotteryChoice === null || mpLotteryOpponentChoice === null) return;
+      mpLotteryRevealTriggered = true;
+      performLotteryReveal(mpMyLotteryChoice);
+    }
+
+    // ★ ホスト側：ゲストの封筒選択（lotteryChoice）が届いたら記録し、開票判定へ。
+    function mpHostHandleLotteryChoice(data) {
+      const lc = data.lotteryChoice;
+      if (!lc || lc.key !== mpCurrentLotteryKey || mpLotteryOpponentChoice !== null) return;
+      mpLotteryOpponentChoice = lc.envelopeIdx;
+      mpTryRevealLottery();
+    }
+
+    // ★ ホスト側：当選判定の直後（performLotteryReveal内）に呼ばれ、当選チームを
+    //   ゲストへ配信する。当選確率そのものはホストのMath.random()だけで決まっている点は
+    //   単独プレイと同じで、ここは結果の共有だけを行う。
+    function mpBroadcastLotteryWinner(cTeams, winnerTeam) {
+      if (!mpRoomId || !mpIsHost || !cTeams.some(t => t.control === 'remote')) return;
+      window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+        lottery: { key: mpCurrentLotteryKey, winnerSlot: winnerTeam.id },
+        updatedAt: window.MP.serverTimestamp()
+      }).catch(() => {});
+    }
+
+    // ★ ゲスト側：ホストが配信したくじ開始/開票をそのまま自分の画面にも反映する。
+    //   新しいくじが始まったら既存のsetupLottery()を呼んで同じ封筒画面を表示し、
+    //   開票結果（winnerSlot）が届いたらmpGuestRevealLottery()で開票演出を再生する。
+    function mpGuestHandleLottery(data) {
+      const lot = data.lottery;
+      if (!lot) return;
+
+      if (lot.key !== mpCurrentLotteryKey) {
+        mpCurrentLotteryKey = lot.key;
+        mpMyLotteryChoice = null;
+        mpLotteryRevealTriggered = false;
+        const cTeams = lot.teamSlots.map(slot => teams.find(t => t.id === slot)).filter(Boolean);
+        const player = availablePlayers.find(p => p.id === lot.playerId) || initialDatabase.find(p => p.id === lot.playerId);
+        if (cTeams.length === lot.teamSlots.length && player) {
+          setupLottery(cTeams, player);
+        }
+      }
+
+      if (lot.winnerSlot !== undefined && lot.winnerSlot !== null && !mpLotteryRevealTriggered) {
+        mpLotteryRevealTriggered = true;
+        mpGuestRevealLottery(lot);
+      }
+    }
+
+    // ★ ゲスト側：ホストからの当選結果(winnerSlot)を使って開封アニメーションと
+    //   結果アラートを再生する。ロスターへの実反映はpicksログの再生（mpGuestApplyPicks）に
+    //   任せ、ここでは演出のみ行う。
+    function mpGuestRevealLottery(lot) {
+      const cTeams = currentLotteryContext.teams;
+      const player = currentLotteryContext.player;
+      if (!cTeams || !player) return;
+      const total = cTeams.length;
+      const selectedIdx = mpMyLotteryChoice !== null ? mpMyLotteryChoice : 0;
+      const userTeam = cTeams.find(t => t.isUser);
+      const otherTeams = shuffleArray(cTeams.filter(t => !t.isUser));
+
+      let assignedTeams = [];
+      for (let i = 0; i < total; i++) {
+        if (i === selectedIdx) {
+          assignedTeams[i] = userTeam;
+          const envEl = document.getElementById(`env-${i}`);
+          if (envEl && envEl.previousElementSibling) envEl.previousElementSibling.textContent = "あなた";
+        } else {
+          assignedTeams[i] = otherTeams.pop();
+          const envEl = document.getElementById(`env-${i}`);
+          if (envEl && envEl.previousElementSibling && assignedTeams[i]) envEl.previousElementSibling.textContent = assignedTeams[i].name.replace('(AI)', '');
+        }
+      }
+
+      const winIdx = assignedTeams.findIndex(t => t.id === lot.winnerSlot);
+      const winnerTeam = teams.find(t => t.id === lot.winnerSlot);
+      if (!winnerTeam) return;
+
+      for (let i = 0; i < total; i++) {
+        const env = document.getElementById(`env-${i}`);
+        const letter = document.getElementById(`letter-${i}`);
+        if (letter) letter.innerHTML = i === winIdx ? '<div class="stamp">交渉権<br>確定</div>' : '';
+        if (env) env.classList.add('open');
+      }
+
+      setTimeout(() => {
+        const msg = winnerTeam.isUser
+          ? `🎉 見事引き当てました！\n${player.name} を獲得！`
+          : `😭 ハズレ...\n${winnerTeam.name.replace('(AI)', '')} が ${player.name} を獲得しました！`;
+        showAppAlert(msg, () => { showScreen('screen-draft'); });
+      }, 2000);
+    }
+
     // ★ ゲスト側：自分の手番の指名はローカルで確定させず、Firestoreの郵便受けに
     //   送信するだけにする（ホストがpicksログに書き込むのを待つ）。
     function mpGuestSubmitPick(playerId) {
@@ -3405,6 +3589,12 @@
         commitPick(team, player);
       }
       mpAppliedPickCount = picks.length;
+      // ★ 抽選で負けてハズレ指名になった場合など、needsPickがtrueのまま維持される
+      //   （true→trueで変化がない）ことがあり、mpGuestApplyTurn側のfalse→true検知だけでは
+      //   送信済みフラグが解除されないケースが起きる。指名が1件でも確定した後は、
+      //   毎回ここで送信済みフラグを解除しておく（needsPick自体はこの後のmpGuestApplyTurnが
+      //   正しく判定するので、まだ自分の番でなければ「待機中」表示のまま変わらない）。
+      mpSubmittedThisCycle = false;
     }
 
     // ★ ゲスト側：ホストが配信したturn状態（何巡目か／どの枠が指名待ちか）を
