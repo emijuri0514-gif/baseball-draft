@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "lottery:seed-games": "node scripts/lottery-seed-games.mjs",
+    "lottery:seed-shop-items": "node scripts/lottery-seed-shop-items.mjs",
     "lottery:set-admin": "node scripts/lottery-set-admin-claim.mjs"
   },
   "devDependencies": {

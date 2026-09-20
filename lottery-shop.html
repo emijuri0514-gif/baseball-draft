@@ -78,6 +78,7 @@
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc, onSnapshot, runTransaction, arrayUnion,
+      collection, getDocs,
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import { SHOP_ITEMS, isUnlocked } from "./js/shop-items.mjs";
 
@@ -127,12 +128,37 @@
       currentUid = user.uid;
       try {
         await ensureUserDoc(currentUid);
+        await seedShopItemsIfMissing_DevFallback();
         subscribeUserDoc();
       } catch (err) {
         console.error(err);
         showBanner(`初期化に失敗しました: ${err.message}`, 'error');
       }
     });
+
+    // 開発用フォールバック:
+    // lottery-firestore.rulesでは、交換ショップの購入(users.unlocks更新)を
+    // shop_items/{itemId}.cost と突き合わせて検証している(価格の偽装を防ぐため)。
+    // 本来は `npm run lottery:seed-shop-items` を1度実行して投入する想定だが、
+    // games/drawsと同じく、テストモードのまま試している開発者でもすぐ動作確認できるよう、
+    // 未投入かつ書き込み許可がある場合のみここでも試みる。
+    async function seedShopItemsIfMissing_DevFallback() {
+      try {
+        const snap = await getDocs(collection(db, 'shop_items'));
+        if (!snap.empty) return;
+        for (const item of SHOP_ITEMS) {
+          if (!item.available) continue; // 準備中の商品はFirestoreに投入しない(購入経路自体を塞ぐ)
+          await setDoc(doc(db, 'shop_items', item.id), { cost: item.cost });
+        }
+        console.info('[seed] 開発用フォールバックで交換ショップの商品データを投入しました');
+      } catch (err) {
+        console.info(
+          '[seed] クライアントからのシードはスキップしました(権限なし、または投入済み)。' +
+          '本番相当のルールを使う場合は `npm run lottery:seed-shop-items` を実行してください。',
+          err.code || err.message
+        );
+      }
+    }
 
     async function ensureUserDoc(uid) {
       const ref = doc(db, 'users', uid);
