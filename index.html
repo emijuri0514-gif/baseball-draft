@@ -1569,7 +1569,8 @@
         <div id="order-summary" class="mt-2 pt-2 border-t border-green-600 text-[10px] md:text-xs text-white font-bold text-center"></div>
         </div>
       </div>
-      <button onclick="finishLineup()" class="btn-mvp text-white font-black py-3 px-4 w-full rounded-full text-sm md:text-lg shrink-0 mb-4">AI採点を見る</button>
+      <button id="finish-lineup-btn" onclick="finishLineup()" class="btn-mvp text-white font-black py-3 px-4 w-full rounded-full text-sm md:text-lg shrink-0 mb-1">AI採点を見る</button>
+      <p id="mp-lineup-waiting-msg" class="hidden text-[11px] text-gray-500 text-center mb-4">⏳ 対戦相手のスタメン確定を待っています...</p>
     </div>
     </div>
     </div>
@@ -1992,6 +1993,14 @@
     let mpLotteryOpponentChoice = null;  // ホスト側のみ使用：ゲストから届いた封筒選択
     let mpLotteryRevealTriggered = false; // 現在のキーについて開票済みか（ホスト/ゲスト共通ガード）
     let mpLastAnnouncedViaLottery = null;  // ゲスト側：抽選の開票演出ですでに見せたplayerId（重複アナウンス防止）
+
+    // ★ スタメン編成の同期用。ドラフトと違って「早い者勝ち」の権威は不要で、
+    // お互いが自分のスタメンをFirestoreへ送り合い、両方揃った時点でどちらの
+    // ブラウザも同じ入力でAI採点（決定的・乱数なし）を計算する、という対称な設計。
+    // 詳細はmpSubmitOwnLineup()付近の★コメントを参照。
+    let mpMyLineupSubmitted = false;   // 自分がスタメンを確定送信済みか
+    let mpOpponentLineup = null;       // 相手から届いたスタメン（{batters:[{id,pos,order}], pitchers:[{id,pos}]}）
+    let mpLineupPhaseResolved = false; // 両者揃って採点計算を実行済みか（二重実行防止）
 
     const DRAFT_MODE_DESC = {
       npb: "実際のNPBに近い形式。1巡目だけ全球団が同時に入札し、競合したら抽選。2巡目からは順番指名（スネーク方式）になります。",
@@ -3194,6 +3203,7 @@
       mpAppliedPickCount = 0; mpSubmittedThisCycle = false;
       mpCurrentLotteryKey = null; mpMyLotteryChoice = null; mpLotteryOpponentChoice = null; mpLotteryRevealTriggered = false;
       mpLastAnnouncedViaLottery = null;
+      mpMyLineupSubmitted = false; mpOpponentLineup = null; mpLineupPhaseResolved = false;
       const resyncBtn = document.getElementById('mp-resync-btn');
       if (resyncBtn) resyncBtn.classList.add('hidden');
     }
@@ -3337,6 +3347,8 @@
         mpGuestHandleLottery(data);
         mpGuestApplyTurn(data);
       }
+
+      mpHandleLineupUpdate(data);
     }
 
     // ★ 対戦開始：Firestoreのslots情報から、ホスト・ゲストどちらのブラウザでも
@@ -3696,6 +3708,89 @@
       renderTurnBar(teams.find(t => t.needsPick));
     }
 
+    // ★ スタメン編成の同期：ホスト・ゲストどちらから届いても同じ扱いにする対称設計
+    //   （ドラフトの指名と違い、採点は乱数が絡まない決定的な計算なので、権威役は不要で
+    //   単に「両者揃うまで待つ」だけでよい）。相手のスタメンが届いたら保存しておき、
+    //   自分もすでに送信済みならmpTryResolveLineups()で採点を実行する。
+    function mpHandleLineupUpdate(data) {
+      if (mpLineupPhaseResolved || mpMySlotIndex === null || mpOpponentLineup) return;
+      const opponentSlot = mpMySlotIndex === 0 ? 1 : 0;
+      const raw = data['lineup' + opponentSlot];
+      if (!raw) return;
+      mpOpponentLineup = raw;
+      mpTryResolveLineups();
+    }
+
+    // ★ 自分のスタメンを抽出してFirestoreへ送信する。既存のlocalFinishLineup()の
+    //   t.isUser分岐と全く同じロジックで、選手オブジェクトそのものではなく
+    //   ID・打順・守備位置だけを取り出す（JSON化してそのまま送れる軽い形にするため）。
+    function mpSubmitOwnLineup() {
+      if (mpMyLineupSubmitted) return;
+
+      const batters = [];
+      for (let i = 1; i <= 9; i++) {
+        const pid = lineupAssignments[`slot-b${i}`];
+        const pos = document.getElementById(`pos-b${i}`).value;
+        if (pid) batters.push({ id: pid, pos, order: i });
+      }
+      const pitchers = [];
+      ['p1', 'p2', 'p3'].forEach((k, idx) => {
+        const pid = lineupAssignments[`slot-${k}`];
+        if (pid) pitchers.push({ id: pid, pos: ["先発", "中継", "抑え"][idx] });
+      });
+
+      mpMyLineupSubmitted = true;
+      const btn = document.getElementById('finish-lineup-btn');
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      document.getElementById('mp-lineup-waiting-msg').classList.remove('hidden');
+
+      window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+        ['lineup' + mpMySlotIndex]: { batters, pitchers },
+        updatedAt: window.MP.serverTimestamp()
+      }).catch(() => {
+        mpMyLineupSubmitted = false;
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+        document.getElementById('mp-lineup-waiting-msg').classList.add('hidden');
+        showAppAlert('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+      });
+
+      mpTryResolveLineups();
+    }
+
+    // ★ 自分の送信・相手のスタメン受信の両方が揃った時点で、既存のlocalFinishLineup()を
+    //   呼び出して採点を計算する。相手チーム（isUser=false）のt.aiLineupを、受け取った
+    //   本物のスタメンから先に組み立てておくことで、localFinishLineup()内の
+    //   「t.aiLineup || buildAILineup(t)」がAI自動生成ではなくこちらを優先して使うように
+    //   仕向けている。採点ロジック自体に乱数が一切ないため、これでホスト・ゲストの
+    //   点数は必ず一致する。
+    function mpTryResolveLineups() {
+      if (mpLineupPhaseResolved || !mpMyLineupSubmitted || !mpOpponentLineup) return;
+      mpLineupPhaseResolved = true;
+
+      const opponentSlot = mpMySlotIndex === 0 ? 1 : 0;
+      const opponentTeam = teams.find(t => t.id === opponentSlot);
+      if (opponentTeam) {
+        const batters = mpOpponentLineup.batters.map(b => {
+          const p = opponentTeam.roster.find(x => x.id === b.id);
+          return p ? { p, pos: b.pos, order: b.order } : null;
+        }).filter(Boolean);
+        const findPitcher = (pos) => {
+          const entry = mpOpponentLineup.pitchers.find(x => x.pos === pos);
+          return entry ? opponentTeam.roster.find(x => x.id === entry.id) : null;
+        };
+        opponentTeam.aiLineup = {
+          batters,
+          sp: findPitcher('先発'),
+          rp: findPitcher('中継'),
+          cp: findPitcher('抑え')
+        };
+      }
+
+      localFinishLineup();
+    }
+
     // ==========================================
     // AIのスタメン自動編成（守備位置・打順を最適化）
     // ==========================================
@@ -3936,12 +4031,23 @@
     // ==========================================
     // ★ 採点＆ランキング ★
     // ==========================================
+    // ★ 対人戦では、確定ボタンを押しても即座には採点しない。自分のスタメンを
+    //   Firestoreへ送信し、相手のスタメンも届くのを待ってから、両者同時に
+    //   （＝同じ入力で）採点を計算する。ドラフトの指名と違って早い者勝ちの
+    //   権威付けは不要で、単に「両方揃うまで待つ」だけの対称な設計にしている
+    //   （採点自体に乱数が一切絡まないことを確認済みなので、これだけで
+    //   ホスト・ゲストの点数は必ず一致する）。
     window.finishLineup = function() {
       const slots = document.querySelectorAll('.dnd-slot');
       let filledCount = 0;
       slots.forEach(s => { if(s.dataset.filled === "true") filledCount++; });
       if(filledCount < 12) { showAppAlert("全12枠（打者9名、投手3名）に選手を配置してください！"); return; }
 
+      if (mpRoomId) { mpSubmitOwnLineup(); return; }
+      localFinishLineup();
+    };
+
+    function localFinishLineup() {
       teams.forEach(t => {
         let comboNames = [];
         let comboBadges = '';
@@ -4015,7 +4121,10 @@
              }
            });
         } else {
-           const al = buildAILineup(t);
+           // ★ 対人戦で相手チームのスタメンがmpTryResolveLineups()側ですでに
+           //   セットされている場合はそれを使う（実際に相手が組んだ本物のスタメン）。
+           //   未セットなら単独プレイ・AI球団と同じくbuildAILineup()で自動生成する。
+           const al = t.aiLineup || buildAILineup(t);
            t.aiLineup = al;
            batters  = al.batters;
            pitchers = [{p:al.sp,pos:"先発"},{p:al.rp,pos:"中継"},{p:al.cp,pos:"抑え"}].filter(x => x.p);
