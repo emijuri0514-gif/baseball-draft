@@ -2002,6 +2002,12 @@
     let mpOpponentLineup = null;       // 相手から届いたスタメン（{batters:[{id,pos,order}], pitchers:[{id,pos}]}）
     let mpLineupPhaseResolved = false; // 両者揃って採点計算を実行済みか（二重実行防止）
 
+    // ★ 試合シミュレーション同期用。スタメンと違い試合は乱数を200〜500回使うライブ
+    //   計算なので対称設計にはできず、ホストが1回だけ試合をまるごと計算して打席ごとの
+    //   実況ログと状態を"録画"として送り、両者がそれを同じ間合いで再生する権威役方式にする。
+    //   詳細はcomputeMatchRecording()付近の★コメントを参照。
+    let mpAppliedMatchRecording = false; // この対戦の録画をすでに適用したか（二重再生防止）
+
     const DRAFT_MODE_DESC = {
       npb: "実際のNPBに近い形式。1巡目だけ全球団が同時に入札し、競合したら抽選。2巡目からは順番指名（スネーク方式）になります。",
       lottery: "全12巡すべてで同時入札と抽選を行います。運の要素が最も大きい形式です。",
@@ -3204,6 +3210,7 @@
       mpCurrentLotteryKey = null; mpMyLotteryChoice = null; mpLotteryOpponentChoice = null; mpLotteryRevealTriggered = false;
       mpLastAnnouncedViaLottery = null;
       mpMyLineupSubmitted = false; mpOpponentLineup = null; mpLineupPhaseResolved = false;
+      mpAppliedMatchRecording = false;
       const resyncBtn = document.getElementById('mp-resync-btn');
       if (resyncBtn) resyncBtn.classList.add('hidden');
     }
@@ -3349,6 +3356,7 @@
       }
 
       mpHandleLineupUpdate(data);
+      mpHandleMatchRecordingUpdate(data);
     }
 
     // ★ 対戦開始：Firestoreのslots情報から、ホスト・ゲストどちらのブラウザでも
@@ -3789,6 +3797,60 @@
       }
 
       localFinishLineup();
+    }
+
+    // ★ 試合シミュレーションの同期：スタメンと違い、試合は1打席ごとに200〜500回も
+    //   Math.random()を使うライブ計算なので「両者が同じ入力で独立に計算」という対称設計は
+    //   成立しない（乱数の結果が両者で一致するはずがない）。そこでドラフトの指名や抽選開票と
+    //   同じ「権威役」方式にする：ホストだけが1回だけ試合をまるごと計算し（computeMatchRecording）、
+    //   打席ごとの実況ログと状態スナップショットをひとまとめの"録画"としてFirestoreへ送る。
+    //   ゲスト（と、ホスト自身も）はその録画をmpStartMatchPlayback()で同じ間合いに再生するだけ
+    //   なので、乱数を再現する必要なく両者へ文字通り同じ試合を見せられる。
+    function mpHandleMatchRecordingUpdate(data) {
+      if (mpAppliedMatchRecording || mpMySlotIndex === null || !data.matchRecording) return;
+      mpAppliedMatchRecording = true;
+      mpApplyMatchRecording(data.matchRecording);
+    }
+
+    // ★ ホスト側：プレーオフ画面の「試合開始」「結果だけ見る」から呼ばれる。ゲスト側は
+    //   ボタン自体を表示していないが（renderPlayoffScreen参照）、念のためガードしておく。
+    function mpStartPlayoffMatch(skip) {
+      if (!mpIsHost || !mpRoomId) return;
+      const match = getCurrentPlayoffMatch();
+      if (!match) return;
+
+      const recording = computeMatchRecording(match.a, match.b);
+      recording.skip = skip;
+
+      mpAppliedMatchRecording = true;
+      mpApplyMatchRecording(recording);
+
+      window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+        matchRecording: recording,
+        updatedAt: window.MP.serverTimestamp()
+      }).catch(() => showAppAlert('試合結果の送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。'));
+    }
+
+    // ★ 録画をこのブラウザに適用する。skipなら結果だけ即座に反映してプレーオフ画面へ、
+    //   そうでなければ相手スタメン発表→ライブ再生という既存の単独プレイと同じ流れに乗せる。
+    function mpApplyMatchRecording(recording) {
+      const match = getCurrentPlayoffMatch();
+      if (!match) return;
+
+      if (recording.skip) {
+        const last = recording.ticks[recording.ticks.length - 1];
+        match.scoreA = last.snap.scoreA;
+        match.scoreB = last.snap.scoreB;
+        match.winner = recording.winnerIsA ? match.a : match.b;
+        match.resolved = true;
+        advancePlayoffPointer();
+        renderPlayoffScreen();
+        showScreen('screen-playoff');
+        return;
+      }
+
+      const opponent = match.a.isUser ? match.b : match.a;
+      showStartingLineupAnnouncement(opponent, () => mpStartMatchPlayback(match.a, match.b, recording));
     }
 
     // ==========================================
@@ -4872,6 +4934,64 @@
       return { scoreA: state.scoreA, scoreB: state.scoreB, winner };
     }
 
+    // ★ 対人戦用：runInstantGame()と同じく試合をまるごと瞬時に計算するが、結果だけでなく
+    //   打席ごとの実況ログと状態スナップショットも全ティック分ためて返す。これがそのまま
+    //   Firestoreに送る"録画"になり、ホスト・ゲスト両方がmpStartMatchPlayback()で
+    //   同じ間合いに再生することで、乱数を伴う試合でも両者に完全に同じ内容を見せられる。
+    function computeMatchRecording(teamA, teamB) {
+      const state = createMatchState(teamA, teamB);
+      const ticks = [];
+      const pushTick = (logs, done) => ticks.push({
+        logs,
+        snap: {
+          scoreA: state.scoreA, scoreB: state.scoreB,
+          inning: state.inning, isTop: state.isTop, outs: state.outs,
+          bases: state.bases.map(b => !!b)
+        },
+        done
+      });
+
+      // startLiveMatch()と同じく、試合開始前の先発投手発表を最初のティックとして記録する
+      const initLogs = [];
+      checkPitcherChange(state, t => initLogs.push(t));
+      pushTick(initLogs, false);
+
+      let guard = 0, done = false;
+      while (!done && guard < 600) {
+        const logs = [];
+        const r = gameTick(state, t => logs.push(t));
+        guard++;
+        done = !!r.done;
+        pushTick(logs, done);
+      }
+
+      // 打者は常に9人、投手はsp/rp/cpの固定3枠なので、選手IDではなく配列の並び順・
+      // 役割キーだけで両者の同一のスタメンに突き合わせられる（mpApplyFinalStats参照）。
+      const grabLineup = (lineup) => ({
+        batters: lineup.batters.map(b => ({ ab: b.stats.ab, hit: b.stats.hit, hr: b.stats.hr, rbi: b.stats.rbi, bb: b.stats.bb })),
+        sp: lineup.pitchers.sp ? { ...lineup.pitchers.sp.stats } : null,
+        rp: lineup.pitchers.rp ? { ...lineup.pitchers.rp.stats } : null,
+        cp: lineup.pitchers.cp ? { ...lineup.pitchers.cp.stats } : null
+      });
+
+      return {
+        ticks,
+        finalStats: { lineupA: grabLineup(state.lineupA), lineupB: grabLineup(state.lineupB) },
+        winnerIsA: state.scoreA === state.scoreB ? Math.random() < 0.5 : state.scoreA > state.scoreB
+      };
+    }
+
+    // computeMatchRecording()が集計した最終成績を、再生用に新しく作ったmatchStateの
+    // スタメン（打席数などは0から始まっている）へ上書きする。スコアブック表示用。
+    function mpApplyFinalStats(state, finalStats) {
+      const apply = (lineup, stats) => {
+        lineup.batters.forEach((b, i) => { if (stats.batters[i]) Object.assign(b.stats, stats.batters[i]); });
+        ['sp', 'rp', 'cp'].forEach(k => { if (lineup.pitchers[k] && stats[k]) Object.assign(lineup.pitchers[k].stats, stats[k]); });
+      };
+      apply(state.lineupA, finalStats.lineupA);
+      apply(state.lineupB, finalStats.lineupB);
+    }
+
     function addLog(text) {
       const logDiv = document.getElementById('match-log');
       const p = document.createElement('p');
@@ -4925,6 +5045,46 @@
       matchState.timer = setInterval(liveTick, matchSpeed);
     }
 
+    // ★ 対人戦用：startLiveMatch()とほぼ同じ画面初期化だが、gameTick()をその場で呼ぶ
+    //   代わりに、ホストが計算した録画（computeMatchRecording()の戻り値）のティックを
+    //   順番に適用するだけにする。乱数を一切使わないので、ホスト・ゲストどちらの
+    //   ブラウザで再生しても文字通り同じ実況・同じ間合いになる。
+    //   ★ 対人戦中はスピード切替ボタンを隠す：片方だけ早送りすると両者の表示ペースが
+    //   ズレてしまうため（速度そのものの同期は今回のスコープ外）。
+    function mpStartMatchPlayback(teamA, teamB, recording) {
+      matchState = createMatchState(teamA, teamB);
+
+      document.getElementById('match-team-a-name').textContent = teamA.name.replace('(AI)','');
+      document.getElementById('match-team-b-name').textContent = teamB.name.replace('(AI)','');
+      document.getElementById('match-log').innerHTML = '<p class="text-blue-600 border-b pb-1">プレイボール！</p>';
+      document.getElementById('match-scorebook').classList.add('hidden');
+      document.getElementById('speed-btn').style.display = 'none';
+
+      showScreen('screen-match');
+      matchSpeed = 1000;
+
+      let idx = 0;
+      const applyTick = () => {
+        const tick = recording.ticks[idx++];
+        tick.logs.forEach(addLog);
+        Object.assign(matchState, tick.snap);
+        updateMatchUI();
+        return tick.done;
+      };
+
+      applyTick(); // 初回の先発投手発表（startLiveMatch()と同じく即時表示）
+
+      matchState.timer = setInterval(() => {
+        if (idx >= recording.ticks.length) { clearInterval(matchState.timer); matchState.timer = null; return; }
+        if (applyTick()) {
+          clearInterval(matchState.timer);
+          matchState.timer = null;
+          mpApplyFinalStats(matchState, recording.finalStats);
+          endMatch(recording.winnerIsA ? matchState.teamA : matchState.teamB);
+        }
+      }, matchSpeed);
+    }
+
     function updateMatchUI() {
       document.getElementById('match-team-a-score').textContent = matchState.scoreA;
       document.getElementById('match-team-b-score').textContent = matchState.scoreB;
@@ -4961,14 +5121,16 @@
     // ==========================================
     // ★ 試合終了とスコアブックの生成 ★
     // ==========================================
-    function endMatch() {
+    // forcedWinner: 対人戦の録画再生時、勝敗判定用の乱数を二重に引かないよう、
+    //   computeMatchRecording()が一度だけ決めた勝者をそのまま使うためのオプション引数
+    function endMatch(forcedWinner) {
       clearInterval(matchState.timer);
       matchState.timer = null;
       document.getElementById('speed-btn').style.display = 'none';
 
       addLog(`<span class="text-xl text-red-600">試合終了！ ${matchState.scoreA} - ${matchState.scoreB}</span>`);
 
-      recordPlayoffLiveResult(matchState);
+      recordPlayoffLiveResult(matchState, forcedWinner);
       showScorebook();
     }
 
@@ -5183,13 +5345,14 @@
     }
 
     // ライブ観戦で試合が終わったとき、その結果をブラケットに記録する（ポインタはまだ進めない）
-    function recordPlayoffLiveResult(state) {
+    // forcedWinner: 対人戦の録画再生時はここでMath.random()を二重に引かず、渡された勝者を使う
+    function recordPlayoffLiveResult(state, forcedWinner) {
       if (!playoffState) return;
       const match = getCurrentPlayoffMatch();
       if (!match) return;
       match.scoreA = state.scoreA;
       match.scoreB = state.scoreB;
-      match.winner = state.scoreA === state.scoreB ? (Math.random() < 0.5 ? match.a : match.b) : (state.scoreA > state.scoreB ? match.a : match.b);
+      match.winner = forcedWinner || (state.scoreA === state.scoreB ? (Math.random() < 0.5 ? match.a : match.b) : (state.scoreA > state.scoreB ? match.a : match.b));
       match.resolved = true;
     }
 
@@ -5254,6 +5417,10 @@
 
       const match = getCurrentPlayoffMatch();
       const involvesUser = match.a.isUser || match.b.isUser;
+      // ★ 対人戦では試合計算そのものが乱数まみれのため権威役（ホスト）方式にしている
+      //   （mpStartPlayoffMatch()参照）。ゲスト側にボタンを出しても押しても何も計算できず
+      //   混乱を招くだけなので、ホストが試合を開始するのを待つ表示に差し替える。
+      const mpGuestWaitingForMatch = mpRoomId && !mpIsHost;
       nextPanel.innerHTML = `
         <p class="text-center text-xs text-gray-400 mb-2">次の試合</p>
         <p class="text-center font-black text-base mb-3 flex items-center justify-center gap-2">
@@ -5261,10 +5428,14 @@
           <span class="text-gray-500 text-sm">vs</span>
           <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full ${match.b.color.bg}"></span>${match.b.name.replace('(AI)','')}</span>
         </p>
+        ${mpGuestWaitingForMatch ? `
+        <p class="text-center text-xs text-gray-400 py-3">⏳ ホストが試合を開始するのを待っています...</p>
+        ` : `
         <button onclick="window.playNextPlayoffMatch(${involvesUser ? 'false' : 'true'})" class="w-full ${involvesUser ? 'bg-red-600 hover:bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500'} text-white font-black py-3 rounded-full shadow-lg">
           ${involvesUser ? '🎮 試合開始（観戦する）' : '⚡ 結果を見る'}
         </button>
         ${involvesUser ? `<button onclick="window.playNextPlayoffMatch(true)" class="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 font-bold py-2.5 rounded-full mt-2 text-sm">⚡ 結果だけ見る（観戦をスキップ）</button>` : ''}
+        `}
       `;
     }
 
@@ -5272,6 +5443,8 @@
     window.playNextPlayoffMatch = function(skip) {
       const match = getCurrentPlayoffMatch();
       if (!match) return;
+
+      if (mpRoomId) { mpStartPlayoffMatch(skip); return; }
 
       if ((match.a.isUser || match.b.isUser) && !skip) {
         // ★ 対戦相手のスタメンを先に発表してから試合を開始する。
