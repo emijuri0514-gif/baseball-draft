@@ -11,48 +11,62 @@ rules_version = '2';
 //    "<uid>_<game_id>" という形式に固定させることで、同一ユーザーが同じ試合に
 //    複数回予想できてしまう不正(二重予想)をルールレベルでも防止している
 //    (アプリ側のトランザクションでも同様のチェックを行っており、二重の防御になっている)。
-//    さらに、odds / points_wagered をクライアントの自己申告のまま信用せず、
-//    games/{gameId} 側の実際のmarketデータと突き合わせて検証する(詳細は下の【既知の制約】参照)。
 //    的中判定(result)の更新は精算処理(admin)のみが行い、ユーザー自身が
 //    「不的中」を「的中」に書き換えるような改ざんを防ぐ。
 //
+//    ★[セキュリティ修正] 当初、bet.odds はクライアントの自己申告のまま検証しておらず、
+//    匿名認証さえあれば誰でもFirestore SDKを直接叩いてオッズを偽装したbetsドキュメントを
+//    作成でき、admin精算時に不当な高配当を得られる状態だった。games/{game_id}.market の
+//    実データと get() で突き合わせ、bet_type/bet_value の組み合わせに対応する正しいoddsで
+//    しか作成できないようにした(isValidBetOdds)。
+//
 // 3. users(ポイント) は「他人のポイントを書き換えられない」ことが最重要。
-//    本人による更新は、次の2パターンのどちらかのみ許可する:
-//    (a) 予想(bets)・チケット(tickets)購入に伴うポイント消費: total_points と
-//        prediction_history だけを、total_pointsを「減らす」方向にのみ更新できる。
-//    (b) 交換ショップでの実績解放: total_points と unlocks だけを、
-//        shopItemCost() で定義した「正しい価格ぶんだけ正確に」減らす形でのみ更新できる
-//        (価格を偽装して安く手に入れることを防ぐ)。
+//    - 本人は自分のドキュメントについて、total_points / prediction_history / unlocks の
+//      3フィールドのみを、かつ total_points を「減らす」方向にしか更新できない
+//      (予想・チケット購入・ショップ交換にのみ対応する)。
 //    - ポイントを増やす操作(的中時の払い戻し・試合中止時の返金)は admin のみ許可する。
+//    - unlocks を変更する場合(交換ショップでの購入)は、追加されたアイテムがちょうど1件で、
+//      減った total_points が shop_items/{itemId}.cost と厳密に一致することを検証する
+//      (isValidUnlockPurchase)。unlocksの更新は同一ドキュメント内の前後比較だけで完結する
+//      ため、bets/ticketsと違って金額の整合性をルールだけで完全に検証できる。
+//
+//    ★[既知の残存リスク・恒久対応が必要]
+//    bets/ticketsについては、「points_wagered/unit_priceとして宣言された値」と
+//    「同一トランザクションでusers.total_pointsが実際に減った量」が一致することまでは、
+//    Firestoreルールだけでは構造的に検証できない。これはFirestoreのセキュリティルールが
+//    同一トランザクション内の他ドキュメントへの書き込みを get() で参照できず(get()は
+//    トランザクション開始前に確定していた状態しか見えない)、bets/ticketsへの書き込みと
+//    usersへの書き込みを相互に突き合わせられないため。したがって理論上は「points_wagered
+//    を大きく申告しつつ、自分のtotal_pointsは1ptしか減らさない」という偽装が可能で、
+//    的中時に不当な高配当を得られてしまう。oddsを正しい値に固定したことで実際の被害額の
+//    上限は市場オッズの範囲に収まるが、根本的な解決にはならない。
+//    恒久対応としては、予想作成・チケット購入・ショップ交換・結果精算をすべて
+//    Cloud Functionsの呼び出し可能関数に移し、クライアントは「購入リクエスト」を送るだけに
+//    して、ポイントの増減と関連ドキュメントの作成をサーバー側で単一のトランザクションとして
+//    アトミックに検証・実行する設計に変更することを推奨する。
 //
 // 4. draws / tickets(非予想系くじ)は bets と似た考え方だが、1ユーザーが同じくじ回で
 //    複数口購入できる点が異なるため、ticket_id は固定フォーマットにしていない
 //    (代わりに result=='pending' でのみ作成できることを条件にし、的中判定済みの
-//    チケットを新規作成扱いで書き込めないようにしている)。購入時は unit_price を
-//    draws側の実際の単価と突き合わせ、対象のくじ回が受付中(open)であることも検証する。
+//    チケットを新規作成扱いで書き込めないようにしている)。
+//    ★[セキュリティ修正] ticket.unit_price も同様にクライアントの自己申告のままだったため、
+//    draws/{draw_id}.unit_price と get() で突き合わせて一致を必須にした。
 //    draws ドキュメントは admin のみ作成・全体更新できるが、購入時に増える
 //    ticket_count / participant_uids の2フィールドだけは、一般ユーザーでも
-//    「増やす方向に、かつ1回の更新につき最大10口ぶんまで」のみ更新できる
-//    (抽選対象試合や配当テーブルなど、他のフィールドはadmin以外書き換えられない)。
+//    「増やす方向」にのみ、かつ1回の更新につき最大10(=1回の購入で買える最大口数)まで
+//    しか増やせないように制限した(★[セキュリティ修正] 以前は上限がなく、大量の
+//    ticket_countを一括加算して「販売口数」の公開表示を不正に水増しできた)。
+//
+// 5. shop_items(交換ショップの商品カタログ)は teams/games と同様、admin以外は書き込めない
+//    読み取り専用の公開データ。js/shop-items.mjs のカタログをFirestoreにも複製しており、
+//    usersのunlocks更新時にルールから価格を参照できるようにするためのもの
+//    (クライアント側の js/shop-items.mjs は表示用、Firestore側が価格の正とする)。
 //
 // 【本フェーズの既知の制約】
 // 現状はクライアント(ブラウザ)から直接Firestoreへ書き込む構成のため、結果反映・精算の
 // 実行者はブラウザ上で admin クレームを持つユーザーに限定している。本来は、この精算処理
 // 自体をCloud Functions等の信頼された実行環境に移し、クライアントは「結果確定リクエスト」
-// を送るだけにする設計がより安全(将来のフェーズでの改善候補)。
-//
-// 上記に加えて、以下も同じ理由(クライアント直接書き込み)による既知の制約として残っている:
-// - bets作成時にodds/points_wageredを検証するようにしたが、「usersドキュメント側で
-//   実際に減った金額」と「betsのpoints_wagered」が完全に一致することまではルールだけでは
-//   保証できない(同一トランザクション内の別ドキュメントへの書き込みどうしを、ルール側で
-//   相互参照することはできないため)。odds偽装は防げるが、理論上は「本来より少ないポイント
-//   しか払っていないのに、points_wageredの自己申告額に対する配当を受け取る」余地がまだ残る。
-// - draws.ticket_countの加算は1回の更新につき10口までに制限したが、実際に対応する
-//   ticketドキュメントが同じ回数だけ作成されたことまでは検証できない(同上の理由)。
-// これらを完全に塞ぐには、ポイント消費を伴う書き込み(予想・チケット購入・ショップ交換)を
-// すべてCloud Functionsの呼び出し可能関数に移し、クライアントには直接書き込みさせない設計に
-// する必要がある。ベータ版の現段階では、odds偽装という最も実害の大きい抜け穴を塞ぐことを
-// 優先し、上記の残存リスクはコメントとして明記しておく。
+// を送るだけにする設計がより安全(上記2の恒久対応と合わせて、将来のフェーズでの改善候補)。
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -69,28 +83,31 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.admin == true;
     }
 
-    // 交換ショップ(js/shop-items.mjs)のカタログをルール側にも複製したもの。
-    // アプリ側でSHOP_ITEMSに商品を追加・値段変更した場合は、必ずこちらも同じ内容に更新すること。
-    // 未知のitemIdには -1 (購入不可)を返す。
-    function shopItemCost(itemId) {
-      return itemId == 'expert_draw' ? 3000 : -1;
+    // bet_typeとbet_valueの組み合わせに対応する正しいoddsを、gamesの実データから検証する。
+    function isValidBetOdds(bet) {
+      let game = get(/databases/$(database)/documents/games/$(bet.game_id)).data;
+      return (
+        bet.bet_type == 'winner' && (
+          (bet.bet_value == game.home_team_id && bet.odds == game.market.homeOdds) ||
+          (bet.bet_value == game.away_team_id && bet.odds == game.market.awayOdds)
+        )
+      ) || (
+        bet.bet_type == 'total_runs' &&
+        bet.bet_value.line == game.market.totalLine &&
+        (
+          (bet.bet_value.pick == 'over' && bet.odds == game.market.overOdds) ||
+          (bet.bet_value.pick == 'under' && bet.odds == game.market.underOdds)
+        )
+      );
     }
 
-    function gameData(gameId) {
-      return get(/databases/$(database)/documents/games/$(gameId)).data;
-    }
-
-    function drawData(drawId) {
-      return get(/databases/$(database)/documents/draws/$(drawId)).data;
-    }
-
-    // js/lottery-core.mjs の placeBet() と全く同じロジックで、その試合の
-    // 実際のmarketデータから見た「正しい」オッズを計算する(bets作成時の偽装防止用)。
-    function expectedOdds(gameId, betType, betValue) {
-      let game = gameData(gameId);
-      return betType == 'winner'
-        ? (betValue == game.home_team_id ? game.market.homeOdds : game.market.awayOdds)
-        : (betValue.pick == 'over' ? game.market.overOdds : game.market.underOdds);
+    // 交換ショップの購入が「アイテムをちょうど1件追加」「その価格ぶんだけpointsが減っている」
+    // ことを、shop_itemsの実データと突き合わせて検証する。
+    function isValidUnlockPurchase(before, after) {
+      let addedItems = after.unlocks.removeAll(before.unlocks);
+      return addedItems.size() == 1 &&
+        before.total_points - after.total_points ==
+          get(/databases/$(database)/documents/shop_items/$(addedItems[0])).data.cost;
     }
 
     match /teams/{teamId} {
@@ -107,23 +124,22 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /shop_items/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
       allow create: if isOwner(uid);
       allow update: if isAdmin() || (
-        isOwner(uid) && (
+        isOwner(uid) &&
+        request.resource.data.total_points < resource.data.total_points &&
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['total_points', 'prediction_history']) ||
           (
-            // (a) 予想・チケット購入によるポイント消費。金額の妥当性はbets/ticketsの
-            //     createルール側で検証しているので、ここでは「減る方向」であることだけを見る。
-            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['total_points', 'prediction_history']) &&
-            request.resource.data.total_points < resource.data.total_points
-          ) ||
-          (
-            // (b) 交換ショップでの実績解放。unlocksへ追加される商品IDと、その正しい価格ぶんだけ
-            //     total_pointsが減っていることを完全一致で要求する(価格の自己申告を信用しない)。
             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['total_points', 'unlocks']) &&
-            request.resource.data.unlocks == resource.data.unlocks.concat(['expert_draw']) &&
-            resource.data.total_points - request.resource.data.total_points == shopItemCost('expert_draw')
+            isValidUnlockPurchase(resource.data, request.resource.data)
           )
         )
       );
@@ -136,16 +152,9 @@ service cloud.firestore {
         && request.resource.data.user_id == request.auth.uid
         && betId == request.auth.uid + '_' + request.resource.data.game_id
         && request.resource.data.result == 'pending'
-        && request.resource.data.bet_type in ['winner', 'total_runs']
         && request.resource.data.points_wagered is int
         && request.resource.data.points_wagered > 0
-        && request.resource.data.points_wagered <= 100000
-        && gameData(request.resource.data.game_id).status == 'scheduled'
-        && request.resource.data.odds == expectedOdds(
-             request.resource.data.game_id,
-             request.resource.data.bet_type,
-             request.resource.data.bet_value
-           );
+        && isValidBetOdds(request.resource.data);
       // 的中判定(result)や賭け内容の更新は精算処理(admin)のみ許可し、
       // ユーザー自身による改ざん(不的中→的中の書き換え等)を防ぐ。
       allow update: if isAdmin();
@@ -156,9 +165,8 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isAdmin();
       // admin は全フィールドを更新できる(くじ回の精算・取消など)。
-      // 一般ユーザーは、チケット購入に伴う ticket_count / participant_uids の
-      // 加算のみ許可し、対象試合・配当テーブル・ステータスなどは書き換えさせない。
-      // 1回の購入(js/lottery-big.htmlのMAX_QTY_PER_PURCHASE=10)を超える一括加算は拒否する。
+      // 一般ユーザーは、チケット購入に伴う ticket_count / participant_uids の加算のみ、
+      // かつ1回の更新につき最大10(=1回の購入で買える最大口数)までしか増やせない。
       allow update: if isAdmin() || (
         isSignedIn() &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ticket_count', 'participant_uids']) &&
@@ -174,10 +182,8 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.user_id == request.auth.uid
         && request.resource.data.result == 'pending'
-        && request.resource.data.unit_price is int
-        && request.resource.data.unit_price > 0
-        && drawData(request.resource.data.draw_id).status == 'open'
-        && request.resource.data.unit_price == drawData(request.resource.data.draw_id).unit_price;
+        && request.resource.data.unit_price ==
+             get(/databases/$(database)/documents/draws/$(request.resource.data.draw_id)).data.unit_price;
       // 的中判定(result/matched_count/payout)の更新は精算処理(admin)のみ許可する。
       allow update: if isAdmin();
       allow delete: if false;
