@@ -2435,13 +2435,21 @@
         });
       }
 
+      // ★ 対人戦・同時指名で自分はすでに指名を送信済みだが、相手（リモート）の指名が
+      //   まだ届いていない場合。ホストはuser.currentPickが立った時点、ゲストは
+      //   mpSubmittedThisCycleが立った時点でこの状態になる。何も表示を変えないと
+      //   「指名ボタンを押しても反応がない」ように見えてしまうため、両者とも
+      //   「送信済み」表示に切り替える。
+      const isMpWaitingForOpponent = mpRoomId && (
+        mpIsHost ? (!!user.currentPick && user.needsPick) : mpSubmittedThisCycle
+      );
+
       let html = '';
       displayPlayers.forEach(p => {
         const isFav = favoriteIds.includes(p.id);
-        const isMpGuestWaiting = mpRoomId && !mpIsHost && mpSubmittedThisCycle;
-        const btnHtml = user.needsPick && !isMpGuestWaiting
+        const btnHtml = user.needsPick && !isMpWaitingForOpponent
           ? `<button onclick="window.handleDraftSubmit(${p.id})" class="btn-nominate text-white font-black py-2 px-3 text-xs rounded ml-1 flex-shrink-0 h-10">指名</button>`
-          : `<button class="bg-gray-400 text-white font-bold py-2 px-3 text-xs rounded shadow ml-1 flex-shrink-0 cursor-not-allowed h-10" disabled>${isMpGuestWaiting ? '送信済み' : '待機中'}</button>`;
+          : `<button class="bg-gray-400 text-white font-bold py-2 px-3 text-xs rounded shadow ml-1 flex-shrink-0 cursor-not-allowed h-10" disabled>${isMpWaitingForOpponent ? '送信済み' : '待機中'}</button>`;
 
         const statsHtml = generateStatsHtml(p);
         const bestPosDisplay = Array.isArray(p.bestPos) ? p.bestPos.join('・') : p.bestPos;
@@ -3408,6 +3416,9 @@
     function mpMaybeExecuteReveal() {
       const remoteTeam = teams.find(t => t.control === 'remote' && t.needsPick && !t.currentPick);
       if (!remoteTeam) { executeReveal(); return; }
+      // ★ ここで一旦待ちに入る＝自分はもう指名済みなので、画面を「送信済み」表示に
+      //   更新しておく（更新しないと、押しても反応がないように見えてしまう）。
+      renderSearchList();
       mpAwaitRemotePick(remoteTeam, (player) => {
         remoteTeam.currentPick = player;
         mpMaybeExecuteReveal();
@@ -3581,20 +3592,39 @@
     function mpGuestApplyPicks(data) {
       const picks = data.picks || [];
       if (picks.length <= mpAppliedPickCount) return;
-      for (let i = mpAppliedPickCount; i < picks.length; i++) {
-        const entry = picks[i];
-        const team = teams.find(t => t.id === entry.slotIndex);
-        const player = availablePlayers.find(p => p.id === entry.playerId) || initialDatabase.find(p => p.id === entry.playerId);
-        if (!team || !player) continue;
-        commitPick(team, player);
-      }
+      const newEntries = picks.slice(mpAppliedPickCount);
       mpAppliedPickCount = picks.length;
-      // ★ 抽選で負けてハズレ指名になった場合など、needsPickがtrueのまま維持される
-      //   （true→trueで変化がない）ことがあり、mpGuestApplyTurn側のfalse→true検知だけでは
-      //   送信済みフラグが解除されないケースが起きる。指名が1件でも確定した後は、
-      //   毎回ここで送信済みフラグを解除しておく（needsPick自体はこの後のmpGuestApplyTurnが
-      //   正しく判定するので、まだ自分の番でなければ「待機中」表示のまま変わらない）。
-      mpSubmittedThisCycle = false;
+      mpDrainGuestPickQueue(newEntries);
+    }
+
+    // ★ ウェーバー中、相手（ホスト）の指名が届いたときも、ホスト側が見ているのと
+    //   同じアナウンス画面（announceWaiverPick）を一瞬挟んでから反映する。以前は
+    //   ゲスト側だけこの演出がなく無音で指名ボードが更新されるだけだったため、
+    //   「ホストが指名してもゲストにアナウンスが流れない」という指摘を受けて追加した。
+    //   自分自身の指名はもう分かっているのでアナウンスは挟まない。
+    function mpDrainGuestPickQueue(entries) {
+      if (entries.length === 0) {
+        // ★ 抽選で負けてハズレ指名になった場合など、needsPickがtrueのまま維持される
+        //   （true→trueで変化がない）ことがあり、mpGuestApplyTurn側のfalse→true検知だけでは
+        //   送信済みフラグが解除されないケースが起きる。指名が1件でも確定した後は、
+        //   毎回ここで送信済みフラグを解除しておく（needsPick自体はこの後のmpGuestApplyTurnが
+        //   正しく判定するので、まだ自分の番でなければ「待機中」表示のまま変わらない）。
+        mpSubmittedThisCycle = false;
+        return;
+      }
+      const [entry, ...rest] = entries;
+      const team = teams.find(t => t.id === entry.slotIndex);
+      const player = availablePlayers.find(p => p.id === entry.playerId) || initialDatabase.find(p => p.id === entry.playerId);
+      if (!team || !player) { mpDrainGuestPickQueue(rest); return; }
+
+      commitPick(team, player);
+
+      const isOpponentPick = entry.slotIndex !== mpMySlotIndex;
+      if (isOpponentPick && waiverAnnounce && isWaiverRound(entry.round)) {
+        announceWaiverPick(team, player, () => mpDrainGuestPickQueue(rest));
+      } else {
+        mpDrainGuestPickQueue(rest);
+      }
     }
 
     // ★ ゲスト側：ホストが配信したturn状態（何巡目か／どの枠が指名待ちか）を
