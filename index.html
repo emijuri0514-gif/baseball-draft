@@ -3626,11 +3626,13 @@
       mpDrainGuestPickQueue(newEntries);
     }
 
-    // ★ ウェーバー中、相手（ホスト）の指名が届いたときも、ホスト側が見ているのと
-    //   同じアナウンス画面（announceWaiverPick）を一瞬挟んでから反映する。以前は
-    //   ゲスト側だけこの演出がなく無音で指名ボードが更新されるだけだったため、
-    //   「ホストが指名してもゲストにアナウンスが流れない」という指摘を受けて追加した。
-    //   自分自身の指名はもう分かっているのでアナウンスは挟まない。
+    // ★ 指名が届くたびに、ホスト側が見ているのと同じアナウンス画面
+    //   （announceWaiverPick）を一瞬挟んでから反映する。以前は相手の指名だけを
+    //   対象にしていたが、対人戦では「送信済み」表示のあと自分の指名が本当に
+    //   通ったのかを確認する手段がなく分かりにくいという指摘を受けて、
+    //   自分自身の指名もアナウンスするようにした（単独プレイでは自分の指名に
+    //   アナウンスを出さないのが元の挙動だが、対人戦は送信〜確定の間にタイムラグが
+    //   あるぶん、ゲスト側には確定の合図があった方が親切だと判断した）。
     function mpDrainGuestPickQueue(entries) {
       if (entries.length === 0) {
         // ★ 抽選で負けてハズレ指名になった場合など、needsPickがtrueのまま維持される
@@ -3654,8 +3656,7 @@
       const alreadyShownViaLottery = entry.playerId === mpLastAnnouncedViaLottery;
       if (alreadyShownViaLottery) mpLastAnnouncedViaLottery = null;
 
-      const isOpponentPick = entry.slotIndex !== mpMySlotIndex;
-      if (isOpponentPick && waiverAnnounce && !alreadyShownViaLottery) {
+      if (waiverAnnounce && !alreadyShownViaLottery) {
         announceWaiverPick(team, player, () => mpDrainGuestPickQueue(rest));
       } else {
         mpDrainGuestPickQueue(rest);
