@@ -1990,6 +1990,7 @@
     let mpMyLotteryChoice = null;        // このブラウザの利用者が選んだ封筒番号
     let mpLotteryOpponentChoice = null;  // ホスト側のみ使用：ゲストから届いた封筒選択
     let mpLotteryRevealTriggered = false; // 現在のキーについて開票済みか（ホスト/ゲスト共通ガード）
+    let mpLastAnnouncedViaLottery = null;  // ゲスト側：抽選の開票演出ですでに見せたplayerId（重複アナウンス防止）
 
     const DRAFT_MODE_DESC = {
       npb: "実際のNPBに近い形式。1巡目だけ全球団が同時に入札し、競合したら抽選。2巡目からは順番指名（スネーク方式）になります。",
@@ -2545,7 +2546,7 @@
     // ウェーバー中、AIの指名結果を1件だけリヴィール画面で短く表示してから次に進む
     function announceWaiverPick(team, player, callback) {
       document.getElementById('reveal-round').textContent = currentRound;
-      document.getElementById('reveal-mode-label').textContent = 'ウェーバー指名';
+      document.getElementById('reveal-mode-label').textContent = isWaiverRound(currentRound) ? 'ウェーバー指名' : '選択希望選手';
       document.getElementById('reveal-status').textContent = '';
       document.getElementById('reveal-cards-container').innerHTML = `
         <div class="w-40 md:w-52 shadow-2xl rounded-lg overflow-hidden">
@@ -3191,6 +3192,7 @@
       mpAwaitingSlot = null; mpAwaitingCallback = null; mpPendingRemotePick = null;
       mpAppliedPickCount = 0; mpSubmittedThisCycle = false;
       mpCurrentLotteryKey = null; mpMyLotteryChoice = null; mpLotteryOpponentChoice = null; mpLotteryRevealTriggered = false;
+      mpLastAnnouncedViaLottery = null;
     }
 
     window.openMpLobby = function() {
@@ -3556,6 +3558,8 @@
         if (env) env.classList.add('open');
       }
 
+      mpLastAnnouncedViaLottery = player.id;
+
       setTimeout(() => {
         const msg = winnerTeam.isUser
           ? `🎉 見事引き当てました！\n${player.name} を獲得！`
@@ -3619,8 +3623,14 @@
 
       commitPick(team, player);
 
+      // ★ 抽選で確定した指名は、すでにmpGuestRevealLottery()の開票演出で
+      //   「相手が◯◯を獲得しました」と見せているので、ここで二重にアナウンスしない
+      //   （mpLastAnnouncedViaLotteryは開票演出のときにセットし、ここで一度だけ消費する）。
+      const alreadyShownViaLottery = entry.playerId === mpLastAnnouncedViaLottery;
+      if (alreadyShownViaLottery) mpLastAnnouncedViaLottery = null;
+
       const isOpponentPick = entry.slotIndex !== mpMySlotIndex;
-      if (isOpponentPick && waiverAnnounce && isWaiverRound(entry.round)) {
+      if (isOpponentPick && waiverAnnounce && !alreadyShownViaLottery) {
         announceWaiverPick(team, player, () => mpDrainGuestPickQueue(rest));
       } else {
         mpDrainGuestPickQueue(rest);
