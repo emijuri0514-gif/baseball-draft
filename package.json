@@ -1,0 +1,14 @@
+{
+  "name": "baseball-draft",
+  "private": true,
+  "version": "0.1.0",
+  "description": "NPBドラフト会議シミュレーション(静的サイト本体)＋野球くじ(β)の運用スクリプト",
+  "type": "module",
+  "scripts": {
+    "lottery:seed-games": "node scripts/lottery-seed-games.mjs",
+    "lottery:set-admin": "node scripts/lottery-set-admin-claim.mjs"
+  },
+  "devDependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

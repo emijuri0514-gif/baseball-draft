@@ -8,6 +8,11 @@ GitHub Pagesでそのまま公開している。主なファイル:
 - `players.html` — 選手名鑑（`index.html`の`initialDatabase`をfetchして表示するため、選手データはここには複製しない）
 - `changelog.html` — 更新履歴
 - `devblog.html` — 開発ブログ（連載形式）
+- `lottery.html` / `lottery-big.html` / `lottery-shop.html` — 「野球くじ(β)」機能（予想くじ・非予想系ロトくじ・ポイント交換ショップ）。
+  ドラフト本体とは別のFirebaseプロジェクトを使っており、`js/lottery-core.mjs` / `js/big-lottery-core.mjs` / `js/shop-items.mjs` に
+  シミュレーション・オッズ計算・配当ロジックを純粋関数として分離している（元は`baseball-lottery-game`という別リポジトリで
+  試作したものを、見た目とナビゲーションだけこのサイトに合わせて移植した）。ドラフト側のマルチプレイ機能（`rooms`コレクション）とは
+  完全に独立しており、認証方式も異なる（ドラフト側はlocalStorageのclientId、くじ側はFirebase Anonymous Auth）。
 
 ## 更新のたびに必ずやること
 
