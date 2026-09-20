@@ -1359,6 +1359,7 @@
           <div id="tab-all" class="tab-btn active" onclick="switchTab('all')">全選手</div>
           <div id="tab-fav" class="tab-btn flex items-center" onclick="switchTab('fav')"><span class="text-yellow-500 mr-1">★</span>リスト</div>
           <button onclick="window.toggleAnnounce()" class="announce-toggle-btn ml-auto mb-1 text-[10px] font-bold bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded-full whitespace-nowrap">🔊 アナウンス</button>
+          <button id="mp-resync-btn" onclick="window.mpForceResync()" class="hidden ml-2 mb-1 text-[10px] font-bold bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded-full whitespace-nowrap">🔄 同期し直す</button>
         </div>
         <div class="p-2 bg-gray-900">
           <div id="turn-bar" class="hidden"></div>
@@ -3193,7 +3194,29 @@
       mpAppliedPickCount = 0; mpSubmittedThisCycle = false;
       mpCurrentLotteryKey = null; mpMyLotteryChoice = null; mpLotteryOpponentChoice = null; mpLotteryRevealTriggered = false;
       mpLastAnnouncedViaLottery = null;
+      const resyncBtn = document.getElementById('mp-resync-btn');
+      if (resyncBtn) resyncBtn.classList.add('hidden');
     }
+
+    // ★ 対人戦の保険：何らかの理由（実機の回線状況やブラウザのバックグラウンド制限など、
+    //   この開発環境からは再現・検証できない要因）でリアルタイム同期が止まってしまった
+    //   場合に備え、Firestoreの最新状態を手動で1回だけ取り直して再適用できるようにする。
+    //   mpOnRoomUpdate()は何度呼んでも安全（picksログ等は差分だけ適用する作り）なので、
+    //   ここから直接呼び出すだけでよい。
+    window.mpForceResync = async function() {
+      if (!mpRoomId || !window.MP) return;
+      try {
+        const snap = await window.MP.getDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId));
+        if (snap.exists()) {
+          mpOnRoomUpdate(snap.data());
+          showAppAlert('最新の状態に同期しました。');
+        } else {
+          showAppAlert('ルーム情報が見つかりませんでした。');
+        }
+      } catch (e) {
+        showAppAlert('同期に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+      }
+    };
 
     window.openMpLobby = function() {
       const teamOptions = document.getElementById('user-team').innerHTML;
@@ -3322,6 +3345,8 @@
       userHadSRankThisRun = false;
       availablePlayers = [...initialDatabase];
       favoriteIds = [];
+      const resyncBtn = document.getElementById('mp-resync-btn');
+      if (resyncBtn) resyncBtn.classList.remove('hidden');
 
       const humanNames = data.slots.filter(s => s.control === 'human').map(s => s.teamName);
       let aiPool = shuffleArray(ALL_TEAMS.filter(t => !humanNames.includes(t)));
