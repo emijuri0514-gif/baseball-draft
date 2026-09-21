@@ -173,7 +173,7 @@
         return;
       }
       currentUid = user.uid;
-      const tokenResult = await user.getIdTokenResult();
+      const tokenResult = await user.getIdTokenResult(true); // force refresh: admin custom claimは新しいトークンでないと反映されないため
       isAdminUser = tokenResult.claims.admin === true;
       el('admin-section').classList.toggle('hidden', !isAdminUser);
 
