@@ -305,6 +305,18 @@
       wrap.innerHTML = games.map((g) => renderGameCard(g)).join('');
     }
 
+    function renderStartersBlock(game) {
+      if (!game.starters) return '';
+      const { home: hs, away: as } = game.starters;
+      const line = (s) => s ? `${s.name}${s.record ? `<span class="text-gray-500">(${s.record})</span>` : ''}` : '未発表';
+      return `<div class="text-[11px] text-gray-400 flex flex-wrap items-center gap-x-1.5 mb-3">
+        <span class="text-gray-500">予告先発:</span>
+        <span>${line(hs)}</span>
+        <span class="text-gray-600">-</span>
+        <span>${line(as)}</span>
+      </div>`;
+    }
+
     function renderGameCard(game) {
       const home = getTeam(game.home_team_id);
       const away = getTeam(game.away_team_id);
@@ -392,6 +404,7 @@
           <span class="text-xs text-gray-500">${dateLabel}〜</span>
         </div>
         <h3 class="font-bold text-sm mb-3">${home.team_name} <span class="text-gray-500">vs</span> ${away.team_name}</h3>
+        ${renderStartersBlock(game)}
         ${resultBlock}
         ${myBetBlock}
         ${aiBlock}
