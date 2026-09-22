@@ -358,7 +358,7 @@
           submitBtn.disabled = true;
           try {
             await buyTickets(draw, qty);
-            shareOnX(`🎰ベースボールロトで${qty}口購入しました!今回は全${n}試合的中なるか!?`);
+            showBanner(`${qty}口購入しました。結果は「あなたのチケット」欄で確認できます。`);
           } catch (err) {
             errorEl.textContent = err.message;
             errorEl.classList.remove('hidden');

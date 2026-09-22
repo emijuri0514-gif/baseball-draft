@@ -385,7 +385,7 @@
                  <span>アンダー ${game.market.totalLine}</span><b class="text-amber-400">${game.market.underOdds}倍</b>
                </label>
              </div>
-             <p class="text-[11px] text-gray-500">「勝利チーム」「合計得点」のどちらか1つを選んで予想します(1試合につき1回のみ)。</p>
+             <p class="text-[11px] text-gray-500">「勝利チーム」「合計得点」のどちらか1つを選んで予想します(1試合につき1回のみ)。オーバー/アンダーは、両チームの合計得点が${game.market.totalLine}点を<b class="text-gray-400">上回るか(オーバー)・下回るか(アンダー)</b>を予想するもので、勝ち負けとは関係ありません。</p>
              <div class="flex items-center gap-2">
                <input type="number" min="1" step="1" placeholder="賭けポイント" required
                       class="wager-input w-28 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm" />
