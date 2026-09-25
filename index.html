@@ -2186,10 +2186,25 @@
       const w = ORDER_WEIGHTS[order], s = p.fStats;
       return s.meet*w.meet + s.pow*w.pow + s.run*w.run + s.def*w.def;
     }
-    // その選手の素の平均に対して、その打順がどれだけ「活きる」か
+    // ★ 比較基準（avg）を「4項目を均等に25%ずつ」から「9打順の重み平均」に変更。
+    // 守備力は8番（def:.40）だけが極端に重く見る特殊枠で、9打順平均では実質12%程度
+    // しか効いていない。均等25%のままだと、守備型の選手（例：田中幹也・吉川尚輝の
+    // ような堅守の二塁手）は守備力の高さで基準の平均点自体が底上げされてしまい、
+    // 守備をほぼ見ない2番（def:.07）のような打順では「平均より活きていない」と
+    // 誤判定され、実際にも起用される打順なのに▲・✕が付いていた。9打順の重み平均を
+    // 基準にすることで、各能力がその選手の適性判定にどれだけ効くかを打順側の
+    // 重み付けと整合させた。
+    const ORDER_WEIGHT_AVG = (() => {
+      const list = Object.values(ORDER_WEIGHTS);
+      const sum = { meet: 0, pow: 0, run: 0, def: 0 };
+      list.forEach(w => { sum.meet += w.meet; sum.pow += w.pow; sum.run += w.run; sum.def += w.def; });
+      return { meet: sum.meet / list.length, pow: sum.pow / list.length, run: sum.run / list.length, def: sum.def / list.length };
+    })();
+    // その選手の「9打順平均でどれだけ活きるか」に対して、その打順がどれだけ「活きる」か
     function getOrderDiff(p, order) {
       if (!p || !p.fStats) return 0;
-      const avg = (p.fStats.meet + p.fStats.pow + p.fStats.run + p.fStats.def) / 4;
+      const w = ORDER_WEIGHT_AVG, s = p.fStats;
+      const avg = s.meet*w.meet + s.pow*w.pow + s.run*w.run + s.def*w.def;
       return getOrderFit(p, order) - avg;
     }
     // ★ しきい値：以前は4.5/1.5/-1.5/-4.5で、パワーが平均よりやや低いだけの
@@ -4116,9 +4131,13 @@
               const diff = getOrderDiff(p, oi);
               orderDiffs.push(diff);
               const om = orderMark(diff);
-              const dm = posMark(getPosScore(p, document.getElementById(`pos-b${oi}`).value));
-              badge = `<span class="ml-1 text-[10px] ${om.cls} font-black" title="${ORDER_WEIGHTS[oi].label}">打${om.mark}</span>` +
-                      `<span class="ml-0.5 text-[10px] ${dm.cls} font-black">守${dm.mark}</span>`;
+              const posValue = document.getElementById(`pos-b${oi}`).value;
+              badge = `<span class="ml-1 text-[10px] ${om.cls} font-black" title="${ORDER_WEIGHTS[oi].label}">打${om.mark}</span>`;
+              // ★ DHは守備に就かないので、守備適性バッジは表示しない
+              if (posValue !== "DH") {
+                const dm = posMark(getPosScore(p, posValue));
+                badge += `<span class="ml-0.5 text-[10px] ${dm.cls} font-black">守${dm.mark}</span>`;
+              }
             }
             slot.innerHTML = `<div class="bg-green-100 w-full h-full rounded flex items-center justify-center font-bold text-[10px] md:text-sm border border-green-500 text-green-900 truncate px-1 cursor-grab" draggable="true"><span class="truncate">${shortenForeignName(p.name)}</span>${badge}</div>`;
             slot.dataset.filled = "true";
