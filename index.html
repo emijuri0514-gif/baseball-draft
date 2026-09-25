@@ -1612,6 +1612,7 @@
   <!-- 画面5b: プレーオフ -->
   <div id="screen-playoff" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
     <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-4 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 プレーオフ</h2>
+    <div id="playoff-standings-note" class="w-full max-w-md mb-4"></div>
     <div id="playoff-bracket" class="w-full max-w-md space-y-4 mb-4"></div>
     <div id="playoff-next-panel" class="w-full max-w-md bg-gray-800 rounded-lg p-4 shadow-xl border border-gray-700 mb-10"></div>
   </div>
@@ -5439,6 +5440,8 @@
 
     window.startPlayoff = function() {
       playoffState = buildPlayoffBracket();
+      const standingsNote = document.getElementById('playoff-standings-note');
+      if (standingsNote) { standingsNote.dataset.rendered = ""; standingsNote.innerHTML = ""; }
       renderPlayoffScreen();
       showScreen('screen-playoff');
     };
@@ -5462,6 +5465,31 @@
     }
 
     function renderPlayoffScreen() {
+      // ★ 参加球団が9〜12（プレーオフは最大8球団のフラットな8強トーナメント固定）の場合、
+      // buildPlayoffBracket()は上位8球団だけでブラケットを組み、9位以下は静かに除外される。
+      // 何の説明もないと「なぜ自分の球団がいないのか」が分からないため、最初の描画時だけ
+      // 全球団の最終順位と、上位何球団までがプレーオフに進出したかを明示する。
+      const standingsNote = document.getElementById('playoff-standings-note');
+      if (standingsNote && !standingsNote.dataset.rendered) {
+        const seeded = playoffState.seeded;
+        const advanceCount = Math.min(seeded.length, 8);
+        if (seeded.length > advanceCount) {
+          standingsNote.innerHTML = `
+            <div class="bg-gray-800 border border-yellow-600/40 rounded-lg p-3 text-xs">
+              <p class="text-yellow-400 font-black mb-2">📋 レギュラーシーズン成績（AI採点）順位</p>
+              <p class="text-gray-400 mb-2">プレーオフに進出できるのは上位${advanceCount}球団まで。${advanceCount + 1}位以下は予選落ちです。</p>
+              <ol class="space-y-1">
+                ${seeded.map((t, i) => `
+                  <li class="flex items-center justify-between ${i < advanceCount ? '' : 'opacity-40'}">
+                    <span>${i + 1}位　${t.name.replace('(AI)', '')}${t.isUser ? ' 👤' : ''}</span>
+                    <span>${t.finalScore}pt${i < advanceCount ? '' : '　<span class="text-red-400 font-bold">予選落ち</span>'}</span>
+                  </li>`).join('')}
+              </ol>
+            </div>`;
+        }
+        standingsNote.dataset.rendered = "true";
+      }
+
       const bracket = document.getElementById('playoff-bracket');
       let html = '';
       playoffState.rounds.forEach(round => {
