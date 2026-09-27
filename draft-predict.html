@@ -75,8 +75,15 @@
       </p>
     </section>
 
+    <div class="bg-gray-800 border-2 border-yellow-500 rounded-lg py-4 px-4 text-center">
+      <p id="countdown-label" class="text-xs text-gray-400 mb-1"></p>
+      <p id="countdown-days" class="text-3xl md:text-4xl font-black text-yellow-400"></p>
+      <p id="countdown-note" class="text-[11px] text-gray-500 mt-1 hidden">※開催日はまだ正式発表されていないため、例年の傾向（10月第4木曜開催）から算出した暫定日です</p>
+    </div>
+
     <section>
       <div id="predict-status" class="text-xs text-gray-400 text-center mb-3"></div>
+      <div id="predict-revisit-note" class="hidden-screen bg-yellow-500/10 border border-yellow-500 text-yellow-300 text-xs rounded-lg px-3 py-2 text-center mb-3">🔔 答え合わせは10月22日の指名発表後に公開します。またこのページに来てくださいね。</div>
       <div id="predict-list" class="space-y-2"></div>
       <div id="predict-loading" class="text-center text-sm text-gray-400 py-6">候補選手データを読み込み中...</div>
       <div id="predict-error" class="hidden-screen text-center text-sm text-red-400 py-6">候補選手データの読み込みに失敗しました。時間をおいて再度お試しください。</div>
@@ -182,11 +189,14 @@
     function updateStatus() {
       const saved = loadPrediction();
       const el = document.getElementById('predict-status');
+      const revisitNote = document.getElementById('predict-revisit-note');
       if (saved && saved.savedAt) {
         const d = new Date(saved.savedAt);
         el.textContent = `前回保存：${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        revisitNote.classList.remove('hidden-screen');
       } else {
         el.textContent = 'まだ予想は保存されていません';
+        revisitNote.classList.add('hidden-screen');
       }
     }
 
@@ -213,7 +223,7 @@
       updateStatus();
       const el = document.getElementById('predict-status');
       el.textContent = `保存しました（${count}/12球団）`;
-      if (typeof gtag === 'function') gtag('event', 'draft_predict_save', { team_count: count });
+      if (typeof gtag === 'function') gtag('event', 'predict_save', { team_count: count });
     };
 
     window.resetPrediction = function() {
@@ -317,7 +327,7 @@
       ctx.textAlign = 'center';
       ctx.font = 'bold 18px sans-serif';
       ctx.fillStyle = '#64748b';
-      ctx.fillText('⚾ dreamteam9.com｜NPBドラフトAIシミュレーター', W / 2, H - 22);
+      ctx.fillText('⚾ dreamteam9.com｜#ドラフト予想', W / 2, H - 22);
 
       return canvas;
     }
@@ -353,6 +363,7 @@
       document.getElementById('share-preview-img').src = dataUrl;
       document.getElementById('share-download-btn').onclick = () => {
         downloadCanvasImage(dataUrl, `draft_predict_2026_${format}.png`);
+        if (typeof gtag === 'function') gtag('event', 'predict_share', { method: 'image_save', format });
       };
       document.querySelectorAll('.share-format-btn').forEach(btn => {
         btn.classList.toggle('bg-blue-600', btn.dataset.format === format);
@@ -381,13 +392,48 @@
     };
 
     window.openPredictionXShare = function() {
-      if (typeof gtag === 'function') gtag('event', 'share_click', { method: 'x_share', content: 'draft-predict' });
+      if (typeof gtag === 'function') {
+        gtag('event', 'share_click', { method: 'x_share', content: 'draft-predict' });
+        gtag('event', 'predict_share', { method: 'x_share' });
+      }
       const params = new URLSearchParams({
         url: 'https://dreamteam9.com/draft-predict.html',
-        hashtags: 'NPBドラフト会議2026,1位指名予想'
+        hashtags: 'ドラフト予想,NPBドラフト会議2026'
       });
       window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
     };
+
+    // ドラフト開催日カウントダウン：draft-watch.html・draft-2026.html・index.html内の
+    // 同名ロジックと全く同じ計算式（複製）。開催日を更新する際は4箇所すべてに追記すること。
+    const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
+
+    function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
+      const first = new Date(year, monthIndex, 1);
+      const offset = (weekday - first.getDay() + 7) % 7;
+      return new Date(year, monthIndex, 1 + offset + (n - 1) * 7);
+    }
+
+    function getDraftDate(year) {
+      if (KNOWN_DRAFT_DATES[year]) return new Date(KNOWN_DRAFT_DATES[year]);
+      return nthWeekdayOfMonth(year, 9, 4, 4); // 10月・木曜(4)・第4週
+    }
+
+    function renderDraftCountdown() {
+      const today = new Date();
+      const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      let year = today.getFullYear();
+      let draftDate = getDraftDate(year);
+      if (todayMid > draftDate) {
+        year += 1;
+        draftDate = getDraftDate(year);
+      }
+      const diffDays = Math.round((draftDate - todayMid) / 86400000);
+      document.getElementById('countdown-label').textContent = `${year}年のドラフト会議まで`;
+      document.getElementById('countdown-days').textContent = diffDays === 0 ? '本日開催！' : `あと${diffDays}日`;
+      document.getElementById('countdown-note').classList.toggle('hidden', !!KNOWN_DRAFT_DATES[year]);
+    }
+
+    renderDraftCountdown();
   </script>
 </body>
 </html>
