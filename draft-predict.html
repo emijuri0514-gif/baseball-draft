@@ -95,9 +95,27 @@
       <button onclick="window.resetPrediction()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full">🗑️ リセット</button>
     </div>
 
+    <!-- ★ 答え合わせセクション：data/draft-2026-results.jsonが存在しない間はhidden-screenのまま。
+         取得に成功した時だけJS側でhidden-screenを外して表示する（T2-1事前準備） -->
+    <section id="answer-check-section" class="hidden-screen">
+      <div class="bg-gray-800 border-2 border-green-500 rounded-lg p-4">
+        <h3 class="text-lg font-black text-green-400 mb-1">🎯 答え合わせ結果</h3>
+        <p id="answer-check-updated" class="text-[11px] text-gray-500 mb-3"></p>
+        <div id="answer-check-list" class="space-y-1.5 text-sm mb-4"></div>
+        <div class="text-center">
+          <p id="answer-check-score" class="text-2xl font-black text-yellow-400"></p>
+          <p id="answer-check-title" class="text-sm font-bold text-yellow-300 mt-1"></p>
+        </div>
+        <div class="text-center mt-4">
+          <button onclick="window.openAnswerCheckShare()" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 px-6 rounded-full text-sm shadow">📤 答え合わせ結果をシェアする</button>
+        </div>
+        <p class="text-[11px] text-gray-500 mt-3 leading-relaxed">※ 的中判定は「実際に1位で指名された選手名」と予想の完全一致で行っています。競合の末に外れた球団は、外れ1位の選手ではなく最初に指名した（くじを引いた）選手との一致で判定しています。</p>
+      </div>
+    </section>
+
     <section class="bg-gray-800 rounded-lg p-4 text-xs text-gray-400 leading-relaxed">
       <p>※ 予想は保存ボタンを押すとこの端末のブラウザ（localStorage）だけに保存されます。他の端末には引き継がれません。ブラウザのデータを消去すると予想も消えます。</p>
-      <p class="mt-1">※ ドラフト当日以降、実際の指名結果との答え合わせ機能を追加予定です。それまで保存した予想はそのまま残ります。</p>
+      <p class="mt-1">※ 答え合わせは、ドラフト会議の指名結果が入力され次第このページに表示されます。</p>
     </section>
 
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
@@ -224,12 +242,14 @@
       const el = document.getElementById('predict-status');
       el.textContent = `保存しました（${count}/12球団）`;
       if (typeof gtag === 'function') gtag('event', 'predict_save', { team_count: count });
+      if (draftResults) renderAnswerCheck();
     };
 
     window.resetPrediction = function() {
       if (!confirm('保存した予想をすべて削除しますか？')) return;
       localStorage.removeItem(STORAGE_KEY);
       renderList();
+      if (draftResults) renderAnswerCheck();
     };
 
     async function init() {
@@ -247,6 +267,159 @@
       }
     }
     init();
+
+    // ==========================================
+    // 答え合わせ（T2-1事前準備）：data/draft-2026-results.jsonが存在する場合だけ表示する。
+    // ファイルが無い（404）間はセクション自体をhidden-screenのまま何もしない。
+    // ==========================================
+    const RESULTS_URL = 'data/draft-2026-results.json';
+    let draftResults = null;
+
+    const TITLE_TIERS = [
+      { min: 12, title: '🏆 パーフェクトスカウト' },
+      { min: 9, title: '🥇 敏腕スカウト' },
+      { min: 6, title: '🥈 一人前スカウト' },
+      { min: 3, title: '🥉 駆け出しスカウト' },
+      { min: 0, title: '🔰 見習いスカウト' }
+    ];
+    function getTitleForScore(score) {
+      return TITLE_TIERS.find(t => score >= t.min).title;
+    }
+
+    async function tryLoadAnswerCheck() {
+      try {
+        const res = await fetch(RESULTS_URL);
+        if (!res.ok) return; // ファイルがまだ無い(404) → 何もせず非表示のまま
+        draftResults = await res.json();
+        renderAnswerCheck();
+      } catch (e) {
+        // 取得失敗時も非表示のままにする
+      }
+    }
+    tryLoadAnswerCheck();
+
+    function computeAnswerCheckRows() {
+      const saved = loadPrediction();
+      const predicted = (saved && saved.picks) || {};
+      const results = (draftResults && draftResults.picks) || {};
+      let hitCount = 0;
+      const rows = TEAMS.map(t => {
+        const p = predicted[t.name];
+        const r = results[t.name];
+        const hit = !!(r && p && r.name === p.name);
+        if (hit) hitCount++;
+        return { team: t, predicted: p, result: r, hit };
+      });
+      return { rows, hitCount };
+    }
+
+    function renderAnswerCheck() {
+      const { rows, hitCount } = computeAnswerCheckRows();
+      const list = document.getElementById('answer-check-list');
+      list.innerHTML = rows.map(({ team: t, predicted: p, result: r, hit }) => {
+        const badge = `<span class="w-16 shrink-0 text-center text-[10px] font-black rounded py-0.5 inline-block" style="background:${t.hex};color:${t.textColor};">${t.name}</span>`;
+        if (!r) {
+          return `<div class="flex items-center gap-2">${badge}<span class="text-gray-500 text-xs">結果未入力</span></div>`;
+        }
+        const compete = (r.competedWith && r.competedWith.length)
+          ? `<span class="text-[10px] text-gray-500">（${r.competedWith.join('・')}と競合、抽選${r.lottery === 'won' ? '勝利' : '敗退'}）</span>`
+          : '';
+        const fallback = (r.lottery === 'lost' && r.fallback)
+          ? `<span class="text-[10px] text-gray-500">→外れ1位:${r.fallback.name}</span>`
+          : '';
+        const predictedText = p ? `<span class="text-[10px] text-gray-500 ml-auto shrink-0">予想:${p.name}</span>` : '';
+        return `
+          <div class="flex items-center gap-2 flex-wrap">
+            ${badge}
+            <span class="${hit ? 'text-green-400 font-bold' : 'text-gray-300'}">${hit ? '✅' : '❌'} ${r.name}</span>
+            ${compete}${fallback}${predictedText}
+          </div>`;
+      }).join('');
+
+      document.getElementById('answer-check-score').textContent = `${hitCount} / 12 的中`;
+      document.getElementById('answer-check-title').textContent = getTitleForScore(hitCount);
+      if (draftResults && draftResults.updatedAt) {
+        const d = new Date(draftResults.updatedAt);
+        document.getElementById('answer-check-updated').textContent = `最終更新：${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      }
+      document.getElementById('answer-check-section').classList.remove('hidden-screen');
+    }
+
+    function buildAnswerCheckCardCanvas(format) {
+      const { rows, hitCount } = computeAnswerCheckRows();
+      const W = format === 'story' ? 1080 : 1200;
+      const H = format === 'story' ? 1920 : 675;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      const bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#0f172a');
+      bg.addColorStop(1, '#1e293b');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#facc15';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText('⚾ 2026年ドラフト会議 1位指名 答え合わせ', W / 2, format === 'story' ? 70 : 45);
+      ctx.fillStyle = '#4ade80';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText(`${hitCount} / 12 的中`, W / 2, format === 'story' ? 130 : 90);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(getTitleForScore(hitCount), W / 2, format === 'story' ? 170 : 120);
+
+      const cols = format === 'story' ? 1 : 2;
+      const gridTop = format === 'story' ? 210 : 155;
+      const gridBottom = H - 60;
+      const rowH = (gridBottom - gridTop) / Math.ceil(12 / cols);
+      const colW = (W - 80) / cols;
+
+      rows.forEach(({ team: t, result: r, hit }, i) => {
+        const col = Math.floor(i / Math.ceil(12 / cols));
+        const row = i % Math.ceil(12 / cols);
+        const x = 40 + col * colW;
+        const y = gridTop + row * rowH;
+
+        const badgeW = 106;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = t.hex;
+        ctx.beginPath();
+        ctx.roundRect(x, y, badgeW, 36, 8);
+        ctx.fill();
+        ctx.fillStyle = t.textColor;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        let teamFontSize = 18;
+        ctx.font = `bold ${teamFontSize}px sans-serif`;
+        while (ctx.measureText(t.name).width > badgeW - 12 && teamFontSize > 11) {
+          teamFontSize -= 1;
+          ctx.font = `bold ${teamFontSize}px sans-serif`;
+        }
+        ctx.fillText(t.name, x + badgeW / 2, y + 19);
+
+        const textX = x + badgeW + 14;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = r ? (hit ? '#4ade80' : '#e2e8f0') : '#64748b';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillText(r ? `${hit ? '✅' : '❌'} ${r.name}` : '結果未入力', textX, y + 19);
+        ctx.textBaseline = 'alphabetic';
+      });
+
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('⚾ dreamteam9.com｜#ドラフト予想', W / 2, H - 22);
+
+      return canvas;
+    }
+
+    window.openAnswerCheckShare = function() {
+      shareKind = 'answercheck';
+      renderShareByKind('x');
+      document.getElementById('share-modal').classList.remove('hidden-screen');
+    };
 
     // ==========================================
     // シェアカード（index.htmlの結果シェアカードと同じ紺グラデーション＋
@@ -356,19 +529,30 @@
     }
 
     let lastPredictionPicks = null;
+    // ★ シェアモーダルは「予想カード」と「答え合わせカード」の両方で共用するため、
+    // どちらを表示中かをshareKindで管理し、フォーマット切り替えボタンは共通のディスパッチャから
+    // 該当するcanvas生成関数を呼び分ける（T2-1事前準備で答え合わせシェアを追加した際に一般化した）。
+    let shareKind = null; // 'prediction' | 'answercheck'
 
-    function renderPredictionShare(format) {
-      const canvas = buildPredictionCardCanvas(lastPredictionPicks, format);
+    function applyShareResult(canvas, filenamePrefix, format, gtagEventName) {
       const dataUrl = canvas.toDataURL('image/png');
       document.getElementById('share-preview-img').src = dataUrl;
       document.getElementById('share-download-btn').onclick = () => {
-        downloadCanvasImage(dataUrl, `draft_predict_2026_${format}.png`);
-        if (typeof gtag === 'function') gtag('event', 'predict_share', { method: 'image_save', format });
+        downloadCanvasImage(dataUrl, `${filenamePrefix}_${format}.png`);
+        if (typeof gtag === 'function') gtag('event', gtagEventName, { method: 'image_save', format });
       };
       document.querySelectorAll('.share-format-btn').forEach(btn => {
         btn.classList.toggle('bg-blue-600', btn.dataset.format === format);
         btn.classList.toggle('bg-gray-700', btn.dataset.format !== format);
       });
+    }
+
+    function renderShareByKind(format) {
+      if (shareKind === 'prediction') {
+        applyShareResult(buildPredictionCardCanvas(lastPredictionPicks, format), 'draft_predict_2026', format, 'predict_share');
+      } else if (shareKind === 'answercheck') {
+        applyShareResult(buildAnswerCheckCardCanvas(format), 'draft_answercheck_2026', format, 'answercheck_share');
+      }
     }
 
     window.openPredictionShare = function() {
@@ -378,13 +562,13 @@
         return;
       }
       lastPredictionPicks = picks;
-      renderPredictionShare('x');
+      shareKind = 'prediction';
+      renderShareByKind('x');
       document.getElementById('share-modal').classList.remove('hidden-screen');
     };
 
     window.setPredictionShareFormat = function(format) {
-      if (!lastPredictionPicks) return;
-      renderPredictionShare(format);
+      renderShareByKind(format);
     };
 
     window.hidePredictionShare = function() {
@@ -392,13 +576,14 @@
     };
 
     window.openPredictionXShare = function() {
+      const isAnswerCheck = shareKind === 'answercheck';
       if (typeof gtag === 'function') {
         gtag('event', 'share_click', { method: 'x_share', content: 'draft-predict' });
-        gtag('event', 'predict_share', { method: 'x_share' });
+        gtag('event', isAnswerCheck ? 'answercheck_share' : 'predict_share', { method: 'x_share' });
       }
       const params = new URLSearchParams({
         url: 'https://dreamteam9.com/draft-predict.html',
-        hashtags: 'ドラフト予想,NPBドラフト会議2026'
+        hashtags: isAnswerCheck ? 'ドラフト予想,答え合わせ,NPBドラフト会議2026' : 'ドラフト予想,NPBドラフト会議2026'
       });
       window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
     };
