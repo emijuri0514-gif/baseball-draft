@@ -305,3 +305,7 @@
   3. A1+T3-1 結果画面の月別/球団別CTA枠（`cta-config.json`、cta_clickイベント）
   4. T2-1 答え合わせ機能の事前準備（`docs/DRAFT_RESULTS_JSON_SPEC.md`、結果ファイルの有無で表示切替、称号・シェア画像）
   次はオーナーからのCSV（T0-1）・候補選手追加（T1-1）・結果ファイル入力（T2-1、10/22夜）待ち。
+- 2026-09-27: 候補選手109人分をCSVから反映（IDは既存分を保持）。答え合わせ判定を正規化＋2段階化
+  （🎯1位入札的中／🏆交渉権獲得的中）し、結果JSON検証スクリプト（`scripts/validate-draft-results.mjs`）と
+  当日手順書（`docs/DRAFT_DAY_RUNBOOK.md`）を追加。星野世那・高義博のposを確定（空欄0人）。
+  draft-predict.html・postseason-broadcast.htmlに専用OGP画像（1200×630）を設定。
