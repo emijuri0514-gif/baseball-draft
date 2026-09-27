@@ -1,11 +1,877 @@
 {
   "version": "2026-09-27",
   "players": [
-    { "id": "c001", "name": "織田翔希", "org": "横浜高", "pos": "投手" },
-    { "id": "c002", "name": "前田侑大", "org": "高岡第一高", "pos": "投手" },
-    { "id": "c003", "name": "鈴木泰成", "org": "青山学院大", "pos": "投手" },
-    { "id": "c004", "name": "渡部海", "org": "青山学院大", "pos": "捕手" },
-    { "id": "c005", "name": "藤澤涼介", "org": "東京ガス", "pos": "外野手" },
-    { "id": "c006", "name": "柴崎聖人", "org": "王子", "pos": "外野手" }
+    {
+      "id": "c007",
+      "name": "牟禮翔",
+      "org": "九州国際大付高",
+      "category": "高校",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c008",
+      "name": "菰田陽生",
+      "org": "山梨学院高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c001",
+      "name": "織田翔希",
+      "org": "横浜高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c009",
+      "name": "新城楓雅",
+      "org": "奈良大付高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c010",
+      "name": "杉本真滉",
+      "org": "智辯学園高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c002",
+      "name": "前田侑大",
+      "org": "高岡第一高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c011",
+      "name": "丹羽涼介",
+      "org": "市立和歌山高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c012",
+      "name": "末吉良丞",
+      "org": "沖縄尚学高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c013",
+      "name": "鈴木悠悟",
+      "org": "中京高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c014",
+      "name": "池田聖摩",
+      "org": "横浜高",
+      "category": "高校",
+      "pos": "内野手",
+      "featured": true
+    },
+    {
+      "id": "c015",
+      "name": "田中諒",
+      "org": "日大三高",
+      "category": "高校",
+      "pos": "内野手",
+      "featured": true
+    },
+    {
+      "id": "c016",
+      "name": "岡本翔斗",
+      "org": "香里丘高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c017",
+      "name": "福島陽奈汰",
+      "org": "東海大熊本星翔高",
+      "category": "高校",
+      "pos": "内野手",
+      "featured": true
+    },
+    {
+      "id": "c018",
+      "name": "春山陽登",
+      "org": "大商大",
+      "category": "大学",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c019",
+      "name": "黒田義信",
+      "org": "東日本国際大",
+      "category": "大学",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c020",
+      "name": "榊原七斗",
+      "org": "明大",
+      "category": "大学",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c021",
+      "name": "川尻啓人",
+      "org": "亜大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c022",
+      "name": "宮原廉",
+      "org": "近大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c023",
+      "name": "仲井慎",
+      "org": "駒大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c024",
+      "name": "渡辺和大",
+      "org": "慶大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c025",
+      "name": "松平快聖",
+      "org": "神奈川大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c003",
+      "name": "鈴木泰成",
+      "org": "青学大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c026",
+      "name": "猪俣駿太",
+      "org": "東北福祉大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c027",
+      "name": "馬場拓海",
+      "org": "日体大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c028",
+      "name": "角田楓斗",
+      "org": "富士大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c029",
+      "name": "米沢友翔",
+      "org": "関大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c030",
+      "name": "有馬伽久",
+      "org": "立命大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c031",
+      "name": "岡田啓吾",
+      "org": "明大",
+      "category": "大学",
+      "pos": "内野手",
+      "featured": true
+    },
+    {
+      "id": "c032",
+      "name": "前嶋藍",
+      "org": "亜大",
+      "category": "大学",
+      "pos": "捕手",
+      "featured": true
+    },
+    {
+      "id": "c004",
+      "name": "渡部海",
+      "org": "青学大",
+      "category": "大学",
+      "pos": "捕手",
+      "featured": true
+    },
+    {
+      "id": "c033",
+      "name": "西野啓也",
+      "org": "立命大",
+      "category": "大学",
+      "pos": "捕手",
+      "featured": true
+    },
+    {
+      "id": "c034",
+      "name": "山里宝",
+      "org": "亜大",
+      "category": "大学",
+      "pos": "内野手",
+      "featured": true
+    },
+    {
+      "id": "c035",
+      "name": "星野世那",
+      "org": "大商大",
+      "category": "大学",
+      "pos": "",
+      "featured": true
+    },
+    {
+      "id": "c006",
+      "name": "柴崎聖人",
+      "org": "王子",
+      "category": "社会人",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c036",
+      "name": "中津大和",
+      "org": "日本生命",
+      "category": "社会人",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c005",
+      "name": "藤澤涼介",
+      "org": "東京ガス",
+      "category": "社会人",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c037",
+      "name": "柿本晟弥",
+      "org": "パナソニック",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c038",
+      "name": "樋口新",
+      "org": "王子",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c039",
+      "name": "沢山優介",
+      "org": "ヤマハ",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c040",
+      "name": "杉崎成",
+      "org": "JR東日本",
+      "category": "社会人",
+      "pos": "内野手",
+      "featured": true
+    },
+    {
+      "id": "c041",
+      "name": "廣沢新太郎",
+      "org": "ハヤテ",
+      "category": "独立リーグ",
+      "pos": "外野手",
+      "featured": true
+    },
+    {
+      "id": "c042",
+      "name": "渡邉都斗",
+      "org": "高知ファイティングドッグス",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c043",
+      "name": "鎌田州真",
+      "org": "徳島インディゴソックス",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c044",
+      "name": "三浦遼大",
+      "org": "茨城アストロプラネッツ",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": true
+    },
+    {
+      "id": "c045",
+      "name": "高義博",
+      "org": "オイシックス",
+      "category": "独立リーグ",
+      "pos": "",
+      "featured": true
+    },
+    {
+      "id": "c046",
+      "name": "赤間史弥",
+      "org": "花巻東高",
+      "category": "高校",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c047",
+      "name": "一ノ瀬啓士朗",
+      "org": "嬉野高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c048",
+      "name": "吉岡貫介",
+      "org": "大阪桐蔭高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c049",
+      "name": "高部陸",
+      "org": "聖隷クリストファー高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c050",
+      "name": "三浦秀斗",
+      "org": "鵡川高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c051",
+      "name": "上田健介",
+      "org": "近江高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c052",
+      "name": "西田陽紀",
+      "org": "福井商高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c053",
+      "name": "西田櫂吏",
+      "org": "京都国際高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c054",
+      "name": "竹谷陽人",
+      "org": "鳥栖工高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c055",
+      "name": "中谷嘉希",
+      "org": "北照高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c056",
+      "name": "長山武蔵",
+      "org": "日本ウエルネス高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c057",
+      "name": "木下瑛二",
+      "org": "高川学園高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c058",
+      "name": "林晃成",
+      "org": "桐光学園高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c059",
+      "name": "古城大翔",
+      "org": "花巻東高",
+      "category": "高校",
+      "pos": "内野手",
+      "featured": false
+    },
+    {
+      "id": "c060",
+      "name": "吉岡伸太朗",
+      "org": "専大松戸高",
+      "category": "高校",
+      "pos": "捕手",
+      "featured": false
+    },
+    {
+      "id": "c061",
+      "name": "後藤幸樹",
+      "org": "沼津商高",
+      "category": "高校",
+      "pos": "捕手",
+      "featured": false
+    },
+    {
+      "id": "c062",
+      "name": "川井陵馳",
+      "org": "橿原学院高",
+      "category": "高校",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c063",
+      "name": "北添颯志",
+      "org": "高知商高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c064",
+      "name": "藤井悠貴",
+      "org": "新宮高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c065",
+      "name": "許定捷",
+      "org": "盛岡大付高",
+      "category": "高校",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c066",
+      "name": "鈴木陸翔温",
+      "org": "桐陽高",
+      "category": "高校",
+      "pos": "内野手",
+      "featured": false
+    },
+    {
+      "id": "c067",
+      "name": "池本優司",
+      "org": "岡山学芸館高",
+      "category": "高校",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c068",
+      "name": "松田琉河",
+      "org": "福岡大大濠高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c069",
+      "name": "川島謙心",
+      "org": "龍谷大平安高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c070",
+      "name": "野崎健友",
+      "org": "耐久高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c071",
+      "name": "那須英翔",
+      "org": "関西創価高",
+      "category": "高校",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c072",
+      "name": "寺尾拳聖",
+      "org": "早大",
+      "category": "大学",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c073",
+      "name": "佐藤悠太",
+      "org": "東北福祉大",
+      "category": "大学",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c074",
+      "name": "小松勇輝",
+      "org": "びわこ成蹊スポーツ大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c075",
+      "name": "佐藤幻瑛",
+      "org": "ペンシルベニア州立大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c076",
+      "name": "野原元気",
+      "org": "京産大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c077",
+      "name": "広池浩成",
+      "org": "慶大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c078",
+      "name": "高山侑大",
+      "org": "上武大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c079",
+      "name": "木口永翔",
+      "org": "上武大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c080",
+      "name": "吉川凌平",
+      "org": "千葉商大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c081",
+      "name": "的場吏玖",
+      "org": "天理大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c082",
+      "name": "米田天翼",
+      "org": "東海大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c083",
+      "name": "野村亮輔",
+      "org": "佛教大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c084",
+      "name": "光弘帆高",
+      "org": "明大",
+      "category": "大学",
+      "pos": "内野手",
+      "featured": false
+    },
+    {
+      "id": "c085",
+      "name": "福原聖矢",
+      "org": "明大",
+      "category": "大学",
+      "pos": "捕手",
+      "featured": false
+    },
+    {
+      "id": "c086",
+      "name": "佐藤夏月",
+      "org": "共栄大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c087",
+      "name": "井樫太希",
+      "org": "北海学園大",
+      "category": "大学",
+      "pos": "内野手",
+      "featured": false
+    },
+    {
+      "id": "c088",
+      "name": "山下薫輝",
+      "org": "北九州市立大",
+      "category": "大学",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c089",
+      "name": "飯山志夢",
+      "org": "ENEOS",
+      "category": "社会人",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c090",
+      "name": "宮下大地",
+      "org": "日立製作所",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c091",
+      "name": "真野凜風",
+      "org": "日本生命",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c092",
+      "name": "清川大雅",
+      "org": "三菱自動車岡崎",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c093",
+      "name": "千葉汐凱",
+      "org": "Honda",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c094",
+      "name": "藤井優矢",
+      "org": "TDK",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c095",
+      "name": "梅田健太郎",
+      "org": "ヤマハ",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c096",
+      "name": "北嶋洸太",
+      "org": "北海道ガス",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c097",
+      "name": "森煌誠",
+      "org": "NTT東日本",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c098",
+      "name": "印出太一",
+      "org": "三菱重工East",
+      "category": "社会人",
+      "pos": "捕手",
+      "featured": false
+    },
+    {
+      "id": "c099",
+      "name": "茶屋野洋輝",
+      "org": "西濃運輸",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c100",
+      "name": "樫村佳歩",
+      "org": "セガサミー",
+      "category": "社会人",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c101",
+      "name": "立花祥希",
+      "org": "セガサミー",
+      "category": "社会人",
+      "pos": "捕手",
+      "featured": false
+    },
+    {
+      "id": "c102",
+      "name": "今村龍之介",
+      "org": "ハヤテ",
+      "category": "独立リーグ",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c103",
+      "name": "上原裕樹",
+      "org": "オイシックス",
+      "category": "独立リーグ",
+      "pos": "外野手",
+      "featured": false
+    },
+    {
+      "id": "c104",
+      "name": "金韓根",
+      "org": "茨城アストロプラネッツ",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c105",
+      "name": "窪田寛之",
+      "org": "愛媛マンダリンパイレーツ",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c106",
+      "name": "佐藤友紀",
+      "org": "ハヤテ",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c107",
+      "name": "石田陵馬",
+      "org": "オイシックス",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c108",
+      "name": "伊禮海斗",
+      "org": "オイシックス",
+      "category": "独立リーグ",
+      "pos": "投手",
+      "featured": false
+    },
+    {
+      "id": "c109",
+      "name": "遠藤桃次郎",
+      "org": "栃木ゴールデンブレーブス",
+      "category": "独立リーグ",
+      "pos": "内野手",
+      "featured": false
+    }
   ]
 }

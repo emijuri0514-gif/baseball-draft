@@ -71,7 +71,7 @@
       <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">あなたも12球団の1位指名を予想してみませんか？</h2>
       <p class="text-sm md:text-base text-gray-300 leading-relaxed">
         12球団それぞれの1位指名を、候補選手の中から選んで予想できます。予想はこの端末のブラウザだけに保存され、ドラフト当日の答え合わせに使えます。<br>
-        <span class="text-xs text-gray-500">候補選手データは<a href="draft-watch.html" class="text-blue-400 hover:underline">「2026ドラフト注目選手」</a>と同じものです。能力値評価は付けていません。</span>
+        <span class="text-xs text-gray-500">候補選手は高校・大学・社会人・独立リーグの有力選手をまとめたものです。能力値評価は付けていません。</span>
       </p>
     </section>
 
@@ -84,6 +84,26 @@
     <section>
       <div id="predict-status" class="text-xs text-gray-400 text-center mb-3"></div>
       <div id="predict-revisit-note" class="hidden-screen bg-yellow-500/10 border border-yellow-500 text-yellow-300 text-xs rounded-lg px-3 py-2 text-center mb-3">🔔 答え合わせは10月22日の指名発表後に公開します。またこのページに来てくださいね。</div>
+
+      <div class="flex flex-wrap gap-2 items-center justify-center mb-2">
+        <select id="filter-category" class="bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-100">
+          <option value="all">区分：すべて</option>
+          <option value="高校">高校</option>
+          <option value="大学">大学</option>
+          <option value="社会人">社会人</option>
+          <option value="独立リーグ">独立リーグ・その他</option>
+        </select>
+        <select id="filter-position" class="bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-100">
+          <option value="all">ポジション：すべて</option>
+          <option value="投手">投手</option>
+          <option value="捕手">捕手</option>
+          <option value="内野手">内野手</option>
+          <option value="外野手">外野手</option>
+        </select>
+        <button id="toggle-all-candidates" onclick="window.toggleShowAllCandidates()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap"></button>
+      </div>
+      <p id="candidate-count-note" class="text-[11px] text-gray-500 text-center mb-3"></p>
+
       <div id="predict-list" class="space-y-2"></div>
       <div id="predict-loading" class="text-center text-sm text-gray-400 py-6">候補選手データを読み込み中...</div>
       <div id="predict-error" class="hidden-screen text-center text-sm text-red-400 py-6">候補選手データの読み込みに失敗しました。時間をおいて再度お試しください。</div>
@@ -175,6 +195,12 @@
     ];
 
     let candidates = [];
+    let currentSelections = {}; // team名 -> 候補id（保存前のUI選択状態。保存済み予想とは独立して持つ）
+    let showAllCandidates = false; // false=注目選手(featured)のみ、true=全候補
+    let filterCategory = 'all';
+    let filterPosition = 'all';
+    const CATEGORY_LABELS = { '独立リーグ': '独立リーグ・その他' };
+    function categoryLabel(cat) { return CATEGORY_LABELS[cat] || cat; }
 
     function loadPrediction() {
       try {
@@ -183,14 +209,46 @@
       } catch (e) { return null; }
     }
 
+    // 現在のフィルター条件（注目選手のみ／区分／ポジション）に合う候補を返す
+    function getFilteredCandidates() {
+      return candidates.filter(c => {
+        if (!showAllCandidates && !c.featured) return false;
+        if (filterCategory !== 'all' && c.category !== filterCategory) return false;
+        if (filterPosition !== 'all' && c.pos !== filterPosition) return false;
+        return true;
+      });
+    }
+
+    function candidateOptionLabel(c) {
+      return `${c.name}（${c.org}${c.pos ? '・' + c.pos : ''}）`;
+    }
+
+    function updateCandidateCountNote() {
+      const filtered = getFilteredCandidates();
+      const scopeText = showAllCandidates ? `全${candidates.length}人` : `注目選手${candidates.filter(c => c.featured).length}人`;
+      const filterText = (filterCategory !== 'all' || filterPosition !== 'all')
+        ? `のうち条件に合う${filtered.length}人を表示中`
+        : 'を表示中';
+      document.getElementById('candidate-count-note').textContent = `${scopeText}${filterText}`;
+      const btn = document.getElementById('toggle-all-candidates');
+      btn.textContent = showAllCandidates
+        ? `⭐ 注目選手のみ表示する（${candidates.filter(c => c.featured).length}人）`
+        : `🔍 全候補を表示する（${candidates.length}人）`;
+    }
+
     function renderList() {
-      const saved = loadPrediction();
-      const picks = (saved && saved.picks) || {};
+      const filtered = getFilteredCandidates();
       const list = document.getElementById('predict-list');
       list.innerHTML = TEAMS.map(t => {
-        const current = picks[t.name] ? picks[t.name].id : '';
+        const current = currentSelections[t.name] || '';
+        // 現在選択中の候補がフィルターで除外されていても、選択自体は消さずに選択肢へ残す
+        let pool = filtered;
+        if (current && !pool.some(c => c.id === current)) {
+          const selectedCandidate = candidates.find(c => c.id === current);
+          if (selectedCandidate) pool = [selectedCandidate, ...pool];
+        }
         const options = ['<option value="">-- 選手を選択 --</option>']
-          .concat(candidates.map(c => `<option value="${c.id}" ${c.id === current ? 'selected' : ''}>${c.name}（${c.org}・${c.pos}）</option>`))
+          .concat(pool.map(c => `<option value="${c.id}" ${c.id === current ? 'selected' : ''}>${candidateOptionLabel(c)}</option>`))
           .join('');
         return `
           <div class="flex items-center gap-3 bg-gray-800 rounded-lg p-3">
@@ -201,8 +259,29 @@
           </div>
         `;
       }).join('');
+      updateCandidateCountNote();
       updateStatus();
     }
+
+    document.getElementById('predict-list').addEventListener('change', e => {
+      const sel = e.target.closest('.predict-select');
+      if (!sel) return;
+      if (sel.value) currentSelections[sel.dataset.team] = sel.value;
+      else delete currentSelections[sel.dataset.team];
+    });
+
+    document.getElementById('filter-category').addEventListener('change', e => {
+      filterCategory = e.target.value;
+      renderList();
+    });
+    document.getElementById('filter-position').addEventListener('change', e => {
+      filterPosition = e.target.value;
+      renderList();
+    });
+    window.toggleShowAllCandidates = function() {
+      showAllCandidates = !showAllCandidates;
+      renderList();
+    };
 
     function updateStatus() {
       const saved = loadPrediction();
@@ -220,11 +299,9 @@
 
     function getCurrentPicks() {
       const picks = {};
-      document.querySelectorAll('.predict-select').forEach(sel => {
-        const id = sel.value;
-        if (!id) return;
-        const c = candidates.find(x => x.id === id);
-        if (c) picks[sel.dataset.team] = c;
+      Object.keys(currentSelections).forEach(team => {
+        const c = candidates.find(x => x.id === currentSelections[team]);
+        if (c) picks[team] = c;
       });
       return picks;
     }
@@ -248,6 +325,7 @@
     window.resetPrediction = function() {
       if (!confirm('保存した予想をすべて削除しますか？')) return;
       localStorage.removeItem(STORAGE_KEY);
+      currentSelections = {};
       renderList();
       if (draftResults) renderAnswerCheck();
     };
@@ -259,6 +337,12 @@
         const data = await res.json();
         candidates = data.players || [];
         window.__candidatesVersion = data.version || '';
+        const saved = loadPrediction();
+        if (saved && saved.picks) {
+          Object.keys(saved.picks).forEach(team => {
+            currentSelections[team] = saved.picks[team].id;
+          });
+        }
         document.getElementById('predict-loading').classList.add('hidden-screen');
         renderList();
       } catch (e) {
@@ -492,7 +576,7 @@
         if (pick) {
           ctx.fillStyle = '#94a3b8';
           ctx.font = '15px sans-serif';
-          ctx.fillText(`${pick.org}・${pick.pos}`, textX, y + 30);
+          ctx.fillText(`${pick.org}${pick.pos ? '・' + pick.pos : ''}`, textX, y + 30);
         }
         ctx.textBaseline = 'alphabetic';
       });
