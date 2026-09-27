@@ -1,0 +1,5 @@
+# ads.txt for dreamteam9.com
+# Google AdSense: パブリッシャーID（pub-で始まる16桁の数字）を取得し次第、
+# 下記の行の "pub-XXXXXXXXXXXXXXXX" を実際のIDに置き換えること。
+# 参考: https://support.google.com/adsense/answer/7532444
+google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
