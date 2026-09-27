@@ -394,6 +394,10 @@
   <div id="share-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-80 z-[300] flex flex-col items-center justify-center px-4 fade-in">
     <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-lg p-4 text-white flex flex-col items-center max-h-[90vh] overflow-y-auto">
       <p class="text-sm font-bold mb-3">📤 結果シェアカード</p>
+      <div id="share-format-toggle" class="hidden-screen flex gap-2 w-full mb-3">
+        <button data-format="x" onclick="window.setShareCardFormat('x')" class="share-format-btn flex-1 bg-blue-600 text-white font-bold py-2 rounded-full text-xs">𝕏用（横長）</button>
+        <button data-format="story" onclick="window.setShareCardFormat('story')" class="share-format-btn flex-1 bg-gray-700 text-white font-bold py-2 rounded-full text-xs">ストーリー用（縦長）</button>
+      </div>
       <img id="share-preview-img" class="w-full rounded shadow-lg mb-4 border border-gray-600" alt="シェア画像プレビュー" />
       <div class="flex gap-2 w-full">
         <button onclick="window.hideShareModal()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-full text-sm">閉じる</button>
@@ -774,9 +778,15 @@
 
     // X（旧Twitter）のタイムラインで縮小表示されても数字とランクが一目で読める、
     // 情報量を絞ったワイド（16:9）カード。詳細な内訳はアプリ本体側の画面で確認する前提。
+    // ★ シェアカードは「𝕏用（横長 1200×675）」と「ストーリー用（縦長 1080×1920、
+    // Xストーリーズ/Instagramストーリーズ想定）」の2サイズを出し分ける（T1-3）。
+    // レイアウトを丸ごと分岐させると保守が大変なので、バッジ・内訳バー・フッターの
+    // 各パーツをformatに応じた座標で描く形にして、内容自体はどちらも同じにしている。
     function buildShareCardCanvas(team, opts) {
       opts = opts || {};
-      const W = 1200, H = 675;
+      const format = opts.format === 'story' ? 'story' : 'x';
+      const W = format === 'story' ? 1080 : 1200;
+      const H = format === 'story' ? 1920 : 675;
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
@@ -790,6 +800,15 @@
       const lineupRows = team.shareLineup || [];
       const pitcherNames = team.sharePitchers || [];
 
+      // レイアウト定数（𝕏用／ストーリー用で座標だけ差し替える）
+      const L = format === 'story'
+        ? { badgeCx: W / 2, badgeCy: 470, badgeR: 210, headlineY: 70, nameY: 150, subtitleY: 190,
+            barX0: 90, barTrackX0: 230, barTrackW: W - 230 - 90, barTrackH: 34, rowH: 92, firstRowY: 880,
+            orderMaxWidth: W - 180, footerY: H - 40 }
+        : { badgeCx: 250, badgeCy: 345, badgeR: 135, headlineY: 45, nameY: 90, subtitleY: 118,
+            barX0: 540, barTrackX0: 660, barTrackW: 350, barTrackH: 26, rowH: 68, firstRowY: 108,
+            orderMaxWidth: W - 540 - 60, footerY: H - 22 };
+
       // 背景：紺のグラデーション＋バッジ裏のチームカラーのグロー
       const bgGrad = ctx.createLinearGradient(0, 0, W, H);
       bgGrad.addColorStop(0, '#0f172a');
@@ -797,8 +816,7 @@
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      const badgeCx = 250, badgeCy = 345, badgeR = 135;
-      const glow = ctx.createRadialGradient(badgeCx, badgeCy, 20, badgeCx, badgeCy, badgeR * 1.8);
+      const glow = ctx.createRadialGradient(L.badgeCx, L.badgeCy, 20, L.badgeCx, L.badgeCy, L.badgeR * 1.8);
       glow.addColorStop(0, hexToRgba(styleHex, 0.55));
       glow.addColorStop(1, hexToRgba(styleHex, 0));
       ctx.fillStyle = glow;
@@ -809,22 +827,22 @@
       // 見出し・チーム名
       ctx.fillStyle = '#93c5fd';
       ctx.font = 'bold 22px sans-serif';
-      ctx.fillText(opts.headline || '⚾ ドラフト採点結果', badgeCx, 45);
+      ctx.fillText(opts.headline || '⚾ ドラフト採点結果', L.badgeCx, L.headlineY);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 40px sans-serif';
-      ctx.fillText(team.name.replace('(AI)', ''), badgeCx, 90);
+      ctx.fillText(team.name.replace('(AI)', ''), L.badgeCx, L.nameY);
 
       if (opts.subtitle) {
         ctx.fillStyle = '#cbd5e1';
         ctx.font = 'bold 20px sans-serif';
-        ctx.fillText(opts.subtitle, badgeCx, 118);
+        ctx.fillText(opts.subtitle, L.badgeCx, L.subtitleY);
       }
 
       // ランクバッジ（一番の見せ場：色はプロスピのランク配色に統一し、チームカラーは背景のグローと
       // 内訳バーだけで表現する）
       ctx.beginPath();
-      ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
+      ctx.arc(L.badgeCx, L.badgeCy, L.badgeR, 0, Math.PI * 2);
       ctx.fillStyle = gradeInfo.color;
       ctx.fill();
       ctx.lineWidth = 6;
@@ -832,46 +850,45 @@
       ctx.stroke();
 
       ctx.fillStyle = gradeInfo.textColor;
-      ctx.font = 'bold 170px sans-serif';
+      ctx.font = `bold ${Math.round(L.badgeR * 1.26)}px sans-serif`;
       ctx.textBaseline = 'middle';
-      ctx.fillText(gradeInfo.grade, badgeCx, badgeCy + 8);
+      ctx.fillText(gradeInfo.grade, L.badgeCx, L.badgeCy + 8);
       ctx.textBaseline = 'alphabetic';
 
       ctx.fillStyle = '#facc15';
       ctx.font = 'bold 42px sans-serif';
-      ctx.fillText(`${totalSum} pt`, badgeCx, badgeCy + badgeR + 45);
+      ctx.fillText(`${totalSum} pt`, L.badgeCx, L.badgeCy + L.badgeR + 45);
       ctx.fillStyle = '#94a3b8';
       ctx.font = '18px sans-serif';
-      ctx.fillText('（6項目の合計）', badgeCx, badgeCy + badgeR + 71);
+      ctx.fillText('（6項目の合計）', L.badgeCx, L.badgeCy + L.badgeR + 71);
 
       ctx.fillStyle = gradeInfo.color;
       ctx.font = 'bold 18px sans-serif';
-      ctx.fillText(`${gradeInfo.grade}ランク基準：${gradeInfo.min}〜${gradeInfo.max}pt`, badgeCx, badgeCy + badgeR + 95);
+      ctx.fillText(`${gradeInfo.grade}ランク基準：${gradeInfo.min}〜${gradeInfo.max}pt`, L.badgeCx, L.badgeCy + L.badgeR + 95);
 
       ctx.fillStyle = '#f1f5f9';
       ctx.font = 'bold 26px sans-serif';
-      ctx.fillText(gradeInfo.tagline, badgeCx, badgeCy + badgeR + 129);
+      ctx.fillText(gradeInfo.tagline, L.badgeCx, L.badgeCy + L.badgeR + 129);
 
       // 6項目の内訳バー（合計ptの根拠が一目で足し算できるよう、数字を主役にしたバー表示）
-      const barX0 = 540, barTrackX0 = 660, barTrackW = 350, barTrackH = 26, rowH = 68, firstRowY = 108;
       ctx.textAlign = 'left';
       statLabels.forEach((label, i) => {
-        const y = firstRowY + i * rowH;
+        const y = L.firstRowY + i * L.rowH;
         const val = Math.max(0, Math.min(100, radarData[i]));
 
         ctx.fillStyle = '#e2e8f0';
         ctx.font = 'bold 26px sans-serif';
         ctx.textBaseline = 'middle';
-        ctx.fillText(label, barX0, y);
+        ctx.fillText(label, L.barX0, y);
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
         ctx.beginPath();
-        ctx.roundRect(barTrackX0, y - barTrackH / 2, barTrackW, barTrackH, 13);
+        ctx.roundRect(L.barTrackX0, y - L.barTrackH / 2, L.barTrackW, L.barTrackH, 13);
         ctx.fill();
 
         ctx.fillStyle = styleHex;
         ctx.beginPath();
-        ctx.roundRect(barTrackX0, y - barTrackH / 2, barTrackW * (val / 100), barTrackH, 13);
+        ctx.roundRect(L.barTrackX0, y - L.barTrackH / 2, L.barTrackW * (val / 100), L.barTrackH, 13);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
@@ -887,19 +904,20 @@
         const orderText = lineupRows.map(r => `${r.order}[${r.pos}]${r.name}`).join(' ');
         ctx.font = 'bold 20px sans-serif';
         ctx.fillStyle = '#cbd5e1';
-        const orderLines = wrapTextCJK(ctx, orderText, W - barX0 - 60).slice(0, 2);
-        let y = firstRowY + 6 * rowH + 6;
-        orderLines.forEach(l => { ctx.fillText(l, barX0, y); y += 26; });
+        const orderLines = wrapTextCJK(ctx, orderText, L.orderMaxWidth).slice(0, 2);
+        let y = L.firstRowY + 6 * L.rowH + 6;
+        orderLines.forEach(l => { ctx.fillText(l, L.barX0, y); y += 26; });
         if (pitcherNames.length) {
           ctx.fillStyle = '#94a3b8';
-          ctx.fillText(`(投) ${pitcherNames.map(x => x.name).join('、')}`, barX0, y);
+          ctx.fillText(`(投) ${pitcherNames.map(x => x.name).join('、')}`, L.barX0, y);
         }
       }
 
+      // サイトURLを必ず入れる（フッター）
       ctx.textAlign = 'center';
       ctx.font = 'bold 18px sans-serif';
       ctx.fillStyle = '#64748b';
-      ctx.fillText('⚾ 野球ドラフトシミュレーター', W / 2, H - 22);
+      ctx.fillText('⚾ dreamteam9.com｜NPBドラフトAIシミュレーター', W / 2, L.footerY);
 
       return canvas;
     }
@@ -1074,22 +1092,49 @@
       document.getElementById('share-download-btn').onclick = () => {
         downloadCanvasImage(dataUrl, `${t.name.replace('(AI)', '')}_myteam.png`);
       };
+      document.getElementById('share-format-toggle').classList.add('hidden-screen');
       document.getElementById('share-modal').classList.remove('hidden-screen');
     };
+
+    // ★ ストーリー用に切り替えたときに同じ内容で再生成できるよう、直前の
+    // showShareCard呼び出し内容を保持しておく（T1-3：シェアカード2サイズ化）。
+    let lastShareCardState = null;
+
+    function renderShareCard(team, headline, subtitle, format) {
+      const canvas = buildShareCardCanvas(team, { headline, subtitle, format });
+      const dataUrl = canvas.toDataURL('image/png');
+      const suffix = format === 'story' ? 'story' : 'x';
+      document.getElementById('share-preview-img').src = dataUrl;
+      document.getElementById('share-download-btn').onclick = () => {
+        downloadCanvasImage(dataUrl, `${team.name.replace('(AI)', '')}_draft_result_${suffix}.png`);
+      };
+      document.querySelectorAll('.share-format-btn').forEach(btn => {
+        btn.classList.toggle('bg-blue-600', btn.dataset.format === (format || 'x'));
+        btn.classList.toggle('bg-gray-700', btn.dataset.format !== (format || 'x'));
+      });
+    }
 
     window.showShareCard = function(teamId, headline, subtitle) {
       const t = window.__shareTeamsById[teamId];
       if (!t) return;
-      const canvas = buildShareCardCanvas(t, { headline, subtitle });
-      const dataUrl = canvas.toDataURL('image/png');
-      document.getElementById('share-preview-img').src = dataUrl;
-      document.getElementById('share-download-btn').onclick = () => {
-        downloadCanvasImage(dataUrl, `${t.name.replace('(AI)', '')}_draft_result.png`);
-      };
+      lastShareCardState = { teamId, headline, subtitle };
+      document.getElementById('share-format-toggle').classList.remove('hidden-screen');
+      renderShareCard(t, headline, subtitle, 'x');
       document.getElementById('share-modal').classList.remove('hidden-screen');
     };
+
+    // 𝕏用／ストーリー用の切り替えボタンから呼ばれる（オーダーカードには適用しない）
+    window.setShareCardFormat = function(format) {
+      if (!lastShareCardState) return;
+      const t = window.__shareTeamsById[lastShareCardState.teamId];
+      if (!t) return;
+      renderShareCard(t, lastShareCardState.headline, lastShareCardState.subtitle, format);
+    };
+
     window.hideShareModal = function() {
       document.getElementById('share-modal').classList.add('hidden-screen');
+      document.getElementById('share-format-toggle').classList.add('hidden-screen');
+      lastShareCardState = null;
     };
 
     // 文章は自動生成せず、リンクとタグだけ入れた投稿画面を新規タブで開く（画像は各自で添付）
