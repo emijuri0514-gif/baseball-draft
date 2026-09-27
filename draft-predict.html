@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%E2%9A%BE%3C/text%3E%3C/svg%3E">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <title>2026年12球団1位指名予想｜NPBドラフト会議シミュレーション</title>
+  <meta name="description" content="2026年のNPBドラフト会議、12球団の1位指名を予想して保存できるページ。ドラフト当日の答え合わせに使えます。能力値評価は付けず、名前・所属・ポジションのみで予想します。">
+  <meta property="og:title" content="2026年12球団1位指名予想｜NPBドラフト会議シミュレーション">
+  <meta property="og:description" content="2026年のNPBドラフト会議、12球団の1位指名をあなたも予想してみませんか？予想はブラウザに保存され、当日の答え合わせにも使えます。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/draft-predict.html">
+  <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/affiliate-tracking.js" defer></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #0f172a; }
+
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+    .hidden-screen { display: none !important; }
+  </style>
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🎯 12球団1位指名予想</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="draft-watch.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">👀 注目選手</a>
+        <a href="draft-2026.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📅 放送予定</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <a href="howto.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📖 遊び方</a>
+            <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
+            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定</a>
+            <a href="draft-watch.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">👀 2026ドラフト注目選手</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="text-center">
+      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">あなたも12球団の1位指名を予想してみませんか？</h2>
+      <p class="text-sm md:text-base text-gray-300 leading-relaxed">
+        12球団それぞれの1位指名を、候補選手の中から選んで予想できます。予想はこの端末のブラウザだけに保存され、ドラフト当日の答え合わせに使えます。<br>
+        <span class="text-xs text-gray-500">候補選手データは<a href="draft-watch.html" class="text-blue-400 hover:underline">「2026ドラフト注目選手」</a>と同じものです。能力値評価は付けていません。</span>
+      </p>
+    </section>
+
+    <section>
+      <div id="predict-status" class="text-xs text-gray-400 text-center mb-3"></div>
+      <div id="predict-list" class="space-y-2"></div>
+      <div id="predict-loading" class="text-center text-sm text-gray-400 py-6">候補選手データを読み込み中...</div>
+      <div id="predict-error" class="hidden-screen text-center text-sm text-red-400 py-6">候補選手データの読み込みに失敗しました。時間をおいて再度お試しください。</div>
+    </section>
+
+    <div class="flex flex-col sm:flex-row gap-2 justify-center">
+      <button onclick="window.savePrediction()" class="bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-6 rounded-full shadow-lg">💾 予想を保存する</button>
+      <button onclick="window.openPredictionShare()" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 px-6 rounded-full shadow-lg">📤 予想をシェアする</button>
+      <button onclick="window.resetPrediction()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full">🗑️ リセット</button>
+    </div>
+
+    <section class="bg-gray-800 rounded-lg p-4 text-xs text-gray-400 leading-relaxed">
+      <p>※ 予想は保存ボタンを押すとこの端末のブラウザ（localStorage）だけに保存されます。他の端末には引き継がれません。ブラウザのデータを消去すると予想も消えます。</p>
+      <p class="mt-1">※ ドラフト当日以降、実際の指名結果との答え合わせ機能を追加予定です。それまで保存した予想はそのまま残ります。</p>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+
+    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
+      <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
+      <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
+        <a href="draft-watch.html" class="text-sm text-blue-400 hover:underline font-bold">👀 2026ドラフト注目選手</a>
+        <a href="draft-2026.html" class="text-sm text-blue-400 hover:underline font-bold">📅 2026ドラフト放送予定</a>
+        <a href="draft-system.html" class="text-sm text-blue-400 hover:underline font-bold">🗒️ ドラフト会議とは</a>
+      </div>
+    </section>
+  </main>
+  <footer class="text-center text-gray-500 text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+
+  <!-- シェア画像モーダル -->
+  <div id="share-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-80 z-[300] flex flex-col items-center justify-center px-4">
+    <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-lg p-4 text-white flex flex-col items-center max-h-[90vh] overflow-y-auto">
+      <p class="text-sm font-bold mb-3">📤 1位指名予想シェアカード</p>
+      <div class="flex gap-2 w-full mb-3">
+        <button data-format="x" onclick="window.setPredictionShareFormat('x')" class="share-format-btn flex-1 bg-blue-600 text-white font-bold py-2 rounded-full text-xs">𝕏用（横長）</button>
+        <button data-format="story" onclick="window.setPredictionShareFormat('story')" class="share-format-btn flex-1 bg-gray-700 text-white font-bold py-2 rounded-full text-xs">ストーリー用（縦長）</button>
+      </div>
+      <img id="share-preview-img" class="w-full rounded shadow-lg mb-4 border border-gray-600" alt="シェア画像プレビュー" />
+      <div class="flex gap-2 w-full">
+        <button onclick="window.hidePredictionShare()" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-full text-sm">閉じる</button>
+        <button id="share-download-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-full text-sm">画像を保存</button>
+      </div>
+      <button onclick="window.openPredictionXShare()" class="w-full mt-2 bg-black hover:bg-gray-900 text-white font-black py-3 rounded-full text-sm flex items-center justify-center gap-2">
+        <span>𝕏でシェア</span>
+      </button>
+      <p class="text-[10px] text-gray-400 mt-3 text-center leading-relaxed">「画像を保存」で共有メニューが開いたら「写真に保存」などを選んでください。保存した画像は「𝕏でシェア」で開いた投稿画面に添付してください</p>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'draftPrediction2026';
+    const CANDIDATES_URL = 'data/draft-2026-candidates.json';
+
+    // index.html内のTEAM_STYLEと同じ配色（視覚的な一貫性のため複製）
+    const TEAMS = [
+      { name: "巨人", hex: "#f97316", textColor: "#ffffff" },
+      { name: "阪神", hex: "#eab308", textColor: "#111827" },
+      { name: "DeNA", hex: "#0ea5e9", textColor: "#ffffff" },
+      { name: "ヤクルト", hex: "#22c55e", textColor: "#ffffff" },
+      { name: "中日", hex: "#2563eb", textColor: "#ffffff" },
+      { name: "広島", hex: "#dc2626", textColor: "#ffffff" },
+      { name: "オリックス", hex: "#0f172a", textColor: "#ffffff" },
+      { name: "ロッテ", hex: "#6b7280", textColor: "#ffffff" },
+      { name: "ソフトバンク", hex: "#fde047", textColor: "#111827" },
+      { name: "楽天", hex: "#9f1239", textColor: "#ffffff" },
+      { name: "日本ハム", hex: "#7dd3fc", textColor: "#111827" },
+      { name: "西武", hex: "#06b6d4", textColor: "#ffffff" }
+    ];
+
+    let candidates = [];
+
+    function loadPrediction() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+
+    function renderList() {
+      const saved = loadPrediction();
+      const picks = (saved && saved.picks) || {};
+      const list = document.getElementById('predict-list');
+      list.innerHTML = TEAMS.map(t => {
+        const current = picks[t.name] ? picks[t.name].id : '';
+        const options = ['<option value="">-- 選手を選択 --</option>']
+          .concat(candidates.map(c => `<option value="${c.id}" ${c.id === current ? 'selected' : ''}>${c.name}（${c.org}・${c.pos}）</option>`))
+          .join('');
+        return `
+          <div class="flex items-center gap-3 bg-gray-800 rounded-lg p-3">
+            <span class="w-20 shrink-0 text-center text-xs font-black rounded py-1" style="background:${t.hex};color:${t.textColor};">${t.name}</span>
+            <select data-team="${t.name}" class="predict-select flex-1 bg-gray-900 border border-gray-600 rounded px-2 py-2 text-sm text-gray-100">
+              ${options}
+            </select>
+          </div>
+        `;
+      }).join('');
+      updateStatus();
+    }
+
+    function updateStatus() {
+      const saved = loadPrediction();
+      const el = document.getElementById('predict-status');
+      if (saved && saved.savedAt) {
+        const d = new Date(saved.savedAt);
+        el.textContent = `前回保存：${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      } else {
+        el.textContent = 'まだ予想は保存されていません';
+      }
+    }
+
+    function getCurrentPicks() {
+      const picks = {};
+      document.querySelectorAll('.predict-select').forEach(sel => {
+        const id = sel.value;
+        if (!id) return;
+        const c = candidates.find(x => x.id === id);
+        if (c) picks[sel.dataset.team] = c;
+      });
+      return picks;
+    }
+
+    window.savePrediction = function() {
+      const picks = getCurrentPicks();
+      const count = Object.keys(picks).length;
+      const data = {
+        version: window.__candidatesVersion || '',
+        savedAt: new Date().toISOString(),
+        picks
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      updateStatus();
+      const el = document.getElementById('predict-status');
+      el.textContent = `保存しました（${count}/12球団）`;
+      if (typeof gtag === 'function') gtag('event', 'draft_predict_save', { team_count: count });
+    };
+
+    window.resetPrediction = function() {
+      if (!confirm('保存した予想をすべて削除しますか？')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderList();
+    };
+
+    async function init() {
+      try {
+        const res = await fetch(CANDIDATES_URL);
+        if (!res.ok) throw new Error('fetch failed');
+        const data = await res.json();
+        candidates = data.players || [];
+        window.__candidatesVersion = data.version || '';
+        document.getElementById('predict-loading').classList.add('hidden-screen');
+        renderList();
+      } catch (e) {
+        document.getElementById('predict-loading').classList.add('hidden-screen');
+        document.getElementById('predict-error').classList.remove('hidden-screen');
+      }
+    }
+    init();
+
+    // ==========================================
+    // シェアカード（index.htmlの結果シェアカードと同じ紺グラデーション＋
+    // 球団カラーのトーンを踏襲。𝕏用(1200x675)とストーリー用(1080x1920)を切り替え可能）
+    // ==========================================
+    function hexToRgba(hex, alpha) {
+      const m = /^#([0-9a-f]{6})$/i.exec(hex);
+      if (!m) return `rgba(0,0,0,${alpha})`;
+      const n = parseInt(m[1], 16);
+      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+    }
+
+    function buildPredictionCardCanvas(picks, format) {
+      const W = format === 'story' ? 1080 : 1200;
+      const H = format === 'story' ? 1920 : 675;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      const bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#0f172a');
+      bg.addColorStop(1, '#1e293b');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#facc15';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText('⚾ 2026年ドラフト会議 1位指名予想', W / 2, format === 'story' ? 70 : 45);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px sans-serif';
+      ctx.fillText('私の予想はこれだ！', W / 2, format === 'story' ? 120 : 82);
+
+      const cols = format === 'story' ? 1 : 2;
+      const gridTop = format === 'story' ? 170 : 120;
+      const gridBottom = H - 60;
+      const rowH = (gridBottom - gridTop) / Math.ceil(12 / cols);
+      const colW = (W - 80) / cols;
+
+      TEAMS.forEach((t, i) => {
+        const col = Math.floor(i / Math.ceil(12 / cols));
+        const row = i % Math.ceil(12 / cols);
+        const x = 40 + col * colW;
+        const y = gridTop + row * rowH;
+        const pick = picks[t.name];
+
+        const badgeW = 106;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = t.hex;
+        ctx.beginPath();
+        ctx.roundRect(x, y, badgeW, 36, 8);
+        ctx.fill();
+        ctx.fillStyle = t.textColor;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        // 「ソフトバンク」等の長い球団名がバッジ幅をはみ出さないよう、収まるまでフォントを縮める
+        let teamFontSize = 18;
+        ctx.font = `bold ${teamFontSize}px sans-serif`;
+        while (ctx.measureText(t.name).width > badgeW - 12 && teamFontSize > 11) {
+          teamFontSize -= 1;
+          ctx.font = `bold ${teamFontSize}px sans-serif`;
+        }
+        ctx.fillText(t.name, x + badgeW / 2, y + 19);
+
+        const textX = x + badgeW + 14;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = pick ? '#ffffff' : '#64748b';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText(pick ? pick.name : '未定', textX, y + 13);
+        if (pick) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '15px sans-serif';
+          ctx.fillText(`${pick.org}・${pick.pos}`, textX, y + 30);
+        }
+        ctx.textBaseline = 'alphabetic';
+      });
+
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('⚾ dreamteam9.com｜NPBドラフトAIシミュレーター', W / 2, H - 22);
+
+      return canvas;
+    }
+
+    function downloadCanvasImage(dataUrl, filename) {
+      if (typeof gtag === 'function') gtag('event', 'share_click', { method: 'image_save', content: filename });
+      const blob = (() => {
+        const [meta, b64] = dataUrl.split(',');
+        const mime = /data:(.*?);base64/.exec(meta)[1];
+        const binary = atob(b64);
+        const arr = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+        return new Blob([arr], { type: mime });
+      })();
+      const file = new File([blob], filename, { type: blob.type });
+      if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).catch(() => {});
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    let lastPredictionPicks = null;
+
+    function renderPredictionShare(format) {
+      const canvas = buildPredictionCardCanvas(lastPredictionPicks, format);
+      const dataUrl = canvas.toDataURL('image/png');
+      document.getElementById('share-preview-img').src = dataUrl;
+      document.getElementById('share-download-btn').onclick = () => {
+        downloadCanvasImage(dataUrl, `draft_predict_2026_${format}.png`);
+      };
+      document.querySelectorAll('.share-format-btn').forEach(btn => {
+        btn.classList.toggle('bg-blue-600', btn.dataset.format === format);
+        btn.classList.toggle('bg-gray-700', btn.dataset.format !== format);
+      });
+    }
+
+    window.openPredictionShare = function() {
+      const picks = getCurrentPicks();
+      if (Object.keys(picks).length === 0) {
+        alert('少なくとも1球団分は予想を選んでからシェアしてください。');
+        return;
+      }
+      lastPredictionPicks = picks;
+      renderPredictionShare('x');
+      document.getElementById('share-modal').classList.remove('hidden-screen');
+    };
+
+    window.setPredictionShareFormat = function(format) {
+      if (!lastPredictionPicks) return;
+      renderPredictionShare(format);
+    };
+
+    window.hidePredictionShare = function() {
+      document.getElementById('share-modal').classList.add('hidden-screen');
+    };
+
+    window.openPredictionXShare = function() {
+      if (typeof gtag === 'function') gtag('event', 'share_click', { method: 'x_share', content: 'draft-predict' });
+      const params = new URLSearchParams({
+        url: 'https://dreamteam9.com/draft-predict.html',
+        hashtags: 'NPBドラフト会議2026,1位指名予想'
+      });
+      window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
+    };
+  </script>
+</body>
+</html>
