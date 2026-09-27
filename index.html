@@ -188,7 +188,7 @@
     /* === 野球のスタジアム/革のような質感を出すための共通パーツ === */
     .font-sport { font-family: 'Oswald', 'Noto Sans JP', sans-serif; }
     .stadium-bg {
-      background: #0a1122 url('images/hero-draft-stage.jpg') 78% 35% / cover no-repeat;
+      background: #0a1122 url('images/hero-draft-stage.webp') 78% 35% / cover no-repeat;
     }
     @media (min-width: 768px) {
       .stadium-bg { background-position: center 35%; }
@@ -202,14 +202,14 @@
       box-shadow: inset 0 0 90px 20px rgba(0,0,0,0.4);
     }
     .lottery-bg {
-      background: #0a1122 url('images/lottery-box-detail.jpg') center / cover no-repeat;
+      background: #0a1122 url('images/lottery-box-detail.webp') center / cover no-repeat;
     }
     .lottery-bg::before {
       content: ''; position: absolute; inset: 0; pointer-events: none;
       background: linear-gradient(180deg, rgba(10,17,34,0.55) 0%, rgba(10,17,34,0.45) 40%, rgba(10,17,34,0.92) 100%);
     }
     .lineup-bg {
-      background: #0d1f10 url('images/reveal-stitching.jpg') 70% center / cover no-repeat;
+      background: #0d1f10 url('images/reveal-stitching.webp') 70% center / cover no-repeat;
     }
     .lineup-bg::before {
       content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -1050,6 +1050,7 @@
     // iOS Safari等は<a download>が効かず「保存」ボタンを押しても何も起きないため、
     // まずOSの共有シート（写真に保存が選べる）を試し、使えない環境だけ従来のダウンロードにする
     function downloadCanvasImage(dataUrl, filename) {
+      if (typeof gtag === 'function') gtag('event', 'share_click', { method: 'image_save', content: filename });
       const blob = dataURLtoBlob(dataUrl);
       const file = new File([blob], filename, { type: blob.type });
       if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
@@ -1093,6 +1094,7 @@
 
     // 文章は自動生成せず、リンクとタグだけ入れた投稿画面を新規タブで開く（画像は各自で添付）
     window.openXShare = function() {
+      if (typeof gtag === 'function') gtag('event', 'share_click', { method: 'x_share' });
       const params = new URLSearchParams({
         url: 'https://dreamteam9.com/',
         hashtags: 'NPBドラフトシミュレーション'
@@ -1287,11 +1289,20 @@
           <a href="devblog.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📝 開発ブログ</a>
           <a href="changelog.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🛠️ 更新履歴</a>
         </div>
+        <div>
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">サイト情報</p>
+          <a href="about.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🧑‍💻 運営者情報</a>
+          <a href="contact.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">✉️ お問い合わせ</a>
+        </div>
       </div>
       <a href="privacy.html" target="_blank" rel="noopener noreferrer" class="block mt-3 text-[11px] text-gray-400 hover:underline">プライバシーポリシー</a>
       <p class="text-[10px] text-gray-400 mt-1">本サイトはアフィリエイト広告を利用しています</p>
       <p class="text-[10px] text-gray-400 mt-1">© 2026 dreamteam9.com</p>
       </div>
+    </div>
+    <div class="w-full max-w-md mt-6 text-left text-blue-100 text-xs md:text-sm leading-relaxed space-y-2 px-1">
+      <p>「AIドラフト」は、現役NPB選手をAI球団と取り合うドラフト会議を疑似体験できる、登録不要・無料のブラウザゲームです。抽選やウェーバーなど実際のドラフト会議に近いルールで指名を進め、獲得した選手でスタメンやオーダーを組み、AIによる採点やペナントレースのシミュレーションまで楽しめます。</p>
+      <p>対戦するAI球団数は1〜11球団から選べるほか、友達とのオンライン対戦（β版）にも対応しています。あわせて選手名鑑・攻略ガイド・用語集・球団別中継ガイドなど、NPBをより楽しむための読み物コンテンツも公開しています。</p>
     </div>
     </div>
   </div>
@@ -4053,6 +4064,11 @@
         lineupPhaseInitialized = true;
       }
 
+      // ★ ドラフト会議が終わってスタメン編成画面に進んだタイミングをGA4で計測する
+      if (typeof gtag === 'function') {
+        gtag('event', 'draft_complete', { team_count: teams.length, draft_mode: draftMode });
+      }
+
       lineupAssignments = {};
       selectedPoolPlayerId = null;
       renderLineupPhase();
@@ -4501,6 +4517,14 @@
       const userTeam = teams.find(t => t.isUser);
       showStartingLineupAnnouncement(userTeam, () => {
         showScreen('screen-ranking');
+
+        // ★ AI採点の結果画面が実際に表示されたタイミングをGA4で計測する（自分の順位・参加球団数も一緒に送る）
+        if (typeof gtag === 'function') {
+          gtag('event', 'result_view', {
+            rank: ranked.findIndex(t => t.isUser) + 1,
+            team_count: ranked.length
+          });
+        }
 
         // ★ showScreen直後だとカードがまだ display:none から切り替わった直後でレイアウト未確定のため、
         // Chart.jsがCanvasのサイズを0扱いで初期化してしまい、歪んだ形のまま固まることがある。
@@ -5213,6 +5237,9 @@
       addLog(`<span class="text-xl text-red-600">試合終了！ ${matchState.scoreA} - ${matchState.scoreB}</span>`);
 
       recordPlayoffLiveResult(matchState, forcedWinner);
+      if (typeof gtag === 'function') {
+        gtag('event', 'game_sim_complete', { mode: 'live', score_a: matchState.scoreA, score_b: matchState.scoreB });
+      }
       showScorebook();
     }
 
@@ -5561,6 +5588,9 @@
         showStartingLineupAnnouncement(opponent, () => startLiveMatch(match.a, match.b));
       } else {
         const result = runInstantGame(match.a, match.b);
+        if (typeof gtag === 'function') {
+          gtag('event', 'game_sim_complete', { mode: 'instant', score_a: result.scoreA, score_b: result.scoreB });
+        }
         match.scoreA = result.scoreA;
         match.scoreB = result.scoreB;
         match.winner = result.winner;

@@ -100,11 +100,12 @@
 
   <footer class="max-w-3xl mx-auto px-4 py-8 text-[11px] leading-relaxed text-gray-500 border-t border-gray-800 mt-8 space-y-1">
     <p>※ 本サービスは実際の金銭を賭けるものではなく、架空ポイントを用いたエンターテインメント(シミュレーションゲーム)です。</p>
+    <p>※ ここで獲得できるポイントは本サービス内でのみ利用できるものであり、現金・金券・暗号資産など換金性のある資産への交換は一切できません。</p>
     <p>※ このモードは、勝敗を「予想」せず、システムが自動生成したランダムな組み合わせの的中数で配当が決まる、非予想系(くじ抽選型)の仕組みを再現したデモです。</p>
     <p>※ 本サービスはNPB(日本野球機構)および各球団による公式サービスではありません。実在の球団名は説明のために使用しています。</p>
     <p>※ 表示されるチーム成績・試合日程・配当倍率はすべて仮のデモデータです。</p>
       <p><a href="index.html" class="text-gray-400 hover:underline">← NPBドラフト会議シミュレーションのトップへ戻る</a></p>
-    <p><a href="privacy.html" class="text-gray-400 hover:underline">プライバシーポリシー</a></p>
+    <p><a href="privacy.html" class="text-gray-400 hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="text-gray-400 hover:underline">運営者情報</a> ｜ <a href="contact.html" class="text-gray-400 hover:underline">お問い合わせ</a></p>
     <p>© 2026 dreamteam9.com</p>
   </footer>
 
@@ -256,6 +257,7 @@
     }
 
     function shareOnX(text) {
+      if (typeof gtag === 'function') gtag('event', 'share_click', { method: 'x_share', content: 'lottery-big' });
       const url = new URL('https://twitter.com/intent/tweet');
       url.searchParams.set('text', text);
       url.searchParams.set('url', location.href);
