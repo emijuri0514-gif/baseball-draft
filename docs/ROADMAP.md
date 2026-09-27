@@ -179,6 +179,18 @@
   - [x] 答え合わせ結果のシェア画像（𝕏用/ストーリー用の2サイズ）を用意。`answercheck_share`イベントを送信
   - [x] Playwrightで「結果ファイルなし→非表示」「結果ファイルあり→的中判定・競合/外れ1位表示・シェア画像生成」を確認
   - 10/22夜のオーナー入力は`docs/DRAFT_RESULTS_JSON_SPEC.md`のとおり、単独指名なら`name`/`org`/`pos`の3項目のみでよい
+
+**判定ロジックの修正（2026-09-27・オーナー指示）【完了】**
+- [x] 名前の正規化（前後・途中のスペース除去、異体字統一）を実装。対応表`CHAR_VARIANTS`は
+      `draft-predict.html`と`scripts/validate-draft-results.mjs`の2箇所に集約（新しい異体字は両方に追記）
+- [x] 判定を2段階化：🎯1位入札的中（抽選で外れても的中）／🏆交渉権獲得的中（抽選込みの実際の結果）。
+      称号は🎯の数で決定、🏆は件数のみ併記。結果JSONへの追加項目は不要（既存の`fallback`だけで算出）
+- [x] `docs/DRAFT_RESULTS_JSON_SPEC.md`に正規化ルールと2段階判定の説明・最小構成の例を追記
+- [x] `scripts/validate-draft-results.mjs`（新規）：結果JSONの形式チェック。12球団の充足状況・
+      候補リスト外選手を警告表示（`npm run validate:draft-results`）
+- [x] `docs/DRAFT_DAY_RUNBOOK.md`（新規）：当日の「入力→検証→公開」手順とリハーサル手順を整理
+- [x] リハーサル用データは`data/draft-2026-results.test.json`（`.gitignore`登録済み）＋
+      `?test_results=1`のURLパラメータで、本番ファイルに触れずに動作確認できるようにした
 - [ ] T2-2 的中率ランキング（まずは端末内の自己記録で可。オンライン化は後回し）
 - [x] T2-3 CS・日本シリーズの視聴方法ページを新規作成（10〜11月限定）→ **2026-09-27：CSが10月中旬に始まるため前倒しで完了**。`postseason-broadcast.html`
       （日程・放送局・配信は正式発表前のため【要確認】枠のみ。オーナーが確認して埋める）

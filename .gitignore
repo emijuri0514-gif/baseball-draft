@@ -2,3 +2,7 @@ node_modules/
 lottery-serviceAccountKey.json
 .DS_Store
 *.log
+
+# 答え合わせ機能のリハーサル用データ（本番のdata/draft-2026-results.jsonとは別物）。
+# 誤って公開・コミットされないよう常に除外する。作り方はdocs/DRAFT_DAY_RUNBOOK.md参照。
+data/draft-2026-results.test.json

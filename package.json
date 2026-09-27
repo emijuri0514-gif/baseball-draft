@@ -7,7 +7,8 @@
   "scripts": {
     "lottery:seed-games": "node scripts/lottery-seed-games.mjs",
     "lottery:seed-shop-items": "node scripts/lottery-seed-shop-items.mjs",
-    "lottery:set-admin": "node scripts/lottery-set-admin-claim.mjs"
+    "lottery:set-admin": "node scripts/lottery-set-admin-claim.mjs",
+    "validate:draft-results": "node scripts/validate-draft-results.mjs"
   },
   "devDependencies": {
     "firebase-admin": "^12.0.0"
