@@ -618,6 +618,59 @@
     document.addEventListener('DOMContentLoaded', updateHomeDraftCountdown);
 
     // ==========================================
+    // 結果画面のCTA枠（月別・担当球団別に表示内容を切り替える。cta-config.jsonで管理）
+    // ==========================================
+    let ctaConfigCache = null;
+    async function loadCtaConfig() {
+      if (ctaConfigCache) return ctaConfigCache;
+      try {
+        const res = await fetch('cta-config.json');
+        ctaConfigCache = await res.json();
+      } catch (e) {
+        ctaConfigCache = null;
+      }
+      return ctaConfigCache;
+    }
+
+    window.trackCtaClick = function(month, target) {
+      if (typeof gtag === 'function') gtag('event', 'cta_click', { month, target });
+    };
+
+    async function renderResultCTA(userTeamName) {
+      const slot = document.getElementById('cta-slot-result');
+      if (!slot) return;
+      slot.innerHTML = '';
+      const config = await loadCtaConfig();
+      if (!config) return;
+
+      const month = new Date().getMonth() + 1;
+      const monthConfig = config.months && config.months[String(month)];
+      if (!monthConfig) return;
+
+      let item = null;
+      if (monthConfig.useTeamCTA) {
+        item = (config.teamCTA && (config.teamCTA[userTeamName] || config.teamCTA.default)) || null;
+      } else if (monthConfig.items && monthConfig.items.length) {
+        item = monthConfig.items[0]; // 1枠のみの表示なので先頭を採用
+      }
+      if (!item) return;
+
+      const headlineHtml = monthConfig.headline ? `<p class="text-xs text-gray-400 mb-2">${monthConfig.headline}</p>` : '';
+      if (item.url) {
+        slot.innerHTML = `
+          <div class="bg-gray-800 border border-yellow-600 rounded-lg p-4 text-center">
+            ${headlineHtml}
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" onclick="window.trackCtaClick(${month}, '${item.url}')" class="inline-block bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 px-6 rounded-full text-sm shadow">${item.label}</a>
+          </div>`;
+      } else {
+        slot.innerHTML = `
+          <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 text-center text-xs text-gray-500">
+            ${headlineHtml}${item.label}
+          </div>`;
+      }
+    }
+
+    // ==========================================
     // 結果シェアカード（Canvasで画像を生成してモーダル表示・保存）
     // ==========================================
     window.__shareTeamsById = {};
@@ -1657,6 +1710,8 @@
     <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-6 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 ドラフト結果</h2>
     <div id="ranking-container" class="w-full max-w-4xl space-y-4 pb-20"></div>
     <p class="text-sm text-gray-400 mb-2">もっと高いランクを狙うなら <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a> をチェック</p>
+    <!-- ★ 月別に内容を切り替えるCTA枠。表示内容はcta-config.jsonで管理し、コード変更なしで差し替えられる -->
+    <div id="cta-slot-result" class="w-full max-w-md mb-2"></div>
     <div class="mt-6 flex flex-col md:flex-row gap-4 mb-10 w-full max-w-md">
       <button onclick="window.startPlayoff()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse">
         🏆 プレーオフに進出する
@@ -4572,6 +4627,7 @@
             team_count: ranked.length
           });
         }
+        renderResultCTA(userTeam.name);
 
         // ★ showScreen直後だとカードがまだ display:none から切り替わった直後でレイアウト未確定のため、
         // Chart.jsがCanvasのサイズを0扱いで初期化してしまい、歪んだ形のまま固まることがある。

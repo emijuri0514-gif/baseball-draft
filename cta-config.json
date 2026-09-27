@@ -1,0 +1,58 @@
+{
+  "_comment": "ドラフト結果画面(result_viewの直後)に表示する1枠のCTAを月ごとに切り替える設定ファイル。コードを変更せずここを編集するだけで内容を差し替えられる。monthsのキーは1〜12(文字列)。useTeamCTA:trueの月は、担当球団に応じてteamCTAから表示内容を選ぶ。url未設定の項目はリンクなしのテキストのみ表示になる(「準備中」の状態)。",
+  "months": {
+    "1": {
+      "headline": "🏝️ オフシーズン",
+      "items": [
+        { "label": "春季キャンプ情報（準備中）", "url": "" }
+      ]
+    },
+    "2": {
+      "headline": "🏝️ オフシーズン",
+      "items": [
+        { "label": "春季キャンプ情報（準備中）", "url": "" }
+      ]
+    },
+    "3": { "useTeamCTA": true },
+    "4": { "useTeamCTA": true },
+    "5": { "useTeamCTA": true },
+    "6": { "useTeamCTA": true },
+    "7": { "useTeamCTA": true },
+    "8": { "useTeamCTA": true },
+    "9": { "useTeamCTA": true },
+    "10": {
+      "headline": "🎉 ドラフト会議シーズン",
+      "items": [
+        { "label": "📅 2026年ドラフト会議の配信・見る方法", "url": "draft-2026.html" },
+        { "label": "🏆 CS・日本シリーズの見る方法", "url": "postseason-broadcast.html" }
+      ]
+    },
+    "11": {
+      "headline": "🍂 シーズンオフに向けて",
+      "items": [
+        { "label": "観戦チケットがもらえるふるさと納税（準備中）", "url": "" }
+      ]
+    },
+    "12": {
+      "headline": "🍂 シーズンオフに向けて",
+      "items": [
+        { "label": "ドラフト・スカウト関連書籍の紹介（準備中）", "url": "" }
+      ]
+    }
+  },
+  "teamCTA": {
+    "巨人": { "label": "📡 巨人の試合をどこで見られるか", "url": "giants-broadcast.html" },
+    "阪神": { "label": "📡 阪神の試合をどこで見られるか", "url": "tigers-broadcast.html" },
+    "DeNA": { "label": "📡 DeNAの試合をどこで見られるか", "url": "baystars-broadcast.html" },
+    "ヤクルト": { "label": "📡 ヤクルトの試合をどこで見られるか", "url": "swallows-broadcast.html" },
+    "中日": { "label": "📡 中日の試合をどこで見られるか", "url": "dragons-broadcast.html" },
+    "広島": { "label": "📡 広島の試合をどこで見られるか（DAZN非対応・要注意）", "url": "hiroshima-broadcast.html" },
+    "オリックス": { "label": "📡 オリックスの試合をどこで見られるか", "url": "buffaloes-broadcast.html" },
+    "ロッテ": { "label": "📡 ロッテの試合をどこで見られるか", "url": "marines-broadcast.html" },
+    "ソフトバンク": { "label": "📡 ソフトバンクの試合をどこで見られるか", "url": "hawks-broadcast.html" },
+    "楽天": { "label": "📡 楽天の試合をどこで見られるか", "url": "eagles-broadcast.html" },
+    "日本ハム": { "label": "📡 日本ハムの試合をどこで見られるか", "url": "fighters-broadcast.html" },
+    "西武": { "label": "📡 西武の試合をどこで見られるか", "url": "lions-broadcast.html" },
+    "default": { "label": "📡 中継サービスを比較する", "url": "npb-broadcast-guide.html" }
+  }
+}
