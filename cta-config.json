@@ -1,5 +1,5 @@
 {
-  "_comment": "ドラフト結果画面(result_viewの直後)に表示する1枠のCTAを月ごとに切り替える設定ファイル。コードを変更せずここを編集するだけで内容を差し替えられる。monthsのキーは1〜12(文字列)。useTeamCTA:trueの月は、担当球団に応じてteamCTAから表示内容を選ぶ。url未設定の項目はリンクなしのテキストのみ表示になる(「準備中」の状態)。",
+  "_comment": "ドラフト結果画面(result_viewの直後)に表示する1枠のCTAを月ごとに切り替える設定ファイル。コードを変更せずここを編集するだけで内容を差し替えられる。monthsのキーは1〜12(文字列)。useTeamCTA:trueの月は、担当球団に応じてteamCTAから表示内容を選ぶ。url未設定の項目はリンクなしのテキストのみ表示になる(「準備中」の状態)。itemsは上から2つまで表示(1つ目がメインボタン、2つ目がサブリンク)。月の途中で内容を切り替えたい場合はperiodsに{untilDay, headline, items}を日付順に並べると、その日(untilDay)までの内容として使われる。",
   "months": {
     "1": {
       "headline": "🏝️ オフシーズン",
@@ -21,10 +21,23 @@
     "8": { "useTeamCTA": true },
     "9": { "useTeamCTA": true },
     "10": {
-      "headline": "🎉 ドラフト会議シーズン",
-      "items": [
-        { "label": "📅 2026年ドラフト会議の配信・見る方法", "url": "draft-2026.html" },
-        { "label": "🏆 CS・日本シリーズの見る方法", "url": "postseason-broadcast.html" }
+      "periods": [
+        {
+          "untilDay": 22,
+          "headline": "🎉 10/22はドラフト会議",
+          "items": [
+            { "label": "🎯 12球団1位指名を予想しよう", "url": "draft-predict.html" },
+            { "label": "🏆 CSの日程・見る方法", "url": "postseason-broadcast.html" }
+          ]
+        },
+        {
+          "untilDay": 31,
+          "headline": "🎉 ドラフト会議の答え合わせ公開中",
+          "items": [
+            { "label": "✅ 予想の答え合わせをする", "url": "draft-predict.html#answer-check-section" },
+            { "label": "🏆 CS・日本シリーズの見る方法", "url": "postseason-broadcast.html" }
+          ]
+        }
       ]
     },
     "11": {

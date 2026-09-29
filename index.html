@@ -643,24 +643,36 @@
       const config = await loadCtaConfig();
       if (!config) return;
 
-      const month = new Date().getMonth() + 1;
-      const monthConfig = config.months && config.months[String(month)];
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      let monthConfig = config.months && config.months[String(month)];
       if (!monthConfig) return;
-
-      let item = null;
-      if (monthConfig.useTeamCTA) {
-        item = (config.teamCTA && (config.teamCTA[userTeamName] || config.teamCTA.default)) || null;
-      } else if (monthConfig.items && monthConfig.items.length) {
-        item = monthConfig.items[0]; // 1枠のみの表示なので先頭を採用
+      // 月の途中で切り替える場合（例：10/22ドラフト当日までと、10/23以降の答え合わせ期間）
+      if (Array.isArray(monthConfig.periods)) {
+        monthConfig = monthConfig.periods.find(p => now.getDate() <= p.untilDay) || null;
+        if (!monthConfig) return;
       }
+
+      let items = [];
+      if (monthConfig.useTeamCTA) {
+        const teamItem = config.teamCTA && (config.teamCTA[userTeamName] || config.teamCTA.default);
+        if (teamItem) items = [teamItem];
+      } else if (monthConfig.items) {
+        items = monthConfig.items.slice(0, 2);
+      }
+      const item = items[0];
       if (!item) return;
 
       const headlineHtml = monthConfig.headline ? `<p class="text-xs text-gray-400 mb-2">${monthConfig.headline}</p>` : '';
       if (item.url) {
+        const sub = items[1] && items[1].url
+          ? `<a href="${items[1].url}" target="_blank" rel="noopener noreferrer" onclick="window.trackCtaClick(${month}, '${items[1].url}')" class="block mt-2 text-xs text-blue-300 hover:underline font-bold">${items[1].label}</a>`
+          : '';
         slot.innerHTML = `
           <div class="bg-gray-800 border border-yellow-600 rounded-lg p-4 text-center">
             ${headlineHtml}
             <a href="${item.url}" target="_blank" rel="noopener noreferrer" onclick="window.trackCtaClick(${month}, '${item.url}')" class="inline-block bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 px-6 rounded-full text-sm shadow">${item.label}</a>
+            ${sub}
           </div>`;
       } else {
         slot.innerHTML = `
@@ -1280,7 +1292,7 @@
   </script>
 
   <!-- 画面0: 初期設定画面 -->
-  <div id="screen-setup" class="fixed inset-0 bg-[#0a1122] z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto py-8">
+  <div id="screen-setup" class="fixed inset-0 bg-[#0a1122] z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto pt-3 pb-8 md:py-8">
     <!-- ★ 中身がビューポートより高いと、親のjustify-centerとoverflow-y-autoの組み合わせで
          上端（タイトルなど）がスクロールで届かない位置まで見切れる不具合があった（Pixel等で発生）。
          justify-centerで中央寄せする代わりに、このラッパーにmy-autoを使う。
@@ -1293,7 +1305,35 @@
          この見出しブロックだけを囲む、通常のフロー内のブロックに付け直し、コンテンツと
          一緒にスクロールするようにしている。 -->
     <div class="w-full flex flex-col items-center my-auto relative">
-    <div class="stadium-bg w-full min-h-[160px] md:min-h-[220px] rounded-lg px-4 flex flex-col items-center justify-center mb-4" style="position: relative;">
+    <!-- ★ お知らせ帯（ドラフト会議の予想→答え合わせ導線）。期間外は非表示。
+         スマホで「ドラフト会議を開始する」ボタンがスクロールなしで見える位置から外れないよう、
+         この帯の分だけ下のヒーロー・設定カードのスマホ時の余白を詰めている（md以上は従来どおり）。
+         CLS(レイアウトのずれ)を出さないよう、直後のインラインscriptで同期的に中身を決める。 -->
+    <a id="top-banner" href="draft-predict.html" target="_blank" rel="noopener noreferrer" class="hidden w-full max-w-md mb-2 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-md px-2 py-1.5 text-[10.5px] md:text-xs font-bold text-center leading-snug tracking-tight whitespace-nowrap overflow-hidden text-ellipsis"></a>
+    <script>
+      (function () {
+        var el = document.getElementById('top-banner');
+        var today = new Date();
+        var todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        var draftDate = new Date(2026, 9, 22);
+        var hideFrom = new Date(2026, 10, 1);
+        if (todayMid <= draftDate) {
+          var days = Math.round((draftDate - todayMid) / 86400000);
+          el.textContent = (days === 0 ? '本日10/22 ドラフト会議' : '10/22 ドラフト会議まであと' + days + '日') + '｜あなたの12球団1位予想は？';
+        } else if (todayMid < hideFrom) {
+          el.textContent = '✅ ドラフト会議の答え合わせ公開中 ›';
+          el.href = 'draft-predict.html#answer-check-section';
+        } else {
+          return;
+        }
+        el.classList.remove('hidden');
+        el.classList.add('block');
+        el.addEventListener('click', function () {
+          if (typeof gtag === 'function') gtag('event', 'cta_click', { month: today.getMonth() + 1, target: 'top_banner' });
+        });
+      })();
+    </script>
+    <div class="stadium-bg w-full min-h-[128px] md:min-h-[220px] rounded-lg px-4 flex flex-col items-center justify-center mb-3 md:mb-4" style="position: relative;">
     <div style="position: relative; z-index: 1;">
     <p class="font-sport text-red-400 text-[10px] md:text-xs tracking-[0.35em] text-center font-bold mb-1">DRAFT SIMULATOR</p>
     <h1 class="font-sport text-3xl md:text-5xl font-bold tracking-wide text-center" style="text-shadow: 0 4px 10px rgba(0,0,0,0.6);">⚾ <span class="text-yellow-400">AI</span>ドラフト</h1>
@@ -1303,8 +1343,8 @@
     </div>
     <div class="stitch-card bg-[#faf6ec] text-gray-800 rounded-lg shadow-2xl w-full max-w-md text-center overflow-hidden">
       <div class="h-1.5 bg-gradient-to-r from-red-700 via-red-500 to-red-700"></div>
-      <div class="p-6">
-      <h2 class="text-lg font-bold mb-4 border-b pb-2">ドラフト設定</h2>
+      <div class="p-5 md:p-6">
+      <h2 class="text-lg font-bold mb-3 md:mb-4 border-b pb-2">ドラフト設定</h2>
 
       <p class="font-bold mb-2 text-sm text-left text-blue-800">① あなたの担当球団</p>
       <select id="user-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500">
@@ -1343,7 +1383,7 @@
         <option value="lottery">全巡 同時指名（毎回くじ引き）</option>
         <option value="waiver">完全ウェーバー（抽選なし・順番指名）</option>
       </select>
-      <p id="draft-mode-desc" class="text-[11px] text-left text-gray-500 mb-6 leading-snug"></p>
+      <p id="draft-mode-desc" class="text-[11px] text-left text-gray-500 mb-4 md:mb-6 leading-snug"></p>
 
       <button onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
       <button onclick="window.openMpLobby()" class="w-full mt-2 bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg text-sm shadow">🤝 友達と対戦（β版）</button>

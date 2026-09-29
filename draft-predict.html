@@ -117,7 +117,7 @@
 
     <!-- ★ 答え合わせセクション：data/draft-2026-results.jsonが存在しない間はhidden-screenのまま。
          取得に成功した時だけJS側でhidden-screenを外して表示する（T2-1事前準備） -->
-    <section id="answer-check-section" class="hidden-screen">
+    <section id="answer-check-section" class="hidden-screen scroll-mt-24">
       <div class="bg-gray-800 border-2 border-green-500 rounded-lg p-4">
         <h3 class="text-lg font-black text-green-400 mb-1">🎯 答え合わせ結果</h3>
         <p id="answer-check-updated" class="text-[11px] text-gray-500 mb-3"></p>
@@ -410,6 +410,10 @@
         if (!res.ok) return; // ファイルがまだ無い(404) → 何もせず非表示のまま
         draftResults = await res.json();
         renderAnswerCheck();
+        // 表示前は非表示のため、#answer-check-section付きで来た場合はブラウザの自動スクロールが効かない
+        if (location.hash === '#answer-check-section') {
+          document.getElementById('answer-check-section').scrollIntoView({ block: 'start' });
+        }
       } catch (e) {
         // 取得失敗時も非表示のままにする
       }
