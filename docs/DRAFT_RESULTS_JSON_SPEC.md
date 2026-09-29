@@ -116,7 +116,7 @@
 - `draft-predict.html`は`data/draft-2026-results.json`の取得を試み、**404などで取得できない間は
   答え合わせセクションを一切表示しない**（ファイルを置いた瞬間に表示され始める）
 - テスト用のリハーサルでは、本番ファイルの代わりに`data/draft-2026-results.test.json`を読み込む
-  `?test_results=1`というURLパラメータが使える（詳しくは`docs/DRAFT_DAY_RUNBOOK.md`参照）。
+  `?test_results=1`というURLパラメータが使える（詳しい手順は非公開リポジトリ`baseball-draft-internal`の`docs/DRAFT_DAY_RUNBOOK.md`参照）。
   本番ファイル名を書き換える必要はない
 - 保存済みの予想（localStorageの`draftPrediction2026`）と`picks`を球団ごとに突き合わせ、
   上記の正規化＋2段階判定で的中を数える
