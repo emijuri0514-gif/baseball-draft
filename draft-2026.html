@@ -42,6 +42,23 @@
     "publisher": { "@type": "Organization", "name": "dreamteam9.com" }
   }
   </script>
+  <!-- ★ 開始時刻・会場はNPBから正式発表されていないため、startDateは日付のみ・locationは未記載。
+       Googleのイベントのリッチリザルトはlocationが必須なので、会場が発表されたら
+       "location": { "@type": "Place", "name": "会場名", "address": "住所" } を追加すること。 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "2026年プロ野球ドラフト会議 supported by リポビタンD",
+    "description": "NPBの新人選手選択会議（ドラフト会議）。12球団がアマチュア選手を指名する。",
+    "startDate": "2026-10-22",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "organizer": { "@type": "Organization", "name": "日本野球機構（NPB）", "url": "https://npb.jp/" },
+    "image": "https://dreamteam9.com/ogp.jpg",
+    "url": "https://dreamteam9.com/draft-2026.html",
+    "inLanguage": "ja"
+  }
+  </script>
 </head>
 <body class="text-gray-100">
   <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
