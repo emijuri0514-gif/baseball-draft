@@ -39,7 +39,7 @@ GitHub Pagesでそのまま公開している。主なファイル:
    - 「〜してみた」「〜だと思う」など、断定しすぎない自然な語尾を混ぜる
    - 長さは既存の回と同程度（2段落前後）でよい
 
-どちらのページも見た目のトーン（ダークネイビー背景、Tailwind CDN、Noto Sans JP）を崩さないこと。
+どちらのページも見た目のトーン（ダークネイビー背景、Tailwind CDN、端末標準の日本語フォント）を崩さないこと。
 
 軽微な文言修正やタイポ直しなど、ユーザーに変更として認識されないレベルのものまで律儀に書く必要はない。
 「何かが変わった・直った・追加された」と言えるレベルの変更が対象。
@@ -65,6 +65,14 @@ GitHub Pagesでそのまま公開している。主なファイル:
 - **AI採点・AIドラフト評価の重み（`BATTER_TOOL_WEIGHT`や`ORDER_WEIGHTS`など）を調整するときは、
   理論値だけで判断しない**。Playwrightで実際に12球団分のドラフト・スタメン編成をシミュレーションし、
   特定の選手タイプ（5ツール型・長距離砲など）に偏っていないかを検証してから確定する。
+- **日本語のWebフォント（Noto Sans JPなど）をGoogle Fontsから読み込まない**。Noto Sans JPは@font-faceが
+  約380個あり、適用時のスタイル計算だけで低速端末では約3秒かかり、PageSpeed Insightsのモバイル評価を大きく
+  下げていた（2026-09-29に端末標準フォントへ切り替え）。日本語は全ページ共通で
+  `"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif`
+  を使う（Windowsで游ゴシックが細くかすれないよう"Yu Gothic Medium"を"YuGothic"より前に置く）。
+  Webフォントは英字見出し用のOswald（index.htmlの`.font-sport`）だけで、`display=swap`＋`preconnect`で描画を止めずに読む。
+- **canvas（シェアカード等）で長さが変わる文字列を描くときは、`fillText`の第4引数に最大幅を渡す**。
+  canvasの`sans-serif`は端末ごとに実フォント（ヒラギノ／Noto／游ゴシック）が変わり、文字幅も変わるため。
 - **選手データを新規追加するときは、`id`に週刊ベースボールONLINE（`sp.baseball.findfriends.jp`）の
   実在の選手ページIDをそのまま使う**。仮の連番などを入れると「選手詳細を見る」リンクが壊れる
   （過去に82人分やってしまい、後から実IDへの差し替えが必要になった）。
