@@ -23,13 +23,13 @@
   <meta name="twitter:title" content="NPBドラフト会議シミュレーション｜AI対戦・スタメン編成ゲーム">
   <meta name="twitter:description" content="現役NPB選手をドラフトして最強のチームを作ろう。">
   <meta name="twitter:image" content="https://dreamteam9.com/ogp.jpg">
-  <!-- ★ 表示速度対策：Google Fontsは以前<style>内の@importで読んでいたため発見が遅かった。
-       接続を先に張り、<head>の先頭で読む。なお描画を止めない読み込み(media=print→all)も試したが、
-       Noto Sans JPは@font-faceが約380個あり、適用時のスタイル計算(低速端末で約3秒)が初回表示の後に
-       ずれ込むだけでTBTが悪化したため採用していない。 -->
+  <!-- ★ 日本語は端末標準フォント（body参照）。以前はGoogle FontsのNoto Sans JPを読んでいたが、
+       @font-faceが約380個あり、適用時のスタイル計算だけで低速端末では約3秒かかって初回表示を大きく遅らせていた。
+       Webフォントは英字見出し(.font-sport)のOswaldだけ。数個の@font-faceで軽いので、描画を止めずに読む(display=swap)。 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@500;700;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap"></noscript>
   <!-- トップのタイトル画像（CSS背景なので、そのままだとCSSを読むまで取得が始まらない） -->
   <link rel="preload" as="image" href="images/hero-draft-stage.webp" type="image/webp" fetchpriority="high">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -186,14 +186,14 @@
   </script>
 
   <style>
-    body { font-family: 'Noto Sans JP', sans-serif; background-color: #f1f5f9; user-select: none; -webkit-user-select: none; }
+    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #f1f5f9; user-select: none; -webkit-user-select: none; }
 
     .fade-in { animation: fadeIn 0.5s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .hidden-screen { display: none !important; }
 
     /* === 野球のスタジアム/革のような質感を出すための共通パーツ === */
-    .font-sport { font-family: 'Oswald', 'Noto Sans JP', sans-serif; }
+    .font-sport { font-family: 'Oswald', "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; }
     .stadium-bg {
       background: #0a1122 url('images/hero-draft-stage.webp') 78% 35% / cover no-repeat;
     }
@@ -895,20 +895,23 @@
       ctx.fillRect(0, 0, W, H);
 
       ctx.textAlign = 'center';
+      // ★ 端末ごとに sans-serif の実フォント(ヒラギノ/Noto/游ゴシック等)が変わり文字幅も変わるため、
+      // 長さが変わりうる文字列は fillText の第4引数(最大幅)で、はみ出す場合だけ横に詰めて描く
+      const badgeColW = Math.min(L.badgeCx, W - L.badgeCx) * 2 - 40;
 
       // 見出し・チーム名
       ctx.fillStyle = '#93c5fd';
       ctx.font = 'bold 22px sans-serif';
-      ctx.fillText(opts.headline || '⚾ ドラフト採点結果', L.badgeCx, L.headlineY);
+      ctx.fillText(opts.headline || '⚾ ドラフト採点結果', L.badgeCx, L.headlineY, badgeColW);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 40px sans-serif';
-      ctx.fillText(team.name.replace('(AI)', ''), L.badgeCx, L.nameY);
+      ctx.fillText(team.name.replace('(AI)', ''), L.badgeCx, L.nameY, badgeColW);
 
       if (opts.subtitle) {
         ctx.fillStyle = '#cbd5e1';
         ctx.font = 'bold 20px sans-serif';
-        ctx.fillText(opts.subtitle, L.badgeCx, L.subtitleY);
+        ctx.fillText(opts.subtitle, L.badgeCx, L.subtitleY, badgeColW);
       }
 
       // ランクバッジ（一番の見せ場：色はプロスピのランク配色に統一し、チームカラーは背景のグローと
@@ -936,11 +939,11 @@
 
       ctx.fillStyle = gradeInfo.color;
       ctx.font = 'bold 18px sans-serif';
-      ctx.fillText(`${gradeInfo.grade}ランク基準：${gradeInfo.min}〜${gradeInfo.max}pt`, L.badgeCx, L.badgeCy + L.badgeR + 95);
+      ctx.fillText(`${gradeInfo.grade}ランク基準：${gradeInfo.min}〜${gradeInfo.max}pt`, L.badgeCx, L.badgeCy + L.badgeR + 95, badgeColW);
 
       ctx.fillStyle = '#f1f5f9';
       ctx.font = 'bold 26px sans-serif';
-      ctx.fillText(gradeInfo.tagline, L.badgeCx, L.badgeCy + L.badgeR + 129);
+      ctx.fillText(gradeInfo.tagline, L.badgeCx, L.badgeCy + L.badgeR + 129, badgeColW);
 
       // 6項目の内訳バー（合計ptの根拠が一目で足し算できるよう、数字を主役にしたバー表示）
       ctx.textAlign = 'left';
@@ -978,10 +981,10 @@
         ctx.fillStyle = '#cbd5e1';
         const orderLines = wrapTextCJK(ctx, orderText, L.orderMaxWidth).slice(0, 2);
         let y = L.firstRowY + 6 * L.rowH + 6;
-        orderLines.forEach(l => { ctx.fillText(l, L.barX0, y); y += 26; });
+        orderLines.forEach(l => { ctx.fillText(l, L.barX0, y, L.orderMaxWidth); y += 26; });
         if (pitcherNames.length) {
           ctx.fillStyle = '#94a3b8';
-          ctx.fillText(`(投) ${pitcherNames.map(x => x.name).join('、')}`, L.barX0, y);
+          ctx.fillText(`(投) ${pitcherNames.map(x => x.name).join('、')}`, L.barX0, y, L.orderMaxWidth);
         }
       }
 
@@ -989,7 +992,7 @@
       ctx.textAlign = 'center';
       ctx.font = 'bold 18px sans-serif';
       ctx.fillStyle = '#64748b';
-      ctx.fillText('⚾ dreamteam9.com｜NPBドラフトAIシミュレーター', W / 2, L.footerY);
+      ctx.fillText('⚾ dreamteam9.com｜NPBドラフトAIシミュレーター', W / 2, L.footerY, W - 40);
 
       return canvas;
     }
@@ -1042,7 +1045,7 @@
 
       ctx.fillStyle = bannerTextColor;
       ctx.font = 'bold 50px sans-serif';
-      ctx.fillText(team.name.replace('(AI)', ''), W / 2, 94);
+      ctx.fillText(team.name.replace('(AI)', ''), W / 2, 94, W - 40);
 
       const marginX = 50;
       const colLabelX = marginX;
@@ -1083,7 +1086,8 @@
           nameFont -= 2;
           ctx.font = `bold ${nameFont}px sans-serif`;
         }
-        ctx.fillText(name, colNameX, midY);
+        // 32pxまで縮めても入らない長い名前（幅の広い端末フォント）は最大幅で横に詰める
+        ctx.fillText(name, colNameX, midY, nameMaxW);
 
         if (teamName) {
           ctx.textAlign = 'right';
