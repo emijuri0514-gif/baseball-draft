@@ -251,10 +251,12 @@
         const options = ['<option value="">-- 選手を選択 --</option>']
           .concat(pool.map(c => `<option value="${c.id}" ${c.id === current ? 'selected' : ''}>${candidateOptionLabel(c)}</option>`))
           .join('');
+        // ★ selectは一番長い選択肢の文字幅が既定の幅になり、flex-1だけだとそれ以下に縮まずスマホで画面外に
+        // はみ出していた。min-w-0で縮めるようにし、長い選択肢は選択欄の中で省略表示させる
         return `
           <div class="flex items-center gap-3 bg-gray-800 rounded-lg p-3">
             <span class="w-20 shrink-0 text-center text-xs font-black rounded py-1" style="background:${t.hex};color:${t.textColor};">${t.name}</span>
-            <select data-team="${t.name}" class="predict-select flex-1 bg-gray-900 border border-gray-600 rounded px-2 py-2 text-sm text-gray-100">
+            <select data-team="${t.name}" class="predict-select flex-1 min-w-0 w-full bg-gray-900 border border-gray-600 rounded px-2 py-2 text-sm text-gray-100 truncate">
               ${options}
             </select>
           </div>

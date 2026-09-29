@@ -187,6 +187,11 @@
 
   <style>
     body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #f1f5f9; user-select: none; -webkit-user-select: none; }
+    /* ★ iPhoneでリンクを長押ししたまま指を動かすと、リンク自体のドラッグ（半透明の複製が指に付いてくる）が
+       始まってスクロールできなくなっていた（本文の文字選択を無効にしているため長押しがドラッグに回りやすい）。
+       リンクと画像のドラッグと長押しメニューを無効にし、そのままスクロールできるようにする。
+       スタメン編成のドラッグは明示的にdraggable="true"を付けた要素だけなので影響しない。 */
+    a, img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 
     .fade-in { animation: fadeIn 0.5s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -623,6 +628,10 @@
       if (el) el.textContent = diffDays === 0 ? '(本日開催！)' : `(あと${diffDays}日)`;
     }
     document.addEventListener('DOMContentLoaded', updateHomeDraftCountdown);
+    // リンク長押し→ドラッグでスクロールできなくなる対策（CSSの-webkit-user-dragと併用。iOSは属性の方が確実に効く）
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('a[href]').forEach(a => a.setAttribute('draggable', 'false'));
+    });
 
     // ==========================================
     // 結果画面のCTA枠（月別・担当球団別に表示内容を切り替える。cta-config.jsonで管理）
