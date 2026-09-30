@@ -87,6 +87,10 @@ GitHub Pagesでそのまま公開している。主なファイル:
 - **野手の守備力（`fStats.def`）は、守備適性（捕一二三遊左中右）の数値のうち一番高いものを使う**（本職の数値ではない。
   2026-09-30にオーナー決定）。`bestPos`は先頭が本職（元の表の「ポジ」列）、その後ろに数値のある他の位置を値の高い順に並べ、
   表にない位置は推測で足さない。元の表は数値が詰まっていて隣の列を読み違えやすい（福永裕基で2回やった）ので、列見出しと突き合わせて読むこと。
+- **選手データ（`initialDatabase`）やAIの指名・採点ロジック（`getAIPick`・`getPosScore`など）を変えたら、
+  `npm run build:position-thresholds`でポジション残数ボードの基準表を作り直す**（約3分。見逃し0件でなければ書き込まれない）。
+  対象の関数は`scripts/position-thresholds/source-hash.mjs`の`HASHED_NAMES`。変わったPRでは「Position board thresholds」チェックが警告を出す。
+  手順の詳細は非公開リポジトリの`docs/POSITION_BOARD_THRESHOLDS.md`。
 - **選手データを新規追加するときは、`id`に週刊ベースボールONLINE（`sp.baseball.findfriends.jp`）の
   実在の選手ページIDをそのまま使う**。仮の連番などを入れると「選手詳細を見る」リンクが壊れる
   （過去に82人分やってしまい、後から実IDへの差し替えが必要になった）。

@@ -1700,6 +1700,16 @@
           <div id="turn-bar" class="hidden"></div>
           <div id="status-alert" class="hidden mb-2 p-2 font-bold text-xs rounded border-l-4"></div>
           <div id="pos-status-bar" class="flex flex-wrap gap-1 mb-2"></div>
+          <!-- ポジション残数ボード（初期は1行の要約。タップで開く） -->
+          <div id="pos-board" class="mb-2">
+            <button id="pos-board-toggle" type="button" onclick="window.togglePositionBoard()" aria-expanded="false" aria-controls="pos-board-body" class="w-full flex items-center gap-2 text-left text-[11px] font-bold text-white bg-gray-800 border border-gray-700 rounded px-2 py-1.5">
+              <span class="shrink-0">📋 残り人数</span>
+              <span id="pos-board-summary" class="flex-1 min-w-0 truncate"></span>
+              <span id="pos-board-caret" class="shrink-0 text-gray-400">▼</span>
+            </button>
+            <div id="pos-board-body" class="hidden mt-1 grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-700 border border-gray-700 rounded overflow-hidden"></div>
+            <p id="pos-board-toast" role="status" class="hidden mt-1 text-[11px] font-bold text-red-100 bg-red-900 border border-red-600 rounded px-2 py-1"></p>
+          </div>
 
           <div class="grid grid-cols-2 gap-1 mb-2">
             <select id="team-filter" class="select-sport border-2 rounded p-1 text-[10px] md:text-sm font-bold">
@@ -2705,6 +2715,7 @@
 
       userHadSRankThisRun = false;
       availablePlayers = [...initialDatabase];
+      resetPositionBoard();
 
       teams = [{
         id: 0,
@@ -2841,6 +2852,160 @@
       html += `<span class="pos-badge ${fCount>=FOREIGN_PLAYER_LIMIT?'pos-need':'pos-ok'}">外国人: ${fCount}/${FOREIGN_PLAYER_LIMIT}</span>`;
 
       document.getElementById('pos-status-bar').innerHTML = html;
+      renderPositionBoard();
+    }
+
+    // ==========================================
+    // ポジション残数ボード（ドラフト画面上部）
+    // ==========================================
+    // ★「守れる選手」＝守備位置の一覧(bestPos)にその位置があり、かつgetPosScore()が60以上（◎○△）の未指名選手。
+    //   投手の先発・中継・抑えも同じ条件（先発投手の中継・抑えは、一覧に無ければ数えない）。
+    // ★ 危険・注意は固定の人数ではなく、「次の自分の番までに他球団が指名する人数N」で決める。
+    //   Nごとの基準人数は、シミュレーションで「N回の指名で何人減ったか」の99%点を表にしたもの
+    //   （scripts/build-position-thresholds.mjs で作成。選手データやAIの指名ロジックを変えたら作り直す）。
+    // ==== POSITION_BOARD_THRESHOLDS:BEGIN（scripts/build-position-thresholds.mjs が自動生成。手で編集しない） ====
+    const POSITION_BOARD_THRESHOLDS = {"generatedAt":"2026-09-30","sourceHash":"0e3a1346e15f67d9","method":{"teams":12,"modes":["npb","lottery","waiver"],"trainRuns":150,"validateRuns":150,"seed":20260930,"quantile":0.99},"validation":{"npb":{"decisions":11017,"dangerRate":1.4,"cautionRate":2.4,"gone1":0,"miss1":0,"gone2":10,"miss2":0},"lottery":{"decisions":13077,"dangerRate":0.6,"cautionRate":1.5,"gone1":1,"miss1":0,"gone2":9,"miss2":0},"waiver":{"decisions":11194,"dangerRate":1.5,"cautionRate":2.5,"gone1":0,"miss1":0,"gone2":6,"miss2":0}},"table":{"捕":[0,1,2,2,3,3,4,4,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9,9,9,9,10,10,10,10,10,10,11],"一":[0,1,2,3,4,5,5,6,7,7,8,8,9,10,10,11,11,11,12,12,13,13,14,14,14,15,15,16,16,16,17,17,18,18],"二":[0,1,2,3,3,4,4,5,5,5,6,6,6,7,7,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,13,13,13,14],"三":[0,1,2,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10,11,11,12,12,13,13,14,14,14,15,15,15,16,16,17],"遊":[0,1,2,2,3,3,4,4,4,5,5,5,6,6,6,6,7,7,7,8,8,8,8,9,9,9,9,10,10,10,10,11,11,11],"左":[0,1,2,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,12,13,13,14,14,15,15,15,16,16,16,17],"中":[0,1,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9,10,10,11,11,11,12,12,13,13,13,14,14,14,15,15,15],"右":[0,1,2,3,4,4,5,5,6,6,6,7,7,8,8,8,8,9,9,9,10,10,11,11,11,12,12,13,13,14,14,14,15,15],"先発":[0,1,2,3,3,4,4,5,6,6,7,7,7,8,8,9,9,9,9,10,10,10,10,11,11,11,11,12,12,12,13,13,13,13],"中継":[0,1,2,3,4,5,6,6,7,8,9,9,10,11,12,12,13,13,14,14,15,15,16,16,17,17,17,18,18,18,19,19,19,19],"抑え":[0,1,2,3,3,4,4,5,6,6,7,7,7,8,8,8,9,9,9,10,10,10,10,11,11,11,11,12,12,12,12,12,12,12]}};
+    // ==== POSITION_BOARD_THRESHOLDS:END ====
+    const BOARD_POSITIONS = ["捕","一","二","三","遊","左","中","右","先発","中継","抑え"];
+    const BOARD_PITCHER_ROLES = ["先発","中継","抑え"];
+    function canPlayForBoard(p, pos) {
+      if (!p) return false;
+      if (BOARD_PITCHER_ROLES.includes(pos) ? !p.pStats : !p.fStats) return false;
+      return expandBestPos(p).includes(pos) && getPosScore(p, pos) >= 60;
+    }
+    // N回の指名で、そのポジションの人数が（99%の場合）最大何人減るか
+    function boardThreshold(pos, N) {
+      const t = POSITION_BOARD_THRESHOLDS.table[pos];
+      if (!t || N == null || N <= 0) return 0;
+      if (N < t.length) return t[N];
+      const last = t.length - 1, tail = (t[last] - t[Math.max(0, last - 10)]) / Math.min(10, last);
+      return t[last] + Math.ceil((N - last) * tail);
+    }
+    // ★ 今からの指名の並びから「次の自分の番まで(n1)」「その次の自分の番まで(n2)」に他球団が指名する人数を数える。
+    //   ・ウェーバーの巡：今の巡の残りの順番＋次の巡以降の折り返しの順番をそのまま数える
+    //   ・同時指名の巡（全巡同時指名／NPB方式の1巡目）：自分と他球団は同時に指名するので、自分が選ぶ時点では
+    //     まだ誰も取っていない。まだ確定していない他球団は「自分の後」に並べる。抽選に外れた球団の再指名は、
+    //     どの球団も1巡で1人しか取らないので別の1人としては数えない（今まだ指名が確定していない球団だけを数える）
+    //   ・自分が今まさに指名する番(onClock)なら、その番は飛ばして「次の番」を数える
+    //   シミュレーション（scripts/build-position-thresholds.mjs）もこの関数をそのまま使う。
+    function computeBoardN(st) {
+      const seq = [];
+      const pushRound = (r, cur) => {
+        if (st.isWaiverRound(r)) {
+          if (cur) {
+            let start = st.qpos;
+            const t0 = st.teams.find(t => t.id === st.queue[start]);
+            if (t0 && !t0.needsPick) start++; // その球団の指名が確定済み（アナウンス中など）
+            st.queue.slice(start).forEach(id => seq.push(id));
+          } else {
+            const base = [...st.base];
+            ((r % 2 === 0) ? base : base.reverse()).forEach(id => seq.push(id));
+          }
+        } else {
+          const need = cur ? st.teams.filter(t => t.needsPick) : st.teams;
+          if (need.some(t => t.id === st.userId)) seq.push(st.userId);
+          need.filter(t => t.id !== st.userId).forEach(t => seq.push(t.id));
+        }
+      };
+      pushRound(st.round, true);
+      for (let r = st.round + 1; r <= st.totalRounds; r++) pushRound(r, false);
+      let skip = st.onClock ? 1 : 0, c = 0; const ns = [];
+      for (const id of seq) {
+        if (id === st.userId) { if (skip) { skip--; continue; } ns.push(c); if (ns.length === 2) break; }
+        else c++;
+      }
+      return { n1: ns.length > 0 ? ns[0] : null, n2: ns.length > 1 ? ns[1] : null };
+    }
+    function currentBoardN() {
+      const user = userTeamRef();
+      if (!user) return { n1: null, n2: null };
+      const waiver = isWaiverRound(currentRound);
+      const onClock = !!user.needsPick && (waiver ? waiverQueue[waiverPos] === user.id : true);
+      return computeBoardN({ isWaiverRound, round: currentRound, totalRounds: TOTAL_ROUNDS, teams, userId: user.id,
+        queue: waiverQueue, qpos: waiverPos, base: waiverBaseOrder, onClock });
+    }
+    // danger / caution / ok / secured
+    function boardStatus(pos, remaining, secured, n) {
+      if (secured) return 'secured';
+      const d = boardThreshold(pos, n.n1);
+      const c = Math.max(boardThreshold(pos, n.n2), d + 2); // 「注意」を飛ばしていきなり「危険」にならないよう、危険＋2以上
+      if (remaining <= d || remaining === 0) return 'danger';
+      if (remaining <= c) return 'caution';
+      return 'ok';
+    }
+    function computePositionBoard() {
+      const user = userTeamRef();
+      const n = currentBoardN();
+      return BOARD_POSITIONS.map(pos => {
+        const players = availablePlayers.filter(p => canPlayForBoard(p, pos));
+        const br = { '◎': 0, '○': 0, '△': 0 };
+        players.forEach(p => { br[posMark(getPosScore(p, pos)).mark]++; });
+        const secured = !!user && user.roster.some(p => canPlayForBoard(p, pos));
+        return { pos, total: players.length, br, secured, status: boardStatus(pos, players.length, secured, n) };
+      });
+    }
+    let positionBoardOpen = false;
+    let positionBoardNotified = new Set();
+    let boardStrictPos = null; // ボードから絞り込んだときは、数えた条件（60点以上）と同じ選手だけを出す
+    function resetPositionBoard() { positionBoardNotified = new Set(); boardStrictPos = null; }
+    function renderPositionBoard() {
+      const body = document.getElementById('pos-board-body');
+      const summary = document.getElementById('pos-board-summary');
+      if (!body || !summary || !teams.length || !userTeamRef()) return;
+      const rows = computePositionBoard();
+      const danger = rows.filter(r => r.status === 'danger').map(r => r.pos);
+      const caution = rows.filter(r => r.status === 'caution').map(r => r.pos);
+      const parts = [];
+      if (danger.length) parts.push(`<span class="text-red-400">危険：${danger.join('・')}</span>`);
+      if (caution.length) parts.push(`<span class="text-yellow-300">注意：${caution.join('・')}</span>`);
+      summary.innerHTML = parts.length ? parts.join('<span class="text-gray-500">／</span>') : '<span class="text-gray-300">危険・注意なし</span>';
+      const chip = {
+        danger: '<span class="shrink-0 w-10 text-center rounded bg-red-600 text-white font-black">危険</span>',
+        caution: '<span class="shrink-0 w-10 text-center rounded bg-yellow-400 text-gray-900 font-black">注意</span>',
+        ok: '<span class="shrink-0 w-10 text-center rounded bg-gray-600 text-gray-200">余裕</span>',
+        secured: '<span class="shrink-0 w-10 text-center text-gray-500">―</span>'
+      };
+      body.innerHTML = rows.map(r => `
+        <button type="button" onclick="window.filterByBoardPosition('${r.pos}')" class="flex items-center gap-2 w-full text-left text-[11px] px-2 py-1.5 bg-gray-800 hover:bg-gray-700 ${boardStrictPos === r.pos ? 'ring-1 ring-inset ring-yellow-400' : ''}">
+          <span class="shrink-0 w-7 font-black text-white">${r.pos}</span>
+          <span class="shrink-0 w-8 text-right font-black text-white">${r.total}人</span>
+          <span class="flex-1 min-w-0 truncate text-gray-400">（◎${r.br['◎']} ○${r.br['○']} △${r.br['△']}）</span>
+          <span class="shrink-0 ${r.secured ? 'text-green-400' : 'text-gray-300'}">${r.secured ? '確保済み' : '未確保'}</span>
+          ${chip[r.status]}
+        </button>`).join('');
+    }
+    window.togglePositionBoard = function() {
+      positionBoardOpen = !positionBoardOpen;
+      document.getElementById('pos-board-body').classList.toggle('hidden', !positionBoardOpen);
+      document.getElementById('pos-board-caret').textContent = positionBoardOpen ? '▲' : '▼';
+      document.getElementById('pos-board-toggle').setAttribute('aria-expanded', positionBoardOpen ? 'true' : 'false');
+      if (positionBoardOpen) {
+        renderPositionBoard();
+        if (typeof gtag === 'function') gtag('event', 'position_board_open');
+      }
+    };
+    // ボードのポジションをタップ：既存のポジション絞り込みで、そのポジションを守れる選手（◎○△）だけを出す。もう一度タップで解除
+    window.filterByBoardPosition = function(pos) {
+      const sel = document.getElementById('pos-filter');
+      if (boardStrictPos === pos) { boardStrictPos = null; sel.value = ''; }
+      else {
+        boardStrictPos = pos; sel.value = pos;
+        if (typeof gtag === 'function') gtag('event', 'position_board_filter', { position: pos });
+      }
+      renderSearchList();
+      renderPositionBoard();
+    };
+    // 自分の番が来たとき、「危険」のポジションがあれば1回だけ小さく知らせる（同じポジションでは二度出さない）
+    function positionBoardOnUserTurn() {
+      const fresh = computePositionBoard().filter(r => r.status === 'danger' && !positionBoardNotified.has(r.pos));
+      if (!fresh.length) return;
+      fresh.forEach(r => positionBoardNotified.add(r.pos));
+      const toast = document.getElementById('pos-board-toast');
+      if (!toast) return;
+      toast.textContent = `⚠️ ${fresh.map(r => `${r.pos}（残り${r.total}人）`).join('・')}を守れる選手が残りわずかです`;
+      toast.classList.remove('hidden');
+      clearTimeout(positionBoardOnUserTurn.timer);
+      positionBoardOnUserTurn.timer = setTimeout(() => toast.classList.add('hidden'), 5000);
     }
 
     function initDraftMatrix() {
@@ -2870,6 +3035,7 @@
         html += `<tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} h-8">${rowHtml}</tr>`;
       }
       tbody.innerHTML = html;
+      renderPositionBoard(); // どの球団かが指名するたびに呼ばれるので、ボードもここで更新する
     }
 
     function generateStatsHtml(p) {
@@ -2911,6 +3077,7 @@
         if(currentTab === 'fav' && !favoriteIds.includes(p.id)) return false;
         if(teamFilter && p.team !== teamFilter) return false;
         if(posFilter && !(Array.isArray(p.bestPos) ? p.bestPos.includes(posFilter) : p.bestPos === posFilter)) return false;
+        if(posFilter && boardStrictPos === posFilter && !canPlayForBoard(p, posFilter)) return false;
 
         const isMatch = p.name.includes(keyword) || p.pos.includes(keyword) || p.team.includes(keyword) ||
                         (Array.isArray(p.bestPos) ? p.bestPos.some(bp => bp.includes(keyword)) : p.bestPos.includes(keyword));
@@ -2986,7 +3153,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('search-input').addEventListener('input', renderSearchList);
       document.getElementById('team-filter').addEventListener('change', renderSearchList);
-      document.getElementById('pos-filter').addEventListener('change', renderSearchList);
+      document.getElementById('pos-filter').addEventListener('change', () => { boardStrictPos = null; renderSearchList(); renderPositionBoard(); });
       document.getElementById('sort-filter').addEventListener('change', renderSearchList);
       document.getElementById('stat-filter').addEventListener('change', renderSearchList);
 
@@ -3091,6 +3258,7 @@
       renderPosStatus();
       renderSearchList();
       document.getElementById('status-alert').className = "hidden";
+      if (team.isUser) positionBoardOnUserTurn();
 
       if (!team.isUser) {
         if (team.control === 'remote') {
@@ -3148,6 +3316,7 @@
       const alertBox = document.getElementById('status-alert');
       const user = userTeamRef();
 
+      if (user.needsPick) positionBoardOnUserTurn();
       if (isHazurePhase && user.needsPick) {
         alertBox.textContent = "⚠️ ハズレ指名を行ってください";
         alertBox.className = "mb-2 p-2 font-bold text-xs rounded border-l-4 bg-red-100 border-red-500 text-red-700 block";
@@ -3511,6 +3680,7 @@
           cTeams[0].needsPick = false;
           availablePlayers = availablePlayers.filter(p => p.id !== player.id);
           mpHostRecordPick(cTeams[0], player);
+          renderPositionBoard(); // 同時指名の巡の確定（抽選含む）でもボードを更新する
         } else {
           currentConflicts.push({ player: player, teams: cTeams });
         }
@@ -3608,6 +3778,7 @@
         aiWinner.needsPick = false;
         availablePlayers = availablePlayers.filter(p => p.id !== player.id);
         mpHostRecordPick(aiWinner, player);
+        renderPositionBoard(); // 同時指名の巡の確定（抽選含む）でもボードを更新する
 
         processConflict(currentConflictIndex + 1);
       });
@@ -3676,6 +3847,7 @@
           winnerTeam.needsPick = false;
           availablePlayers = availablePlayers.filter(p => p.id !== player.id);
           mpHostRecordPick(winnerTeam, player);
+          renderPositionBoard(); // 同時指名の巡の確定（抽選含む）でもボードを更新する
 
           processConflict(currentConflictIndex + 1);
         });
@@ -3886,6 +4058,7 @@
     function mpBeginGame(data) {
       userHadSRankThisRun = false;
       availablePlayers = [...initialDatabase];
+      resetPositionBoard();
       favoriteIds = [];
       const resyncBtn = document.getElementById('mp-resync-btn');
       if (resyncBtn) resyncBtn.classList.remove('hidden');
