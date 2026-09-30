@@ -1,0 +1,20 @@
+# ポジション残数ボードの基準表（index.html の POSITION_BOARD_THRESHOLDS）は、選手データとAIの指名・採点ロジックを
+# 前提にシミュレーションで作っている。それらが変わったPRでは「表の作り直しが必要かもしれない」と警告を出す
+# （作り直しが必須とは限らないので、チェックは失敗させない）。
+name: Position board thresholds
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - scripts/position-thresholds/**
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/position-thresholds/check.mjs
