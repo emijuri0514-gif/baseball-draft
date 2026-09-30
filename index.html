@@ -31,21 +31,30 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap"></noscript>
   <!-- トップのタイトル画像（CSS背景なので、そのままだとCSSを読むまで取得が始まらない） -->
-  <link rel="preload" as="image" href="images/hero-draft-stage.webp" type="image/webp" fetchpriority="high">
-  <!-- スマホタッチ対応ライブラリ（スタメン編成のドラッグ用。初回表示には不要なのでdefer） -->
-  <script defer src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+  <!-- ★ スマホは表示幅が約360pxなので、960px版（24KB）で3倍密度の画面でも十分。PC幅だけ元の1672px版（60KB）を使う -->
+  <link rel="preload" as="image" href="images/hero-draft-stage-960.webp" type="image/webp" fetchpriority="high" media="(max-width: 767px)">
+  <link rel="preload" as="image" href="images/hero-draft-stage.webp" type="image/webp" fetchpriority="high" media="(min-width: 768px)">
+  <!-- スマホタッチ対応ライブラリ（スタメン編成のドラッグ用）は、初回表示と通信を取り合わないよう
+       loadDragDropTouch()でゲーム開始時に読み込む -->
   <!-- レーダーチャート用ライブラリは結果画面でのみ使うため、loadChartJs()で必要時に読み込む -->
   <!-- ★ 人対人対戦（Firestore）用のブートストラップ。Firebase v9+のSDKはESモジュール
        前提だが、本体のゲームロジックはHTML側の onclick="..." から直接呼べるよう
        グローバル関数（classicな<script>）で書かれている。モジュール化すると全onclickを
        書き換える大改修になるため、Firebase側だけこの独立したtype="module"スクリプトに
        閉じ込め、必要な関数群を window.MP に橋渡しする形にする。 -->
+  <!-- ★ 以前はページを開くたびにFirebase SDK（firebase-app/firebase-firestore）を読み込んでいたが、
+       友達対戦を使わない大半の訪問では不要なうえ、タイトル画像やCSSと通信を取り合って初回表示を遅らせていた。
+       window.loadMP()を呼んだとき（友達対戦のロビーを開いたとき）に初めて読み込む。 -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-    import {
+    let mpLoading = null;
+    window.loadMP = () => mpLoading || (mpLoading = (async () => {
+    const [{ initializeApp }, {
       getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
       onSnapshot, runTransaction, serverTimestamp, arrayUnion
-    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+    }] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"),
+    ]);
 
     const firebaseConfig = {
       apiKey: "AIzaSyAczy84xFBJ8r1-SEYe6LsXnOhYxZaUEY8",
@@ -182,6 +191,8 @@
       postLotteryResult, clearLotteryResult, submitLotteryChoice
     };
     window.dispatchEvent(new Event('mp-ready'));
+    return window.MP;
+    })().catch(e => { mpLoading = null; throw e; }));
   </script>
 
   <style>
@@ -193,16 +204,20 @@
     a, img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 
     .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    /* ★ ページを開いた直後のトップ画面だけはフェードインさせない。透明(opacity:0)から始まると、その間に
+       描かれたタイトル画像がLCP（一番大きな表示）の対象から外れ、LCPが遅れて計測されていた。
+       ゲームから戻ってきたとき（showScreen()でfirst-viewを外した後）は従来どおりフェードインする。 */
+    #screen-setup.first-view { animation: none; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .hidden-screen { display: none !important; }
 
     /* === 野球のスタジアム/革のような質感を出すための共通パーツ === */
     .font-sport { font-family: 'Oswald', "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; }
     .stadium-bg {
-      background: #0a1122 url('images/hero-draft-stage.webp') 78% 35% / cover no-repeat;
+      background: #0a1122 url('images/hero-draft-stage-960.webp') 78% 35% / cover no-repeat;
     }
     @media (min-width: 768px) {
-      .stadium-bg { background-position: center 35%; }
+      .stadium-bg { background-image: url('images/hero-draft-stage.webp'); background-position: center 35%; }
     }
     .stadium-bg::before {
       content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -1374,7 +1389,7 @@
   </script>
 
   <!-- 画面0: 初期設定画面 -->
-  <div id="screen-setup" class="fixed inset-0 bg-[#0a1122] z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto pt-3 pb-8 md:py-8">
+  <div id="screen-setup" class="first-view fixed inset-0 bg-[#0a1122] z-[100] flex flex-col items-center text-white fade-in px-4 overflow-y-auto pt-3 pb-8 md:py-8">
     <!-- ★ 中身がビューポートより高いと、親のjustify-centerとoverflow-y-autoの組み合わせで
          上端（タイトルなど）がスクロールで届かない位置まで見切れる不具合があった（Pixel等で発生）。
          justify-centerで中央寄せする代わりに、このラッパーにmy-autoを使う。
@@ -1439,6 +1454,7 @@
     <script>
       (function () {
         var KEY = 'dt9_demo_seen_v1';
+        var DEMO_DELAY_MS = 2500;
         var loop = document.getElementById('demo-loop');
         var openBtn = document.getElementById('demo-open');
         var slides = loop.querySelectorAll('.demo-slide');
@@ -1480,21 +1496,22 @@
           else show(idx + 1);
           timer = setTimeout(tick, idx === -1 ? 3000 : 2500);
         }
-        function start(autoplay) {
+        function start(autoplay, trigger) {
           loadImages();
+          if (typeof gtag === 'function') gtag('event', 'demo_view', { trigger: trigger });
           loop.classList.remove('hidden'); openBtn.classList.add('hidden');
           cycles = 0;
           if (autoplay && !reduce) { stop(); timer = setTimeout(tick, 1500); }
           else show(autoplay ? -1 : 0);
         }
-        openBtn.addEventListener('click', function () { start(!reduce); });
+        openBtn.addEventListener('click', function () { start(!reduce, 'manual'); });
         window.addEventListener('load', function () {
           if (seen) { openBtn.classList.remove('hidden'); return; }
           try { localStorage.setItem(KEY, '1'); } catch (e) {}
           // ★ 読み込み直後(0.5秒後)に出していた頃は、計測の最後のコマがデモのスライドになり、それまでの表示が
           // 全部「表示途中」と数えられてSpeed Indexが悪化していた(PSIで5.0秒→6.1秒、ローカルでも最後の見た目の変化が
-          // 0.7秒→3.0秒)。最初の5秒はタイトル画像のまま見せ、計測が終わった後にデモを始める。
-          setTimeout(function () { start(true); }, 5000);
+          // 0.7秒→3.0秒)。一度5秒にしたが、初めての人に見てもらえる前に離脱されやすいので、DEMO_DELAY_MSに短縮した。
+          setTimeout(function () { start(true, 'auto'); }, DEMO_DELAY_MS);
         });
       })();
     </script>
@@ -2644,7 +2661,27 @@
       return chartJsPromise;
     }
 
+    // スマホでスタメン編成のドラッグを使えるようにするライブラリ。初回表示と通信を取り合わないよう、
+    // ゲーム開始時（とスタメン画面を開くとき）に読み込む。二重には読み込まない。
+    let dragDropTouchLoading = false;
+    function loadDragDropTouch() {
+      if (dragDropTouchLoading || window.DragDropTouch) return;
+      dragDropTouchLoading = true;
+      const s = document.createElement('script');
+      s.src = 'https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js';
+      s.onerror = () => { dragDropTouchLoading = false; };
+      document.head.appendChild(s);
+    }
+
+    // 友達対戦用のFirebase SDKを読み込む（読み込み済みなら何もしない）。失敗時はfalse。
+    async function ensureMP() {
+      if (window.MP) return true;
+      if (!window.loadMP) return false;
+      try { await window.loadMP(); return !!window.MP; } catch (e) { return false; }
+    }
+
     window.startGame = function() {
+      loadDragDropTouch();
       loadChartJs().catch(() => {});
       const userTeamSelect = document.getElementById('user-team').value;
       const aiCount = parseInt(document.getElementById('ai-count').value);
@@ -3334,6 +3371,7 @@
         if(el) el.classList.add('hidden-screen');
       });
       document.getElementById(screenId).classList.remove('hidden-screen');
+      document.getElementById('screen-setup').classList.remove('first-view');
 
       const label = SCREEN_GA_LABEL[screenId];
       if (label && typeof gtag === 'function') {
@@ -3719,6 +3757,7 @@
     };
 
     window.openMpLobby = function() {
+      ensureMP(); // ロビーを開いた時点で読み込みを始めておく（作成・参加ボタンを押すまでに間に合うことが多い）
       const teamOptions = document.getElementById('user-team').innerHTML;
       document.getElementById('mp-create-team').innerHTML = teamOptions;
       document.getElementById('mp-join-team').innerHTML = teamOptions;
@@ -3740,7 +3779,7 @@
     };
 
     window.mpCreateRoom = async function() {
-      if (!window.MP) { showAppAlert('通信の準備中です。少し待ってからもう一度お試しください。'); return; }
+      if (!(await ensureMP())) { showAppAlert('通信の準備に失敗しました。通信環境をご確認のうえ、もう一度お試しください。'); return; }
       const teamName = document.getElementById('mp-create-team').value;
       try {
         const { roomId } = await window.MP.createRoom({ teamName, totalSlots: 2, draftMode: document.getElementById('draft-mode').value });
@@ -3757,7 +3796,7 @@
     };
 
     window.mpJoinRoom = async function() {
-      if (!window.MP) { showAppAlert('通信の準備中です。少し待ってからもう一度お試しください。'); return; }
+      if (!(await ensureMP())) { showAppAlert('通信の準備に失敗しました。通信環境をご確認のうえ、もう一度お試しください。'); return; }
       const errEl = document.getElementById('mp-join-error');
       errEl.classList.add('hidden');
       const code = document.getElementById('mp-join-code').value.trim().toUpperCase();
@@ -4386,6 +4425,7 @@
     // スタメンボード
     // ==========================================
     function startLineupPhase() {
+      loadDragDropTouch();
       mpBroadcastTurn();
       if (!lineupPhaseInitialized) {
         const poolContainer = document.getElementById('lineup-pool-container');
