@@ -227,7 +227,7 @@
       color: #111827; background: #facc15; opacity: 0; transition: opacity 0.3s; }
     .demo-loop.playing .demo-badge { opacity: 1; }
     .demo-dots { position: absolute; right: 4px; bottom: 2px; display: flex; pointer-events: auto; }
-    .demo-dots button { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: none; border: 0; padding: 0; }
+    .demo-dots button { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: none; border: 0; padding: 0; }
     .demo-dots button::before { content: ''; width: 7px; height: 7px; border-radius: 9999px; background: rgba(255,255,255,0.45); }
     .demo-dots button.on::before { background: #facc15; }
     .demo-open { position: absolute; right: 6px; bottom: 6px; z-index: 3; padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 900;
@@ -1449,7 +1449,10 @@
         window.addEventListener('load', function () {
           if (seen) { openBtn.classList.remove('hidden'); return; }
           try { localStorage.setItem(KEY, '1'); } catch (e) {}
-          setTimeout(function () { start(true); }, 500);
+          // ★ 読み込み直後(0.5秒後)に出していた頃は、計測の最後のコマがデモのスライドになり、それまでの表示が
+          // 全部「表示途中」と数えられてSpeed Indexが悪化していた(PSIで5.0秒→6.1秒、ローカルでも最後の見た目の変化が
+          // 0.7秒→3.0秒)。最初の5秒はタイトル画像のまま見せ、計測が終わった後にデモを始める。
+          setTimeout(function () { start(true); }, 5000);
         });
       })();
     </script>
