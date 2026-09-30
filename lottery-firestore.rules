@@ -131,7 +131,14 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid);
+      // ★[セキュリティ修正 2026-09-30] 以前は本人なら任意の total_points で作成でき、
+      // 最初から大量のポイントを持った状態で始められた。初期付与(1000pt)と空の履歴・解放アイテムに固定する。
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['display_name', 'total_points', 'prediction_history', 'point_history', 'unlocks'])
+        && request.resource.data.total_points == 1000
+        && request.resource.data.prediction_history.size() == 0
+        && request.resource.data.unlocks.size() == 0
+        && request.resource.data.point_history.size() <= 1;
       allow update: if isAdmin() || (
         isOwner(uid) &&
         request.resource.data.total_points < resource.data.total_points &&
@@ -147,8 +154,14 @@ service cloud.firestore {
     }
 
     match /bets/{betId} {
-      allow read: if isSignedIn();
+      // ★[セキュリティ修正 2026-09-30] 他人の予想(user_id・賭けたポイント)を読めないよう、本人と admin に限定。
+      // クライアントは where('user_id','==',uid) で自分の分だけ取得している(精算は admin)。
+      allow read: if isSignedIn() && (resource.data.user_id == request.auth.uid || isAdmin());
+      // ★[セキュリティ修正 2026-09-30] 結果が確定した試合・中止になった試合への予想を作れないよう、
+      // games/{game_id}.status == 'scheduled' を必須にした(試合開始時刻の判定はクライアント側。
+      // 開始後〜確定前の予想をルールで防ぐには games に Timestamp 型の開始時刻が必要)。
       allow create: if isSignedIn()
+        && get(/databases/$(database)/documents/games/$(request.resource.data.game_id)).data.status == 'scheduled'
         && request.resource.data.user_id == request.auth.uid
         && betId == request.auth.uid + '_' + request.resource.data.game_id
         && request.resource.data.result == 'pending'
@@ -167,21 +180,29 @@ service cloud.firestore {
       // admin は全フィールドを更新できる(くじ回の精算・取消など)。
       // 一般ユーザーは、チケット購入に伴う ticket_count / participant_uids の加算のみ、
       // かつ1回の更新につき最大10(=1回の購入で買える最大口数)までしか増やせない。
+      // ★[セキュリティ修正 2026-09-30] participant_uids は「自分を追加する」ことしかできないようにし
+      // (他人を消す・他人を足すのを禁止)、受付中(status=='open')のくじ回に限った。
       allow update: if isAdmin() || (
         isSignedIn() &&
+        resource.data.status == 'open' &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ticket_count', 'participant_uids']) &&
         request.resource.data.ticket_count is int &&
         request.resource.data.ticket_count > resource.data.ticket_count &&
-        request.resource.data.ticket_count <= resource.data.ticket_count + 10
+        request.resource.data.ticket_count <= resource.data.ticket_count + 10 &&
+        request.resource.data.participant_uids.toSet().hasAll(resource.data.participant_uids.toSet()) &&
+        request.resource.data.participant_uids.toSet().difference(resource.data.participant_uids.toSet()).hasOnly([request.auth.uid])
       );
       allow delete: if false;
     }
 
     match /tickets/{ticketId} {
-      allow read: if isSignedIn();
+      // ★[セキュリティ修正 2026-09-30] 本人と admin だけが読める(他人の購入内容を見られないように)。
+      allow read: if isSignedIn() && (resource.data.user_id == request.auth.uid || isAdmin());
+      // ★[セキュリティ修正 2026-09-30] 受付中(status=='open')のくじ回でしか購入できないようにした。
       allow create: if isSignedIn()
         && request.resource.data.user_id == request.auth.uid
         && request.resource.data.result == 'pending'
+        && get(/databases/$(database)/documents/draws/$(request.resource.data.draw_id)).data.status == 'open'
         && request.resource.data.unit_price ==
              get(/databases/$(database)/documents/draws/$(request.resource.data.draw_id)).data.unit_price;
       // 的中判定(result/matched_count/payout)の更新は精算処理(admin)のみ許可する。

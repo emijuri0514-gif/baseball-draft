@@ -18,6 +18,7 @@
   <meta property="og:description" content="現役NPB選手をドラフトして最強のチームを作るシミュレーションの遊び方・ルールをまとめて解説します。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dreamteam9.com/howto.html">
+  <link rel="canonical" href="https://dreamteam9.com/howto.html">
   <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <style>
@@ -39,9 +40,9 @@
     "step": [
       { "@type": "HowToStep", "name": "球団・ルールを選ぶ", "text": "担当球団・対戦AI球団数・ドラフト方式を選んでスタートします。" },
       { "@type": "HowToStep", "name": "ドラフト会議", "text": "全12巡、他球団のAIと選手を指名し合います。" },
-      { "@type": "HowToStep", "name": "スタメン編成", "text": "獲得した選手をドラッグ＆ドロップで打順・守備位置に配置します。" },
+      { "@type": "HowToStep", "name": "スタメン編成", "text": "獲得した選手をドラッグ＆ドロップ、または選手→枠の順にタップして打順・守備位置に配置します。" },
       { "@type": "HowToStep", "name": "AI採点", "text": "打線・投手陣を数値で評価し、S〜Gのランクが決定します。" },
-      { "@type": "HowToStep", "name": "プレーオフ", "text": "参加全球団によるトーナメントで優勝チームを決めます。" }
+      { "@type": "HowToStep", "name": "プレーオフ", "text": "AI採点の上位球団（最大8球団）によるトーナメントで優勝チームを決めます。" }
     ]
   }
   </script>
@@ -116,9 +117,9 @@
       <ol class="space-y-2 text-sm md:text-base text-gray-200 list-decimal list-inside">
         <li>担当球団・対戦AI球団数・ドラフト方式を選んでスタート</li>
         <li>ドラフト会議：全12巡、選手を指名し合う</li>
-        <li>スタメン編成：獲得した選手をドラッグ＆ドロップで打順・守備位置に配置</li>
+        <li>スタメン編成：獲得した選手をドラッグ＆ドロップ（またはタップ）で打順・守備位置に配置</li>
         <li>AI採点：打線・投手陣を数値で評価し、S〜Gのランクが決定</li>
-        <li>プレーオフ：参加全球団によるトーナメントで優勝チームを決定</li>
+        <li>プレーオフ：AI採点の上位球団（最大8球団）によるトーナメントで優勝チームを決定</li>
       </ol>
     </section>
 
@@ -147,7 +148,7 @@
       <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">④ スタメン編成のルール</h3>
       <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
         <li>野手9名（1〜9番）＋投手3名（先発・中継・抑え）の計12枠すべてを埋める必要があります</li>
-        <li>獲得選手カードを枠までドラッグ＆ドロップして配置します（外すのも自由）</li>
+        <li>獲得選手カードを枠までドラッグ＆ドロップするか、選手カード→配置したい枠の順にタップして配置します（外すのも自由）</li>
         <li>打順ごとに守備位置を選択でき、「◎最適 ○good △普通 ▲不向き ✕ミスマッチ」の適性表示が出ます</li>
         <li>適性の高い打順・守備位置に配置するほど、後のAI採点や試合内容が有利になります</li>
       </ul>
@@ -202,8 +203,9 @@
     <section>
       <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑦ プレーオフ</h3>
       <p class="text-sm md:text-base text-gray-200">
-        AI採点後、参加全球団のfinalScore順にシードされたトーナメントに進出できます。
-        2球団なら決勝のみ、3球団なら1位が準決勝を免除されて決勝から登場、4球団なら準決勝→決勝の総当たり方式です。
+        AI採点後、総合ptの高い順にシードされたトーナメントに進出できます。進出できるのは上位8球団までで、9〜12球団で遊んだ場合は9位以下が予選落ちになります。
+        総合ptが同点のときは、ドラフト開始時の球団の並び順で上の球団（1人で遊ぶ場合は担当球団）を上位として扱います。
+        2球団なら決勝のみ、3球団なら1位が準決勝を免除されて決勝から登場、4球団なら準決勝→決勝の勝ち抜き方式です。
         5〜7球団の場合も同様に、上位シードほど準々決勝が不戦勝で免除され、後のラウンドから登場します。8球団なら不戦勝なしの準々決勝→準決勝→決勝です。
         勝ち進んで優勝すると、結果をシェア画像として保存できます。
       </p>
