@@ -11,7 +11,7 @@ tools: Read, Grep, Glob, Bash, Write
 
 - **理論だけで結論を出さない。** ロジックを目で追って「たぶんこれが原因」と推測するだけで終わらせず、必ず実際にコードを動かして再現・確認する。
 - **Playwrightで、このリポジトリの本物のJS関数を直接呼ぶ。** `startGame()`、`getAIPick()`、`getOrderDiff()`、`orderMark()`、`attemptSteal()`のような関数は`page.evaluate()`の中から素で呼び出せる。UIをクリックで辿るより、この方法の方が速く確実。
-- **`index.html`はTailwind CDN（`cdn.tailwindcss.com`）を読み込むが、このサンドボックスからは到達できないことが多い。** 見た目を確認する必要がある場合は、スクラッチパッド配下にTailwind CLIでローカルビルドしたCSSを作り、`<script src="https://cdn.tailwindcss.com">`を`<link rel="stylesheet" href="output.css">`に一時的に差し替えたコピーで検証する（元の`index.html`は書き換えない）。見た目の確認が不要なロジック調査なら、この手間は省いてよい。
+- **TailwindはビルドしたCSS（`css/tailwind.css`）を各ページで読み込んでいる**ので、ローカルの静的サーバーで開けばそのまま見た目を確認できる。見慣れないクラスが効いていないときは、`npm run build:css`をし忘れていないか（`css/tailwind.css`にそのクラスがあるか）をまず疑う。
 - **既知の落とし穴を先に確認する。** `CLAUDE.md`の「過去にハマった実装上の注意点」セクション（`justify-center`+`overflow-y-auto`、`position:fixed`背景の固定、Tailwindとのカスケード衝突、flexの`::after`重なり、AI評価の重み、選手IDの実在性など）に該当しないか、真っ先に照らし合わせる。
 
 ## 調査の進め方

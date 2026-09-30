@@ -32,7 +32,6 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap"></noscript>
   <!-- トップのタイトル画像（CSS背景なので、そのままだとCSSを読むまで取得が始まらない） -->
   <link rel="preload" as="image" href="images/hero-draft-stage.webp" type="image/webp" fetchpriority="high">
-  <script src="https://cdn.tailwindcss.com"></script>
   <!-- スマホタッチ対応ライブラリ（スタメン編成のドラッグ用。初回表示には不要なのでdefer） -->
   <script defer src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
   <!-- レーダーチャート用ライブラリは結果画面でのみ使うため、loadChartJs()で必要時に読み込む -->
@@ -408,6 +407,9 @@
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" }
   }
   </script>
+  <!-- Tailwindはビルド済みCSS（npm run build:css で再生成）。Play CDNと同じくページ内<style>より後に読み込み、
+       同じ詳細度のルールではTailwind側が勝つ順序を保っている。 -->
+  <link rel="stylesheet" href="css/tailwind.css">
 </head>
 <body class="text-gray-800 h-screen overflow-hidden flex flex-col">
 
