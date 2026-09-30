@@ -1,0 +1,27 @@
+# css/tailwind.css（ビルド済みのTailwind）が、ページ・JSで使っているクラスと食い違っていないかを確認する。
+# クラスを追加・変更したのに `npm run build:css` を忘れると、本番でそのクラスだけ見た目が当たらなくなるため。
+name: Tailwind CSS is up to date
+
+on:
+  pull_request:
+  push:
+    branches: [claude/draft-simulator-refactor-2tl4kh]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build:css
+      - name: css/tailwind.css に差分がないこと
+        run: |
+          if ! git diff --quiet -- css/tailwind.css; then
+            echo "::error file=css/tailwind.css::css/tailwind.css が最新ではありません。npm run build:css を実行してコミットしてください。"
+            git diff --stat -- css/tailwind.css
+            exit 1
+          fi
