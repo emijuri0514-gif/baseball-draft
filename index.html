@@ -1270,6 +1270,42 @@
       return 60;
     }
 
+    // ★ 守備位置の適性：2＝本職（bestPos[0]）、1＝サブポジション、0＝適性なし。DHは誰でも2。
+    // 「外」は旧データの外野どこでも表記（左・中・右すべて本職扱い）。
+    function expandBestPos(p) {
+      const out = [];
+      (Array.isArray(p.bestPos) ? p.bestPos : [p.bestPos]).forEach(bp => {
+        if (bp === "外") out.push("左", "中", "右"); else out.push(bp);
+      });
+      return out;
+    }
+    function posAptitude(p, pos) {
+      if (pos === "DH") return 2;
+      const bp = Array.isArray(p.bestPos) ? p.bestPos : [p.bestPos];
+      if (bp[0] === pos || (bp[0] === "外" && ["左", "中", "右"].includes(pos))) return 2;
+      return expandBestPos(p).includes(pos) ? 1 : 0;
+    }
+    // 適性のない位置に就いたときの種類：捕手がらみ／同じ内野・外野の中での移動／内外野をまたぐ移動
+    function offPositionKind(p, pos) {
+      const bp = expandBestPos(p);
+      const OUT = ["左", "中", "右"], IN = ["一", "二", "三", "遊"];
+      if (pos === "捕" || bp[0] === "捕" && !bp.some(x => x !== "捕")) return "catcher";
+      if (OUT.includes(pos) && bp.some(x => OUT.includes(x))) return "same";
+      if (IN.includes(pos) && bp.some(x => IN.includes(x))) return "same";
+      return "cross";
+    }
+    // ★ 試合での実効守備力：適性のない位置に就くと、打球の処理が不慣れで失策しやすくなる。
+    // 以前は守備位置に関係なく素の守備力で失策率を決めていたため、一塁手を遊撃に置いても
+    // 失策が増えず、AIが適性を無視した配置をしても試合では何も困らなかった。
+    function defAtPos(p, pos, def) {
+      if (!pos || pos === "DH") return def;
+      const a = posAptitude(p, pos);
+      if (a === 2) return def;
+      if (a === 1) return def - 3;
+      const kind = offPositionKind(p, pos);
+      return def - (kind === "catcher" ? 25 : kind === "same" ? 15 : 20);
+    }
+
     function getPosScore(p, pos) {
       let score = 50;
       let bestPositions = Array.isArray(p.bestPos) ? p.bestPos : [p.bestPos];
@@ -1311,6 +1347,10 @@
 
           // ★ 本職ではないサブポジションは「少し下がる」程度の軽いペナルティに、適性が
           // 無い守備位置への配置は「大幅に下がる」ようはっきり差をつける
+          // ★ 2026-09-30：適性なしのペナルティを強化（内野→内野-12→-25、外野→外野-10→-20、
+          // 内外野またぎ-22→-35、捕手がらみ-18/-30→-30/-45）。弱いままだと「一塁しか守れない選手を
+          // 遊撃に置いてでも打てる選手を並べる」方が得になり、AIが清宮を遊撃・岡林を一塁に置くような
+          // 人間の感覚では考えにくいスタメンを組んでいた。
           if (expandedBestPos[0] === pos || (bestPositions[0] === "外" && ["左", "中", "右"].includes(pos))) {
             score += 5;
           } else if (expandedBestPos.includes(pos)) {
@@ -1321,11 +1361,11 @@
             const isIn = ["一","二","三","遊"].includes(pos);
             const pIsIn = expandedBestPos.some(bp => ["一","二","三","遊"].includes(bp));
 
-            if (expandedBestPos[0] === "捕" && pos !== "捕") score -= 18;
-            else if (pos === "捕" && !expandedBestPos.includes("捕")) score -= 30;
-            else if (isOut && pIsOut) score -= 10;
-            else if (isIn && pIsIn) score -= 12;
-            else score -= 22;
+            if (expandedBestPos[0] === "捕" && pos !== "捕") score -= 30;
+            else if (pos === "捕" && !expandedBestPos.includes("捕")) score -= 45;
+            else if (isOut && pIsOut) score -= 20;
+            else if (isIn && pIsIn) score -= 25;
+            else score -= 35;
           }
         }
       }
@@ -2367,26 +2407,73 @@
     const DEF_PRIORITY = ["DH","捕","遊","二","中","三","右","左","一"];
     const ORDER_PRIORITY = [4,3,1,2,5,9,6,7,8];
 
-    // 守備位置優先順に、貪欲法で打者を割り当てる（スタメン自動編成とAI指名評価の両方で使う）
-    function greedyDefAssign(batters) {
-      const assign = {}, used = new Set();
-      DEF_PRIORITY.forEach(pos => {
-        let best = null, bs = -999;
-        batters.forEach(p => {
-          if (used.has(p.id)) return;
-          const s = getPosScore(p, pos);
-          if (s > bs) { bs = s; best = p; }
-        });
-        if (best) { assign[pos] = best; used.add(best.id); }
-      });
-      return assign;
+    // ★ 打者を守備位置（DH含む9枠）に割り当てる（スタメン自動編成とAI指名評価の両方で使う）。
+    // 以前は DEF_PRIORITY の順に「その枠で一番点が高い選手」を貪欲に埋めていたため、先に埋める
+    // 遊撃で一塁手の清宮を使ってしまい、後の一塁には一塁を守れない岡林しか残らない、といった
+    // 全体としておかしな配置が起きていた。全員の組み合わせを見て、
+    //   ①埋まる枠の数 → ②適性（本職・サブ）のある選手が就く枠の数 → ③getPosScoreの合計
+    // の優先順で一番よい割り当てを選ぶ（まず守備位置の適性、その中で能力、の順）。
+    // 打者は多くても十数人・枠は9つなので、使った枠の組み合わせ(2^9)を状態にしたDPで十分速い。
+    const LINEUP_POSITIONS = ["DH","捕","一","二","三","遊","左","中","右"];
+    function assignDefense(batters) {
+      const P = LINEUP_POSITIONS, K = P.length, FULL = 1 << K, n = batters.length;
+      const W_FILL = 1e6, W_APT = 1e3;
+      const gain = batters.map(p => P.map(pos => W_FILL + (pos !== "DH" && posAptitude(p, pos) > 0 ? W_APT : 0) + getPosScore(p, pos)));
+      let dp = new Float64Array(FULL).fill(-Infinity); dp[0] = 0;
+      const parent = [], chose = [];
+      for (let i = 0; i < n; i++) {
+        const nd = Float64Array.from(dp), par = new Int16Array(FULL).fill(-1), ch = new Int8Array(FULL).fill(-1);
+        for (let m = 0; m < FULL; m++) {
+          if (dp[m] === -Infinity) continue;
+          for (let k = 0; k < K; k++) {
+            if (m & (1 << k)) continue;
+            const nm = m | (1 << k), v = dp[m] + gain[i][k];
+            if (v > nd[nm]) { nd[nm] = v; par[nm] = m; ch[nm] = k; }
+          }
+        }
+        parent.push(par); chose.push(ch); dp = nd;
+      }
+      let best = 0;
+      for (let m = 1; m < FULL; m++) if (dp[m] > dp[best]) best = m;
+      const assign = {};
+      for (let i = n - 1, m = best; i >= 0; i--) {
+        if (chose[i][m] >= 0) {
+          // この選手でmに到達した場合だけ採用（同じmにスキップで到達した場合は-1のまま）
+          assign[P[chose[i][m]]] = batters[i];
+          m = parent[i][m];
+        }
+      }
+      // 表示・打順決めの都合で DEF_PRIORITY の順に並べて返す
+      const ordered = {};
+      DEF_PRIORITY.forEach(pos => { if (assign[pos]) ordered[pos] = assign[pos]; });
+      return ordered;
     }
 
-    // 現在のロースターでまだ埋まっていない守備位置（ドラフト中のAI指名評価に使う）
+    // ★ 適性のある選手だけで埋められる守備位置の最大数（二部マッチング）。
+    // 指名候補を加えたときにこれが増えるか＝「その選手が空いている守備位置に（他の選手を
+    // 動かすことも含めて）ちゃんと収まるか」を、AIの指名評価で使う。
+    const FIELD_POSITIONS = ["捕","一","二","三","遊","左","中","右"];
+    function aptitudeMatchSize(batters) {
+      const owner = {};
+      const tryAssign = (i, seen) => {
+        for (const pos of FIELD_POSITIONS) {
+          if (seen.has(pos) || posAptitude(batters[i], pos) === 0) continue;
+          seen.add(pos);
+          if (owner[pos] === undefined || tryAssign(owner[pos], seen)) { owner[pos] = i; return true; }
+        }
+        return false;
+      };
+      let size = 0;
+      for (let i = 0; i < batters.length; i++) if (tryAssign(i, new Set())) size++;
+      return size;
+    }
+
+    // 現在のロースターで、まだ適性のある選手が就いていない守備位置（ドラフト中のAI指名評価に使う）。
+    // 適性のない選手で「一応埋まっている」位置も空きとして扱う。
     function getOpenDefensiveSlots(roster) {
       const batters = roster.filter(p => p && p.fStats);
-      const assign = greedyDefAssign(batters);
-      return DEF_PRIORITY.filter(pos => !assign[pos]);
+      const assign = assignDefense(batters);
+      return DEF_PRIORITY.filter(pos => !assign[pos] || (pos !== "DH" && posAptitude(assign[pos], pos) === 0));
     }
 
     // 現在のロースターでまだ担当がいない投手ロール
@@ -3063,6 +3150,26 @@
         if (battersOnly.length > 0) candidates = battersOnly;
       }
 
+      // ★ 守備位置の適性を最優先する：残りの野手枠が、まだ適性のある選手がいない守備位置の数と
+      // 同じになったら（＝ここで守れない選手を取ると、誰かを適性のない位置に置くしかなくなる）、
+      // 空いている位置に収まる野手だけを候補にする。以前は「どこかの位置が一応埋まる」かだけを
+      // 見ていたため、外野手ばかり集めて一塁や遊撃に外野手・一塁手を回すスタメンになりやすかった。
+      const rosterBatters = team.roster.filter(p => p && p.fStats);
+      const baseMatch = aptitudeMatchSize(rosterBatters);
+      const openFieldCount = FIELD_POSITIONS.length - baseMatch;
+      const remainingBatterSlots = Math.max(0, 9 - rosterBatters.length);
+      const fitCache = new Map();
+      const fitsOpenPosition = p => {
+        if (!fitCache.has(p.id)) fitCache.set(p.id, aptitudeMatchSize([...rosterBatters, p]) > baseMatch);
+        return fitCache.get(p.id);
+      };
+      if (openFieldCount > 0 && remainingBatterSlots - 1 < openFieldCount) {
+        let fitting = candidates.filter(p => p.fStats && fitsOpenPosition(p));
+        // 枠（投手/捕手/内野/外野の人数）の都合で候補が絞られていて収まる選手がいない場合は、全体から探す
+        if (fitting.length === 0) fitting = pool.filter(p => p.fStats && fitsOpenPosition(p));
+        if (fitting.length > 0) candidates = fitting;
+      }
+
       if (candidates.length === 0) return null;
 
       let bestPlayer = candidates[0];
@@ -3134,7 +3241,14 @@
         // 野手・投手のどちらも1巡目はちょうど0から始まり、対等に比較できる。
         if (p.fStats && openSlots.length > 0) {
           const urgency = (9 - openSlots.length) / 9;
-          score += (Math.max(...openSlots.map(pos => getPosScore(p, pos))) - 50) * urgency;
+          // ★ 空いている位置のうち、その選手が実際に守れる位置（とDH）だけで評価する
+          const fitSlots = openSlots.filter(pos => posAptitude(p, pos) > 0);
+          if (fitSlots.length > 0) score += (Math.max(...fitSlots.map(pos => getPosScore(p, pos))) - 50) * urgency;
+          // 空いている守備位置に収まらない野手は、DHか控えにしかならない。残り枠に余裕が少ないほど強く下げる
+          if (openFieldCount > 0 && !fitsOpenPosition(p)) {
+            const spare = remainingBatterSlots - openFieldCount; // 適性のある選手で埋めたうえで余る枠
+            score -= spare <= 1 ? 18 : 10;
+          }
         }
         if (p.pStats && openRoles.length > 0) {
           const urgency = (3 - openRoles.length) / 3;
@@ -4226,11 +4340,12 @@
     // AIのスタメン自動編成（守備位置・打順を最適化）
     // ==========================================
     function buildAILineup(team) {
-      const batters  = team.roster.filter(p => p && p.fStats).slice(0, 9);
+      // ★ 打者が10人以上いるときも、先に指名した9人ではなく、守備位置の適性と能力で良い9人を選ぶ
+      const batters  = team.roster.filter(p => p && p.fStats);
       const pitchers = team.roster.filter(p => p && p.pStats);
 
-      // 守備位置の割当（重要ポジションから貪欲に埋める）
-      const assign = greedyDefAssign(batters);
+      // 守備位置の割当（全体最適。assignDefense()参照）
+      const assign = assignDefense(batters);
 
       // 打順の割当（4番・3番から順に最適な選手を埋める）
       const slots = [], usedO = new Set();
@@ -4576,7 +4691,8 @@
         let p_run  = batters.reduce((sum, b) => sum + b.p.fStats.run, 0) / (batters.length || 1);
 
         let defBatters = batters.filter(b => b.pos !== "DH");
-        let p_def = defBatters.length > 0 ? defBatters.reduce((sum, b) => sum + b.p.fStats.def, 0) / defBatters.length : 40;
+        // ★ 守備力は「その位置での実効値」で見る（適性のない位置に置くと下がる。defAtPos()参照）
+        let p_def = defBatters.length > 0 ? defBatters.reduce((sum, b) => sum + defAtPos(b.p, b.pos, b.p.fStats.def), 0) / defBatters.length : 40;
 
         let sp = pitchers.filter(x => x.pos === "先発");
         let rp = pitchers.filter(x => x.pos !== "先発");
@@ -4891,7 +5007,8 @@
           pow: fStats.pow + (b.pow || 0) + love,
           meet: fStats.meet + (b.meet || 0) + love,
           run: fStats.run + (b.run || 0) + love,
-          def: fStats.def + (b.def || 0) + love
+          // ★ 適性のない守備位置では実効守備力を下げる（失策率・盗塁阻止に効く。defAtPos()参照）
+          def: defAtPos(p, fieldPos || (p.bestPos && p.bestPos[0]), fStats.def + (b.def || 0) + love)
         };
       }
       return { ...p, fStats, baseRun, fieldPos: fieldPos || (p.bestPos && p.bestPos[0]) || "外", stats: { ab: 0, hit: 0, hr: 0, rbi: 0, run: 0, bb: 0 } };
