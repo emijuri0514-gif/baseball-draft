@@ -12,12 +12,13 @@
     gtag("js", new Date());
     gtag("config", "G-N7NP62TTYB");
   </script>
-  <title>選手名鑑（全96選手）｜NPBドラフト会議シミュレーション</title>
-  <meta name="description" content="NPBドラフト会議シミュレーションに登場する全96選手のステータス（ミート・パワー・走力・守備力など）を球団・ポジション別に検索、絞り込みできる選手名鑑です。">
-  <meta property="og:title" content="選手名鑑（全96選手）｜NPBドラフト会議シミュレーション">
-  <meta property="og:description" content="現役NPB選手をドラフトして最強のチームを作るシミュレーションの全96選手を球団・ポジション別に検索できる選手名鑑です。">
+  <title>選手名鑑（全選手の能力値）｜NPBドラフト会議シミュレーション</title>
+  <meta name="description" content="NPBドラフト会議シミュレーションに登場する全選手のステータス（ミート・パワー・走力・守備力など）を球団・ポジション別に検索、絞り込みできる選手名鑑です。">
+  <meta property="og:title" content="選手名鑑（全選手の能力値）｜NPBドラフト会議シミュレーション">
+  <meta property="og:description" content="現役NPB選手をドラフトして最強のチームを作るシミュレーションの全選手を球団・ポジション別に検索できる選手名鑑です。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dreamteam9.com/players.html">
+  <link rel="canonical" href="https://dreamteam9.com/players.html">
   <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <style>
@@ -80,6 +81,11 @@
     <div id="ad-slot-top" class="ad-slot"></div>
 
     <p id="load-status" class="text-center text-sm text-gray-400 py-10">選手データを読み込み中...</p>
+    <div id="load-error" class="hidden text-center py-10">
+      <p id="load-error-msg" class="text-sm text-gray-300 mb-4"></p>
+      <button id="load-retry" type="button" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2 rounded-full">もう一度読み込む</button>
+    </div>
+    <noscript><p class="text-center text-sm text-gray-300 py-4">このページの表示にはJavaScriptが必要です。ブラウザの設定でJavaScriptを有効にしてください。</p></noscript>
 
     <div id="app" class="hidden">
       <div class="bg-gray-800 rounded-lg p-3 mb-5 flex flex-col md:flex-row gap-3 md:items-center">
@@ -211,19 +217,41 @@
     // index.html本体の選手データ(initialDatabase)を取得して常に最新のドラフト対象選手と
     // 同期させる（このページ側にデータを複製すると、選手を追加した際に更新し忘れて
     // 名鑑だけ古いままになる恐れがあるため）。
-    fetch('index.html')
-      .then(r => r.text())
-      .then(html => {
-        const start = html.indexOf('const initialDatabase');
-        const end = html.indexOf('];', start) + 2;
-        if (start === -1 || end === -1) throw new Error('parse-failed');
-        const src = html.slice(start, end);
-        const players = new Function(src + '; return initialDatabase;')();
-        init(players);
-      })
-      .catch(() => {
-        document.getElementById('load-status').textContent = '選手データの読み込みに失敗しました。GitHub Pages等のWebサーバー経由でアクセスしてください（ファイルを直接開くと読み込めません）。';
-      });
+    // ★ 失敗の種類で案内を分ける：通信・取得の失敗は「もう一度読み込む」で再試行できるようにし、
+    //   取得できたのに表示で落ちた場合は再試行しても同じなので再読み込みを案内する。
+    function showLoadError(msg, retry) {
+      document.getElementById('load-status').classList.add('hidden');
+      document.getElementById('load-error-msg').textContent = msg;
+      document.getElementById('load-retry').onclick = retry;
+      document.getElementById('load-error').classList.remove('hidden');
+    }
+    function loadPlayers() {
+      document.getElementById('load-error').classList.add('hidden');
+      document.getElementById('load-status').classList.remove('hidden');
+      fetch('index.html')
+        .then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.text(); })
+        .then(html => {
+          const start = html.indexOf('const initialDatabase');
+          const endIdx = start === -1 ? -1 : html.indexOf('];', start);
+          if (endIdx === -1) throw new Error('parse-failed');
+          const players = new Function(html.slice(start, endIdx + 2) + '; return initialDatabase;')();
+          if (!Array.isArray(players) || players.length === 0) throw new Error('empty');
+          return players;
+        })
+        .then(players => {
+          try { init(players); }
+          catch (e) {
+            console.error(e);
+            showLoadError('選手データの表示中にエラーが発生しました。ページを再読み込みしてください。', () => location.reload());
+          }
+        }, e => {
+          console.error(e);
+          showLoadError(location.protocol === 'file:'
+            ? '選手データを読み込めませんでした。ファイルを直接開くと読み込めないため、Webサーバー経由でアクセスしてください。'
+            : '選手データを読み込めませんでした。通信状況を確認して、もう一度お試しください。', loadPlayers);
+        });
+    }
+    loadPlayers();
   </script>
 </body>
 </html>
