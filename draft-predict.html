@@ -572,75 +572,104 @@
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
     }
 
+    // ★ Xのタイムラインで目に留まるよう、余白は最小限にして12球団の予想を大きく敷き詰める。
+    //   見出しとサイト名は上の細い帯1本にまとめ、残りの高さはすべて12行に使う。
     function buildPredictionCardCanvas(picks, format) {
-      const W = format === 'story' ? 1080 : 1200;
-      const H = format === 'story' ? 1920 : 675;
+      const story = format === 'story';
+      const W = story ? 1080 : 1200;
+      const H = story ? 1920 : 675;
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
 
-      const bg = ctx.createLinearGradient(0, 0, W, H);
-      bg.addColorStop(0, '#0f172a');
-      bg.addColorStop(1, '#1e293b');
-      ctx.fillStyle = bg;
+      ctx.fillStyle = '#0b1120';
       ctx.fillRect(0, 0, W, H);
 
-      ctx.textAlign = 'center';
+      // 上の帯：左に見出し、右にサイト名
+      const M = story ? 12 : 8;        // 外周と行の間のすき間
+      const headH = story ? 96 : 50;
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
       ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 22px sans-serif';
-      ctx.fillText('⚾ 2026年ドラフト会議 1位指名予想', W / 2, format === 'story' ? 70 : 45, W - 40);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 30px sans-serif';
-      ctx.fillText('私の予想はこれだ！', W / 2, format === 'story' ? 120 : 82);
+      ctx.font = `900 ${story ? 50 : 32}px sans-serif`;
+      ctx.fillText('2026ドラフト 1位指名予想', M + 4, headH / 2 + 2, story ? W * 0.62 : W * 0.6);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = `bold ${story ? 30 : 20}px sans-serif`;
+      ctx.fillText('dreamteam9.com #ドラフト予想', W - M - 4, headH / 2 + 2, story ? W * 0.34 : W * 0.36);
 
-      const cols = format === 'story' ? 1 : 2;
-      const gridTop = format === 'story' ? 170 : 120;
-      const gridBottom = H - 60;
-      const rowH = (gridBottom - gridTop) / Math.ceil(12 / cols);
-      const colW = (W - 80) / cols;
+      // 同じ選手を予想した球団の数（「3球団競合」などを添えて目を引く）
+      const pickCount = {};
+      TEAMS.forEach(t => { const p = picks[t.name]; if (p) pickCount[p.name] = (pickCount[p.name] || 0) + 1; });
+
+      const cols = story ? 1 : 2;
+      const rows = Math.ceil(12 / cols);
+      const gridTop = headH;
+      const colW = (W - M * (cols + 1)) / cols;
+      const rowH = (H - gridTop - M * rows) / rows;
+      const badgeW = story ? 250 : 150;
+      const nameSize = story ? 66 : 44;
+      const subSize = story ? 32 : 22;
 
       TEAMS.forEach((t, i) => {
-        const col = Math.floor(i / Math.ceil(12 / cols));
-        const row = i % Math.ceil(12 / cols);
-        const x = 40 + col * colW;
-        const y = gridTop + row * rowH;
+        const col = Math.floor(i / rows);
+        const row = i % rows;
+        const x = M + col * (colW + M);
+        const y = gridTop + row * (rowH + M);
         const pick = picks[t.name];
 
-        const badgeW = 106;
-        ctx.textAlign = 'left';
+        // 行の地（球団カラーをうっすら敷く）
+        ctx.fillStyle = hexToRgba(t.hex, 0.16);
+        ctx.beginPath(); ctx.roundRect(x, y, colW, rowH, 10); ctx.fill();
+
+        // 球団バッジ（行の高さいっぱい）。オリックスなど背景に近い色でも埋もれないよう細い枠を付ける
         ctx.fillStyle = t.hex;
-        ctx.beginPath();
-        ctx.roundRect(x, y, badgeW, 36, 8);
-        ctx.fill();
+        ctx.beginPath(); ctx.roundRect(x, y, badgeW, rowH, 10); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
         ctx.fillStyle = t.textColor;
-        ctx.textBaseline = 'middle';
         ctx.textAlign = 'center';
-        // 「ソフトバンク」等の長い球団名がバッジ幅をはみ出さないよう、収まるまでフォントを縮める
-        let teamFontSize = 18;
-        ctx.font = `bold ${teamFontSize}px sans-serif`;
-        while (ctx.measureText(t.name).width > badgeW - 12 && teamFontSize > 11) {
+        let teamFontSize = story ? 46 : 32;
+        ctx.font = `900 ${teamFontSize}px sans-serif`;
+        while (ctx.measureText(t.name).width > badgeW - 16 && teamFontSize > 16) {
           teamFontSize -= 1;
-          ctx.font = `bold ${teamFontSize}px sans-serif`;
+          ctx.font = `900 ${teamFontSize}px sans-serif`;
         }
-        ctx.fillText(t.name, x + badgeW / 2, y + 19, badgeW - 8);
+        ctx.fillText(t.name, x + badgeW / 2, y + rowH / 2 + 1, badgeW - 12);
 
-        const textX = x + badgeW + 14;
+        // 選手名・所属（端末ごとにsans-serifの実フォントが変わるので、最大幅を必ず渡す）
+        const textX = x + badgeW + (story ? 22 : 14);
+        const count = pick ? pickCount[pick.name] : 0;
+        const tagW = count >= 2 ? (story ? 190 : 116) : 0;
+        const textMaxW = colW - badgeW - (story ? 34 : 24) - tagW;
         ctx.textAlign = 'left';
-        ctx.fillStyle = pick ? '#ffffff' : '#64748b';
-        ctx.font = 'bold 22px sans-serif';
-        ctx.fillText(pick ? pick.name : '未定', textX, y + 13, colW - badgeW - 24);
         if (pick) {
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '15px sans-serif';
-          ctx.fillText(`${pick.org}${pick.pos ? '・' + pick.pos : ''}`, textX, y + 30, colW - badgeW - 24);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `900 ${nameSize}px sans-serif`;
+          ctx.fillText(pick.name, textX, y + rowH * 0.40, textMaxW);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = `bold ${subSize}px sans-serif`;
+          ctx.fillText(`${pick.org}${pick.pos ? '・' + pick.pos : ''}`, textX, y + rowH * 0.78, textMaxW);
+        } else {
+          ctx.fillStyle = '#64748b';
+          ctx.font = `900 ${nameSize}px sans-serif`;
+          ctx.fillText('未定', textX, y + rowH / 2, textMaxW);
         }
-        ctx.textBaseline = 'alphabetic';
-      });
 
-      ctx.textAlign = 'center';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText('⚾ dreamteam9.com｜#ドラフト予想', W / 2, H - 22);
+        if (count >= 2) {
+          const tagH = story ? 60 : 40;
+          const tx = x + colW - tagW - (story ? 14 : 10);
+          const ty = y + (rowH - tagH) / 2;
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath(); ctx.roundRect(tx, ty, tagW, tagH, tagH / 2); ctx.fill();
+          ctx.fillStyle = '#111827';
+          ctx.textAlign = 'center';
+          ctx.font = `900 ${story ? 32 : 21}px sans-serif`;
+          ctx.fillText(`${count}球団競合`, tx + tagW / 2, ty + tagH / 2 + 1, tagW - 12);
+        }
+      });
+      ctx.textBaseline = 'alphabetic';
 
       return canvas;
     }
