@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dreamteam9.com/devblog.html">
   <link rel="canonical" href="https://dreamteam9.com/devblog.html">
-  <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-main.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <style>
     body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
@@ -228,6 +228,7 @@
         <li><a href="#ep136" class="hover:underline">遊び方ページが、ゲームより先に古くなっていた</a></li>
         <li><a href="#ep137" class="hover:underline">シェア画像は、余白より情報だった</a></li>
         <li><a href="#ep138" class="hover:underline">検索結果のアイコンが、ずっと地球儀だった</a></li>
+        <li><a href="#ep139" class="hover:underline">「ドラフトシム」は、よそのゲームの名前だった</a></li>
       </ol>
     </nav>
 
@@ -1070,6 +1071,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第138回：検索結果のアイコンが、ずっと地球儀だった</h2>
       <p>Googleで「AIドラフト」を検索してみたら、サイト名の横のアイコンが、ほかのサイトみたいなロゴじゃなくて灰色の地球儀のマークになっていた。ブラウザのタブにはちゃんと⚾が出ていたので、てっきり設定できているものだと思っていた。調べてみると、⚾は絵文字をHTMLの中に直接書き込んだ「その場で描くアイコン」で、ブラウザは表示してくれるけど、Googleはアイコンを独立した画像ファイルとして取りに来るので、拾いようがなかったらしい。全37ページ、最初からずっとこの書き方だった。</p>
       <p>なので、紺の背景に白いボール、赤い縫い目、真ん中に「AI」と入れたアイコンを作って、16・32・48pxを1つにまとめたfavicon.icoと、96・192・512pxの画像、iPhoneのホーム画面用の180pxを用意して、全ページから指定し直した。16pxまで縮めると「AI」の文字はさすがに少しつぶれるけど、紺と白と赤の配色で「あの野球ボールのやつ」とは分かるくらいには残ってくれた。ついでに、検索結果のサイト名が「AIドラフト」と出るように、トップページにサイト名を伝える情報も足しておいた。Googleに反映されるまでは少し時間がかかるみたいなので、しばらく様子を見てみる。</p>
+    </article>
+
+    <article id="ep139" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第139回：「ドラフトシム」は、よそのゲームの名前だった</h2>
+      <p>Search Consoleを見ていたら、「ドラフトシム」というキーワードでこのサイトが表示されていた。タイトルに入れたら人が来るかなと一瞬考えたけど、念のため調べてみたら、大学野球.comの「ドラフトシム2026」という別のゲームの名前だった。そっちを探している人をこっちに連れてきても、がっかりさせるだけだと思う。なのでタイトルには入れないことにした。ついでに自分のサイトを見直したら、ゲーム画面の左上のヘッダーがずっと「⚾ DRAFT SIM」のままで、遊び方ページの見出しも同じだった。作り始めた頃の仮の名前を、そのまま使い続けていたらしい。</p>
+      <p>ヘッダーは「⚾ AIドラフト」に直して、トップの小さい英字も「DRAFT SIMULATOR」から「NPB DRAFT GAME」に変えた。ほかにも、シェア画像の下に入るサイト名が「NPBドラフトAIシミュレーター」「NPBドラフト会議シミュレーション」と画像ごとにバラバラだったので、全部「AIドラフト｜dreamteam9.com」にそろえた。一番びっくりしたのは、XやLINEでリンクを貼ったときに出る画像で、「BASEBALL DRAFT SIMULATOR」という英語のタイトルに、ドメインを取る前のgithub.ioのURLが入ったままだった。33ページがこの画像を使っていたので、新しいアイコンと「AIドラフト」のロゴを入れた画像に作り直した。名前がそろうと、やっと1つのゲームになった感じがする。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>

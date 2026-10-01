@@ -554,7 +554,7 @@
       ctx.textAlign = 'center';
       ctx.font = 'bold 18px sans-serif';
       ctx.fillStyle = '#64748b';
-      ctx.fillText('⚾ dreamteam9.com｜#ドラフト予想', W / 2, H - 22);
+      ctx.fillText('⚾ AIドラフト｜dreamteam9.com｜#ドラフト予想', W / 2, H - 22, W - 40);
 
       return canvas;
     }
@@ -600,7 +600,7 @@
       ctx.textAlign = 'right';
       ctx.fillStyle = '#cbd5e1';
       ctx.font = `bold ${story ? 30 : 20}px sans-serif`;
-      ctx.fillText('dreamteam9.com #ドラフト予想', W - M - 4, headH / 2 + 2, story ? W * 0.34 : W * 0.36);
+      ctx.fillText('AIドラフト dreamteam9.com #ドラフト予想', W - M - 4, headH / 2 + 2, story ? W * 0.34 : W * 0.36);
 
       // 同じ選手を予想した球団の数（「3球団競合」などを添えて目を引く）
       const pickCount = {};

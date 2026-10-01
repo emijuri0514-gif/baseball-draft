@@ -23,11 +23,11 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dreamteam9.com/">
   <link rel="canonical" href="https://dreamteam9.com/">
-  <meta property="og:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-main.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="NPBドラフト会議シミュレーション｜AI対戦・スタメン編成ゲーム">
   <meta name="twitter:description" content="現役NPB選手をドラフトして最強のチームを作ろう。">
-  <meta name="twitter:image" content="https://dreamteam9.com/ogp.jpg">
+  <meta name="twitter:image" content="https://dreamteam9.com/images/ogp-main.jpg">
   <!-- ★ 日本語は端末標準フォント（body参照）。以前はGoogle FontsのNoto Sans JPを読んでいたが、
        @font-faceが約380個あり、適用時のスタイル計算だけで低速端末では約3秒かかって初回表示を大きく遅らせていた。
        Webフォントは英字見出し(.font-sport)のOswaldだけ。数個の@font-faceで軽いので、描画を止めずに読む(display=swap)。 -->
@@ -426,7 +426,7 @@
     "@type": "VideoGame",
     "name": "NPBドラフト会議シミュレーション",
     "url": "https://dreamteam9.com/",
-    "image": "https://dreamteam9.com/ogp.jpg",
+    "image": "https://dreamteam9.com/images/ogp-main.jpg",
     "description": "現役NPB選手をドラフトして最強のチームを作るAI対戦型ブラウザゲーム。ドラフト会議で指名を競い合い、獲得選手でスタメンを編成してAI採点・試合シミュレーションまで楽しめます。",
     "genre": ["スポーツ", "シミュレーション"],
     "gamePlatform": "Web Browser",
@@ -1053,7 +1053,7 @@
       ctx.textAlign = 'center';
       ctx.font = 'bold 18px sans-serif';
       ctx.fillStyle = '#64748b';
-      ctx.fillText('⚾ dreamteam9.com｜NPBドラフトAIシミュレーター', W / 2, L.footerY, W - 40);
+      ctx.fillText('⚾ AIドラフト｜dreamteam9.com', W / 2, L.footerY, W - 40);
 
       return canvas;
     }
@@ -1102,7 +1102,7 @@
       ctx.textAlign = 'center';
       ctx.fillStyle = bannerSubColor;
       ctx.font = 'bold 20px sans-serif';
-      ctx.fillText('⚾ NPBドラフト会議シミュレーション', W / 2, 36);
+      ctx.fillText('⚾ AIドラフト｜dreamteam9.com', W / 2, 36, W - 40);
 
       ctx.fillStyle = bannerTextColor;
       ctx.font = 'bold 50px sans-serif';
@@ -1186,7 +1186,7 @@
       ctx.textAlign = 'center';
       ctx.fillStyle = '#94a3b8';
       ctx.font = 'bold 15px sans-serif';
-      ctx.fillText('dreamteam9.com', W / 2, canvas.height - 16);
+      ctx.fillText('AIドラフト｜dreamteam9.com', W / 2, canvas.height - 16, W - 40);
 
       return canvas;
     }
@@ -1447,7 +1447,7 @@
     </script>
     <div class="stadium-bg w-full min-h-[128px] md:min-h-[220px] rounded-lg px-4 flex flex-col items-center justify-center mb-3 md:mb-4" style="position: relative;">
     <div style="position: relative; z-index: 1;">
-    <p class="font-sport text-red-400 text-[10px] md:text-xs tracking-[0.35em] text-center font-bold mb-1">DRAFT SIMULATOR</p>
+    <p class="font-sport text-red-400 text-[10px] md:text-xs tracking-[0.35em] text-center font-bold mb-1">NPB DRAFT GAME</p>
     <h1 class="font-sport text-3xl md:text-5xl font-bold tracking-wide text-center" style="text-shadow: 0 4px 10px rgba(0,0,0,0.6);">⚾ <span class="text-yellow-400">AI</span>ドラフト</h1>
     <p class="font-sport text-blue-300 text-[10px] md:text-xs tracking-[0.25em] text-center mt-2 mb-1">BUILD YOUR BEST NINE</p>
     <p class="text-blue-200 text-xs md:text-sm text-center">現役NPB選手をAI球団と取り合う、無料のドラフト会議シミュレーション</p>
@@ -1693,7 +1693,7 @@
 
   <!-- ヘッダー -->
   <header class="header-bg text-white p-2 flex justify-between items-center z-10 relative border-b-4 border-red-600">
-    <h1 class="font-sport text-sm font-bold tracking-wider">⚾ DRAFT SIM</h1>
+    <h1 class="font-sport text-sm font-bold tracking-wider">⚾ AIドラフト</h1>
     <div class="flex items-center gap-2">
       <div id="round-indicator" class="font-bold bg-red-700 px-3 py-1 rounded-full shadow-inner text-xs">第 1 巡 選択希望選手</div>
     </div>
