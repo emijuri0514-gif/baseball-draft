@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%E2%9A%BE%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
   <script>
@@ -14,6 +17,7 @@
   </script>
   <title>開発ブログ｜NPBドラフト会議シミュレーションを個人開発した記録</title>
   <meta name="description" content="プログラミング未経験からAIと一緒にNPBドラフト会議シミュレーションを作った個人開発の記録。選手データ選びやAIロジック調整の試行錯誤を連載形式で公開しています。">
+  <meta property="og:site_name" content="AIドラフト">
   <meta property="og:title" content="開発ブログ｜NPBドラフト会議シミュレーションを個人開発した記録">
   <meta property="og:description" content="プログラミング未経験からAIと一緒に現役NPB選手ドラフトシミュレーションを作った個人開発の記録です。">
   <meta property="og:type" content="website">
@@ -223,6 +227,7 @@
         <li><a href="#ep135" class="hover:underline">「残り何人なら危ないか」は、球団数で全然違った</a></li>
         <li><a href="#ep136" class="hover:underline">遊び方ページが、ゲームより先に古くなっていた</a></li>
         <li><a href="#ep137" class="hover:underline">シェア画像は、余白より情報だった</a></li>
+        <li><a href="#ep138" class="hover:underline">検索結果のアイコンが、ずっと地球儀だった</a></li>
       </ol>
     </nav>
 
@@ -1059,6 +1064,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第137回：シェア画像は、余白より情報だった</h2>
       <p>自分でも1位指名を予想して、シェア画像をXに貼ろうとしたら、思ったより地味だった。1200×675の画像なのに、選手名は22px、所属は15pxで、画面の半分くらいが紺色の余白。しかも上のほうに「私の予想はこれだ！」という大きめの見出しがあって、一番場所を取っているのがそこだった。タイムラインで流れてくる画像は一瞬しか見られないので、きれいに余白を取るより、12球団ぶんの名前がパッと目に入るほうが大事だと思う。</p>
       <p>そこで見出しは消して、「2026ドラフト 1位指名予想」とサイト名を上の細い帯1本にまとめ、残りの高さを全部12行に使うようにした。球団名のバッジは行の高さいっぱいに広げて、選手名は44px、所属は22pxと、前の倍くらいの大きさになった。ついでに、同じ選手を何球団で予想したかを数えて「3球団競合」の札を付けてみた。自分の予想だと織田翔希・渡部海・菰田陽生がそれぞれ3球団ずつ重なっていて、画像を見ただけで「この3人に集中する読みなんだな」と分かるようになったのが、思ったより面白かった。オリックスのバッジは背景とほぼ同じ紺色で埋もれていたので、細い枠を付けている。</p>
+    </article>
+
+    <article id="ep138" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第138回：検索結果のアイコンが、ずっと地球儀だった</h2>
+      <p>Googleで「AIドラフト」を検索してみたら、サイト名の横のアイコンが、ほかのサイトみたいなロゴじゃなくて灰色の地球儀のマークになっていた。ブラウザのタブにはちゃんと⚾が出ていたので、てっきり設定できているものだと思っていた。調べてみると、⚾は絵文字をHTMLの中に直接書き込んだ「その場で描くアイコン」で、ブラウザは表示してくれるけど、Googleはアイコンを独立した画像ファイルとして取りに来るので、拾いようがなかったらしい。全37ページ、最初からずっとこの書き方だった。</p>
+      <p>なので、紺の背景に白いボール、赤い縫い目、真ん中に「AI」と入れたアイコンを作って、16・32・48pxを1つにまとめたfavicon.icoと、96・192・512pxの画像、iPhoneのホーム画面用の180pxを用意して、全ページから指定し直した。16pxまで縮めると「AI」の文字はさすがに少しつぶれるけど、紺と白と赤の配色で「あの野球ボールのやつ」とは分かるくらいには残ってくれた。ついでに、検索結果のサイト名が「AIドラフト」と出るように、トップページにサイト名を伝える情報も足しておいた。Googleに反映されるまでは少し時間がかかるみたいなので、しばらく様子を見てみる。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
