@@ -85,12 +85,20 @@
 
     // このブラウザ自身を識別するID（Firebase Authは使わないので、localStorageに
     // 保存した乱数で代用する。同じ端末でルームを作り直しても自分の枠を再認識できる）。
+    // ★ 以前はlocalStorage（同じブラウザの全タブで共通）に保存していたため、同じブラウザの2つのタブで
+    //   ホストとゲストを試すと、ゲストが「自分の枠に戻る」処理でホストの枠（枠0）を自分のものと
+    //   みなして乗っ取り、相手のいない対戦になっていた。タブごとに別になるsessionStorageに変える
+    //   （同じタブなら再読み込みしても同じIDのままなので、自分の枠に戻れる挙動は変わらない）。
+    let memClientId = null;
     function getClientId() {
-      let id = localStorage.getItem('mp_client_id');
+      let id = null;
+      try { id = sessionStorage.getItem('mp_client_id'); } catch (e) {}
+      if (!id) id = memClientId;
       if (!id) {
         id = 'c' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-        localStorage.setItem('mp_client_id', id);
+        try { sessionStorage.setItem('mp_client_id', id); } catch (e) {}
       }
+      memClientId = id;
       return id;
     }
 
@@ -2616,7 +2624,16 @@
     let mpMyLotteryChoice = null;        // このブラウザの利用者が選んだ封筒番号
     let mpLotteryOpponentChoice = null;  // ホスト側のみ使用：ゲストから届いた封筒選択
     let mpLotteryRevealTriggered = false; // 現在のキーについて開票済みか（ホスト/ゲスト共通ガード）
-    let mpLastAnnouncedViaLottery = null;  // ゲスト側：抽選の開票演出ですでに見せたplayerId（重複アナウンス防止）
+    let mpLastAnnouncedViaLottery = null;
+    // ★ 2026-10-02 友達対戦の安定化
+    let mpGuestPickQueue = [];        // ゲスト側：まだ画面に反映していない確定指名（1件ずつ順番に反映する）
+    let mpGuestDraining = false;      // ゲスト側：指名の反映（アナウンス表示中を含む）の途中か
+    let mpLastTurnData = null;        // ゲスト側：最後に受け取った手番情報（指名を反映するたびに当て直す）
+    let mpLastRoomSig = null;         // 同じ内容を二重に処理しないための、直前に処理したルームの中身
+    let mpPollTimer = null;           // リアルタイム同期が止まったときの保険の定期取得
+    let mpLastRevealKey = null;       // ゲスト側：最後に表示した「指名読み上げ」
+    let mpRevealedPickIds = new Set(); // ゲスト側：読み上げ画面ですでに見せた選手（重複アナウンス防止）
+    let revealScreenSeq = 0;          // 読み上げ画面を最後に使った処理の番号（古いタイマーが画面を切り替えないように）  // ゲスト側：抽選の開票演出ですでに見せたplayerId（重複アナウンス防止）
 
     // ★ スタメン編成の同期用。ドラフトと違って「早い者勝ち」の権威は不要で、
     // お互いが自分のスタメンをFirestoreへ送り合い、両方揃った時点でどちらの
@@ -3464,8 +3481,12 @@
         </div>
       `;
       showScreen('screen-reveal');
+      const seq = ++revealScreenSeq;
       setTimeout(() => {
-        showScreen('screen-draft');
+        // ★ 対人戦のゲストでは、アナウンス中に抽選や次の読み上げが始まることがある。そのときに
+        //   この古いタイマーが「ドラフト画面に戻す」と、始まったばかりの抽選画面を隠してしまい、
+        //   封筒を選べずにゲームが止まっていた。読み上げ画面をまだ自分が使っているときだけ戻す。
+        if (seq === revealScreenSeq && !document.getElementById('screen-reveal').classList.contains('hidden-screen')) showScreen('screen-draft');
         callback();
       }, 1500);
     }
@@ -3849,33 +3870,45 @@
       if (cb) cb();
     };
 
-    function executeReveal() {
-      document.getElementById('reveal-round').textContent = currentRound;
-      document.getElementById('reveal-mode-label').textContent = '選択希望選手';
-      const container = document.getElementById('reveal-cards-container');
-      container.innerHTML = '';
-
-      teams.forEach(t => {
-        if (!t.needsPick || !t.currentPick) return;
-        let coverHtml = !t.isUser ? `
+    // 「選択希望選手」の読み上げカード（球団名の帯＋選手名）。自分以外は「開票中」の目隠し付き。
+    //   ホストの読み上げ（executeReveal）と、ゲストの読み上げ（mpGuestShowReveal）で共通に使う。
+    function renderRevealCards(entries) {
+      return entries.map(({ team: t, player: p }) => {
+        const coverHtml = !t.isUser ? `
           <div id="cover-${t.id}" class="secret-cover absolute inset-0 bg-slate-600 flex flex-col items-center justify-center z-10 text-white">
             <p class="font-black tracking-widest text-xs animate-pulse">開票中</p>
           </div>` : '';
-
-        container.innerHTML += `
+        return `
           <div class="w-32 md:w-44 shadow-2xl rounded-lg overflow-hidden">
             <div class="${t.color.bg} ${t.color.text} text-[10px] md:text-xs font-black py-1.5 px-1 text-center truncate">${t.name.replace('(AI)','')}</div>
             <div class="bg-white text-black border-2 md:border-4 border-t-0 ${t.color.border} relative overflow-hidden h-[112px] md:h-[136px]">
               ${coverHtml}
               <div class="px-2 py-3 md:py-4 h-full flex flex-col items-center justify-center overflow-hidden">
-                <p class="text-base md:text-2xl font-black leading-tight break-words w-full text-center">${t.currentPick.name}</p>
-                <p class="text-[10px] md:text-xs font-bold text-gray-700 mt-2">${t.currentPick.pos}</p>
-                <p class="text-[9px] md:text-[11px] font-bold text-gray-500 truncate w-full text-center">${t.currentPick.team}</p>
+                <p class="text-base md:text-2xl font-black leading-tight break-words w-full text-center">${p.name}</p>
+                <p class="text-[10px] md:text-xs font-bold text-gray-700 mt-2">${p.pos}</p>
+                <p class="text-[9px] md:text-[11px] font-bold text-gray-500 truncate w-full text-center">${p.team}</p>
               </div>
             </div>
           </div>
         `;
-      });
+      }).join('');
+    }
+
+    function executeReveal() {
+      revealScreenSeq++;
+      document.getElementById('reveal-round').textContent = currentRound;
+      document.getElementById('reveal-mode-label').textContent = '選択希望選手';
+      const entries = teams.filter(t => t.needsPick && t.currentPick).map(t => ({ team: t, player: t.currentPick }));
+      document.getElementById('reveal-cards-container').innerHTML = renderRevealCards(entries);
+
+      // ★ 対人戦：ゲストにも同じ読み上げ画面を見せるため、読み上げる指名の一覧を配信する
+      //   （以前はホストの画面だけで読み上げていて、ゲストは1位指名の読み上げを見られなかった）。
+      if (mpRoomId && mpIsHost && window.MP) {
+        window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+          reveal: { key: 'R' + currentRound + '-' + Date.now(), round: currentRound, picks: entries.map(e => ({ slot: e.team.id, playerId: e.player.id })) },
+          updatedAt: window.MP.serverTimestamp()
+        }).catch(() => {});
+      }
 
       const statusText = document.getElementById('reveal-status');
       statusText.textContent = "指名を読み上げています...";
@@ -4233,6 +4266,9 @@
       mpLastAnnouncedViaLottery = null;
       mpMyLineupSubmitted = false; mpOpponentLineup = null; mpLineupPhaseResolved = false;
       mpAppliedMatchRecording = false;
+      mpGuestPickQueue = []; mpGuestDraining = false; mpLastTurnData = null; mpLastRoomSig = null;
+      mpLastRevealKey = null; mpRevealedPickIds = new Set();
+      if (mpPollTimer) { clearInterval(mpPollTimer); mpPollTimer = null; }
       const resyncBtn = document.getElementById('mp-resync-btn');
       if (resyncBtn) resyncBtn.classList.add('hidden');
     }
@@ -4286,6 +4322,7 @@
         const { roomId } = await window.MP.createRoom({ teamName, totalSlots: 2, draftMode: document.getElementById('draft-mode').value });
         mpRoomId = roomId; mpIsHost = true; mpMySlotIndex = 0;
         mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomUpdate);
+        mpStartPolling();
         document.getElementById('mp-room-code').textContent = roomId;
         document.getElementById('mp-waiting-host-only').classList.remove('hidden');
         document.getElementById('mp-waiting-guest-msg').classList.add('hidden');
@@ -4311,6 +4348,7 @@
         const { roomId, slotIndex } = await window.MP.joinRoom(code, teamName);
         mpRoomId = roomId; mpIsHost = false; mpMySlotIndex = slotIndex;
         mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomUpdate);
+        mpStartPolling();
         document.getElementById('mp-waiting-host-only').classList.add('hidden');
         document.getElementById('mp-waiting-guest-msg').classList.remove('hidden');
         window.mpShowPanel('waiting');
@@ -4356,8 +4394,30 @@
       }
     }
 
-    function mpOnRoomUpdate(data) {
+    // ★ リアルタイム同期の保険：回線やブラウザの状態によっては、Firestoreのリアルタイム通知
+    //   （onSnapshot）が届かなくなることがある（実機の報告：ホストが開始しても参加者の画面が変わらない、
+    //   抽選が始まらない、など）。5秒ごとに最新の状態を取りに行き、通知が止まっていても進めるようにする。
+    //   中身が前回処理したときと同じなら何もしないので、通知が正常に届いているときは影響しない。
+    function mpRoomSig(data) {
+      try { return JSON.stringify(data, (k, v) => (k === 'updatedAt' || k === 'createdAt') ? undefined : v); }
+      catch (e) { return String(Math.random()); }
+    }
+    function mpStartPolling() {
+      if (mpPollTimer) clearInterval(mpPollTimer);
+      mpPollTimer = setInterval(async () => {
+        if (!mpRoomId || !window.MP || document.hidden) return;
+        try {
+          const snap = await window.MP.getDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId));
+          if (snap.exists()) mpOnRoomUpdate(snap.data(), { fromPoll: true });
+        } catch (e) {}
+      }, 5000);
+    }
+
+    function mpOnRoomUpdate(data, opts) {
       if (!data) return;
+      const sig = mpRoomSig(data);
+      if (opts && opts.fromPoll && sig === mpLastRoomSig) return;
+      mpLastRoomSig = sig;
       if (data.status === 'waiting') {
         mpRenderSlotList(data);
         return;
@@ -4373,6 +4433,7 @@
         mpHostHandlePendingPick(data);
         mpHostHandleLotteryChoice(data);
       } else {
+        mpGuestHandleReveal(data);
         mpGuestApplyPicks(data);
         mpGuestHandleLottery(data);
         mpGuestApplyTurn(data);
@@ -4424,6 +4485,8 @@
       currentRound = 1;
       mpAppliedPickCount = 0;
       mpSubmittedThisCycle = false;
+      mpGuestPickQueue = []; mpGuestDraining = false; mpLastTurnData = null;
+      mpLastRevealKey = null; mpRevealedPickIds = new Set();
 
       window.switchDraftView('list');
 
@@ -4630,7 +4693,10 @@
         const msg = winnerTeam.isUser
           ? `🎉 見事引き当てました！\n${player.name} を獲得！`
           : `😭 ハズレ...\n${winnerTeam.name.replace('(AI)', '')} が ${player.name} を獲得しました！`;
-        showLotteryResultAlert(msg, winnerTeam, player, () => { showScreen('screen-draft'); });
+        const keyAtReveal = mpCurrentLotteryKey;
+        showLotteryResultAlert(msg, winnerTeam, player, () => {
+          if (mpCurrentLotteryKey === keyAtReveal && document.getElementById('screen-reveal').classList.contains('hidden-screen')) showScreen('screen-draft');
+        });
       });
     }
 
@@ -4664,44 +4730,97 @@
       if (picks.length <= mpAppliedPickCount) return;
       const newEntries = picks.slice(mpAppliedPickCount);
       mpAppliedPickCount = picks.length;
-      mpDrainGuestPickQueue(newEntries);
+      mpGuestPickQueue.push(...newEntries);
+      if (!mpGuestDraining) mpDrainGuestPickQueue();
     }
 
-    // ★ 指名が届くたびに、ホスト側が見ているのと同じアナウンス画面
-    //   （announceWaiverPick）を一瞬挟んでから反映する。以前は相手の指名だけを
-    //   対象にしていたが、対人戦では「送信済み」表示のあと自分の指名が本当に
-    //   通ったのかを確認する手段がなく分かりにくいという指摘を受けて、
-    //   自分自身の指名もアナウンスするようにした（単独プレイでは自分の指名に
-    //   アナウンスを出さないのが元の挙動だが、対人戦は送信〜確定の間にタイムラグが
-    //   あるぶん、ゲスト側には確定の合図があった方が親切だと判断した）。
-    function mpDrainGuestPickQueue(entries) {
-      if (entries.length === 0) {
-        // ★ 抽選で負けてハズレ指名になった場合など、needsPickがtrueのまま維持される
-        //   （true→trueで変化がない）ことがあり、mpGuestApplyTurn側のfalse→true検知だけでは
-        //   送信済みフラグが解除されないケースが起きる。指名が1件でも確定した後は、
-        //   毎回ここで送信済みフラグを解除しておく（needsPick自体はこの後のmpGuestApplyTurnが
-        //   正しく判定するので、まだ自分の番でなければ「待機中」表示のまま変わらない）。
+    // ★ 指名が届くたびに、ホスト側が見ているのと同じアナウンス画面（announceWaiverPick）を
+    //   一瞬挟んでから1件ずつ反映する。自分の指名もアナウンスする（送信〜確定の間にタイムラグが
+    //   あるので、確定の合図があった方が分かりやすいため）。
+    // ★ 2026-10-02 修正：以前は届いた束ごとに反映処理を別々に走らせていて、アナウンス中に次の束が
+    //   届くと2つの処理が並行して進んでいた。さらに、手番情報（turn）を先に当てたあとで
+    //   自分の指名を反映すると、commitPick()が自分のneedsPickをfalseに戻してしまい、
+    //   「自分の番なのに待機中」のまま止まることがあった（3巡目で両者とも待機中になった件）。
+    //   1本の列で順番に処理し、1件反映するたびに最新の手番情報を当て直すようにした。
+    function mpDrainGuestPickQueue() {
+      if (mpGuestPickQueue.length === 0) {
+        mpGuestDraining = false;
+        // ★ 抽選で負けてハズレ指名になった場合など、needsPickがtrueのまま変わらないことがあり、
+        //   手番情報の変化だけでは送信済みフラグが解除されない。指名が確定した後は毎回解除しておく。
         mpSubmittedThisCycle = false;
+        if (mpLastTurnData) mpGuestApplyTurn(mpLastTurnData);
         return;
       }
-      const [entry, ...rest] = entries;
+      mpGuestDraining = true;
+      const entry = mpGuestPickQueue.shift();
       const team = teams.find(t => t.id === entry.slotIndex);
       const player = availablePlayers.find(p => p.id === entry.playerId) || initialDatabase.find(p => p.id === entry.playerId);
-      if (!team || !player) { mpDrainGuestPickQueue(rest); return; }
+      if (!team || !player || team.roster.some(p => p.id === player.id)) { mpDrainGuestPickQueue(); return; }
 
       commitPick(team, player);
+      if (mpLastTurnData) mpGuestApplyTurn(mpLastTurnData);
 
-      // ★ 抽選で確定した指名は、すでにmpGuestRevealLottery()の開票演出で
-      //   「相手が◯◯を獲得しました」と見せているので、ここで二重にアナウンスしない
-      //   （mpLastAnnouncedViaLotteryは開票演出のときにセットし、ここで一度だけ消費する）。
+      // ★ 抽選の開票演出や「指名読み上げ」ですでに見せた指名は、ここで二重にアナウンスしない
       const alreadyShownViaLottery = entry.playerId === mpLastAnnouncedViaLottery;
       if (alreadyShownViaLottery) mpLastAnnouncedViaLottery = null;
+      const alreadyRevealed = mpRevealedPickIds.has(entry.playerId);
 
-      if (waiverAnnounce && !alreadyShownViaLottery) {
-        announceWaiverPick(team, player, () => mpDrainGuestPickQueue(rest));
+      if (waiverAnnounce && !alreadyShownViaLottery && !alreadyRevealed) {
+        announceWaiverPick(team, player, mpDrainGuestPickQueue);
       } else {
-        mpDrainGuestPickQueue(rest);
+        mpDrainGuestPickQueue();
       }
+    }
+
+    // ★ ゲスト側：ホストの「指名読み上げ」（同時指名の巡・ハズレ指名）を同じ見た目で再生する。
+    //   当否や抽選の判定はホストが行い、結果はpicks／lotteryとして別に届くので、ここでは見せるだけ。
+    function mpGuestHandleReveal(data) {
+      const rv = data.reveal;
+      if (!rv || rv.key === mpLastRevealKey) return;
+      mpLastRevealKey = rv.key;
+      const entries = (rv.picks || []).map(e => ({
+        team: teams.find(t => t.id === e.slot),
+        player: availablePlayers.find(p => p.id === e.playerId) || initialDatabase.find(p => p.id === e.playerId)
+      })).filter(e => e.team && e.player);
+      if (entries.length === 0) return;
+      entries.forEach(e => mpRevealedPickIds.add(e.player.id));
+
+      const seq = ++revealScreenSeq;
+      document.getElementById('reveal-round').textContent = rv.round;
+      document.getElementById('reveal-mode-label').textContent = '選択希望選手';
+      document.getElementById('reveal-cards-container').innerHTML = renderRevealCards(entries);
+      const statusText = document.getElementById('reveal-status');
+      statusText.textContent = "指名を読み上げています...";
+      statusText.className = "mt-4 md:mt-8 text-sm md:text-xl font-bold h-10 animate-pulse text-gray-400";
+      showScreen('screen-reveal');
+
+      const counts = {};
+      entries.forEach(e => { counts[e.player.id] = (counts[e.player.id] || 0) + 1; });
+      const maxCompete = Math.max(...Object.values(counts));
+      setTimeout(() => {
+        if (seq !== revealScreenSeq) return;
+        entries.forEach(e => {
+          if (e.team.isUser) return;
+          const c = document.getElementById(`cover-${e.team.id}`);
+          if (c) { c.style.opacity = '0'; setTimeout(() => c.style.display = 'none', 500); }
+        });
+        statusText.textContent = ".......";
+        setTimeout(() => {
+          if (seq !== revealScreenSeq) return;
+          if (maxCompete >= 2) {
+            statusText.textContent = `💥 ${maxCompete}球団競合！ 抽選へ 💥`;
+            statusText.className = "mt-4 md:mt-8 text-xl md:text-2xl font-black h-10 text-red-500 animate-bounce";
+          } else {
+            statusText.textContent = "✨ 指名完了 ✨";
+            statusText.className = "mt-4 md:mt-8 text-xl md:text-2xl font-black h-10 text-green-400";
+          }
+          // 抽選が始まればホストからの配信で抽選画面に切り替わる。始まらなければドラフト画面に戻る
+          // （競合のときは抽選の配信を待つため、少し長めに待つ）。
+          setTimeout(() => {
+            if (seq === revealScreenSeq && !document.getElementById('screen-reveal').classList.contains('hidden-screen')) showScreen('screen-draft');
+          }, maxCompete >= 2 ? 6000 : 2000);
+        }, 1500);
+      }, 2000);
     }
 
     // ★ ゲスト側：ホストが配信したturn状態（何巡目か／どの枠が指名待ちか）を
@@ -4709,6 +4828,7 @@
     function mpGuestApplyTurn(data) {
       const turn = data.turn;
       if (!turn) return;
+      mpLastTurnData = data;
       currentRound = turn.round;
       teams.forEach((t, i) => {
         const needs = !!turn.needsPick[i];
@@ -4719,6 +4839,8 @@
       });
 
       if (currentRound > TOTAL_ROUNDS) {
+        // まだ反映していない指名が残っているうちはスタメン編成に進まない（反映し終えたら当て直される）
+        if (mpGuestDraining || mpGuestPickQueue.length > 0) return;
         if (!mpLineupStarted) { mpLineupStarted = true; startLineupPhase(); }
         return;
       }
