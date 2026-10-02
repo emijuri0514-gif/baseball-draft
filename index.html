@@ -293,7 +293,8 @@
     .btn-mvp:active { transform: translateY(3px); box-shadow: 0 1px 0 #8f1319, 0 4px 10px rgba(0,0,0,0.3); }
 
     /* === 3D クジ引き封筒 === */
-    .lottery-area { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 10px; }
+    /* ★ G2：開票で紙を上へ引き抜くので、封筒の上（と段の間）に紙が出るぶんの空きを取っておく */
+    .lottery-area { display: flex; flex-wrap: wrap; column-gap: 20px; row-gap: 130px; justify-content: center; margin-top: 96px; }
     .envelope-container { perspective: 1000px; width: 120px; height: 160px; position: relative; cursor: pointer; transition: transform 0.2s; }
     .envelope-container:hover { transform: translateY(-5px); }
     .envelope-body { width: 100%; height: 100%; background-color: #f8f9fa; position: absolute; box-shadow: 0 10px 20px rgba(0,0,0,0.2); border-radius: 2px; }
@@ -305,6 +306,19 @@
     .envelope-container.open .letter { transform: translateY(-80px); }
     .envelope-container.open .letter .stamp { opacity: 1; }
     .envelope-container.disabled { opacity: 0.5; pointer-events: none; }
+    /* === G2：抽選のテレビ中継風演出。封筒が開く→紙を引き抜く→当たりにだけ「交渉権確定」の判が押される→結果テロップ、の順（約1.5秒）。
+       prefers-reduced-motionでは動きを止め、最終状態をそのまま表示する。 === */
+    .envelope-container.pulled .letter { transform: translateY(-118px); transition: transform 0.55s cubic-bezier(.2,.8,.2,1); }
+    .envelope-container.winner .letter { box-shadow: 0 0 0 3px #facc15, 0 0 26px rgba(250,204,21,0.85); }
+    .envelope-container.winner .letter .stamp { opacity: 1; animation: stampIn 0.32s ease-out both; }
+    .envelope-container.loser { opacity: 0.55; transition: opacity 0.4s; }
+    @keyframes stampIn { 0% { opacity: 0; transform: rotate(-15deg) scale(2.3); } 100% { opacity: 1; transform: rotate(-15deg) scale(1); } }
+    .lottery-telop { transform: translateY(130%); transition: transform 0.45s cubic-bezier(.2,.8,.2,1); }
+    .lottery-telop.show { transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .flap, .letter, .envelope-container.pulled .letter, .envelope-container.loser, .lottery-telop { transition: none !important; }
+      .envelope-container.winner .letter .stamp { animation: none; }
+    }
 
     /* === スタメン発表：打順が一目でわかるよう、リストの行が1つずつスライドして登場する演出 === */
     @keyframes rowReveal { 0% { opacity: 0; transform: translateX(-24px); } 100% { opacity: 1; transform: translateX(0); } }
@@ -1220,6 +1234,182 @@
       a.remove();
     }
 
+    // ==========================================
+    // ★ G2：テレビ中継風の「1位指名カード」。自分の1位（抽選で引き当てたら「交渉権確定」の判付き）を画像にする。
+    //   写真・実在の球団ロゴは使わず、球団名の文字と球団カラーだけで作る。𝕏用(1200×675)とストーリー用(1080×1920)。
+    // ==========================================
+    const PICK_POS_LABEL = { '捕': '捕手', '一': '一塁手', '二': '二塁手', '三': '三塁手', '遊': '遊撃手', '左': '左翼手', '中': '中堅手', '右': '右翼手' };
+    function pickPosLabel(p) {
+      if (p.pStats) return `投手（${p.eval === '中継ぎ' ? '中継ぎ' : p.eval === '抑え' ? '抑え' : '先発'}）`;
+      const main = Array.isArray(p.bestPos) ? p.bestPos[0] : p.bestPos;
+      return PICK_POS_LABEL[main] || p.pos;
+    }
+
+    // 自分の1位指名の情報（どの選手か・どう決まったか）をまとめる。まだ1位が決まっていなければnull
+    function getUserFirstPickInfo(playerOverride) {
+      const user = teams.find(t => t.isUser);
+      if (!user) return null;
+      const player = playerOverride || user.roster[0];
+      if (!player) return null;
+      const meta = userPickMeta[player.id];
+      let label, result;
+      if (meta && meta.won) { label = meta.afterLoss ? '外れ1位 ─ 抽選の結果' : '抽選の結果'; result = 'won'; }
+      else if (draftMode === 'waiver') { label = '1位指名'; result = 'first'; }
+      else { label = userLostFirstLottery ? '外れ1位 ─ 単独指名' : '単独指名'; result = 'single'; }
+      const hex = (/#[0-9a-f]{6}/i.exec((user.color && user.color.bg) || '') || ['#1e3a8a'])[0];
+      return {
+        teamName: user.name.replace('(AI)', ''), hex,
+        teamText: user.color && user.color.text === 'text-gray-900' ? '#111827' : '#ffffff',
+        player, label, result, won: !!(meta && meta.won), competitors: meta ? meta.competitors : 0
+      };
+    }
+
+    // 文字が最大幅に収まるまでフォントを小さくする（端末ごとにsans-serifの実フォントが変わるため、最後に最大幅も渡す）
+    function fitFont(ctx, text, weight, size, maxW, minSize) {
+      ctx.font = `${weight} ${size}px sans-serif`;
+      while (ctx.measureText(text).width > maxW && size > minSize) { size -= 2; ctx.font = `${weight} ${size}px sans-serif`; }
+      return size;
+    }
+
+    function drawPickStamp(ctx, cx, cy, r) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-14 * Math.PI / 180);
+      ctx.fillStyle = 'rgba(239,68,68,0.10)';
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ef4444'; ctx.lineWidth = r * 0.1;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.94, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `900 ${Math.round(r * 0.46)}px sans-serif`;
+      ctx.fillText('交渉権', 0, -r * 0.24, r * 1.6);
+      ctx.fillText('確定', 0, r * 0.3, r * 1.6);
+      ctx.restore();
+    }
+
+    function buildPickCardCanvas(info, format) {
+      const story = format === 'story';
+      const W = story ? 1080 : 1200, H = story ? 1920 : 675;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, '#0b1328'); bg.addColorStop(1, '#111c38');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.textBaseline = 'middle';
+
+      // 上の帯：LIVE・大会名・巡目
+      const topH = story ? 120 : 74;
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, topH);
+      ctx.fillStyle = info.hex; ctx.fillRect(0, topH, W, story ? 10 : 6);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#ef4444'; ctx.font = `900 ${story ? 36 : 24}px sans-serif`;
+      ctx.fillText('● LIVE', story ? 40 : 36, topH / 2);
+      ctx.fillStyle = '#ffffff'; ctx.font = `900 ${story ? 42 : 30}px sans-serif`;
+      ctx.fillText('2026 AIドラフト会議', story ? 210 : 148, topH / 2, story ? 520 : 420);
+      ctx.textAlign = 'right'; ctx.fillStyle = '#facc15';
+      ctx.fillText(info.result === 'first' ? '第1巡 ウェーバー指名' : '第1巡 選択希望選手', W - (story ? 40 : 36), topH / 2, story ? 330 : 360);
+
+      // 下の帯：サイト名とURL（必ず入れる）
+      const footH = story ? 110 : 64;
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, H - footH, W, footH);
+      ctx.textAlign = 'left'; ctx.fillStyle = '#facc15'; ctx.font = `900 ${story ? 40 : 28}px sans-serif`;
+      ctx.fillText('AIドラフト', story ? 40 : 36, H - footH / 2);
+      ctx.textAlign = 'right'; ctx.fillStyle = '#94a3b8';
+      ctx.fillText('dreamteam9.com', W - (story ? 40 : 36), H - footH / 2);
+
+      const bodyTop = topH + (story ? 10 : 6), bodyBottom = H - footH;
+      const p = info.player;
+      if (!story) {
+        // 𝕏用：左に球団カラーの帯（球団名を縦書き）、右に選手
+        const bandW = 300;
+        ctx.fillStyle = info.hex; ctx.fillRect(0, bodyTop, bandW, bodyBottom - bodyTop);
+        ctx.fillStyle = info.teamText; ctx.textAlign = 'center';
+        const name = info.teamName;
+        if (/^[\x00-\x7F]+$/.test(name)) {
+          fitFont(ctx, name, 900, 84, bandW - 40, 30);
+          ctx.fillText(name, bandW / 2, (bodyTop + bodyBottom) / 2, bandW - 30);
+        } else {
+          const chars = [...name];
+          const size = Math.min(84, Math.floor((bodyBottom - bodyTop - 60) / chars.length));
+          ctx.font = `900 ${size}px sans-serif`;
+          const startY = (bodyTop + bodyBottom) / 2 - (chars.length - 1) * size / 2;
+          chars.forEach((c, i) => ctx.fillText(c, bandW / 2, startY + i * size, bandW - 30));
+        }
+        const x0 = bandW + 48, textMaxW = W - x0 - (info.won ? 250 : 48);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#facc15'; ctx.font = `900 34px sans-serif`;
+        ctx.fillText(info.label, x0, bodyTop + 120, textMaxW);
+        ctx.fillStyle = '#ffffff';
+        fitFont(ctx, p.name, 900, 150, textMaxW, 60);
+        ctx.fillText(p.name, x0, bodyTop + 260, textMaxW);
+        ctx.fillStyle = '#cbd5e1'; ctx.font = `800 44px sans-serif`;
+        ctx.fillText(`${pickPosLabel(p)}｜現所属：${p.team}`, x0, bodyTop + 400, W - x0 - 48);
+        if (info.won) {
+          drawPickStamp(ctx, W - 150, bodyTop + 140, 105);
+          if (info.competitors >= 2) {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath(); ctx.roundRect(W - 250, bodyTop + 280, 200, 52, 26); ctx.fill();
+            ctx.fillStyle = '#111827'; ctx.textAlign = 'center'; ctx.font = `900 28px sans-serif`;
+            ctx.fillText(`${info.competitors}球団競合`, W - 150, bodyTop + 307, 184);
+          }
+        }
+      } else {
+        // ストーリー用：上に球団カラーの帯（球団名を横書き）、その下に選手を大きく
+        const bandH = 300;
+        ctx.fillStyle = info.hex; ctx.fillRect(0, bodyTop, W, bandH);
+        ctx.fillStyle = info.teamText; ctx.textAlign = 'center';
+        fitFont(ctx, info.teamName, 900, 150, W - 120, 60);
+        ctx.fillText(info.teamName, W / 2, bodyTop + bandH / 2, W - 100);
+        const cx = W / 2;
+        ctx.fillStyle = '#facc15'; ctx.font = `900 54px sans-serif`;
+        ctx.fillText(info.label, cx, bodyTop + bandH + 150, W - 120);
+        ctx.fillStyle = '#ffffff';
+        fitFont(ctx, p.name, 900, 190, W - 100, 70);
+        ctx.fillText(p.name, cx, bodyTop + bandH + 360, W - 80);
+        ctx.fillStyle = '#cbd5e1'; ctx.font = `800 56px sans-serif`;
+        ctx.fillText(pickPosLabel(p), cx, bodyTop + bandH + 540, W - 120);
+        ctx.fillText(`現所属：${p.team}`, cx, bodyTop + bandH + 630, W - 120);
+        if (info.won) {
+          drawPickStamp(ctx, cx, bodyTop + bandH + 960, 190);
+          if (info.competitors >= 2) {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath(); ctx.roundRect(cx - 170, bodyTop + bandH + 1200, 340, 80, 40); ctx.fill();
+            ctx.fillStyle = '#111827'; ctx.font = `900 44px sans-serif`;
+            ctx.fillText(`${info.competitors}球団競合`, cx, bodyTop + bandH + 1241, 310);
+          }
+        }
+      }
+      ctx.textBaseline = 'alphabetic';
+      return canvas;
+    }
+
+    function renderPickCard(format) {
+      const info = lastShareCardState && lastShareCardState.pickInfo;
+      if (!info) return;
+      const canvas = buildPickCardCanvas(info, format);
+      const dataUrl = canvas.toDataURL('image/png');
+      const suffix = format === 'story' ? 'story' : 'x';
+      document.getElementById('share-preview-img').src = dataUrl;
+      document.getElementById('share-download-btn').onclick = () => {
+        if (typeof gtag === 'function') gtag('event', 'pick_card_share', { method: 'image_save', result: info.result, format: suffix });
+        downloadCanvasImage(dataUrl, `${info.teamName}_1st_pick_${suffix}.png`);
+      };
+      document.querySelectorAll('.share-format-btn').forEach(btn => {
+        btn.classList.toggle('bg-blue-600', btn.dataset.format === (format || 'x'));
+        btn.classList.toggle('bg-gray-700', btn.dataset.format !== (format || 'x'));
+      });
+    }
+
+    // 1位指名カードを開く（ドラフト画面の「📺 1位カード」、抽選に当たったときのアラート、採点結果画面から）
+    window.showPickCard = function(playerOverride) {
+      const info = getUserFirstPickInfo(playerOverride);
+      if (!info) return;
+      lastShareCardState = { kind: 'pick', pickInfo: info };
+      document.getElementById('share-format-toggle').classList.remove('hidden-screen');
+      renderPickCard('x');
+      document.getElementById('share-modal').classList.remove('hidden-screen');
+    };
+
     window.showLineupCard = function(teamId) {
       const t = window.__shareTeamsById[teamId];
       if (!t) return;
@@ -1263,6 +1453,7 @@
     // 𝕏用／ストーリー用の切り替えボタンから呼ばれる（オーダーカードには適用しない）
     window.setShareCardFormat = function(format) {
       if (!lastShareCardState) return;
+      if (lastShareCardState.kind === 'pick') { renderPickCard(format); return; }
       const t = window.__shareTeamsById[lastShareCardState.teamId];
       if (!t) return;
       renderShareCard(t, lastShareCardState.headline, lastShareCardState.subtitle, format);
@@ -1277,6 +1468,9 @@
     // 文章は自動生成せず、リンクとタグだけ入れた投稿画面を新規タブで開く（画像は各自で添付）
     window.openXShare = function() {
       if (typeof gtag === 'function') gtag('event', 'share_click', { method: 'x_share' });
+      if (typeof gtag === 'function' && lastShareCardState && lastShareCardState.kind === 'pick') {
+        gtag('event', 'pick_card_share', { method: 'x_share', result: lastShareCardState.pickInfo.result });
+      }
       const params = new URLSearchParams({
         url: 'https://dreamteam9.com/',
         hashtags: 'NPBドラフトシミュレーション'
@@ -1703,6 +1897,7 @@
           <div id="tab-all" class="tab-btn active" onclick="switchTab('all')">全選手</div>
           <div id="tab-fav" class="tab-btn flex items-center" onclick="switchTab('fav')"><span class="text-yellow-500 mr-1">★</span>リスト</div>
           <button onclick="window.toggleAnnounce()" class="announce-toggle-btn ml-auto mb-1 text-[10px] font-bold bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded-full whitespace-nowrap">🔊 アナウンス</button>
+          <button id="pick-card-btn" type="button" onclick="window.showPickCard()" class="hidden ml-1 mb-1 text-[10px] font-bold bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded-full whitespace-nowrap">📺 1位カード</button>
           <button id="mp-resync-btn" onclick="window.mpForceResync()" class="hidden ml-2 mb-1 text-[10px] font-bold bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded-full whitespace-nowrap">🔄 同期し直す</button>
         </div>
         <div class="p-2 bg-gray-900">
@@ -1815,14 +2010,28 @@
   <!-- 画面3: クジ引き -->
   <div id="screen-lottery" class="hidden-screen fixed inset-0 bg-[#0a1122] z-50 flex flex-col items-center text-white fade-in px-4 overflow-y-auto">
     <div class="lottery-bg w-full min-h-full flex flex-col items-center justify-center py-8" style="position: relative;">
-    <h2 class="font-sport text-3xl md:text-4xl font-bold text-red-500 mb-2 tracking-widest" style="text-shadow: 0 4px 10px rgba(0,0,0,0.7);">競合発生！</h2>
-    <p id="lottery-target-name" class="text-xl md:text-2xl font-black mb-4 text-white text-center" style="text-shadow: 0 2px 6px rgba(0,0,0,0.7);"></p>
+    <!-- ★ G2：テレビ中継の画面上部の帯と、選手名のテロップ風の見出し -->
+    <div class="w-full max-w-md mb-4" style="position: relative; z-index: 1;">
+      <div class="flex items-center gap-2 bg-black bg-opacity-80 rounded-t px-3 py-1 text-[11px] md:text-xs font-black tracking-wider">
+        <span class="text-red-500">● LIVE</span><span>2026 AIドラフト会議</span><span id="lottery-round-label" class="ml-auto text-yellow-400"></span>
+      </div>
+      <div class="bg-[#0b1328] bg-opacity-90 border-l-8 border-red-600 rounded-b px-3 py-2 shadow-2xl">
+        <p class="text-red-400 font-black text-[11px] md:text-xs tracking-[0.3em]">競合発生 ─ 抽選へ</p>
+        <div class="flex items-end justify-between gap-2">
+          <p id="lottery-target-name" class="text-2xl md:text-3xl font-black text-white leading-tight"></p>
+          <span id="lottery-compete-count" class="shrink-0 bg-yellow-400 text-gray-900 text-xs md:text-sm font-black rounded-full px-2.5 py-0.5 mb-1"></span>
+        </div>
+      </div>
+    </div>
     <p id="lottery-instruction" class="text-sm md:text-lg font-bold mb-4 text-yellow-300" style="text-shadow: 0 2px 6px rgba(0,0,0,0.7);">あなたの封筒を選んでクリック</p>
 
     <button id="lottery-skip-btn" class="hidden bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full mb-2 shadow-lg" onclick="window.skipAILottery()">スキップ (結果のみ表示)</button>
 
     <div id="lottery-envelopes" class="lottery-area"></div>
+    <button id="lottery-reveal-skip" type="button" class="hidden mt-6 text-xs font-bold text-gray-200 bg-black bg-opacity-60 border border-gray-500 rounded-full px-4 py-1.5" onclick="window.skipLotteryReveal()">スキップ ▶▶</button>
     </div>
+    <!-- ★ G2：開票後に下から出る結果テロップ（位置はTailwindのfixedで指定し、独自クラスは動きだけを持つ） -->
+    <div id="lottery-telop" class="lottery-telop fixed left-0 right-0 bottom-0 z-[60] px-3 pb-4 pointer-events-none" aria-live="polite"></div>
   </div>
 
   <!-- 画面4: スタメンボード -->
@@ -2365,6 +2574,12 @@
     let currentConflicts = [];
     let currentConflictIndex = 0;
     let autoLotteryTimer = null;
+    // ★ G2：開票演出のタイマー（スキップで一括停止する）と、スキップ時に呼ぶ「最後まで進める」処理
+    let lotteryRevealTimers = [];
+    let lotteryRevealFinish = null;
+    // ★ G2：自分の1位指名カード用。抽選で引き当てた選手のメモ（競合球団数・外れ1位か）と、1巡目の抽選で外したか
+    let userPickMeta = {};
+    let userLostFirstLottery = false;
 
     let lineupAssignments = {};
     let lineupPhaseInitialized = false;
@@ -2755,6 +2970,8 @@
         });
       }
 
+      userPickMeta = {};
+      userLostFirstLottery = false;
       initDraftMatrix();
 
       draftMode = document.getElementById('draft-mode').value;
@@ -3045,6 +3262,9 @@
       }
       tbody.innerHTML = html;
       renderPositionBoard(); // どの球団かが指名するたびに呼ばれるので、ボードもここで更新する
+      const pickBtn = document.getElementById('pick-card-btn');
+      const me = teams.find(t => t.isUser);
+      if (pickBtn) pickBtn.classList.toggle('hidden', !(me && me.roster.length > 0));
     }
 
     function generateStatsHtml(p) {
@@ -3726,7 +3946,12 @@
     function setupLottery(cTeams, player) {
       isDrawingLottery = false;
       currentLotteryContext = { teams: cTeams, player: player };
-      document.getElementById('lottery-target-name').textContent = `${player.name} (${cTeams.length}球団)`;
+      document.getElementById('lottery-target-name').textContent = player.name;
+      document.getElementById('lottery-compete-count').textContent = `${cTeams.length}球団競合`;
+      document.getElementById('lottery-round-label').textContent = `第${currentRound}巡 抽選`;
+      document.getElementById('lottery-telop').classList.remove('show');
+      document.getElementById('lottery-telop').innerHTML = '';
+      document.getElementById('lottery-reveal-skip').classList.add('hidden');
 
       const isUserInvolved = cTeams.some(t => t.isUser);
       const remoteInvolved = mpRoomId && cTeams.some(t => t.control === 'remote');
@@ -3767,10 +3992,10 @@
 
         container.innerHTML += `
         <div class="flex flex-col items-center">
-          <div class="text-white font-bold mb-2 h-6 px-3 py-0.5 text-sm md:text-base bg-black bg-opacity-60 rounded-full">${teamName}</div>
           <div class="envelope-container" id="env-${i}" ${clickEvent}>
             <div class="envelope-body"></div><div class="flap"></div><div class="letter" id="letter-${i}"></div><div class="pocket"></div>
           </div>
+          <div id="env-label-${i}" class="text-white font-bold mt-2 h-6 px-3 py-0.5 text-sm md:text-base bg-black bg-opacity-60 rounded-full empty:opacity-0">${teamName}</div>
         </div>`;
       }
       showScreen('screen-lottery');
@@ -3811,6 +4036,99 @@
       performLotteryReveal(selectedIdx);
     };
 
+    // ★ G2：開票演出（テレビ中継風）。封筒が開く→紙を引き抜く→当たりの紙にだけ「交渉権確定」の判が押される→
+    //   下から結果テロップ、の順に約1.5秒で見せ、少し間を置いてonDone（結果のアラート）を呼ぶ。
+    //   「スキップ ▶▶」を押すと最終状態にしてすぐonDoneへ。prefers-reduced-motionでは動きを省いて最終状態から始める。
+    function playLotteryRevealAnimation(total, winIdx, winnerTeam, player, onDone) {
+      lotteryRevealTimers.forEach(clearTimeout);
+      lotteryRevealTimers = [];
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const envs = Array.from({ length: total }, (_, i) => document.getElementById(`env-${i}`));
+      const telop = document.getElementById('lottery-telop');
+      const skipBtn = document.getElementById('lottery-reveal-skip');
+      const hex = (/#[0-9a-f]{6}/i.exec((winnerTeam.color && winnerTeam.color.bg) || '') || ['#1e3a8a'])[0];
+      const textDark = winnerTeam.color && winnerTeam.color.text === 'text-gray-900';
+      const teamLabel = winnerTeam.isUser ? `${winnerTeam.name.replace('(AI)', '')}（あなた）` : winnerTeam.name.replace('(AI)', '');
+
+      const stepOpen = () => envs.forEach(env => env && env.classList.add('open'));
+      const stepPull = () => envs.forEach(env => env && env.classList.add('pulled'));
+      const stepStamp = () => envs.forEach((env, i) => {
+        if (!env) return;
+        if (i === winIdx) {
+          const letter = document.getElementById(`letter-${i}`);
+          if (letter) letter.innerHTML = '<div class="stamp">交渉権<br>確定</div>';
+          env.classList.add('winner');
+        } else {
+          env.classList.add('loser');
+        }
+      });
+      const stepTelop = () => {
+        telop.innerHTML = `
+          <div class="max-w-md mx-auto rounded-lg overflow-hidden shadow-2xl border border-gray-700">
+            <div class="flex items-center gap-2 bg-black px-3 py-1 text-[11px] font-black"><span class="text-red-500">● LIVE</span><span class="text-gray-300">抽選結果</span></div>
+            <div class="flex items-stretch bg-[#0b1328]">
+              <div class="shrink-0 px-3 flex items-center font-black text-sm" style="background:${hex};color:${textDark ? '#111827' : '#ffffff'};box-shadow:inset 0 0 0 2px rgba(255,255,255,0.25)">${teamLabel}</div>
+              <div class="flex-1 px-3 py-2">
+                <p class="text-red-400 font-black text-[11px] tracking-[0.3em]">交渉権確定</p>
+                <p class="text-white font-black text-xl leading-tight">${player.name}</p>
+              </div>
+            </div>
+          </div>`;
+        telop.classList.add('show');
+      };
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        lotteryRevealTimers.forEach(clearTimeout);
+        lotteryRevealTimers = [];
+        lotteryRevealFinish = null;
+        stepOpen(); stepPull(); stepStamp(); stepTelop();
+        skipBtn.classList.add('hidden');
+        onDone();
+      };
+      lotteryRevealFinish = finish;
+
+      if (reduce) {
+        stepOpen(); stepPull(); stepStamp(); stepTelop();
+        lotteryRevealTimers.push(setTimeout(finish, 900));
+        return;
+      }
+      skipBtn.classList.remove('hidden');
+      stepOpen();
+      lotteryRevealTimers.push(setTimeout(stepPull, 350));
+      lotteryRevealTimers.push(setTimeout(stepStamp, 950));
+      lotteryRevealTimers.push(setTimeout(stepTelop, 1500));
+      lotteryRevealTimers.push(setTimeout(finish, 2700));
+    }
+
+    window.skipLotteryReveal = function() {
+      if (lotteryRevealFinish) lotteryRevealFinish();
+    };
+
+    // ★ G2：抽選の結果アラート。自分が1位を引き当てたときは「📺 指名カード」ボタンも出す
+    //   （進行は止めず、OKと同じく先に進めてから指名カードを開く）。
+    function showLotteryResultAlert(msg, winnerTeam, player, cont) {
+      const isUserFirst = winnerTeam.isUser && userTeamRef() && userTeamRef().roster.length === 0;
+      if (!isUserFirst) { showAppAlert(msg, cont); return; }
+      showAppModal({
+        message: msg, confirmText: 'OK', cancelText: '📺 指名カード',
+        onConfirm: cont,
+        onCancel: () => { cont(); window.showPickCard(player); }
+      });
+    }
+
+    // 自分が絡む抽選の結果を、1位指名カード用に覚えておく（ホスト・ゲスト共通）
+    function noteUserLotteryResult(cTeams, winnerTeam, player) {
+      const user = cTeams.find(t => t.isUser);
+      if (!user || user.roster.length !== 0) return; // 1位（まだ誰も獲得していない）のときだけ
+      if (winnerTeam.isUser) {
+        userPickMeta[player.id] = { won: true, competitors: cTeams.length, afterLoss: userLostFirstLottery };
+      } else {
+        userLostFirstLottery = true;
+      }
+    }
+
     function performLotteryReveal(selectedIdx) {
       isDrawingLottery = true;
       if(autoLotteryTimer) clearTimeout(autoLotteryTimer);
@@ -3827,12 +4145,10 @@
         for(let i=0; i<total; i++) {
           if (i === selectedIdx) {
             assignedTeams[i] = userTeam;
-            const envEl = document.getElementById(`env-${i}`);
-            if(envEl && envEl.previousElementSibling) envEl.previousElementSibling.textContent = "あなた";
+            const lb = document.getElementById(`env-label-${i}`); if (lb) lb.textContent = "あなた";
           } else {
             assignedTeams[i] = aiTeams.pop();
-            const envEl = document.getElementById(`env-${i}`);
-            if(envEl && envEl.previousElementSibling && assignedTeams[i]) envEl.previousElementSibling.textContent = assignedTeams[i].name.replace('(AI)','');
+            const lb = document.getElementById(`env-label-${i}`); if (lb && assignedTeams[i]) lb.textContent = assignedTeams[i].name.replace('(AI)','');
           }
         }
       } else {
@@ -3842,29 +4158,29 @@
       const winIdx = Math.floor(Math.random() * total);
       const winnerTeam = assignedTeams[winIdx];
       mpBroadcastLotteryWinner(cTeams, winnerTeam);
+      noteUserLotteryResult(cTeams, winnerTeam, player);
 
       for(let i=0; i<total; i++) {
-        const env = document.getElementById(`env-${i}`);
         const letter = document.getElementById(`letter-${i}`);
-        if(letter) letter.innerHTML = i === winIdx ? '<div class="stamp">交渉権<br>確定</div>' : '';
-        if(env) env.classList.add('open');
+        if(letter) letter.innerHTML = '';
       }
 
-      setTimeout(() => {
+      playLotteryRevealAnimation(total, winIdx, winnerTeam, player, () => {
         const msg = winnerTeam.isUser
           ? `🎉 見事引き当てました！\n${player.name} を獲得！`
           : `${isUserInvolved ? "😭 ハズレ...\n" : "🤖 抽選の結果...\n"}${winnerTeam.name.replace('(AI)','')} が ${player.name} を獲得しました！`;
 
-        showAppAlert(msg, () => {
+        showLotteryResultAlert(msg, winnerTeam, player, () => {
           winnerTeam.roster.push(player);
           winnerTeam.needsPick = false;
           availablePlayers = availablePlayers.filter(p => p.id !== player.id);
           mpHostRecordPick(winnerTeam, player);
           renderPositionBoard(); // 同時指名の巡の確定（抽選含む）でもボードを更新する
+          renderDraftMatrix();
 
           processConflict(currentConflictIndex + 1);
         });
-      }, 2000);
+      });
     }
 
     function checkNextStep() {
@@ -4291,12 +4607,10 @@
       for (let i = 0; i < total; i++) {
         if (i === selectedIdx) {
           assignedTeams[i] = userTeam;
-          const envEl = document.getElementById(`env-${i}`);
-          if (envEl && envEl.previousElementSibling) envEl.previousElementSibling.textContent = "あなた";
+          const lb = document.getElementById(`env-label-${i}`); if (lb) lb.textContent = "あなた";
         } else {
           assignedTeams[i] = otherTeams.pop();
-          const envEl = document.getElementById(`env-${i}`);
-          if (envEl && envEl.previousElementSibling && assignedTeams[i]) envEl.previousElementSibling.textContent = assignedTeams[i].name.replace('(AI)', '');
+          const lb = document.getElementById(`env-label-${i}`); if (lb && assignedTeams[i]) lb.textContent = assignedTeams[i].name.replace('(AI)', '');
         }
       }
 
@@ -4305,20 +4619,19 @@
       if (!winnerTeam) return;
 
       for (let i = 0; i < total; i++) {
-        const env = document.getElementById(`env-${i}`);
         const letter = document.getElementById(`letter-${i}`);
-        if (letter) letter.innerHTML = i === winIdx ? '<div class="stamp">交渉権<br>確定</div>' : '';
-        if (env) env.classList.add('open');
+        if (letter) letter.innerHTML = '';
       }
 
       mpLastAnnouncedViaLottery = player.id;
+      noteUserLotteryResult(cTeams, winnerTeam, player);
 
-      setTimeout(() => {
+      playLotteryRevealAnimation(total, winIdx, winnerTeam, player, () => {
         const msg = winnerTeam.isUser
           ? `🎉 見事引き当てました！\n${player.name} を獲得！`
           : `😭 ハズレ...\n${winnerTeam.name.replace('(AI)', '')} が ${player.name} を獲得しました！`;
-        showAppAlert(msg, () => { showScreen('screen-draft'); });
-      }, 2000);
+        showLotteryResultAlert(msg, winnerTeam, player, () => { showScreen('screen-draft'); });
+      });
     }
 
     // ★ ゲスト側：自分の手番の指名はローカルで確定させず、Firestoreの郵便受けに
@@ -5132,6 +5445,7 @@
               <button onclick="window.showShareCard(${t.id}, '⚾ ドラフト採点結果', '${medal} ${index + 1}位')" class="flex-1 text-xs bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-full">📤 シェア画像を作成</button>
               <button onclick="window.showLineupCard(${t.id})" class="flex-1 text-xs bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-full">📇 オーダーカードを作る</button>
             </div>
+            ${t.isUser ? `<button onclick="window.showPickCard()" class="w-full mt-2 text-xs bg-red-700 hover:bg-red-600 text-white font-bold py-2 rounded-full">📺 1位指名カードを作る</button>` : ''}
           </div>
         `;
       });
