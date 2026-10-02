@@ -485,76 +485,112 @@
       document.getElementById('answer-check-section').classList.remove('hidden-screen');
     }
 
+    // ★ 予想カード（buildPredictionCardCanvas）と同じ見た目にそろえる：余白は最小限、上の帯に見出しと的中数、
+    //   残りの高さを12球団の行に使う。行には実際の1位入札選手を大きく、自分の予想を小さく出し、的中した行は緑で示す。
     function buildAnswerCheckCardCanvas(format) {
       const { rows, bidHitCount, acquiredHitCount } = computeAnswerCheckRows();
-      const W = format === 'story' ? 1080 : 1200;
-      const H = format === 'story' ? 1920 : 675;
+      const story = format === 'story';
+      const W = story ? 1080 : 1200;
+      const H = story ? 1920 : 675;
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
 
-      const bg = ctx.createLinearGradient(0, 0, W, H);
-      bg.addColorStop(0, '#0f172a');
-      bg.addColorStop(1, '#1e293b');
-      ctx.fillStyle = bg;
+      ctx.fillStyle = '#0b1120';
       ctx.fillRect(0, 0, W, H);
 
-      ctx.textAlign = 'center';
+      // 上の帯：1段目に見出しとサイト名、2段目に的中数と称号
+      const M = story ? 12 : 8;
+      // ストーリー用は縦に余裕があるので3段にし、サイト名は3段目の右に置く
+      const headH = story ? 222 : 86;
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
       ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 22px sans-serif';
-      ctx.fillText('⚾ 2026年ドラフト会議 1位指名 答え合わせ', W / 2, format === 'story' ? 70 : 45, W - 40);
+      ctx.font = `900 ${story ? 52 : 28}px sans-serif`;
+      ctx.fillText('2026ドラフト 1位指名 答え合わせ', M + 4, story ? 44 : 22, story ? W - 2 * M - 8 : W * 0.6);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = `bold ${story ? 28 : 18}px sans-serif`;
+      ctx.fillText('AIドラフト dreamteam9.com #ドラフト予想', W - M - 4, story ? 186 : 22, story ? W * 0.44 : W * 0.36);
+      const line2Y = story ? 118 : 60;
+      ctx.textAlign = 'left';
       ctx.fillStyle = '#4ade80';
-      ctx.font = 'bold 34px sans-serif';
-      ctx.fillText(`🎯入札的中 ${bidHitCount} / 12`, W / 2, format === 'story' ? 130 : 90);
+      ctx.font = `900 ${story ? 60 : 36}px sans-serif`;
+      const hitText = `🎯 入札的中 ${bidHitCount} / 12`;
+      ctx.fillText(hitText, M + 4, line2Y, story ? W * 0.5 : W * 0.36);
+      const hitW = Math.min(ctx.measureText(hitText).width, story ? W * 0.5 : W * 0.36);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 24px sans-serif';
-      ctx.fillText(getTitleForScore(bidHitCount), W / 2, format === 'story' ? 170 : 120, W - 40);
+      ctx.font = `900 ${story ? 36 : 24}px sans-serif`;
+      ctx.fillText(getTitleForScore(bidHitCount), M + 4 + hitW + (story ? 24 : 18), line2Y + 2, story ? W * 0.44 : W * 0.3);
+      ctx.textAlign = story ? 'left' : 'right';
       ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillText(`🏆交渉権獲得的中 ${acquiredHitCount} / 12`, W / 2, format === 'story' ? 200 : 143);
+      ctx.font = `900 ${story ? 34 : 22}px sans-serif`;
+      ctx.fillText(`🏆 交渉権獲得的中 ${acquiredHitCount} / 12`, story ? M + 4 : W - M - 4, story ? 186 : line2Y + 1, story ? W * 0.5 : W * 0.3);
 
-      const cols = format === 'story' ? 1 : 2;
-      const gridTop = format === 'story' ? 240 : 170;
-      const gridBottom = H - 60;
-      const rowH = (gridBottom - gridTop) / Math.ceil(12 / cols);
-      const colW = (W - 80) / cols;
+      const cols = story ? 1 : 2;
+      const rowsPerCol = Math.ceil(12 / cols);
+      const colW = (W - M * (cols + 1)) / cols;
+      const rowH = (H - headH - M * rowsPerCol) / rowsPerCol;
+      const badgeW = story ? 250 : 150;
+      const nameSize = story ? 62 : 40;
+      const subSize = story ? 30 : 20;
 
-      rows.forEach(({ team: t, result: r, bidHit }, i) => {
-        const col = Math.floor(i / Math.ceil(12 / cols));
-        const row = i % Math.ceil(12 / cols);
-        const x = 40 + col * colW;
-        const y = gridTop + row * rowH;
+      rows.forEach(({ team: t, predicted: p, result: r, bidHit }, i) => {
+        const col = Math.floor(i / rowsPerCol);
+        const row = i % rowsPerCol;
+        const x = M + col * (colW + M);
+        const y = headH + row * (rowH + M);
 
-        const badgeW = 106;
-        ctx.textAlign = 'left';
+        ctx.fillStyle = bidHit ? 'rgba(74, 222, 128, 0.22)' : hexToRgba(t.hex, 0.16);
+        ctx.beginPath(); ctx.roundRect(x, y, colW, rowH, 10); ctx.fill();
+        if (bidHit) { ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 3; ctx.stroke(); }
+
         ctx.fillStyle = t.hex;
-        ctx.beginPath();
-        ctx.roundRect(x, y, badgeW, 36, 8);
-        ctx.fill();
+        ctx.beginPath(); ctx.roundRect(x, y, badgeW, rowH, 10); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
         ctx.fillStyle = t.textColor;
-        ctx.textBaseline = 'middle';
         ctx.textAlign = 'center';
-        let teamFontSize = 18;
-        ctx.font = `bold ${teamFontSize}px sans-serif`;
-        while (ctx.measureText(t.name).width > badgeW - 12 && teamFontSize > 11) {
+        let teamFontSize = story ? 46 : 32;
+        ctx.font = `900 ${teamFontSize}px sans-serif`;
+        while (ctx.measureText(t.name).width > badgeW - 16 && teamFontSize > 16) {
           teamFontSize -= 1;
-          ctx.font = `bold ${teamFontSize}px sans-serif`;
+          ctx.font = `900 ${teamFontSize}px sans-serif`;
         }
-        ctx.fillText(t.name, x + badgeW / 2, y + 19, badgeW - 8);
+        ctx.fillText(t.name, x + badgeW / 2, y + rowH / 2 + 1, badgeW - 12);
 
-        // ★ 端末ごとに sans-serif の実フォントが変わり文字幅も変わるため、最大幅を超える場合だけ横に詰める
-        const textX = x + badgeW + 14;
+        // 実際の1位入札（大きく）と自分の予想（小さく）。sans-serifの実フォントは端末で変わるので最大幅を必ず渡す
+        const textX = x + badgeW + (story ? 22 : 14);
+        const tagW = bidHit ? (story ? 150 : 92) : 0;
+        const textMaxW = colW - badgeW - (story ? 34 : 24) - tagW;
         ctx.textAlign = 'left';
-        ctx.fillStyle = r ? (bidHit ? '#4ade80' : '#e2e8f0') : '#64748b';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.fillText(r ? `${bidHit ? '✅' : '❌'} ${r.name}` : '結果未入力', textX, y + 19, colW - badgeW - 24);
-        ctx.textBaseline = 'alphabetic';
-      });
+        if (r) {
+          ctx.fillStyle = bidHit ? '#4ade80' : '#ffffff';
+          ctx.font = `900 ${nameSize}px sans-serif`;
+          ctx.fillText(r.name, textX, y + rowH * 0.40, textMaxW);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = `bold ${subSize}px sans-serif`;
+          ctx.fillText(`予想：${p ? p.name : '未定'}`, textX, y + rowH * 0.78, textMaxW);
+        } else {
+          ctx.fillStyle = '#64748b';
+          ctx.font = `900 ${nameSize}px sans-serif`;
+          ctx.fillText('結果未入力', textX, y + rowH / 2, textMaxW);
+        }
 
-      ctx.textAlign = 'center';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText('⚾ AIドラフト｜dreamteam9.com｜#ドラフト予想', W / 2, H - 22, W - 40);
+        if (bidHit) {
+          const tagH = story ? 60 : 40;
+          const tx = x + colW - tagW - (story ? 14 : 10);
+          const ty = y + (rowH - tagH) / 2;
+          ctx.fillStyle = '#4ade80';
+          ctx.beginPath(); ctx.roundRect(tx, ty, tagW, tagH, tagH / 2); ctx.fill();
+          ctx.fillStyle = '#052e16';
+          ctx.textAlign = 'center';
+          ctx.font = `900 ${story ? 32 : 21}px sans-serif`;
+          ctx.fillText('的中', tx + tagW / 2, ty + tagH / 2 + 1, tagW - 12);
+        }
+      });
+      ctx.textBaseline = 'alphabetic';
 
       return canvas;
     }
