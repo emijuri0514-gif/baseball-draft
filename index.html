@@ -4556,6 +4556,7 @@
         match.scoreA = last.snap.scoreA;
         match.scoreB = last.snap.scoreB;
         match.winner = recording.winnerIsA ? match.a : match.b;
+        match.tiebreak = !!recording.tiebreak;
         match.resolved = true;
         advancePlayoffPointer();
         renderPlayoffScreen();
@@ -5514,13 +5515,31 @@
       return { done: false };
     }
 
+    // 延長規定の勝者：総合pt（AI採点）が高い方。総合ptも同じなら、プレーオフのシード順位が上の方
+    // （＝AI採点の順位。同点の順位はドラフト開始時の球団の並び順で、teams配列の前にいる方が上）。
+    function tiebreakWinnerIsA(teamA, teamB) {
+      if (teamA.finalScore !== teamB.finalScore) return teamA.finalScore > teamB.finalScore;
+      return teams.indexOf(teamA) <= teams.indexOf(teamB);
+    }
+
+    // 試合の勝者。同点で終わるのは延長規定で決着したときだけ。
+    function matchWinnerIsA(state) {
+      if (state.scoreA !== state.scoreB) return state.scoreA > state.scoreB;
+      return state.tiebreakWinnerIsA !== undefined ? state.tiebreakWinnerIsA : tiebreakWinnerIsA(state.teamA, state.teamB);
+    }
+
     // 1打席分をシミュレートして状態を更新する。試合が決着したら { done: true } を返す。
     // log を渡すとテキスト実況を生成する（ライブ観戦用）。null なら瞬間シミュレーション。
     function gameTick(state, log) {
       if (state.inning > 9 && state.scoreA !== state.scoreB) return { done: true };
       if (state.inning > MAX_INNING) {
-        // 安全弁：延長が続きすぎた場合は点を与えて強制決着させる
-        if (state.scoreA === state.scoreB) state.scoreA += 1;
+        // ★ 延長規定：21回を終えても同点なら、総合pt（AI採点）が高い方の勝ち。
+        //   以前は安全弁として先攻に1点を足して決着させていたが、必ず先攻が勝つのは不公平なので改めた（2026-10-02 オーナー決定）。
+        if (state.scoreA === state.scoreB && state.tiebreakWinnerIsA === undefined) {
+          state.tiebreakWinnerIsA = tiebreakWinnerIsA(state.teamA, state.teamB);
+          const w = state.tiebreakWinnerIsA ? state.teamA : state.teamB;
+          if (log) log(`<span class="text-yellow-600 font-black">⚖️ ${MAX_INNING}回を終えて同点。延長規定により、総合力で${w.name.replace('(AI)', '')}の勝利</span>`);
+        }
         return { done: true };
       }
 
@@ -5664,10 +5683,8 @@
         guard++;
         if (r.done) break;
       }
-      const winner = state.scoreA === state.scoreB
-        ? (Math.random() < 0.5 ? teamA : teamB)
-        : (state.scoreA > state.scoreB ? teamA : teamB);
-      return { scoreA: state.scoreA, scoreB: state.scoreB, winner };
+      const winner = matchWinnerIsA(state) ? teamA : teamB;
+      return { scoreA: state.scoreA, scoreB: state.scoreB, winner, tiebreak: state.scoreA === state.scoreB };
     }
 
     // ★ 対人戦用：runInstantGame()と同じく試合をまるごと瞬時に計算するが、結果だけでなく
@@ -5713,7 +5730,8 @@
       return {
         ticks,
         finalStats: { lineupA: grabLineup(state.lineupA), lineupB: grabLineup(state.lineupB) },
-        winnerIsA: state.scoreA === state.scoreB ? Math.random() < 0.5 : state.scoreA > state.scoreB
+        winnerIsA: matchWinnerIsA(state),
+        tiebreak: state.scoreA === state.scoreB
       };
     }
 
@@ -6091,7 +6109,8 @@
       if (!match) return;
       match.scoreA = state.scoreA;
       match.scoreB = state.scoreB;
-      match.winner = forcedWinner || (state.scoreA === state.scoreB ? (Math.random() < 0.5 ? match.a : match.b) : (state.scoreA > state.scoreB ? match.a : match.b));
+      match.winner = forcedWinner || (matchWinnerIsA(state) ? match.a : match.b);
+      match.tiebreak = state.scoreA === state.scoreB;
       match.resolved = true;
     }
 
@@ -6118,6 +6137,7 @@
             <span class="truncate">${bWin ? '🏆 ' : ''}${bName}</span>
             <span>${m.resolved ? m.scoreB : ''}</span>
           </div>
+          ${m.resolved && m.tiebreak ? `<p class="mt-1 text-[10px] text-yellow-300 font-bold">⚖️ 延長規定により総合力で勝利</p>` : ''}
         </div>`;
     }
 
@@ -6224,6 +6244,7 @@
         match.scoreA = result.scoreA;
         match.scoreB = result.scoreB;
         match.winner = result.winner;
+        match.tiebreak = result.tiebreak;
         match.resolved = true;
         advancePlayoffPointer();
         renderPlayoffScreen();
