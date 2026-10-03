@@ -116,6 +116,7 @@
       <button onclick="window.openPredictionShare()" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 px-6 rounded-full shadow-lg">📤 予想をシェアする</button>
       <button onclick="window.resetPrediction()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full">🗑️ リセット</button>
     </div>
+    <p class="text-xs text-amber-300 text-center leading-relaxed">🏅 期間限定の実績：12球団すべてを予想して保存すると「予想屋」、答え合わせで1位入札を3球団以上当てると「名スカウト」、6球団以上で「千里眼」。<span id="ach-predict-wait">名スカウト・千里眼は10/22のドラフト会議後に挑戦できます。</span>（指名開始の10/22 16:50より前に保存した予想が対象です）</p>
 
     <!-- ★ 答え合わせセクション：data/draft-2026-results.jsonが存在しない間はhidden-screenのまま。
          取得に成功した時だけJS側でhidden-screenを外して表示する（T2-1事前準備） -->
@@ -326,8 +327,34 @@
       el.textContent = `保存しました（${count}/12球団）`;
       if (typeof gtag === 'function') gtag('event', 'predict_save', { team_count: count });
       sendPredictPicks(picks);
+      if (count === 12 && Date.now() < PREDICT_PICK_DEADLINE) unlockPredictAchievement('ltd_predict_all');
       if (draftResults) renderAnswerCheck();
     };
+
+    // ★ 期間限定の実績（予想屋・名スカウト・千里眼）。実績の定義と一覧表示は index.html の ACHIEVEMENTS が正で、
+    //   ここでは同じlocalStorage（dt9_achievements_v1）の unlocked にIDを書き込むだけ。トースト用に名前だけ持つ。
+    const ACH_STORAGE_KEY = 'dt9_achievements_v1';
+    const PREDICT_ACHIEVEMENTS = {
+      ltd_predict_all: { emoji: '📝', title: '予想屋' },
+      ltd_scout3: { emoji: '🕵️', title: '名スカウト' },
+      ltd_scout6: { emoji: '👁️', title: '千里眼' }
+    };
+    function unlockPredictAchievement(id) {
+      let raw;
+      try { raw = JSON.parse(localStorage.getItem(ACH_STORAGE_KEY)) || {}; } catch (e) { raw = {}; }
+      raw.unlocked = raw.unlocked || {};
+      if (raw.unlocked[id]) return;
+      raw.unlocked[id] = true;
+      try { localStorage.setItem(ACH_STORAGE_KEY, JSON.stringify(raw)); } catch (e) { return; }
+      if (typeof gtag === 'function') gtag('event', 'achievement_unlock', { achievement_id: id });
+      const a = PREDICT_ACHIEVEMENTS[id];
+      const el = document.createElement('div');
+      el.setAttribute('role', 'status');
+      el.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:#1f2937;border:2px solid #f59e0b;border-radius:12px;padding:10px 16px;color:#fff;box-shadow:0 10px 25px rgba(0,0,0,.5);';
+      el.innerHTML = `<div style="font-size:24px">${a.emoji}</div><div><div style="font-size:10px;color:#fcd34d;font-weight:900">実績解除（期間限定）</div><div style="font-size:14px;font-weight:900">${a.title}</div></div>`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
 
     // ★ 「みんなの予想」集計用：保存したときに球団ごとに1件ずつ predict_pick を送る（GA4で team × player_id を集計）。
     //   ・同じ人が同じ予想のまま何度も保存しても数えないよう、この端末で最後に送った予想を覚えておき、
@@ -504,6 +531,17 @@
         document.getElementById('answer-check-updated').textContent = `最終更新：${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       }
       document.getElementById('answer-check-section').classList.remove('hidden-screen');
+      const wait = document.getElementById('ach-predict-wait');
+      if (wait) wait.classList.add('hidden-screen');
+
+      // 名スカウト・千里眼：本番の結果ファイルで、指名開始前に保存した予想だけを対象にする
+      // （?test_results=1 のリハーサルや、結果を見てから保存し直した予想では解除しない）
+      const saved = loadPrediction();
+      const savedBeforeDraft = saved && saved.savedAt && new Date(saved.savedAt).getTime() < PREDICT_PICK_DEADLINE;
+      if (RESULTS_URL === 'data/draft-2026-results.json' && savedBeforeDraft) {
+        if (bidHitCount >= 3) unlockPredictAchievement('ltd_scout3');
+        if (bidHitCount >= 6) unlockPredictAchievement('ltd_scout6');
+      }
     }
 
     // ★ 予想カード（buildPredictionCardCanvas）と同じ見た目にそろえる：余白は最小限、上の帯に見出しと的中数、

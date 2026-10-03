@@ -579,13 +579,35 @@
       { id: 'played_10',      tier: '中級', emoji: '📅', title: '継続は力なり',       desc: 'ドラフト＆スタメン編成を通算10回完了する' },
       { id: 'combo_multi',    tier: '上級', emoji: '🎇', title: 'パーフェクトロマン', desc: '1回の編成で8つ以上のコンボを同時発動する' },
       { id: 's_and_champion', tier: '上級', emoji: '👑', title: '完全制覇',           desc: 'Sランクを獲得したチームでプレーオフも優勝する（同じプレイ内で達成）' },
-      { id: 'hardest_champion', tier: '上級', emoji: '⚔️', title: '強豪ひしめく頂点', desc: 'AI球団3つ（計4球団）が相手の対戦でプレーオフ優勝する' },
+      { id: 'hardest_champion', tier: '上級', emoji: '⚔️', title: '強豪ひしめく頂点', desc: '4球団以上の対戦でプレーオフ優勝する' },
       { id: 'all_teams_a_rank', tier: '上級', emoji: '🌟', title: '全球団エース級',   desc: '12球団すべてで、それぞれ一度はAランク以上を獲得する' },
       { id: 'foreigners_full', tier: '中級', emoji: '🌎', title: 'フォーリナーズ',    desc: '外国人選手を上限の3人フル指名して編成する' },
       { id: 'few_teams',      tier: '中級', emoji: '🎯', title: '一点集中',           desc: '野手9人を4球団以下の出身選手だけで編成する' },
       { id: 'total_away',     tier: '中級', emoji: '🚪', title: '完全アウェー',       desc: '担当球団の選手を1人も指名せずに編成する' },
-      { id: 'weeds_spirit',   tier: '上級', emoji: '🌾', title: '雑草魂',             desc: '打者・投手ともに能力値の平均が68未満の選手だけで編成し、Cランク以上を取る' }
+      { id: 'weeds_spirit',   tier: '上級', emoji: '🌾', title: '雑草魂',             desc: '打者・投手ともに能力値の平均が68未満の選手だけで編成し、Cランク以上を取る' },
+      // ★ 期間限定（2026-10追加）：期間が終わると誰も取れなくなるので、全体の数（25個）とは別枠で数える。
+      //   予想屋・名スカウト・千里眼は draft-predict.html 側で判定して、同じlocalStorageに書き込む（IDを変えるときは両方直すこと）。
+      { id: 'ltd_draft2026',   tier: '期間限定', emoji: '🎊', title: '2026ドラフト記念', desc: '10/15〜10/31に、ドラフト＆スタメン編成を1回最後まで完了する' },
+      { id: 'ltd_predict_all', tier: '期間限定', emoji: '📝', title: '予想屋',           desc: '12球団すべての1位指名を予想して保存する（指名開始の10/22 16:50まで）' },
+      { id: 'ltd_scout3',      tier: '期間限定', emoji: '🕵️', title: '名スカウト',       desc: '1位指名予想の答え合わせで、1位入札を3球団以上的中させる（指名開始前に保存した予想が対象）' },
+      { id: 'ltd_scout6',      tier: '期間限定', emoji: '👁️', title: '千里眼',           desc: '1位指名予想の答え合わせで、1位入札を6球団以上的中させる（指名開始前に保存した予想が対象）' }
     ];
+    const ACH_LIMITED_TIER = '期間限定';
+    const regularAchievements = () => ACHIEVEMENTS.filter(a => a.tier !== ACH_LIMITED_TIER);
+    // 期間限定の日時は日本時間で固定（端末の時計で判定する）
+    const ACH_DRAFT2026_START = new Date('2026-10-15T00:00:00+09:00').getTime();
+    const ACH_DRAFT2026_END   = new Date('2026-11-01T00:00:00+09:00').getTime(); // 10/31 23:59まで
+    const ACH_PREDICT_DEADLINE = new Date('2026-10-22T16:50:00+09:00').getTime();
+    let achResultsAvailable = null; // 答え合わせの結果ファイルが置かれたか（実績一覧を開いたときに確認）
+    function limitedAchievementStatus(id) {
+      const now = Date.now();
+      if (id === 'ltd_draft2026') {
+        if (now < ACH_DRAFT2026_START) return '10/15から挑戦できます';
+        return now < ACH_DRAFT2026_END ? '開催中（10/31まで）' : '期間終了';
+      }
+      if (id === 'ltd_predict_all') return now < ACH_PREDICT_DEADLINE ? '1位指名予想のページで保存（10/22 16:50まで）' : '期間終了';
+      return achResultsAvailable ? '1位指名予想のページの答え合わせで判定されます' : '10/22のドラフト会議後に挑戦できます';
+    }
     const ACH_STORAGE_KEY = 'dt9_achievements_v1';
 
     function loadAchievementState() {
@@ -606,7 +628,16 @@
       }
     }
     let achState = loadAchievementState();
+    // ★ 予想ページ（draft-predict.html）も同じキーに実績を書き込むので、保存の前に保存先の解除済みを取り込む
+    //   （このページを開いたまま予想ページで実績を取っても、ここでの保存で消してしまわないように）
+    function mergeStoredUnlocks() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(ACH_STORAGE_KEY));
+        if (raw && raw.unlocked) Object.keys(raw.unlocked).forEach(id => { if (raw.unlocked[id]) achState.unlocked[id] = true; });
+      } catch (e) {}
+    }
     function saveAchievementState() {
+      mergeStoredUnlocks();
       try { localStorage.setItem(ACH_STORAGE_KEY, JSON.stringify(achState)); } catch (e) {}
     }
 
@@ -624,6 +655,7 @@
       if (achState.unlocked[id]) return;
       achState.unlocked[id] = true;
       saveAchievementState();
+      if (typeof gtag === 'function') gtag('event', 'achievement_unlock', { achievement_id: id });
       showAchievementToast(id);
       updateAchievementsBadge();
     }
@@ -631,46 +663,64 @@
     const ACH_TIER_STYLE = {
       '初級': { badge: 'bg-green-600',  text: 'text-green-400' },
       '中級': { badge: 'bg-blue-600',   text: 'text-blue-400' },
-      '上級': { badge: 'bg-red-600',    text: 'text-red-400' }
+      '上級': { badge: 'bg-red-600',    text: 'text-red-400' },
+      '期間限定': { badge: 'bg-amber-500', text: 'text-amber-400' }
     };
 
-    window.showAchievementsModal = function() {
+    function renderAchievementsList() {
       const list = document.getElementById('achievements-list');
-      list.innerHTML = ACH_TIERS.map(tier => {
+      list.innerHTML = [ACH_LIMITED_TIER, ...ACH_TIERS].map(tier => {
+        const limited = tier === ACH_LIMITED_TIER;
         const items = ACHIEVEMENTS.filter(a => a.tier === tier);
         const doneCount = items.filter(a => achState.unlocked[a.id]).length;
         const style = ACH_TIER_STYLE[tier];
         const rows = items.map(a => {
           const done = !!achState.unlocked[a.id];
+          const status = limited && !done ? `<div class="text-[10px] font-bold text-amber-300 mt-0.5">${limitedAchievementStatus(a.id)}</div>` : '';
           return `
-            <div class="flex items-center gap-3 p-3 rounded-lg ${done ? 'bg-gray-700' : 'bg-gray-900 opacity-50'}">
+            <div class="flex items-center gap-3 p-3 rounded-lg ${done ? 'bg-gray-700' : limited ? 'bg-gray-900 border border-amber-500/40' : 'bg-gray-900 opacity-50'}">
               <div class="text-2xl">${done ? a.emoji : '🔒'}</div>
               <div>
                 <div class="text-sm font-black ${done ? 'text-yellow-300' : 'text-gray-400'}">${a.title}</div>
                 <div class="text-[11px] text-gray-400">${a.desc}</div>
+                ${status}
               </div>
             </div>
           `;
         }).join('');
+        const note = limited ? '<span class="text-[10px] text-gray-500 font-normal ml-1">（全体の数には含みません）</span>' : '';
         return `
           <div class="mb-4">
-            <p class="text-xs font-black mb-2"><span class="${style.badge} text-white px-2 py-0.5 rounded-full">${tier}</span> <span class="${style.text} ml-1">${doneCount} / ${items.length}</span></p>
+            <p class="text-xs font-black mb-2"><span class="${style.badge} text-white px-2 py-0.5 rounded-full">${tier}</span> <span class="${style.text} ml-1">${doneCount} / ${items.length}</span>${note}</p>
             <div class="space-y-2">${rows}</div>
           </div>
         `;
       }).join('');
-      const count = ACHIEVEMENTS.filter(a => achState.unlocked[a.id]).length;
-      document.getElementById('achievements-count').textContent = `${count} / ${ACHIEVEMENTS.length}`;
+      const regular = regularAchievements();
+      const count = regular.filter(a => achState.unlocked[a.id]).length;
+      document.getElementById('achievements-count').textContent = `${count} / ${regular.length}`;
+    }
+    window.showAchievementsModal = function() {
+      mergeStoredUnlocks(); // 予想ページで取った実績もすぐ反映する
+      renderAchievementsList();
       document.getElementById('achievements-modal').classList.remove('hidden-screen');
+      // 名スカウト・千里眼の案内：答え合わせの結果ファイルが置かれたかを、指名開始後に一度だけ確かめる
+      if (achResultsAvailable === null && Date.now() >= ACH_PREDICT_DEADLINE) {
+        achResultsAvailable = false;
+        fetch('data/draft-2026-results.json', { method: 'HEAD', cache: 'no-store' })
+          .then(r => { achResultsAvailable = r.ok; if (r.ok) renderAchievementsList(); })
+          .catch(() => {});
+      }
     };
     window.hideAchievementsModal = function() {
       document.getElementById('achievements-modal').classList.add('hidden-screen');
     };
 
     function updateAchievementsBadge() {
-      const count = ACHIEVEMENTS.filter(a => achState.unlocked[a.id]).length;
+      const regular = regularAchievements();
+      const count = regular.filter(a => achState.unlocked[a.id]).length;
       const el = document.getElementById('achievements-badge-count');
-      if (el) el.textContent = `(${count}/${ACHIEVEMENTS.length})`;
+      if (el) el.textContent = `(${count}/${regular.length})`;
     }
     // このscriptブロックの実行時点では下部の実績ボタンがまだDOMに存在しないため、
     // パース完了を待ってからバッジを初期表示する
@@ -5463,6 +5513,7 @@
         // --- 実績判定（担当球団のみ。AI球団の結果では解除しない） ---
         if (t.isUser) {
           unlockAchievement('first_play');
+          { const now = Date.now(); if (now >= ACH_DRAFT2026_START && now < ACH_DRAFT2026_END) unlockAchievement('ltd_draft2026'); }
 
           achState.stats.playCount++;
           saveAchievementState();
