@@ -42,8 +42,7 @@
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
       <h1 class="text-sm md:text-base font-black tracking-wider">🎯 12球団1位指名予想</h1>
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="draft-watch.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">👀 注目選手</a>
-        <a href="draft-2026.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📅 放送予定</a>
+        <a href="draft-2026.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📅 放送予定・注目選手</a>
         <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
@@ -56,8 +55,7 @@
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定</a>
-            <a href="draft-watch.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">👀 2026ドラフト注目選手</a>
+            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">開発情報</p>
@@ -141,6 +139,7 @@
 
     <section class="bg-gray-800 rounded-lg p-4 text-xs text-gray-400 leading-relaxed">
       <p>※ 予想は保存ボタンを押すとこの端末のブラウザ（localStorage）だけに保存されます。他の端末には引き継がれません。ブラウザのデータを消去すると予想も消えます。</p>
+      <p class="mt-1">※ 保存した予想（どの球団にどの選手を予想したか）は、個人を特定しない形でアクセス解析（Google アナリティクス）にも送り、ドラフト後に「みんなの予想」として集計・紹介する予定です。指名が始まる10月22日16:50以降に保存した予想は送りません。</p>
       <p class="mt-1">※ 答え合わせは、ドラフト会議の指名結果が入力され次第このページに表示されます。</p>
     </section>
 
@@ -150,8 +149,7 @@
     <section class="border-t border-gray-700 pt-6 mt-8 text-center">
       <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
-        <a href="draft-watch.html" class="text-sm text-blue-400 hover:underline font-bold">👀 2026ドラフト注目選手</a>
-        <a href="draft-2026.html" class="text-sm text-blue-400 hover:underline font-bold">📅 2026ドラフト放送予定</a>
+        <a href="draft-2026.html" class="text-sm text-blue-400 hover:underline font-bold">📅 2026ドラフト放送予定・注目選手</a>
         <a href="draft-system.html" class="text-sm text-blue-400 hover:underline font-bold">🗒️ ドラフト会議とは</a>
       </div>
     </section>
@@ -327,8 +325,31 @@
       const el = document.getElementById('predict-status');
       el.textContent = `保存しました（${count}/12球団）`;
       if (typeof gtag === 'function') gtag('event', 'predict_save', { team_count: count });
+      sendPredictPicks(picks);
       if (draftResults) renderAnswerCheck();
     };
+
+    // ★ 「みんなの予想」集計用：保存したときに球団ごとに1件ずつ predict_pick を送る（GA4で team × player_id を集計）。
+    //   ・同じ人が同じ予想のまま何度も保存しても数えないよう、この端末で最後に送った予想を覚えておき、
+    //     変わった球団の分だけ送る。予想を変えたときは pick_change=1 を付ける（集計時に除外・確認できるように）。
+    //   ・指名開始（10/22 16:50）以降は結果を見てから保存した予想が混ざるので送らない。
+    //   ・集計は「イベント数」ではなく「ユーザー数」で見る想定（端末の保存を消して送り直した分も重ならない）。
+    const PREDICT_SENT_KEY = 'draftPrediction2026_sent';
+    const PREDICT_PICK_DEADLINE = new Date('2026-10-22T16:50:00+09:00').getTime();
+    function sendPredictPicks(picks) {
+      if (typeof gtag !== 'function' || Date.now() >= PREDICT_PICK_DEADLINE) return;
+      let sent = {};
+      try { sent = JSON.parse(localStorage.getItem(PREDICT_SENT_KEY) || '{}') || {}; } catch (e) { sent = {}; }
+      let changed = false;
+      Object.keys(picks).forEach(team => {
+        const c = picks[team];
+        if (sent[team] === c.id) return;
+        gtag('event', 'predict_pick', { team, player_id: c.id, player_name: c.name, pick_change: sent[team] ? 1 : 0 });
+        sent[team] = c.id;
+        changed = true;
+      });
+      if (changed) { try { localStorage.setItem(PREDICT_SENT_KEY, JSON.stringify(sent)); } catch (e) {} }
+    }
 
     window.resetPrediction = function() {
       if (!confirm('保存した予想をすべて削除しますか？')) return;
@@ -797,8 +818,8 @@
       window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
     };
 
-    // ドラフト開催日カウントダウン：draft-watch.html・draft-2026.html・index.html内の
-    // 同名ロジックと全く同じ計算式（複製）。開催日を更新する際は4箇所すべてに追記すること。
+    // ドラフト開催日カウントダウン：draft-2026.html・index.html内の
+    // 同名ロジックと全く同じ計算式（複製）。開催日を更新する際は3箇所すべてに追記すること。
     const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
 
     function nthWeekdayOfMonth(year, monthIndex, weekday, n) {

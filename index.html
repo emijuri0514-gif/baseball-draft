@@ -676,8 +676,8 @@
     // パース完了を待ってからバッジを初期表示する
     document.addEventListener('DOMContentLoaded', updateAchievementsBadge);
 
-    // ★ draft-watch.html・draft-2026.html・draft-predict.htmlのカウントダウンと
-    //   全く同じ計算式（複製）。開催日を更新する際は4箇所すべてのKNOWN_DRAFT_DATESに追記すること。
+    // ★ draft-2026.html・draft-predict.htmlのカウントダウンと
+    //   全く同じ計算式（複製）。開催日を更新する際は3箇所すべてのKNOWN_DRAFT_DATESに追記すること。
     function updateHomeDraftCountdown() {
       const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
       function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
@@ -1779,7 +1779,7 @@
       <button onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
       <button onclick="window.openMpLobby()" class="w-full mt-2 bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg text-sm shadow">🤝 友達と対戦（β版）</button>
       <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
-      <a href="draft-watch.html" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-white font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
+      <a href="draft-2026.html#watch" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-white font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
       <button onclick="document.getElementById('home-nav-menu').classList.toggle('hidden')" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-sm border border-gray-300">☰ その他のページ</button>
       <div id="home-nav-menu" class="hidden mt-2 text-left bg-gray-50 border border-gray-200 rounded-lg p-3">
         <div class="mb-3 last:mb-0">
@@ -1792,20 +1792,19 @@
         </div>
         <div class="mb-3 last:mb-0">
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
-          <a href="players.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🧢 選手名鑑</a>
           <a href="teams.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🏟️ 球団紹介</a>
-          <a href="rankings.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🏆 ランキング</a>
           <a href="draft-legends.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📜 歴代ドラフト伝説</a>
+          <a href="rankings.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🏆 ランキング</a>
+          <a href="players.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🧢 選手名鑑</a>
         </div>
         <div class="mb-3 last:mb-0">
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-          <a href="draft-2026.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📅 2026ドラフト放送予定</a>
+          <a href="draft-2026.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📅 2026ドラフト放送予定・注目選手</a>
           <a href="draft-predict.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🎯 12球団1位指名予想</a>
         </div>
         <div class="mb-3 last:mb-0">
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
           <a href="recommend.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🛍️ おすすめグッズ・コンテンツ</a>
-          <a href="team-broadcast-guide.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📡 球団別中継ガイド</a>
           <a href="npb-broadcast-guide.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📡 中継サブスク比較</a>
           <a href="postseason-broadcast.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🏆 CS・日本シリーズの見る方法</a>
         </div>
@@ -1820,14 +1819,49 @@
           <a href="contact.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">✉️ お問い合わせ</a>
         </div>
       </div>
-      <a href="privacy.html" target="_blank" rel="noopener noreferrer" class="block mt-3 text-[11px] text-gray-400 hover:underline">プライバシーポリシー</a>
-      <p class="text-[10px] text-gray-400 mt-1">本サイトはアフィリエイト広告を利用しています</p>
-      <p class="text-[10px] text-gray-400 mt-1">© 2026 dreamteam9.com</p>
       </div>
     </div>
-    <div class="w-full max-w-md mt-6 text-left text-blue-100 text-xs md:text-sm leading-relaxed space-y-2 px-1">
-      <p>「AIドラフト」は、現役NPB選手をAI球団と取り合うドラフト会議を疑似体験できる、登録不要・無料のブラウザゲームです。抽選やウェーバーなど実際のドラフト会議に近いルールで指名を進め、獲得した選手でスタメンやオーダーを組み、AIによる採点や、上位球団によるプレーオフ（トーナメント）の試合シミュレーションまで楽しめます。</p>
-      <p>対戦するAI球団数は1〜11球団から選べるほか、友達とのオンライン対戦（β版）にも対応しています。あわせて選手名鑑・攻略ガイド・用語集・球団別中継ガイドなど、NPBをより楽しむための読み物コンテンツも公開しています。</p>
+    <!-- ★ サイトの説明文（2026-10、AdSenseの「有用性の低いコンテンツ」対策で充実させた）。
+         ゲームの設定カードより下に置くので、スマホで「ドラフト会議を開始する」ボタンの位置は変わらない。
+         ©表記などはこの説明文の後ろに置く。遊び方の細かいルールは howto.html に任せ、ここでは重複させない。 -->
+    <section class="w-full max-w-md md:max-w-2xl mt-8 text-left text-blue-50 text-sm md:text-base leading-relaxed space-y-6 px-1">
+      <div class="space-y-3">
+        <h2 class="text-lg md:text-xl font-black text-yellow-400">「AIドラフト」とは</h2>
+        <p>「AIドラフト」は、現役のNPB選手をAI球団と取り合うドラフト会議を疑似体験できる、登録不要・無料のブラウザゲームです。スマホでもパソコンでも、ページを開いてすぐに遊べます。12球団の選手230人の中から、自分だけのチームを作るのが目的です。</p>
+        <p>本物のドラフト会議で指名されるのはアマチュア選手ですが、このゲームでは「もし今の現役選手でドラフトをやり直したら？」という“if”を楽しめます。抽選やウェーバーなど、実際のドラフト会議に近いルールで指名を進め、最後は組み上がったチームの強さをAIが採点し、試合のシミュレーションで優勝を争います。</p>
+      </div>
+      <div class="space-y-3">
+        <h2 class="text-lg md:text-xl font-black text-yellow-400">遊び方は3ステップ</h2>
+        <p><span class="font-black text-yellow-300">① 設定を選ぶ</span>：担当する球団、対戦するAI球団の数（1〜11球団）、ドラフト方式を選びます。ドラフト方式は、1巡目だけ抽選がある「NPB方式」、毎巡くじ引きになる「全巡 同時指名」、抽選なしの「完全ウェーバー」の3つです。</p>
+        <p><span class="font-black text-yellow-300">② 12巡の指名</span>：選手一覧から欲しい選手を指名します。NPB方式では1巡目に全球団が同時に入札し、ほかの球団と指名が重なると封筒を選ぶ抽選になります。外れたら「外れ1位」を指名し直し、2巡目以降は順番に指名していきます。投手や捕手が足りなくならないよう、ポジションのバランスを考えるのがポイントです。指名中は「残り人数」の表示で、ポジションごとに守れる選手があと何人残っているかを確認できます。</p>
+        <p><span class="font-black text-yellow-300">③ スタメンを組んで採点・プレーオフ</span>：獲得した選手で、1番から9番までの打順と守備位置（DHあり）、先発・中継ぎ・抑えを決めます。選手ごとに得意な守備位置や打順があり、合っていない位置に置くと評価が下がります。編成が終わるとAIがS〜Gの8段階で採点します。採点は長打力・確実性・機動力・守備力・先発陣・救援陣の6項目で、その平均が総合ptになり、AIがチームの一番の武器と課題をコメントします。そのあとは上位の球団（最大8球団）によるトーナメントで、1打席ずつ進む試合のシミュレーションを観戦できます。試合中は勝利期待値が刻々と動き、終わったあとはスコアブックで打席ごとに振り返れます。</p>
+        <p class="text-blue-200">細かいルールは<a href="howto.html" class="text-yellow-300 hover:underline font-bold">遊び方・ルール</a>に、勝つためのコツは<a href="strategy.html" class="text-yellow-300 hover:underline font-bold">攻略ガイド</a>にまとめています。</p>
+      </div>
+      <div class="space-y-3">
+        <h2 class="text-lg md:text-xl font-black text-yellow-400">このゲームの特徴</h2>
+        <ul class="list-disc pl-5 space-y-2">
+          <li><span class="font-bold text-yellow-300">球団ごとに個性のあるAI</span>：AI球団は、長打力を重視する球団、走力と守備を重視する球団、投手を集めたがる球団など、それぞれ違う「スカウト傾向」で指名してきます。同じ選手を狙っても、相手によって競合しやすさが変わります。傾向は<a href="teams.html" class="text-yellow-300 hover:underline font-bold">球団紹介</a>で確認できます。</li>
+          <li><span class="font-bold text-yellow-300">テレビ中継のような抽選演出</span>：1巡目で指名が重なると、封筒を一斉に開ける抽選の場面になります。「交渉権確定」のハンコが押される瞬間まで、本物のドラフト会議さながらの緊張感を味わえます。</li>
+          <li><span class="font-bold text-yellow-300">打順・守備位置まで考える編成</span>：強い選手を集めるだけでは高い評価になりません。得意な守備位置に置き、打順の役割に合った選手を並べることで、同じメンバーでも採点が変わります。条件を満たすと発動する「コンボ」もあります。</li>
+          <li><span class="font-bold text-yellow-300">結果をシェアできる</span>：採点結果やスタメン、1位指名の画像を保存して、Xなどでシェアできます。採点結果の画像は、X用（横長）とストーリー用（縦長）の2種類から選べます。遊んだ記録として集められる実績（25種類）もあります。</li>
+          <li><span class="font-bold text-yellow-300">友達とのオンライン対戦（β版）</span>：同じ合言葉を入力した2人で、1対1のドラフトができます。指名も抽選もそれぞれの画面で進み、最後は作ったチーム同士で試合をします。</li>
+        </ul>
+      </div>
+      <div class="space-y-3">
+        <h2 class="text-lg md:text-xl font-black text-yellow-400">こんな人におすすめ</h2>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>毎年のドラフト会議を見ていて、「自分が編成担当ならこう指名する」と考えてしまう人</li>
+          <li>推し球団の選手を中心に、自分なりの最強オーダーを組んでみたいプロ野球ファン</li>
+          <li>友達と「誰のチームが一番強いか」で盛り上がりたい人</li>
+          <li>10月22日の本物のドラフト会議に向けて、気分を盛り上げたい人（<a href="draft-predict.html" class="text-yellow-300 hover:underline font-bold">12球団1位指名予想</a>や<a href="draft-2026.html" class="text-yellow-300 hover:underline font-bold">放送予定・注目選手</a>もあわせてどうぞ）</li>
+        </ul>
+        <p class="text-blue-200 text-xs md:text-sm">※選手の能力値はゲーム用の数値で、実際の成績や評価とは異なります。詳しくは<a href="faq.html" class="text-yellow-300 hover:underline font-bold">よくある質問</a>をご覧ください。</p>
+      </div>
+    </section>
+    <div class="w-full max-w-md text-center mt-8 mb-2 space-y-1">
+      <a href="privacy.html" target="_blank" rel="noopener noreferrer" class="block text-[11px] text-gray-400 hover:underline">プライバシーポリシー</a>
+      <p class="text-[10px] text-gray-400">本サイトはアフィリエイト広告を利用しています</p>
+      <p class="text-[10px] text-gray-400">© 2026 dreamteam9.com</p>
     </div>
     </div>
   </div>
