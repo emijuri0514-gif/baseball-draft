@@ -42,7 +42,6 @@
       <h1 class="text-sm md:text-base font-black tracking-wider">📝 開発ブログ</h1>
       <div class="flex items-center gap-2 flex-wrap">
         <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
-        <a href="players.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🧢 選手名鑑</a>
         <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
@@ -57,19 +56,18 @@
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
             <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
-            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
             <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧢 選手名鑑</a>
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定</a>
-            <a href="draft-watch.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">👀 2026ドラフト注目選手</a>
+            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
             <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
             <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
-            <a href="team-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 球団別中継ガイド</a>
             <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
             <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
@@ -233,6 +231,7 @@
         <li><a href="#ep141" class="hover:underline">野球くじを、いったんお休みにした</a></li>
         <li><a href="#ep142" class="hover:underline">抽選の「あの一瞬」を、テレビっぽくしてみた</a></li>
         <li><a href="#ep143" class="hover:underline">友達対戦は、通知が遅れたときに壊れていた</a></li>
+        <li><a href="#ep144" class="hover:underline">AdSenseにまた落ちたので、全ページを数えてみた</a></li>
       </ol>
     </nav>
 
@@ -1105,6 +1104,12 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第143回：友達対戦は、通知が遅れたときに壊れていた</h2>
       <p>友達対戦を4回試してみたら、ちゃんと最後まで遊べたのが1回もなかった。2回はホストが開始を押しても参加者の画面が変わらず、残りの2回も、参加者側には1位指名の読み上げが出ないし、1回は参加者が抽選に入れずに止まり、もう1回は3巡目で2人とも「待機中」のまま動かなくなった。開発中は2つのブラウザで同時に動かして確かめたつもりだったけど、通知がすぐ届く前提でしか試していなかった。そこで、通知がランダムに遅れたり、いくつかまとめて届いたり、たまに届かなかったりする「にせのデータベース」を作って、ホストと参加者の2つの画面を自動で最後まで遊ばせてみた。</p>
       <p>そうしたら原因がいくつも出てきた。参加者側では、相手の指名を1件ずつアナウンスしてから反映しているあいだに「次はあなたの番」という情報が先に当たり、そのあと自分の指名を反映した瞬間に自分の番が消えてしまって、2人とも待ち続けていた。アナウンスを閉じるタイマーが、その間に始まった抽選の画面を隠してしまうこともあった。1位指名の読み上げは、そもそもホストの画面にしか出していなかった。それから、同じブラウザの2つのタブで試すと、参加者が「自分の席に戻る」処理でホストの席を自分の席だと思い込んで乗っ取っていた。指名は1件ずつ順番に反映して、そのたびに最新の手番を当て直すようにし、読み上げは参加者にも配信して、通知が止まっても5秒ごとに最新の状態を取りに行く保険も付けた。実際のスマホ2台での確認はまだなので、また試してもらうことになる。</p>
+    </article>
+
+    <article id="ep144" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第144回：AdSenseにまた落ちたので、全ページを数えてみた</h2>
+      <p>AdSenseの審査にまた落ちた。理由は「有用性の低いコンテンツ」。前は球団別の中継ガイドを検索から外して出し直したんだけど、それでもだめだったので、今回は感覚で直すのをやめて、くじ以外の34ページを全部ブラウザで開き、メニューやフッターを除いた本文の文字数と、ほかのページとどれくらい同じ文章かを数えてもらった。結果はけっこう分かりやすくて、広島以外の11球団の中継ページは、文章の7〜8割がほかの球団のページと同じで、そのページにしかない文章は250〜460字しかなかった。選手名鑑とランキングも、自分で書いた説明は143字と185字だけで、残りは全部ゲームから読み込んだ能力値の一覧だった。トップページに至っては、サイトの説明が240字くらいしかなく、しかも「© 2026」のさらに下に小さい文字で置いてあった。一番見てほしいはずのページで、一番目立たない場所に置いていたことになる。</p>
+      <p>ついでに、ドラフト会議のページがまだ「テレビ・ラジオ・配信は発表待ち」「9月時点で正式発表されていません」のままだったことにも気づいた。NPBは9/30に開催要項を出していて、16:50開始、会場はグランドプリンスホテル新高輪、テレビはTBS系列とスカイA、ラジオはニッポン放送、配信はDAZNとU-NEXTと決まっていた。審査の人が見たら、ただの放置されたページに見えたと思う。というわけで、トップには遊び方・特徴・おすすめの人をまとめた1,600字くらいの説明を、開始ボタンの位置を1pxも動かさずに足して、ドラフトのページは開催要項どおりに書き直し、注目選手のページもそこにまとめた。名鑑とランキングは、能力値を自前の計算に切り替える11月まで検索から外して、メニューでも一番下に回した。中継ガイドはメニューから外して、10月下旬に中継比較のページへまとめるつもり。あと、1位指名予想を保存したときに「どの球団に誰を予想したか」を集計できるようにしたので、ドラフトが終わったら「みんなの予想」と答え合わせの記事を書いてみたいと思う。</p>
     </article>
 
     <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>

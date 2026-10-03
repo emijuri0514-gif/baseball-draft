@@ -15,6 +15,9 @@
     gtag("js", new Date());
     gtag("config", "G-N7NP62TTYB");
   </script>
+  <!-- ★ 2026-10から検索に出さない（noindex）。能力値が他社ゲーム由来の数値のため、AdSenseの「有用性の低いコンテンツ」対策として、
+       独自の算出方法（T0-1・11月予定）に切り替えて説明文を足すまで外しておく。戻すときはこの行を消し、sitemap.xmlにも戻すこと。 -->
+  <meta name="robots" content="noindex, follow">
   <title>選手名鑑（全選手の能力値）｜NPBドラフト会議シミュレーション</title>
   <meta name="description" content="NPBドラフト会議シミュレーションに登場する全選手のステータス（ミート・パワー・走力・守備力など）を球団・ポジション別に検索、絞り込みできる選手名鑑です。">
   <meta property="og:site_name" content="AIドラフト">
@@ -56,19 +59,17 @@
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
             <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
-            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
             <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定</a>
-            <a href="draft-watch.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">👀 2026ドラフト注目選手</a>
+            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
             <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
             <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
-            <a href="team-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 球団別中継ガイド</a>
             <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
             <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
