@@ -84,7 +84,8 @@
     </div>
 
     <section>
-      <div id="predict-status" class="text-xs text-gray-400 text-center mb-3"></div>
+      <div id="predict-status" class="text-xs text-gray-400 text-center mb-1" aria-live="polite"></div>
+      <div id="predict-missing" class="text-xs text-center mb-3"></div>
       <div id="predict-revisit-note" class="hidden-screen bg-yellow-500/10 border border-yellow-500 text-yellow-300 text-xs rounded-lg px-3 py-2 text-center mb-3">🔔 答え合わせは10月22日の指名発表後に公開します。またこのページに来てくださいね。</div>
 
       <div class="flex flex-wrap gap-2 items-center justify-center mb-2">
@@ -275,6 +276,7 @@
       if (!sel) return;
       if (sel.value) currentSelections[sel.dataset.team] = sel.value;
       else delete currentSelections[sel.dataset.team];
+      autoSavePrediction();
     });
 
     document.getElementById('filter-category').addEventListener('change', e => {
@@ -290,18 +292,35 @@
       renderList();
     };
 
+    // 保存時刻は端末の時間帯に関係なく日本時間で表示する
+    function formatSavedAt(iso) {
+      try {
+        return new Date(iso).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return ''; }
+    }
+    // ★ 保存の状態と、まだ選んでいない球団を表示する（選ぶたびに自動保存するので、途中でも保存されていることを伝える）
     function updateStatus() {
       const saved = loadPrediction();
       const el = document.getElementById('predict-status');
+      const missingEl = document.getElementById('predict-missing');
       const revisitNote = document.getElementById('predict-revisit-note');
+      const selectedCount = TEAMS.filter(t => currentSelections[t.name]).length;
+      const savedPicks = (saved && saved.picks) || {};
+      const unsaved = TEAMS.some(t => (currentSelections[t.name] || '') !== ((savedPicks[t.name] && savedPicks[t.name].id) || ''));
       if (saved && saved.savedAt) {
-        const d = new Date(saved.savedAt);
-        el.textContent = `前回保存：${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        el.textContent = unsaved
+          ? `⚠️ 保存していない変更があります（「予想を保存する」で保存）／最終保存 ${formatSavedAt(saved.savedAt)}`
+          : `✅ ${Object.keys(savedPicks).length}/12球団を保存済み（最終保存 ${formatSavedAt(saved.savedAt)}）${Date.now() < PREDICT_PICK_DEADLINE ? '・選ぶたびに自動で保存されます' : ''}`;
         revisitNote.classList.remove('hidden-screen');
       } else {
-        el.textContent = 'まだ予想は保存されていません';
+        el.textContent = Date.now() < PREDICT_PICK_DEADLINE ? 'まだ予想は保存されていません（選ぶと自動で保存されます）' : 'まだ予想は保存されていません';
         revisitNote.classList.add('hidden-screen');
       }
+      const missing = TEAMS.filter(t => !currentSelections[t.name]).map(t => t.name);
+      missingEl.className = 'text-xs text-center mb-3 ' + (missing.length ? 'text-amber-300' : 'text-green-400');
+      missingEl.textContent = missing.length
+        ? `未選択：${missing.length}球団（${missing.join('・')}）${selectedCount ? '。途中の予想も保存されています' : ''}`
+        : '🎉 12球団すべて選択済み';
     }
 
     function getCurrentPicks() {
@@ -313,23 +332,52 @@
       return picks;
     }
 
-    window.savePrediction = function() {
+    // 保存データ：format（形式の版）・version（候補リストの版）・savedAt・picks（球団名→候補の{id,name,...}）
+    function writePrediction() {
       const picks = getCurrentPicks();
-      const count = Object.keys(picks).length;
       const data = {
+        format: 1,
         version: window.__candidatesVersion || '',
         savedAt: new Date().toISOString(),
         picks
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      updateStatus();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { return null; }
+      return picks;
+    }
+
+    window.savePrediction = function() {
+      const picks = writePrediction();
       const el = document.getElementById('predict-status');
+      if (!picks) { el.textContent = '⚠️ この端末では保存できませんでした（プライベートブラウズや容量不足の可能性があります）'; return; }
+      const count = Object.keys(picks).length;
+      updateStatus();
       el.textContent = `保存しました（${count}/12球団）`;
       if (typeof gtag === 'function') gtag('event', 'predict_save', { team_count: count });
       sendPredictPicks(picks);
       if (count === 12 && Date.now() < PREDICT_PICK_DEADLINE) unlockPredictAchievement('ltd_predict_all');
       if (draftResults) renderAnswerCheck();
     };
+
+    // ★ 選ぶたびの自動保存（指名開始まで）。指名開始後は、うっかり触って「指名開始前に保存した予想」でなくならないよう、
+    //   自動では保存せず「予想を保存する」ボタンだけで保存する。
+    //   GA4（predict_pick）は迷って選び直した分まで数えないよう、ここでは送らず、保存ボタンとページを離れるときに最終的な予想を送る。
+    function autoSavePrediction() {
+      if (Date.now() >= PREDICT_PICK_DEADLINE) { updateStatus(); return; }
+      const picks = writePrediction();
+      if (!picks) {
+        document.getElementById('predict-status').textContent = '⚠️ この端末では自動保存できませんでした（プライベートブラウズや容量不足の可能性があります）';
+        return;
+      }
+      updateStatus();
+      if (Object.keys(picks).length === 12) unlockPredictAchievement('ltd_predict_all');
+      if (draftResults) renderAnswerCheck();
+    }
+    function sendSavedPredictPicks() {
+      const saved = loadPrediction();
+      if (saved && saved.picks) sendPredictPicks(saved.picks);
+    }
+    window.addEventListener('pagehide', sendSavedPredictPicks);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sendSavedPredictPicks(); });
 
     // ★ 期間限定の実績（予想屋・名スカウト・千里眼）。実績の定義と一覧表示は index.html の ACHIEVEMENTS が正で、
     //   ここでは同じlocalStorage（dt9_achievements_v1）の unlocked にIDを書き込むだけ。トースト用に名前だけ持つ。
@@ -380,7 +428,7 @@
 
     window.resetPrediction = function() {
       if (!confirm('保存した予想をすべて削除しますか？')) return;
-      localStorage.removeItem(STORAGE_KEY);
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
       currentSelections = {};
       renderList();
       if (draftResults) renderAnswerCheck();
