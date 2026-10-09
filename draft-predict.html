@@ -186,10 +186,10 @@
 
     // index.html内のTEAM_STYLEと同じ配色（視覚的な一貫性のため複製）
     const TEAMS = [
-      { name: "巨人", hex: "#f97316", textColor: "#ffffff" },
+      { name: "巨人", hex: "#f97316", textColor: "#111827" },
       { name: "阪神", hex: "#eab308", textColor: "#111827" },
-      { name: "DeNA", hex: "#0ea5e9", textColor: "#ffffff" },
-      { name: "ヤクルト", hex: "#22c55e", textColor: "#ffffff" },
+      { name: "DeNA", hex: "#0ea5e9", textColor: "#111827" },
+      { name: "ヤクルト", hex: "#22c55e", textColor: "#111827" },
       { name: "中日", hex: "#2563eb", textColor: "#ffffff" },
       { name: "広島", hex: "#dc2626", textColor: "#ffffff" },
       { name: "オリックス", hex: "#0f172a", textColor: "#ffffff" },
@@ -197,7 +197,7 @@
       { name: "ソフトバンク", hex: "#fde047", textColor: "#111827" },
       { name: "楽天", hex: "#9f1239", textColor: "#ffffff" },
       { name: "日本ハム", hex: "#7dd3fc", textColor: "#111827" },
-      { name: "西武", hex: "#06b6d4", textColor: "#ffffff" }
+      { name: "西武", hex: "#06b6d4", textColor: "#111827" }
     ];
 
     let candidates = [];
@@ -545,6 +545,7 @@
       return { rows, bidHitCount, acquiredHitCount };
     }
 
+    let answerCheckViewSent = false;
     function renderAnswerCheck() {
       const { rows, bidHitCount, acquiredHitCount } = computeAnswerCheckRows();
       const list = document.getElementById('answer-check-list');
@@ -579,6 +580,12 @@
         document.getElementById('answer-check-updated').textContent = `最終更新：${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       }
       document.getElementById('answer-check-section').classList.remove('hidden-screen');
+      // ★ ドラフト後の答え合わせの利用数をGA4で数える（再描画のたびに送らないよう、1回の表示につき1回だけ。
+      //   ?test_results=1 のリハーサルでは送らない）。bid_hits＝1位入札の的中数（予想がなければ0）
+      if (!answerCheckViewSent && RESULTS_URL === 'data/draft-2026-results.json' && typeof gtag === 'function') {
+        answerCheckViewSent = true;
+        gtag('event', 'answercheck_view', { bid_hits: bidHitCount });
+      }
       const wait = document.getElementById('ach-predict-wait');
       if (wait) wait.classList.add('hidden-screen');
 
@@ -898,7 +905,8 @@
         gtag('event', isAnswerCheck ? 'answercheck_share' : 'predict_share', { method: 'x_share' });
       }
       const params = new URLSearchParams({
-        url: 'https://dreamteam9.com/draft-predict.html',
+        // Xのアプリ内ブラウザは参照元を残さないことが多いので、UTMで来訪を数える（canonicalはUTMなしのまま）
+        url: 'https://dreamteam9.com/draft-predict.html?utm_source=x&utm_medium=share&utm_campaign=predict',
         hashtags: isAnswerCheck ? 'ドラフト予想,答え合わせ,NPBドラフト会議2026' : 'ドラフト予想,NPBドラフト会議2026'
       });
       window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');

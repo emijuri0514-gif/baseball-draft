@@ -181,10 +181,10 @@
     // ★ 球団グッズのリンクはteams.htmlのTEAM_GOODS_LINKと同じ内容。
     //   新しい球団分を追加・変更したらteams.html側と両方直すこと。
     const TEAM_STYLE = {
-      "巨人": { bg: "bg-[#f97316]", text: "text-white" },
+      "巨人": { bg: "bg-[#f97316]", text: "text-gray-900" },
       "阪神": { bg: "bg-[#eab308]", text: "text-gray-900" },
-      "DeNA": { bg: "bg-[#0ea5e9]", text: "text-white" },
-      "ヤクルト": { bg: "bg-[#22c55e]", text: "text-white" },
+      "DeNA": { bg: "bg-[#0ea5e9]", text: "text-gray-900" },
+      "ヤクルト": { bg: "bg-[#22c55e]", text: "text-gray-900" },
       "中日": { bg: "bg-[#2563eb]", text: "text-white" },
       "広島": { bg: "bg-[#dc2626]", text: "text-white" },
       "オリックス": { bg: "bg-[#0f172a]", text: "text-white" },
@@ -192,7 +192,7 @@
       "ソフトバンク": { bg: "bg-[#fde047]", text: "text-gray-900" },
       "楽天": { bg: "bg-[#9f1239]", text: "text-white" },
       "日本ハム": { bg: "bg-[#7dd3fc]", text: "text-gray-900" },
-      "西武": { bg: "bg-[#06b6d4]", text: "text-white" }
+      "西武": { bg: "bg-[#06b6d4]", text: "text-gray-900" }
     };
 
     const TEAM_GOODS_LINK = {
@@ -214,10 +214,12 @@
     grid.innerHTML = Object.keys(TEAM_GOODS_LINK).map(team => {
       const style = TEAM_STYLE[team];
       const goods = TEAM_GOODS_LINK[team];
-      const rakutenLink = `<a href="${goods.url}" target="_blank" rel="noopener noreferrer sponsored" class="flex-1 text-center py-1 rounded bg-black/20 hover:bg-black/30 text-[10px] font-bold">楽天</a>`;
-      const amazonLink = goods.amazonUrl ? `<a href="${goods.amazonUrl}" target="_blank" rel="noopener noreferrer sponsored" class="flex-1 text-center py-1 rounded bg-black/20 hover:bg-black/30 text-[10px] font-bold">Amazon</a>` : '';
+      // 黒い文字の球団（明るい球団カラー）は、ボタンの下地を暗くすると文字が読みにくくなるので白っぽい下地にする
+      const btnBg = style.text === 'text-gray-900' ? 'bg-white/40 hover:bg-white/60' : 'bg-black/20 hover:bg-black/30';
+      const rakutenLink = `<a href="${goods.url}" target="_blank" rel="noopener noreferrer sponsored" class="flex-1 text-center py-1 rounded ${btnBg} text-[10px] font-bold">楽天</a>`;
+      const amazonLink = goods.amazonUrl ? `<a href="${goods.amazonUrl}" target="_blank" rel="noopener noreferrer sponsored" class="flex-1 text-center py-1 rounded ${btnBg} text-[10px] font-bold">Amazon</a>` : '';
       return `<div class="rounded-lg overflow-hidden shadow ${style.bg} ${style.text} text-center py-3 px-2 transition-transform hover:scale-105 hover:shadow-lg">
-        <span class="font-black text-sm block">${team}</span><span class="text-[10px] opacity-90 block mb-1.5">黒ベースキャップ（PR）</span>
+        <span class="font-black text-sm block">${team}</span><span class="text-[10px] block mb-1.5">黒ベースキャップ（PR）</span>
         <div class="flex gap-1">${rakutenLink}${amazonLink}</div>
       </div>`;
     }).join('');
