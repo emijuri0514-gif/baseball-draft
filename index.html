@@ -987,8 +987,303 @@
     // Xストーリーズ/Instagramストーリーズ想定）」の2サイズを出し分ける（T1-3）。
     // レイアウトを丸ごと分岐させると保守が大変なので、バッジ・内訳バー・フッターの
     // 各パーツをformatに応じた座標で描く形にして、内容自体はどちらも同じにしている。
+    // ==========================================
+    // ★ 2026-10 結果シェア画像（𝕏用 1200×675）の新デザイン
+    // 左に球団カラーの斜めの帯（球団名・ランク・合計pt・順位）、右に「このチームの特徴」のひと言、
+    // 6項目のタイル（大きい順・最高値を黄色）、スタメン3×3と投手。ストーリー用（縦長）は当面旧デザインのまま。
+    // 画像の中では絵文字を使わない（端末によって見た目が変わるため）。
+    // ==========================================
+    // ひと言：6項目の上位2つの組み合わせで決まる文言（【 】は黄色）。キーはSTAT_LABELSの順に並べた2項目
+    const SHARE_TAGLINES = {
+      '長打力+確実性': ['よく【飛び】、よく【当たる】', '隙のない強力打線'],
+      '長打力+機動力': ['【一発】も【足】もある', '破壊力抜群の打線'],
+      '長打力+守備力': ['【一発】と【堅守】がそろう', '攻守がかみ合う野手陣'],
+      '長打力+先発陣': ['【大砲】と【エース】がそろう', '投打の柱がそろうチーム'],
+      '長打力+救援陣': ['【一発】で奪って【継投】で守る', '終盤にめっぽう強い'],
+      '確実性+機動力': ['よく【打ち】、よく【走る】', '相手を揺さぶる機動打線'],
+      '確実性+守備力': ['【つなぐ】打撃と【堅い】守り', 'しぶとく勝ち切るチーム'],
+      '確実性+先発陣': ['【つなぐ】打線と【柱】の先発', '試合を作れる安定型'],
+      '確実性+救援陣': ['【つなぐ】打線と【盤石】の継投', '接戦をものにするチーム'],
+      '機動力+守備力': ['【走れて】【守れる】', 'スピード自慢の野手陣'],
+      '機動力+先発陣': ['【足】でかき回し【エース】で勝つ', 'スピードと安定感の両立'],
+      '機動力+救援陣': ['【足】で奪って【継投】で逃げ切る', '足で揺さぶる逃げ切り型'],
+      '守備力+先発陣': ['【堅守】と【エース】で守り勝つ', 'ロースコアに強いチーム'],
+      '守備力+救援陣': ['【堅守】と【盤石】のブルペン', '守りで勝ち切る職人集団'],
+      '先発陣+救援陣': ['最後まで【崩れない】', '【鉄壁】の投手陣']
+    };
+    const SHARE_TAGLINE_LAST = ['【伸びしろ】しかない', '下剋上の準備は整った'];
+    // 一番高い項目でもこの値に届かないチーム、またはランクD以下のチームは、組み合わせの文言（強みをうたう言い回し）が
+    // 大げさになるので「光るのは【項目名】」にする。78は12球団・AI同士の1万回シミュレーションで、Dランクの約半分・
+    // Cランク下位の約3割が当てはまる値（2026-10-08 オーナー決定、ROADMAP参照）
+    const SHARE_TAGLINE_LOW_TOP = 78;
+    const SHARE_TAGLINE_LOW_GRADES = ['D', 'E', 'F', 'G'];
+
+    // 戻り値：{ lines: [1行目, 2行目], focus: 黄色にするタイルの項目の番号（STAT_LABELSの添字。なければ-1） }
+    // 上位2項目は値の大きい順。同点はSTAT_LABELSの並び（長打力→確実性→…→救援陣）で前の方を上位にする。
+    // プレーオフ優勝の画像では「伸びしろ」「光るのは」を使わず、必ず組み合わせの文言にする
+    function pickShareTagline(radarData, finalScore, isLast, isChampion) {
+      const order = STAT_LABELS.map((label, i) => ({ label, i, v: radarData[i] }))
+        .sort((a, b) => b.v - a.v || a.i - b.i);
+      if (!isChampion) {
+        if (isLast) return { lines: SHARE_TAGLINE_LAST, focus: -1 };
+        if (order[0].v < SHARE_TAGLINE_LOW_TOP || SHARE_TAGLINE_LOW_GRADES.includes(getGradeInfo(finalScore).grade)) {
+          return { lines: [`光るのは【${order[0].label}】`, 'ここから伸びるチーム'], focus: order[0].i };
+        }
+      }
+      const pair = [order[0], order[1]].sort((a, b) => a.i - b.i).map(x => x.label).join('+');
+      return { lines: SHARE_TAGLINES[pair], focus: order[0].i };
+    }
+
+    // 帯の色と、帯の上の文字色。明るい球団カラー（阪神・ソフトバンク・日本ハム）はそのままの色で文字を黒に、
+    // それ以外は白い文字が読めるところまで暗くする。オリックス(#0f172a)は右側の濃紺と境目が消えるので、
+    // 帯だけ明るい紺にしてランク文字を金色にする。
+    const SHARE_LIGHT_BAND_TEAMS = ['阪神', 'ソフトバンク', '日本ハム'];
+    function relLuminance(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(c => {
+        c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    }
+    function scaleHex(hex, k) {
+      const n = parseInt(hex.slice(1), 16);
+      const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => Math.max(0, Math.min(255, Math.round(v * k))));
+      return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    function shareBandStyle(team) {
+      const base = (team.baseName || team.name.replace('(AI)', '')).trim();
+      const hex = teamHexColor(team).toLowerCase();
+      if (base === 'オリックス' || hex === '#0f172a') return { bg: '#1e3a8a', fg: '#ffffff', rank: '#e8b923' };
+      if (SHARE_LIGHT_BAND_TEAMS.includes(base)) return { bg: hex, fg: '#111827', rank: '#111827' };
+      let bg = hex;
+      // 白文字とのコントラスト比が3.2以上（大きな文字の基準3を少し上回る）になるまで少しずつ暗くする
+      for (let i = 0; i < 20 && (1.05 / (relLuminance(bg) + 0.05)) < 3.2; i++) bg = scaleHex(bg, 0.94);
+      return { bg, fg: '#ffffff', rank: '#ffffff' };
+    }
+
+    // 文字が最大幅に収まるよう、フォントを最小サイズまで小さくし、それでも入らなければ「…」で切る。
+    // fontFn(size)はctx.fontに入れる文字列を返す。戻り値は実際に使ったサイズと文字列
+    function fitText(ctx, text, maxWidth, fontFn, size, minSize) {
+      let s = size;
+      ctx.font = fontFn(s);
+      while (s > minSize && ctx.measureText(text).width > maxWidth) { s -= 1; ctx.font = fontFn(s); }
+      if (ctx.measureText(text).width <= maxWidth) return { size: s, text };
+      let t = text;
+      while (t.length > 1 && ctx.measureText(t + '…').width > maxWidth) t = t.slice(0, -1);
+      return { size: s, text: t + '…' };
+    }
+
+    // 【 】で囲んだ部分だけ色を変えて1行を描く（左寄せ）。最大幅を超える場合は全体を同じ比率で縮める
+    function drawHighlightedLine(ctx, line, x, y, size, maxWidth, color, hiColor) {
+      const segs = [];
+      line.split(/(【[^】]*】)/).filter(Boolean).forEach(s => {
+        if (s.startsWith('【')) segs.push({ t: s.slice(1, -1), hi: true });
+        else segs.push({ t: s, hi: false });
+      });
+      let fs = size;
+      const fontFn = sz => `900 ${sz}px sans-serif`;
+      ctx.font = fontFn(fs);
+      const widthOf = () => segs.reduce((w, s) => w + ctx.measureText(s.t).width, 0);
+      while (fs > 24 && widthOf() > maxWidth) { fs -= 1; ctx.font = fontFn(fs); }
+      let cx = x;
+      const total = widthOf();
+      const squeeze = total > maxWidth ? maxWidth / total : 1;
+      segs.forEach(s => {
+        const w = ctx.measureText(s.t).width * squeeze;
+        ctx.fillStyle = s.hi ? hiColor : color;
+        ctx.fillText(s.t, cx, y, w);
+        cx += w;
+      });
+    }
+
+    function buildShareCardCanvasX(team, opts) {
+      const W = 1200, H = 675;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      const band = shareBandStyle(team);
+      const radarData = team.radarData || [50, 50, 50, 50, 50, 50];
+      const totalSum = radarData.reduce((s, v) => s + v, 0);
+      const gradeInfo = getGradeInfo(team.finalScore);
+      const isChampion = opts.kind === 'champion';
+      const rank = team.shareRank || 0, count = team.shareTeamCount || 0;
+      const isLast = !isChampion && count >= 2 && rank === count;
+      const YELLOW = '#fcd34d';
+      const FOOT_Y = 612;
+      const NUM_FONT = '"Helvetica Neue", Arial, sans-serif';
+
+      // 右側の背景（濃紺＋うっすら斜線）
+      const bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#111a2e'); bg.addColorStop(1, '#1c1424');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)'; ctx.lineWidth = 2;
+      for (let x = -H; x < W; x += 18) { ctx.beginPath(); ctx.moveTo(x, FOOT_Y); ctx.lineTo(x + FOOT_Y, 0); ctx.stroke(); }
+      ctx.restore();
+
+      // 左：球団カラーの斜めの帯（上端520px→下端435px）
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(520, 0); ctx.lineTo(435, FOOT_Y); ctx.lineTo(0, FOOT_Y); ctx.closePath();
+      const bandGrad = ctx.createLinearGradient(0, 0, 480, FOOT_Y);
+      bandGrad.addColorStop(0, band.bg); bandGrad.addColorStop(1, scaleHex(band.bg, 0.86));
+      ctx.fillStyle = bandGrad; ctx.fill();
+      ctx.clip();
+      ctx.strokeStyle = band.fg === '#ffffff' ? 'rgba(0, 0, 0, 0.07)' : 'rgba(255, 255, 255, 0.18)'; ctx.lineWidth = 3;
+      for (let x = -H; x < 600; x += 22) { ctx.beginPath(); ctx.moveTo(x, FOOT_Y); ctx.lineTo(x + FOOT_Y, 0); ctx.stroke(); }
+      ctx.restore();
+
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      // 題字
+      ctx.fillStyle = band.fg;
+      ctx.font = '800 21px sans-serif';
+      ctx.fillText(isChampion ? 'AIドラフト プレーオフ優勝' : 'AIドラフト 採点結果', 46, 62, 420);
+
+      // 球団名（約100px。長い球団名は幅に合わせて小さくする）
+      const teamName = team.name.replace('(AI)', '').trim();
+      const nameFit = fitText(ctx, teamName, 400, s => `900 ${s}px sans-serif`, 100, 56);
+      ctx.fillStyle = band.fg;
+      ctx.fillText(nameFit.text, 40, 168);
+
+      // ランク文字（斜体）。端末標準の欧文フォントは幅が広いので、大きめのサイズで描いて最大幅で横に詰め、
+      // 縦長で力強い見た目にする。影で厚みを出す
+      ctx.font = `italic 900 520px ${NUM_FONT}`;
+      ctx.textAlign = 'center';
+      const rankX = 132, rankY = 590, rankMaxW = 182;
+      // C・G・Sは横に詰めると曲線の線が細く見えるので、同じ色の縁取りで太くする
+      const rankBold = 'CGS'.includes(gradeInfo.grade) ? 12 : 0;
+      ctx.lineJoin = 'round';
+      const drawRank = (color, dx, dy) => {
+        ctx.fillStyle = color;
+        ctx.fillText(gradeInfo.grade, rankX + dx, rankY + dy, rankMaxW);
+        if (rankBold) { ctx.strokeStyle = color; ctx.lineWidth = rankBold; ctx.strokeText(gradeInfo.grade, rankX + dx, rankY + dy, rankMaxW); }
+      };
+      drawRank(band.fg === '#ffffff' ? 'rgba(0, 0, 0, 0.28)' : 'rgba(0, 0, 0, 0.18)', 10, 8);
+      drawRank(band.rank, 0, 0);
+
+      // 合計pt
+      ctx.textAlign = 'left';
+      ctx.fillStyle = band.fg;
+      ctx.font = `900 66px ${NUM_FONT}`;
+      const ptStr = String(totalSum);
+      ctx.fillText(ptStr, 262, 338);
+      const ptW = ctx.measureText(ptStr).width;
+      ctx.font = `800 24px ${NUM_FONT}`;
+      ctx.fillText('pt', 262 + ptW + 8, 338);
+
+      // 黄色のバッジ（平行四辺形）：「12球団中 1位」／優勝は「プレーオフ優勝」
+      const badgeText = isChampion ? 'プレーオフ優勝' : (count ? `${count}球団中 ${rank}位` : '');
+      if (badgeText) {
+        const bx = 260, by = 352, bw = isChampion ? 204 : 190, bh = 48, sk = 8;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.25)'; ctx.shadowOffsetY = 3; ctx.shadowBlur = 6;
+        ctx.fillStyle = YELLOW;
+        ctx.beginPath(); ctx.moveTo(bx + sk, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw - sk, by + bh); ctx.lineTo(bx, by + bh); ctx.closePath(); ctx.fill();
+        ctx.restore();
+        ctx.fillStyle = '#1f2937';
+        ctx.textAlign = 'center';
+        const bf = fitText(ctx, badgeText, bw - 24, s => `italic 900 ${s}px sans-serif`, 25, 16);
+        ctx.fillText(bf.text, bx + bw / 2, by + 33);
+        ctx.textAlign = 'left';
+        if (isChampion && opts.seasonRank >= 2) {
+          ctx.fillStyle = band.fg;
+          // 約22px。帯の斜めの端に収まるよう2行に分ける
+          ctx.font = '800 22px sans-serif';
+          ctx.fillText(`シーズン${opts.seasonRank}位から`, bx + 2, by + bh + 32, 185);
+          ctx.fillText('下剋上', bx + 2, by + bh + 60, 185);
+        }
+      }
+
+      // 右上：このチームの特徴＋ひと言
+      const RX = 522, RW = 638;
+      ctx.fillStyle = YELLOW;
+      ctx.font = '800 18px sans-serif';
+      ctx.fillText('このチームの特徴', RX, 56);
+      const tagline = pickShareTagline(radarData, team.finalScore, isLast, isChampion);
+      drawHighlightedLine(ctx, tagline.lines[0], RX, 112, 46, RW, '#ffffff', YELLOW);
+      drawHighlightedLine(ctx, tagline.lines[1], RX, 170, 46, RW, '#ffffff', YELLOW);
+
+      // 右中：6項目のタイル（3列×2行、大きい順。同点はSTAT_LABELSの並び）
+      const stats = STAT_LABELS.map((label, i) => ({ label, i, v: radarData[i] })).sort((a, b) => b.v - a.v || a.i - b.i);
+      const tileW = 206, tileH = 72, gap = 10, tileY0 = 198;
+      stats.forEach((s, k) => {
+        const tx = RX + (k % 3) * (tileW + gap), ty = tileY0 + Math.floor(k / 3) * (tileH + gap);
+        // 黄色はひと言の1つ目の項目（ひと言と食い違わないように）。最下位など項目のない文言では一番高い項目
+        const top = tagline.focus >= 0 ? s.i === tagline.focus : k === 0;
+        ctx.beginPath(); ctx.roundRect(tx, ty, tileW, tileH, 8);
+        ctx.fillStyle = top ? YELLOW : 'rgba(255, 255, 255, 0.06)'; ctx.fill();
+        if (!top) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'; ctx.lineWidth = 1; ctx.stroke(); }
+        ctx.fillStyle = top ? '#1f2937' : '#cbd5e1';
+        ctx.font = '800 20px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(s.label, tx + 16, ty + 46);
+        ctx.fillStyle = top ? '#111827' : '#ffffff';
+        ctx.font = `900 40px ${NUM_FONT}`;
+        ctx.textAlign = 'right';
+        ctx.fillText(String(s.v), tx + tileW - 16, ty + 51);
+      });
+      ctx.textAlign = 'left';
+
+      // 右下：スタメン（3列×3行）
+      const lineupRows = team.shareLineup || [];
+      const colW = 216, rowH = 50, ly0 = 400;
+      lineupRows.slice(0, 9).forEach((r, k) => {
+        const cx = RX + (k % 3) * colW, cy = ly0 + Math.floor(k / 3) * rowH;
+        ctx.fillStyle = '#64748b';
+        ctx.font = `italic 700 15px ${NUM_FONT}`;
+        ctx.textAlign = 'right';
+        ctx.fillText(String(r.order), cx + 10, cy + 6);
+        ctx.textAlign = 'center';
+        const pw = String(r.pos).length >= 2 ? 36 : 28;
+        ctx.fillStyle = band.bg;
+        ctx.beginPath(); ctx.roundRect(cx + 17, cy - 15, pw, 28, 4); ctx.fill();
+        ctx.fillStyle = band.fg;
+        ctx.font = `900 ${String(r.pos).length >= 2 ? 15 : 17}px sans-serif`;
+        ctx.fillText(r.pos, cx + 17 + pw / 2, cy + 6);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffffff';
+        const nx = cx + 17 + pw + 8;
+        const nf = fitText(ctx, r.name, colW - (nx - cx) - 8, s => `800 ${s}px sans-serif`, 23, 16);
+        ctx.fillText(nf.text, nx, cy + 7);
+      });
+
+      // 投手（1行）
+      const pitchers = (team.sharePitchers || []).map(x => x.name);
+      if (pitchers.length) {
+        const py = 565;
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath(); ctx.roundRect(RX + 17, py - 15, 28, 28, 4); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.font = '900 17px sans-serif';
+        ctx.fillText('投', RX + 31, py + 6);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#e2e8f0';
+        const pf = fitText(ctx, pitchers.join(' / '), RW - 60, s => `800 ${s}px sans-serif`, 22, 16);
+        ctx.fillText(pf.text, RX + 55, py + 7);
+      }
+
+      // 下の帯
+      ctx.fillStyle = '#0b1120';
+      ctx.fillRect(0, FOOT_Y, W, H - FOOT_Y);
+      ctx.fillStyle = YELLOW;
+      ctx.fillRect(0, FOOT_Y, W, 3);
+      drawHighlightedLine(ctx, 'あなたのチームは【何点】？ AIとドラフトで勝負しよう', 46, 652, 23, 640, '#ffffff', YELLOW);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `800 27px ${NUM_FONT}`;
+      ctx.fillText('dreamteam9.com', W - 46, 653);
+      const urlW = ctx.measureText('dreamteam9.com').width;
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '700 16px sans-serif';
+      ctx.fillText('AIドラフト', W - 46 - urlW - 14, 652);
+      ctx.textAlign = 'left';
+
+      return canvas;
+    }
+
     function buildShareCardCanvas(team, opts) {
       opts = opts || {};
+      if (opts.format !== 'story') return buildShareCardCanvasX(team, opts);
       const format = opts.format === 'story' ? 'story' : 'x';
       const W = format === 'story' ? 1080 : 1200;
       const H = format === 'story' ? 1920 : 675;
@@ -1485,8 +1780,8 @@
     // showShareCard呼び出し内容を保持しておく（T1-3：シェアカード2サイズ化）。
     let lastShareCardState = null;
 
-    function renderShareCard(team, headline, subtitle, format) {
-      const canvas = buildShareCardCanvas(team, { headline, subtitle, format });
+    function renderShareCard(team, headline, subtitle, format, kind) {
+      const canvas = buildShareCardCanvas(team, { headline, subtitle, format, kind, seasonRank: team.shareSeasonRank || 0 });
       const dataUrl = canvas.toDataURL('image/png');
       const suffix = format === 'story' ? 'story' : 'x';
       document.getElementById('share-preview-img').src = dataUrl;
@@ -1499,12 +1794,13 @@
       });
     }
 
-    window.showShareCard = function(teamId, headline, subtitle) {
+    // kind: 'champion'（プレーオフ優勝の画像）か、省略（採点結果の画像）
+    window.showShareCard = function(teamId, headline, subtitle, kind) {
       const t = window.__shareTeamsById[teamId];
       if (!t) return;
-      lastShareCardState = { teamId, headline, subtitle };
+      lastShareCardState = { teamId, headline, subtitle, kind };
       document.getElementById('share-format-toggle').classList.remove('hidden-screen');
-      renderShareCard(t, headline, subtitle, 'x');
+      renderShareCard(t, headline, subtitle, 'x', kind);
       document.getElementById('share-modal').classList.remove('hidden-screen');
     };
 
@@ -1514,7 +1810,7 @@
       if (lastShareCardState.kind === 'pick') { renderPickCard(format); return; }
       const t = window.__shareTeamsById[lastShareCardState.teamId];
       if (!t) return;
-      renderShareCard(t, lastShareCardState.headline, lastShareCardState.subtitle, format);
+      renderShareCard(t, lastShareCardState.headline, lastShareCardState.subtitle, format, lastShareCardState.kind);
     };
 
     window.hideShareModal = function() {
@@ -5588,6 +5884,9 @@
       ranked.forEach((t, index) => {
         let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🔹";
         registerShareTeam(t);
+        // 結果シェア画像の「◯球団中 ◯位」用
+        t.shareRank = index + 1;
+        t.shareTeamCount = ranked.length;
         const g = getGradeInfo(t.finalScore);
 
         const rows = t.isUser
@@ -6704,6 +7003,8 @@
       if (playoffState.champion) {
         const champ = playoffState.champion;
         registerShareTeam(champ);
+        // 優勝シェア画像の「シーズン◯位から下剋上」用（AI採点の順位＝プレーオフのシード順）
+        champ.shareSeasonRank = playoffState.seeded.findIndex(x => x.id === champ.id) + 1;
         if (champ.isUser) {
           unlockAchievement('champion');
           if (userHadSRankThisRun) unlockAchievement('s_and_champion');
@@ -6715,7 +7016,7 @@
             <p class="text-2xl font-black ${champ.isUser ? 'text-yellow-400' : 'text-white'}">${champ.name.replace('(AI)','')}</p>
             <p class="mt-2 font-bold ${champ.isUser ? 'text-green-400' : 'text-gray-400'}">${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '健闘及ばず…来年に期待です。'}</p>
           </div>
-          <button onclick="window.showShareCard(${champ.id}, '🏆 プレーオフ優勝', '${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '見事な戴冠です'}')" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 rounded-full w-full mt-3">📤 優勝シェア画像を作成</button>
+          <button onclick="window.showShareCard(${champ.id}, '🏆 プレーオフ優勝', '${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '見事な戴冠です'}', 'champion')" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 rounded-full w-full mt-3">📤 優勝シェア画像を作成</button>
           <button onclick="window.showLineupCard(${champ.id})" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-full w-full mt-2">📇 オーダーカードを作る</button>
           <button onclick="window.confirmReset()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
           <p class="text-xs text-gray-400 text-center mt-3">${champ.isUser ? 'お見事！次はパーフェクトロマンも狙ってみよう。' : '次こそ優勝を掴むなら'} <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a> をチェック</p>
