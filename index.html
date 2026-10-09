@@ -6012,11 +6012,18 @@
         showScreen('screen-ranking');
 
         // ★ AI採点の結果画面が実際に表示されたタイミングをGA4で計測する（自分の順位・参加球団数も一緒に送る）
+        // ★ 2026-10-09 シェア率（share_click÷result_view）を文言別・ランク別に出せるよう、自分のチームの
+        //   ランク（grade）と、そのチームのX用シェア画像に出るひと言の番号（phrase_id）も送る。
+        //   AIのチームの分は送らない。友達対戦でも、それぞれの端末で自分のチーム（isUser）の分だけ送られる
         if (typeof gtag === 'function') {
-          gtag('event', 'result_view', {
-            rank: ranked.findIndex(t => t.isUser) + 1,
-            team_count: ranked.length
-          });
+          const userRank = ranked.findIndex(t => t.isUser) + 1;
+          const params = { rank: userRank, team_count: ranked.length };
+          if (userTeam && userTeam.radarData) {
+            params.grade = getGradeInfo(userTeam.finalScore).grade;
+            const isLast = ranked.length >= 2 && userRank === ranked.length;
+            params.phrase_id = pickShareTagline(userTeam.radarData, userTeam.finalScore, isLast, false, ranked.length).id;
+          }
+          gtag('event', 'result_view', params);
         }
         renderResultCTA(userTeam.name);
 
