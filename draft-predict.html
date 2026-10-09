@@ -48,17 +48,17 @@
       </div>
       <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
             <a href="howto.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📖 遊び方</a>
             <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
             <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
             <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">開発情報</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
             <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
           </div>
       </div>
@@ -73,14 +73,14 @@
       <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">あなたも12球団の1位指名を予想してみませんか？</h2>
       <p class="text-sm md:text-base text-gray-300 leading-relaxed">
         12球団それぞれの1位指名を、候補選手の中から選んで予想できます。予想はこの端末のブラウザだけに保存され、ドラフト当日の答え合わせに使えます。<br>
-        <span class="text-xs text-gray-500">候補選手は高校・大学・社会人・独立リーグの有力選手をまとめたものです。能力値評価は付けていません。</span>
+        <span class="text-xs text-gray-400">候補選手は高校・大学・社会人・独立リーグの有力選手をまとめたものです。能力値評価は付けていません。</span>
       </p>
     </section>
 
     <div class="bg-gray-800 border-2 border-yellow-500 rounded-lg py-4 px-4 text-center">
       <p id="countdown-label" class="text-xs text-gray-400 mb-1"></p>
       <p id="countdown-days" class="text-3xl md:text-4xl font-black text-yellow-400"></p>
-      <p id="countdown-note" class="text-[11px] text-gray-500 mt-1 hidden">※開催日はまだ正式発表されていないため、例年の傾向（10月第4木曜開催）から算出した暫定日です</p>
+      <p id="countdown-note" class="text-[11px] text-gray-400 mt-1 hidden">※開催日はまだ正式発表されていないため、例年の傾向（10月第4木曜開催）から算出した暫定日です</p>
     </div>
 
     <section>
@@ -89,14 +89,14 @@
       <div id="predict-revisit-note" class="hidden-screen bg-yellow-500/10 border border-yellow-500 text-yellow-300 text-xs rounded-lg px-3 py-2 text-center mb-3">🔔 答え合わせは10月22日の指名発表後に公開します。またこのページに来てくださいね。</div>
 
       <div class="flex flex-wrap gap-2 items-center justify-center mb-2">
-        <select id="filter-category" class="bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-100">
+        <select id="filter-category" aria-label="区分で絞り込む" class="bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-100">
           <option value="all">区分：すべて</option>
           <option value="高校">高校</option>
           <option value="大学">大学</option>
           <option value="社会人">社会人</option>
           <option value="独立リーグ">独立リーグ・その他</option>
         </select>
-        <select id="filter-position" class="bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-100">
+        <select id="filter-position" aria-label="ポジションで絞り込む" class="bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-100">
           <option value="all">ポジション：すべて</option>
           <option value="投手">投手</option>
           <option value="捕手">捕手</option>
@@ -105,7 +105,7 @@
         </select>
         <button id="toggle-all-candidates" onclick="window.toggleShowAllCandidates()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap"></button>
       </div>
-      <p id="candidate-count-note" class="text-[11px] text-gray-500 text-center mb-3"></p>
+      <p id="candidate-count-note" class="text-[11px] text-gray-400 text-center mb-3"></p>
 
       <div id="predict-list" class="space-y-2"></div>
       <div id="predict-loading" class="text-center text-sm text-gray-400 py-6">候補選手データを読み込み中...</div>
@@ -124,7 +124,7 @@
     <section id="answer-check-section" class="hidden-screen scroll-mt-24">
       <div class="bg-gray-800 border-2 border-green-500 rounded-lg p-4">
         <h3 class="text-lg font-black text-green-400 mb-1">🎯 答え合わせ結果</h3>
-        <p id="answer-check-updated" class="text-[11px] text-gray-500 mb-3"></p>
+        <p id="answer-check-updated" class="text-[11px] text-gray-400 mb-3"></p>
         <div id="answer-check-list" class="space-y-1.5 text-sm mb-4"></div>
         <div class="text-center">
           <p class="text-[11px] text-gray-400">🎯 1位入札的中（抽選で外れても的中扱い）</p>
@@ -135,7 +135,7 @@
         <div class="text-center mt-4">
           <button onclick="window.openAnswerCheckShare()" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 px-6 rounded-full text-sm shadow">📤 答え合わせ結果をシェアする</button>
         </div>
-        <p class="text-[11px] text-gray-500 mt-3 leading-relaxed">※ 判定は2種類あります。<b>🎯1位入札的中</b>＝予想した選手にその球団が最初に1位で入札したか（抽選で外れても的中）。<b>🏆交渉権獲得的中</b>＝抽選も含めて、その球団が実際に交渉権を獲得した選手と一致するか。称号は🎯1位入札的中の数で決まります。名前の判定は前後・途中の空白や一部の異体字（髙→高、﨑→崎など）を吸収したうえで比較しています。</p>
+        <p class="text-[11px] text-gray-400 mt-3 leading-relaxed">※ 判定は2種類あります。<b>🎯1位入札的中</b>＝予想した選手にその球団が最初に1位で入札したか（抽選で外れても的中）。<b>🏆交渉権獲得的中</b>＝抽選も含めて、その球団が実際に交渉権を獲得した選手と一致するか。称号は🎯1位入札的中の数で決まります。名前の判定は前後・途中の空白や一部の異体字（髙→高、﨑→崎など）を吸収したうえで比較しています。</p>
       </div>
     </section>
 
@@ -149,14 +149,14 @@
     <div id="ad-slot-bottom" class="ad-slot"></div>
 
     <section class="border-t border-gray-700 pt-6 mt-8 text-center">
-      <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
+      <p class="text-xs text-gray-400 mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
         <a href="draft-2026.html" class="text-sm text-blue-400 hover:underline font-bold">📅 2026ドラフト放送予定・注目選手</a>
         <a href="draft-system.html" class="text-sm text-blue-400 hover:underline font-bold">🗒️ ドラフト会議とは</a>
       </div>
     </section>
   </main>
-  <footer class="text-center text-gray-500 text-xs py-6">
+  <footer class="text-center text-gray-400 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 
@@ -261,7 +261,7 @@
         return `
           <div class="flex items-center gap-3 bg-gray-800 rounded-lg p-3">
             <span class="w-20 shrink-0 text-center text-xs font-black rounded py-1" style="background:${t.hex};color:${t.textColor};">${t.name}</span>
-            <select data-team="${t.name}" class="predict-select flex-1 min-w-0 w-full bg-gray-900 border border-gray-600 rounded px-2 py-2 text-sm text-gray-100 truncate">
+            <select data-team="${t.name}" aria-label="${t.name}の1位指名予想" class="predict-select flex-1 min-w-0 w-full bg-gray-900 border border-gray-600 rounded px-2 py-2 text-sm text-gray-100 truncate">
               ${options}
             </select>
           </div>
@@ -551,17 +551,17 @@
       list.innerHTML = rows.map(({ team: t, predicted: p, result: r, bidHit, acquiredHit }) => {
         const badge = `<span class="w-16 shrink-0 text-center text-[10px] font-black rounded py-0.5 inline-block" style="background:${t.hex};color:${t.textColor};">${t.name}</span>`;
         if (!r) {
-          return `<div class="flex items-center gap-2">${badge}<span class="text-gray-500 text-xs">結果未入力</span></div>`;
+          return `<div class="flex items-center gap-2">${badge}<span class="text-gray-400 text-xs">結果未入力</span></div>`;
         }
         const compete = (r.competedWith && r.competedWith.length)
-          ? `<span class="text-[10px] text-gray-500">（${r.competedWith.join('・')}と競合、抽選${r.lottery === 'won' ? '勝利' : '敗退'}）</span>`
+          ? `<span class="text-[10px] text-gray-400">（${r.competedWith.join('・')}と競合、抽選${r.lottery === 'won' ? '勝利' : '敗退'}）</span>`
           : '';
         const fallback = (r.lottery === 'lost' && r.fallback)
-          ? `<span class="text-[10px] text-gray-500">→外れ1位:${r.fallback.name}</span>`
+          ? `<span class="text-[10px] text-gray-400">→外れ1位:${r.fallback.name}</span>`
           : '';
-        const predictedText = p ? `<span class="text-[10px] text-gray-500 ml-auto shrink-0">予想:${p.name}</span>` : '';
-        const bidTag = `<span class="text-[10px] font-bold ${bidHit ? 'text-green-400' : 'text-gray-500'}">🎯入札${bidHit ? '○' : '×'}</span>`;
-        const acquiredTag = `<span class="text-[10px] font-bold ${acquiredHit ? 'text-yellow-400' : 'text-gray-500'}">🏆獲得${acquiredHit ? '○' : '×'}</span>`;
+        const predictedText = p ? `<span class="text-[10px] text-gray-400 ml-auto shrink-0">予想:${p.name}</span>` : '';
+        const bidTag = `<span class="text-[10px] font-bold ${bidHit ? 'text-green-400' : 'text-gray-400'}">🎯入札${bidHit ? '○' : '×'}</span>`;
+        const acquiredTag = `<span class="text-[10px] font-bold ${acquiredHit ? 'text-yellow-400' : 'text-gray-400'}">🏆獲得${acquiredHit ? '○' : '×'}</span>`;
         return `
           <div class="flex items-center gap-2 flex-wrap">
             ${badge}

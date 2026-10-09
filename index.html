@@ -504,7 +504,7 @@
         <button onclick="window.hideAchievementsModal()" class="text-gray-400 hover:text-white text-xl leading-none">×</button>
       </div>
       <div id="achievements-list" class="space-y-2 overflow-y-auto pr-1"></div>
-      <p class="text-[10px] text-gray-500 mt-3 text-center leading-relaxed">実績はこの端末・このブラウザだけに保存されます。他の端末には引き継がれません。</p>
+      <p class="text-[10px] text-gray-400 mt-3 text-center leading-relaxed">実績はこの端末・このブラウザだけに保存されます。他の端末には引き継がれません。</p>
     </div>
   </div>
 
@@ -688,7 +688,7 @@
             </div>
           `;
         }).join('');
-        const note = limited ? '<span class="text-[10px] text-gray-500 font-normal ml-1">（全体の数には含みません）</span>' : '';
+        const note = limited ? '<span class="text-[10px] text-gray-400 font-normal ml-1">（全体の数には含みません）</span>' : '';
         return `
           <div class="mb-4">
             <p class="text-xs font-black mb-2"><span class="${style.badge} text-white px-2 py-0.5 rounded-full">${tier}</span> <span class="${style.text} ml-1">${doneCount} / ${items.length}</span>${note}</p>
@@ -816,7 +816,7 @@
           </div>`;
       } else {
         slot.innerHTML = `
-          <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 text-center text-xs text-gray-500">
+          <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 text-center text-xs text-gray-400">
             ${headlineHtml}${item.label}
           </div>`;
       }
@@ -2127,7 +2127,7 @@
       <div class="p-5 md:p-6">
       <h2 class="text-lg font-bold mb-3 md:mb-4 border-b pb-2">ドラフト設定</h2>
 
-      <p class="font-bold mb-2 text-sm text-left text-blue-800">① あなたの担当球団</p>
+      <label for="user-team" class="block font-bold mb-2 text-sm text-left text-blue-800">① あなたの担当球団</label>
       <select id="user-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500">
         <option value="巨人">読売ジャイアンツ</option>
         <option value="阪神">阪神タイガース</option>
@@ -2143,7 +2143,7 @@
         <option value="西武">埼玉西武ライオンズ</option>
       </select>
 
-      <p class="font-bold mb-2 text-sm text-left text-blue-800">② 対戦するAI球団数 (ライバル)</p>
+      <label for="ai-count" class="block font-bold mb-2 text-sm text-left text-blue-800">② 対戦するAI球団数 (ライバル)</label>
       <select id="ai-count" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500">
         <option value="1">1球団（計2球団で対戦）</option>
         <option value="2">2球団（計3球団で対戦）</option>
@@ -2158,22 +2158,22 @@
         <option value="11">11球団（計12球団で対戦・NPB全球団）</option>
       </select>
 
-      <p class="font-bold mb-2 text-sm text-left text-blue-800">③ ドラフト方式</p>
+      <label for="draft-mode" class="block font-bold mb-2 text-sm text-left text-blue-800">③ ドラフト方式</label>
       <select id="draft-mode" class="w-full border-2 border-gray-300 p-3 rounded mb-2 font-bold text-sm md:text-base focus:outline-none focus:border-blue-500">
         <option value="npb" selected>NPB方式：1巡目のみ抽選 → 2巡目以降ウェーバー</option>
         <option value="lottery">全巡 同時指名（毎回くじ引き）</option>
         <option value="waiver">完全ウェーバー（抽選なし・順番指名）</option>
       </select>
-      <p id="draft-mode-desc" class="text-[11px] text-left text-gray-500 mb-4 md:mb-6 leading-snug"></p>
+      <p id="draft-mode-desc" class="text-[11px] text-left text-gray-600 mb-4 md:mb-6 leading-snug"></p>
 
       <button onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
       <button onclick="window.openMpLobby()" class="w-full mt-2 bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg text-sm shadow">🤝 友達と対戦（β版）</button>
       <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
-      <a href="draft-2026.html#watch" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-white font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
+      <a href="draft-2026.html#watch" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
       <button onclick="document.getElementById('home-nav-menu').classList.toggle('hidden')" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-sm border border-gray-300">☰ その他のページ</button>
       <div id="home-nav-menu" class="hidden mt-2 text-left bg-gray-50 border border-gray-200 rounded-lg p-3">
         <div class="mb-3 last:mb-0">
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
           <a href="howto.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📖 遊び方・ルール</a>
           <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🎯 攻略ガイド</a>
           <a href="glossary.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📚 用語集</a>
@@ -2181,30 +2181,30 @@
           <a href="faq.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">❓ FAQ</a>
         </div>
         <div class="mb-3 last:mb-0">
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
           <a href="teams.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🏟️ 球団紹介</a>
           <a href="draft-legends.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📜 歴代ドラフト伝説</a>
           <a href="rankings.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🏆 ランキング</a>
           <a href="players.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🧢 選手名鑑</a>
         </div>
         <div class="mb-3 last:mb-0">
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
           <a href="draft-2026.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📅 2026ドラフト放送予定・注目選手</a>
           <a href="draft-predict.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🎯 12球団1位指名予想</a>
         </div>
         <div class="mb-3 last:mb-0">
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
           <a href="recommend.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🛍️ おすすめグッズ・コンテンツ</a>
           <a href="npb-broadcast-guide.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📡 中継サブスク比較</a>
           <a href="postseason-broadcast.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🏆 CS・日本シリーズの見る方法</a>
         </div>
         <div>
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">開発情報</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
           <a href="devblog.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📝 開発ブログ</a>
           <a href="changelog.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🛠️ 更新履歴</a>
         </div>
         <div>
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">サイト情報</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">サイト情報</p>
           <a href="about.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🧑‍💻 運営者情報</a>
           <a href="contact.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">✉️ お問い合わせ</a>
         </div>
@@ -2266,10 +2266,10 @@
       <!-- 選択パネル：作る/参加する -->
       <div id="mp-panel-choice">
         <h2 class="text-lg font-bold mb-1 border-b pb-2">🤝 友達と対戦（β版）</h2>
-        <p class="text-xs text-gray-500 mb-4 leading-snug text-left">1対1のオンライン対戦です。同じ合言葉を知っている人同士で、それぞれの手番のときだけ指名できます。</p>
+        <p class="text-xs text-gray-600 mb-4 leading-snug text-left">1対1のオンライン対戦です。同じ合言葉を知っている人同士で、それぞれの手番のときだけ指名できます。</p>
         <button onclick="window.mpShowPanel('create')" class="btn-mvp w-full text-white font-black py-3 rounded-lg mb-2">ルームを作る（ホスト）</button>
         <button onclick="window.mpShowPanel('join')" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg">合言葉で参加する</button>
-        <button onclick="window.closeMpLobby()" class="w-full mt-4 text-sm text-gray-500 hover:underline">戻る</button>
+        <button onclick="window.closeMpLobby()" class="w-full mt-4 text-sm text-gray-600 hover:underline">戻る</button>
       </div>
 
       <!-- 作成パネル -->
@@ -2278,7 +2278,7 @@
         <p class="font-bold mb-2 text-sm text-left text-blue-800">あなたの担当球団</p>
         <select id="mp-create-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500"></select>
         <button onclick="window.mpCreateRoom()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">この設定でルームを作る</button>
-        <button onclick="window.mpShowPanel('choice')" class="w-full mt-3 text-sm text-gray-500 hover:underline">戻る</button>
+        <button onclick="window.mpShowPanel('choice')" class="w-full mt-3 text-sm text-gray-600 hover:underline">戻る</button>
       </div>
 
       <!-- 参加パネル -->
@@ -2290,20 +2290,20 @@
         <select id="mp-join-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500"></select>
         <p id="mp-join-error" class="hidden text-xs text-red-600 font-bold mb-3"></p>
         <button onclick="window.mpJoinRoom()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">参加する</button>
-        <button onclick="window.mpShowPanel('choice')" class="w-full mt-3 text-sm text-gray-500 hover:underline">戻る</button>
+        <button onclick="window.mpShowPanel('choice')" class="w-full mt-3 text-sm text-gray-600 hover:underline">戻る</button>
       </div>
 
       <!-- 待機ロビー -->
       <div id="mp-panel-waiting" class="hidden">
         <h2 class="text-lg font-bold mb-4 border-b pb-2">対戦相手を待っています</h2>
         <div id="mp-waiting-host-only" class="hidden mb-4">
-          <p class="text-xs text-gray-500 mb-2">この合言葉を相手に伝えてください</p>
+          <p class="text-xs text-gray-600 mb-2">この合言葉を相手に伝えてください</p>
           <p id="mp-room-code" class="text-3xl font-black tracking-[0.3em] text-blue-800 mb-1"></p>
         </div>
         <div id="mp-slot-list" class="text-left space-y-2 mb-4"></div>
         <button id="mp-start-btn" onclick="window.mpStartRoom()" class="hidden btn-mvp w-full text-white font-black py-3 rounded-lg mb-2">対戦を開始する</button>
-        <p id="mp-waiting-guest-msg" class="hidden text-sm text-gray-500 mb-2">⏳ ホストが開始するのを待っています...</p>
-        <button onclick="window.closeMpLobby()" class="w-full mt-2 text-sm text-gray-500 hover:underline">やめて戻る</button>
+        <p id="mp-waiting-guest-msg" class="hidden text-sm text-gray-600 mb-2">⏳ ホストが開始するのを待っています...</p>
+        <button onclick="window.closeMpLobby()" class="w-full mt-2 text-sm text-gray-600 hover:underline">やめて戻る</button>
       </div>
 
       </div>
@@ -2565,7 +2565,7 @@
         </div>
       </div>
       <button id="finish-lineup-btn" onclick="finishLineup()" class="btn-mvp text-white font-black py-3 px-4 w-full rounded-full text-sm md:text-lg shrink-0 mb-1">AI採点を見る</button>
-      <p id="mp-lineup-waiting-msg" class="hidden text-[11px] text-gray-500 text-center mb-4">⏳ 対戦相手のスタメン確定を待っています...</p>
+      <p id="mp-lineup-waiting-msg" class="hidden text-[11px] text-gray-400 text-center mb-4">⏳ 対戦相手のスタメン確定を待っています...</p>
     </div>
     </div>
     </div>
@@ -2583,7 +2583,7 @@
   <div id="screen-ranking" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center p-4 text-white overflow-y-auto fade-in">
     <h2 class="text-2xl md:text-4xl font-black text-yellow-400 mb-6 tracking-widest border-b-2 border-yellow-400 pb-2">🏆 ドラフト結果</h2>
     <div id="ranking-container" class="w-full max-w-4xl space-y-4 pb-20"></div>
-    <p class="text-sm text-gray-400 mb-2">もっと高いランクを狙うなら <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a> をチェック</p>
+    <p class="text-sm text-gray-400 mb-2">もっと高いランクを狙うなら <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline font-bold">🎯 攻略ガイド</a> をチェック</p>
     <!-- ★ 月別に内容を切り替えるCTA枠。表示内容はcta-config.jsonで管理し、コード変更なしで差し替えられる -->
     <div id="cta-slot-result" class="w-full max-w-md mb-2"></div>
     <div class="mt-6 flex flex-col md:flex-row gap-4 mb-10 w-full max-w-md">
@@ -7070,7 +7070,7 @@
           <button onclick="window.showShareCard(${champ.id}, '🏆 プレーオフ優勝', '${champ.isUser ? 'あなたのチームが頂点に立ちました！' : '見事な戴冠です'}', 'champion')" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 rounded-full w-full mt-3">📤 優勝シェア画像を作成</button>
           <button onclick="window.showLineupCard(${champ.id})" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-full w-full mt-2">📇 オーダーカードを作る</button>
           <button onclick="window.confirmReset()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full w-full mt-2">トップへ戻る</button>
-          <p class="text-xs text-gray-400 text-center mt-3">${champ.isUser ? 'お見事！次はパーフェクトロマンも狙ってみよう。' : '次こそ優勝を掴むなら'} <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a> をチェック</p>
+          <p class="text-xs text-gray-400 text-center mt-3">${champ.isUser ? 'お見事！次はパーフェクトロマンも狙ってみよう。' : '次こそ優勝を掴むなら'} <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline font-bold">🎯 攻略ガイド</a> をチェック</p>
         `;
         return;
       }

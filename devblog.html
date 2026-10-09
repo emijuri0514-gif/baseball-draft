@@ -47,32 +47,32 @@
       </div>
       <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
             <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
             <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
             <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
             <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ FAQ</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
             <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
             <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
             <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
             <a href="players.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧢 選手名鑑</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
             <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
             <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
             <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
             <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
             <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">開発情報</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
             <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
           </div>
       </div>
@@ -238,6 +238,7 @@
         <li><a href="#ep148" class="hover:underline">右翼手を7人足したら、内野手が混ざっていた</a></li>
         <li><a href="#ep149" class="hover:underline">11位のチームが「優勝候補」と名乗っていた</a></li>
         <li><a href="#ep150" class="hover:underline">「平均との差」で選んだら、65点に黄色が付いた</a></li>
+        <li><a href="#ep151" class="hover:underline">フッターの灰色が、32ページ全部で引っかかっていた</a></li>
       </ol>
     </nav>
 
@@ -1154,20 +1155,26 @@
       <p>これで一番多い文言は2割くらいまで減ったんだけど、確認画像を見てもらったら、今度は阪神に「光るのは守備力」と出ていて、その守備力は65点で6項目中5番目だった。平均よりは高いから選ばれているんだけど、黄色く光っているのが下から2番目の数字なので、見た人はバグだと思うよね、という指摘で、まったくそのとおりだと思った。数字としては正しくても、見た目として正しくなかった。候補を点数の上位3項目に絞って、その中から平均との差で選ぶ形にしたら、偏りは3割前後まで少し戻ったものの、変な黄色はなくなった。あと、人が実際に組んだチームでどの文言が出ているかはまだ分からないので、シェアのときに文言の番号とランクも記録するようにした。ドラフトが終わったら数えてみたい。</p>
     </article>
 
-    <p class="text-center text-gray-500 text-sm mt-14">— 続く —</p>
+    <article id="ep151" class="post mb-12 scroll-mt-20">
+      <h2 class="text-lg font-black text-yellow-400 mb-3">第151回：フッターの灰色が、32ページ全部で引っかかっていた</h2>
+      <p>PageSpeed Insightsの「ユーザー補助」の点数を上げる作業をした。前に計測ツールに振り回された反省から、今回は直す前に、くじ以外の33ページ全部をLighthouseで測って、指摘を一覧にしてみた。すると、トップが75点で、ほかのページも81〜93点。中身を見ていくと、一番多かったのは文字の色の薄さで、しかも原因はほぼ一つだった。フッターの「プライバシーポリシー ｜ 運営者情報」や「こちらのページもどうぞ」に使っていた灰色が、紺の背景だとコントラスト比が3.7しかなく、基準の4.5に届いていなかった。全ページに同じ書き方でコピーしていたので、32ページ全部で同じ指摘が出ていたわけだ。1段明るい灰色に変えたら、それだけでほとんどのページの指摘が消えた。</p>
+      <p>ほかには、文章の中のリンクが色だけで区別されていて下線がない、トップのドラフト設定の3つの選択欄に読み上げ用の名前がない、比較表の行の見出しが普通のセル扱いになっている、などを直した。選択欄は、上に見出しの文字がちゃんとあるのに、それがどの欄の説明なのかがプログラム上つながっていなかった。見えている人には当たり前でも、読み上げで使う人には「選択欄」としか伝わっていなかったんだと思う。結果、33ページ中28ページが100点になって、トップも90点まで上がった。トップの残りは、ドラッグ操作のために画面の拡大を止めている設定で、ここは分かったうえで残している。名鑑や球団紹介に残った指摘は、球団カラーの上に白い文字を乗せているところで、色そのものを変えることになるので相談中。</p>
+    </article>
+
+    <p class="text-center text-gray-400 text-sm mt-14">— 続く —</p>
 
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
   
     <section class="border-t border-gray-700 pt-6 mt-8 text-center">
-      <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
+      <p class="text-xs text-gray-400 mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
         <a href="changelog.html" class="text-sm text-blue-400 hover:underline font-bold">🛠️ 更新履歴</a>
         <a href="howto.html" class="text-sm text-blue-400 hover:underline font-bold">📖 遊び方</a>
       </div>
     </section>
 </main>
-  <footer class="text-center text-gray-500 text-xs py-6">
+  <footer class="text-center text-gray-400 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 </body>
