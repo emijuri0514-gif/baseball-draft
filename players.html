@@ -50,31 +50,31 @@
       </div>
       <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
             <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
             <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
             <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
             <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ FAQ</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
             <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
             <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
             <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
             <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
             <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
             <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
             <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
             <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">開発情報</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
             <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
           </div>
       </div>
@@ -94,11 +94,11 @@
 
     <div id="app" class="hidden">
       <div class="bg-gray-800 rounded-lg p-3 mb-5 flex flex-col md:flex-row gap-3 md:items-center">
-        <input id="search-input" type="text" placeholder="選手名で検索" class="flex-1 bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500">
-        <select id="team-filter" class="bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none">
+        <input id="search-input" type="text" aria-label="選手名で検索" placeholder="選手名で検索" class="flex-1 bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500">
+        <select id="team-filter" aria-label="球団で絞り込む" class="bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none">
           <option value="">全球団</option>
         </select>
-        <select id="pos-filter" class="bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none">
+        <select id="pos-filter" aria-label="ポジションで絞り込む" class="bg-gray-900 text-white text-sm rounded px-3 py-2 border border-gray-700 focus:outline-none">
           <option value="">全ポジション</option>
           <option value="投手">投手</option>
           <option value="捕手">捕手</option>
@@ -116,7 +116,7 @@
     <div id="ad-slot-bottom" class="ad-slot"></div>
   
     <section class="border-t border-gray-700 pt-6 mt-8 text-center">
-      <p class="text-xs text-gray-500 mb-3">こちらのページもどうぞ</p>
+      <p class="text-xs text-gray-400 mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
         <a href="rankings.html" class="text-sm text-blue-400 hover:underline font-bold">🏆 ランキング</a>
         <a href="teams.html" class="text-sm text-blue-400 hover:underline font-bold">🏟️ 球団紹介</a>
@@ -124,7 +124,7 @@
       </div>
     </section>
 </main>
-  <footer class="text-center text-gray-500 text-xs py-6">
+  <footer class="text-center text-gray-400 text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 
