@@ -130,10 +130,10 @@
 
   <script>
     const TEAM_STYLE = {
-      "巨人": { bg: "bg-[#f97316]", text: "text-white" },
+      "巨人": { bg: "bg-[#f97316]", text: "text-gray-900" },
       "阪神": { bg: "bg-[#eab308]", text: "text-gray-900" },
-      "DeNA": { bg: "bg-[#0ea5e9]", text: "text-white" },
-      "ヤクルト": { bg: "bg-[#22c55e]", text: "text-white" },
+      "DeNA": { bg: "bg-[#0ea5e9]", text: "text-gray-900" },
+      "ヤクルト": { bg: "bg-[#22c55e]", text: "text-gray-900" },
       "中日": { bg: "bg-[#2563eb]", text: "text-white" },
       "広島": { bg: "bg-[#dc2626]", text: "text-white" },
       "オリックス": { bg: "bg-[#0f172a]", text: "text-white" },
@@ -141,7 +141,7 @@
       "ソフトバンク": { bg: "bg-[#fde047]", text: "text-gray-900" },
       "楽天": { bg: "bg-[#9f1239]", text: "text-white" },
       "日本ハム": { bg: "bg-[#7dd3fc]", text: "text-gray-900" },
-      "西武": { bg: "bg-[#06b6d4]", text: "text-white" }
+      "西武": { bg: "bg-[#06b6d4]", text: "text-gray-900" }
     };
 
     let allPlayers = [];
@@ -167,7 +167,7 @@
         <div class="bg-gray-800 rounded-lg overflow-hidden shadow" data-name="${p.name}" data-team="${p.team}" data-pos="${p.pos}">
           <div class="${style.bg} ${style.text} text-xs font-black px-3 py-1 flex justify-between items-center">
             <span>${p.team}</span>
-            <span class="opacity-80">${p.eval}</span>
+            <span>${p.eval}</span>
           </div>
           <div class="p-3">
             <p class="font-black text-base mb-2 break-words">${p.name}</p>

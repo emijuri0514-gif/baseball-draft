@@ -1824,9 +1824,15 @@
       const suffix = format === 'story' ? 'story' : 'x';
       // ★ 人が組んだチームで、どの文言がどれだけ出て・シェアされたかを集計するためのGA4パラメータ。
       // ひと言はX用（横長）の画像にだけ入っているので、縦長ではランクだけを送る
-      const gaParams = { grade: getGradeInfo(team.finalScore).grade };
+      // team_owner：own＝遊んだ人のチーム、ai＝AIのチーム、opponent＝友達対戦の相手のチーム。
+      // 文言・ランクの集計は人が組んだチームだけで見たいので、own以外では phrase_id と grade を送らない
+      const teamOwner = team.isUser ? 'own' : (mpRoomId ? 'opponent' : 'ai');
+      const gaParams = { team_owner: teamOwner };
       if (team.shareTeamCount) gaParams.team_count = team.shareTeamCount;
-      if (canvas.sharePhraseId) gaParams.phrase_id = canvas.sharePhraseId;
+      if (teamOwner === 'own') {
+        gaParams.grade = getGradeInfo(team.finalScore).grade;
+        if (canvas.sharePhraseId) gaParams.phrase_id = canvas.sharePhraseId;
+      }
       if (lastShareCardState) lastShareCardState.gaParams = gaParams;
       document.getElementById('share-preview-img').src = dataUrl;
       document.getElementById('share-download-btn').onclick = () => {
@@ -1869,8 +1875,10 @@
       if (typeof gtag === 'function' && lastShareCardState && lastShareCardState.kind === 'pick') {
         gtag('event', 'pick_card_share', { method: 'x_share', result: lastShareCardState.pickInfo.result });
       }
+      // ★ Xのアプリ内ブラウザは参照元を残さないことが多いので、シェア文のURLにUTMを付けて来訪を数えられるようにする
+      // （正規URL＝canonicalはUTMなしのまま）
       const params = new URLSearchParams({
-        url: 'https://dreamteam9.com/',
+        url: 'https://dreamteam9.com/?utm_source=x&utm_medium=share&utm_campaign=result',
         hashtags: 'NPBドラフトシミュレーション'
       });
       window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
@@ -5554,7 +5562,7 @@
 
       // ★ ドラフト会議が終わってスタメン編成画面に進んだタイミングをGA4で計測する
       if (typeof gtag === 'function') {
-        gtag('event', 'draft_complete', { team_count: teams.length, draft_mode: draftMode });
+        gtag('event', 'draft_complete', { team_count: teams.length, draft_mode: draftMode, play_mode: mpRoomId ? 'friend' : 'solo' });
       }
 
       lineupAssignments = {};
@@ -6018,7 +6026,7 @@
         //   AIのチームの分は送らない。友達対戦でも、それぞれの端末で自分のチーム（isUser）の分だけ送られる
         if (typeof gtag === 'function') {
           const userRank = ranked.findIndex(t => t.isUser) + 1;
-          const params = { rank: userRank, team_count: ranked.length };
+          const params = { rank: userRank, team_count: ranked.length, play_mode: mpRoomId ? 'friend' : 'solo' };
           if (userTeam && userTeam.radarData) {
             params.grade = getGradeInfo(userTeam.finalScore).grade;
             const isLast = ranked.length >= 2 && userRank === ranked.length;
