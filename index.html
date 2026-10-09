@@ -1042,22 +1042,26 @@
     }
 
     // 戻り値：{ lines: [1行目, 2行目], focus: 黄色にするタイルの項目の番号（STAT_LABELSの添字。なければ-1） }
-    // 「光るのは」にするかどうかは点数そのもの（一番高い項目が78未満、またはランクD以下）で決め、
-    // 文言に使う項目（上位2項目・光るのはの項目名）は平均との差の大きい順。同点はSTAT_LABELSの並びで前の方を上位にする。
+    // 「光るのは」にするかどうかは点数そのもの（一番高い項目が78未満、またはランクD以下）で決める。
+    // 文言に使う項目は、点数の低い項目が選ばれて黄色が付く（バグに見える）のを防ぐため候補を点数の上位に限り、
+    // その中で平均との差の大きい順に選ぶ：組み合わせは上位3項目から2つ、「光るのは」の項目は上位2項目から1つ
+    // （2026-10-09 オーナー決定）。同点はSTAT_LABELSの並びで前の方を上位にする。
     // プレーオフ優勝の画像では「伸びしろ」「光るのは」を使わず、必ず組み合わせの文言にする
     function pickShareTagline(radarData, finalScore, isLast, isChampion, teamCount) {
       const means = shareStatMeans(teamCount || 4);
-      const stats = STAT_LABELS.map((label, i) => ({ label, i, v: radarData[i], d: radarData[i] - means[i] }));
-      const topRaw = Math.max(...radarData);
-      const byDiff = [...stats].sort((a, b) => b.d - a.d || a.i - b.i);
+      const byScore = STAT_LABELS.map((label, i) => ({ label, i, v: radarData[i], d: radarData[i] - means[i] }))
+        .sort((a, b) => b.v - a.v || a.i - b.i);
+      const byDiff = list => [...list].sort((a, b) => b.d - a.d || a.i - b.i);
       if (!isChampion) {
         if (isLast) return { lines: SHARE_TAGLINE_LAST, focus: -1 };
-        if (topRaw < SHARE_TAGLINE_LOW_TOP || SHARE_TAGLINE_LOW_GRADES.includes(getGradeInfo(finalScore).grade)) {
-          return { lines: [`光るのは【${byDiff[0].label}】`, 'ここから伸びるチーム'], focus: byDiff[0].i };
+        if (byScore[0].v < SHARE_TAGLINE_LOW_TOP || SHARE_TAGLINE_LOW_GRADES.includes(getGradeInfo(finalScore).grade)) {
+          const shine = byDiff(byScore.slice(0, 2))[0];
+          return { lines: [`光るのは【${shine.label}】`, 'ここから伸びるチーム'], focus: shine.i };
         }
       }
-      const pair = [byDiff[0], byDiff[1]].sort((a, b) => a.i - b.i).map(x => x.label).join('+');
-      return { lines: SHARE_TAGLINES[pair], focus: byDiff[0].i };
+      const two = byDiff(byScore.slice(0, 3)).slice(0, 2);
+      const pair = [...two].sort((a, b) => a.i - b.i).map(x => x.label).join('+');
+      return { lines: SHARE_TAGLINES[pair], focus: two[0].i };
     }
 
     // 帯の色と、帯の上の文字色。明るい球団カラー（阪神・ソフトバンク・日本ハム）はそのままの色で文字を黒に、
