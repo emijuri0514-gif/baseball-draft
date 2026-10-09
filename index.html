@@ -998,7 +998,7 @@
       '長打力+確実性': ['よく【飛び】、よく【当たる】', '隙のない強力打線'],
       '長打力+機動力': ['【一発】も【足】もある', '破壊力抜群の打線'],
       '長打力+守備力': ['【一発】と【堅守】がそろう', '攻守がかみ合う野手陣'],
-      '長打力+先発陣': ['【大砲】と【エース】がそろう', '王道の優勝候補'],
+      '長打力+先発陣': ['【大砲】と【エース】がそろう', '投打の柱がそろうチーム'],
       '長打力+救援陣': ['【一発】で奪って【継投】で守る', '終盤にめっぽう強い'],
       '確実性+機動力': ['よく【打ち】、よく【走る】', '相手を揺さぶる機動打線'],
       '確実性+守備力': ['【つなぐ】打撃と【堅い】守り', 'しぶとく勝ち切るチーム'],
@@ -1012,19 +1012,26 @@
       '先発陣+救援陣': ['最後まで【崩れない】', '【鉄壁】の投手陣']
     };
     const SHARE_TAGLINE_LAST = ['【伸びしろ】しかない', '下剋上の準備は整った'];
-    // 一番高い項目でもこの値に届かないチームは、組み合わせの文言（強みをうたう言い回し）が大げさになるので
-    // 「光るのは【項目名】」にする。78は12球団・AI同士の1万回シミュレーションで、Dランクの約半分・Cランク下位の約3割が
-    // 当てはまる値（2026-10-08、ROADMAP参照）
+    // 一番高い項目でもこの値に届かないチーム、またはランクD以下のチームは、組み合わせの文言（強みをうたう言い回し）が
+    // 大げさになるので「光るのは【項目名】」にする。78は12球団・AI同士の1万回シミュレーションで、Dランクの約半分・
+    // Cランク下位の約3割が当てはまる値（2026-10-08 オーナー決定、ROADMAP参照）
     const SHARE_TAGLINE_LOW_TOP = 78;
+    const SHARE_TAGLINE_LOW_GRADES = ['D', 'E', 'F', 'G'];
 
-    // 上位2項目は値の大きい順。同点はSTAT_LABELSの並び（長打力→確実性→…→救援陣）で前の方を上位にする
-    function pickShareTagline(radarData, isLast) {
-      if (isLast) return SHARE_TAGLINE_LAST;
+    // 戻り値：{ lines: [1行目, 2行目], focus: 黄色にするタイルの項目の番号（STAT_LABELSの添字。なければ-1） }
+    // 上位2項目は値の大きい順。同点はSTAT_LABELSの並び（長打力→確実性→…→救援陣）で前の方を上位にする。
+    // プレーオフ優勝の画像では「伸びしろ」「光るのは」を使わず、必ず組み合わせの文言にする
+    function pickShareTagline(radarData, finalScore, isLast, isChampion) {
       const order = STAT_LABELS.map((label, i) => ({ label, i, v: radarData[i] }))
         .sort((a, b) => b.v - a.v || a.i - b.i);
-      if (order[0].v < SHARE_TAGLINE_LOW_TOP) return [`光るのは【${order[0].label}】`, 'ここから伸びるチーム'];
+      if (!isChampion) {
+        if (isLast) return { lines: SHARE_TAGLINE_LAST, focus: -1 };
+        if (order[0].v < SHARE_TAGLINE_LOW_TOP || SHARE_TAGLINE_LOW_GRADES.includes(getGradeInfo(finalScore).grade)) {
+          return { lines: [`光るのは【${order[0].label}】`, 'ここから伸びるチーム'], focus: order[0].i };
+        }
+      }
       const pair = [order[0], order[1]].sort((a, b) => a.i - b.i).map(x => x.label).join('+');
-      return SHARE_TAGLINES[pair];
+      return { lines: SHARE_TAGLINES[pair], focus: order[0].i };
     }
 
     // 帯の色と、帯の上の文字色。明るい球団カラー（阪神・ソフトバンク・日本ハム）はそのままの色で文字を黒に、
@@ -1142,10 +1149,16 @@
       ctx.font = `italic 900 520px ${NUM_FONT}`;
       ctx.textAlign = 'center';
       const rankX = 132, rankY = 590, rankMaxW = 182;
-      ctx.fillStyle = band.fg === '#ffffff' ? 'rgba(0, 0, 0, 0.28)' : 'rgba(0, 0, 0, 0.18)';
-      ctx.fillText(gradeInfo.grade, rankX + 10, rankY + 8, rankMaxW);
-      ctx.fillStyle = band.rank;
-      ctx.fillText(gradeInfo.grade, rankX, rankY, rankMaxW);
+      // C・G・Sは横に詰めると曲線の線が細く見えるので、同じ色の縁取りで太くする
+      const rankBold = 'CGS'.includes(gradeInfo.grade) ? 12 : 0;
+      ctx.lineJoin = 'round';
+      const drawRank = (color, dx, dy) => {
+        ctx.fillStyle = color;
+        ctx.fillText(gradeInfo.grade, rankX + dx, rankY + dy, rankMaxW);
+        if (rankBold) { ctx.strokeStyle = color; ctx.lineWidth = rankBold; ctx.strokeText(gradeInfo.grade, rankX + dx, rankY + dy, rankMaxW); }
+      };
+      drawRank(band.fg === '#ffffff' ? 'rgba(0, 0, 0, 0.28)' : 'rgba(0, 0, 0, 0.18)', 10, 8);
+      drawRank(band.rank, 0, 0);
 
       // 合計pt
       ctx.textAlign = 'left';
@@ -1173,8 +1186,10 @@
         ctx.textAlign = 'left';
         if (isChampion && opts.seasonRank >= 2) {
           ctx.fillStyle = band.fg;
-          const sf = fitText(ctx, `シーズン${opts.seasonRank}位から下剋上`, 180, s => `800 ${s}px sans-serif`, 20, 14);
-          ctx.fillText(sf.text, bx + 2, by + bh + 32);
+          // 約22px。帯の斜めの端に収まるよう2行に分ける
+          ctx.font = '800 22px sans-serif';
+          ctx.fillText(`シーズン${opts.seasonRank}位から`, bx + 2, by + bh + 32, 185);
+          ctx.fillText('下剋上', bx + 2, by + bh + 60, 185);
         }
       }
 
@@ -1183,16 +1198,17 @@
       ctx.fillStyle = YELLOW;
       ctx.font = '800 18px sans-serif';
       ctx.fillText('このチームの特徴', RX, 56);
-      const tagline = pickShareTagline(radarData, isLast);
-      drawHighlightedLine(ctx, tagline[0], RX, 112, 46, RW, '#ffffff', YELLOW);
-      drawHighlightedLine(ctx, tagline[1], RX, 170, 46, RW, '#ffffff', YELLOW);
+      const tagline = pickShareTagline(radarData, team.finalScore, isLast, isChampion);
+      drawHighlightedLine(ctx, tagline.lines[0], RX, 112, 46, RW, '#ffffff', YELLOW);
+      drawHighlightedLine(ctx, tagline.lines[1], RX, 170, 46, RW, '#ffffff', YELLOW);
 
-      // 右中：6項目のタイル（3列×2行、大きい順。同点はSTAT_LABELSの並び。一番高い項目を黄色）
+      // 右中：6項目のタイル（3列×2行、大きい順。同点はSTAT_LABELSの並び）
       const stats = STAT_LABELS.map((label, i) => ({ label, i, v: radarData[i] })).sort((a, b) => b.v - a.v || a.i - b.i);
       const tileW = 206, tileH = 72, gap = 10, tileY0 = 198;
       stats.forEach((s, k) => {
         const tx = RX + (k % 3) * (tileW + gap), ty = tileY0 + Math.floor(k / 3) * (tileH + gap);
-        const top = k === 0;
+        // 黄色はひと言の1つ目の項目（ひと言と食い違わないように）。最下位など項目のない文言では一番高い項目
+        const top = tagline.focus >= 0 ? s.i === tagline.focus : k === 0;
         ctx.beginPath(); ctx.roundRect(tx, ty, tileW, tileH, 8);
         ctx.fillStyle = top ? YELLOW : 'rgba(255, 255, 255, 0.06)'; ctx.fill();
         if (!top) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'; ctx.lineWidth = 1; ctx.stroke(); }
@@ -1226,7 +1242,7 @@
         ctx.textAlign = 'left';
         ctx.fillStyle = '#ffffff';
         const nx = cx + 17 + pw + 8;
-        const nf = fitText(ctx, r.name, colW - (nx - cx) - 8, s => `800 ${s}px sans-serif`, 23, 15);
+        const nf = fitText(ctx, r.name, colW - (nx - cx) - 8, s => `800 ${s}px sans-serif`, 23, 16);
         ctx.fillText(nf.text, nx, cy + 7);
       });
 
@@ -1242,7 +1258,7 @@
         ctx.fillText('投', RX + 31, py + 6);
         ctx.textAlign = 'left';
         ctx.fillStyle = '#e2e8f0';
-        const pf = fitText(ctx, pitchers.join(' / '), RW - 60, s => `800 ${s}px sans-serif`, 22, 15);
+        const pf = fitText(ctx, pitchers.join(' / '), RW - 60, s => `800 ${s}px sans-serif`, 22, 16);
         ctx.fillText(pf.text, RX + 55, py + 7);
       }
 
