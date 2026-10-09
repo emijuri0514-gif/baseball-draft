@@ -1825,6 +1825,7 @@
       // ★ 人が組んだチームで、どの文言がどれだけ出て・シェアされたかを集計するためのGA4パラメータ。
       // ひと言はX用（横長）の画像にだけ入っているので、縦長ではランクだけを送る
       const gaParams = { grade: getGradeInfo(team.finalScore).grade };
+      if (team.shareTeamCount) gaParams.team_count = team.shareTeamCount;
       if (canvas.sharePhraseId) gaParams.phrase_id = canvas.sharePhraseId;
       if (lastShareCardState) lastShareCardState.gaParams = gaParams;
       document.getElementById('share-preview-img').src = dataUrl;
