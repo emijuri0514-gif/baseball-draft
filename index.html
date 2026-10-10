@@ -2243,6 +2243,7 @@
         (function () {
           var saved = null;
           try { saved = JSON.parse(localStorage.getItem('dt9_last_setup_v1')); } catch (e) {}
+          window.__hasLastSetup = !!saved;
           if (!saved) return;
           var set = function (id, v) {
             var el = document.getElementById(id);
@@ -2257,7 +2258,12 @@
           document.getElementById('start-game-btn').textContent = 'すぐに始める';
           window.__quickStartShown = true;
         })();
+        // ★ 効果の計測：トップの設定画面を表示したこと（前回の設定があるか＝2回目以降か）を1回だけ送る
+        document.addEventListener('DOMContentLoaded', function () {
+          if (typeof gtag === 'function') gtag('event', 'setup_view', { has_last_setup: window.__hasLastSetup ? 1 : 0 });
+        });
         window.openSetupFields = function () {
+          if (typeof gtag === 'function') gtag('event', 'setup_change_open');
           document.getElementById('setup-fields').classList.remove('hidden');
           document.getElementById('quick-start').classList.add('hidden');
           document.getElementById('start-game-btn').textContent = 'ドラフト会議を開始する';
@@ -3479,9 +3485,12 @@
           team: userTeamSelect,
           ai_count: aiCount,
           draft_mode: draftModeSelect,
-          start_from: window.__quickStartShown ? 'quick' : 'full'
+          start_from: window.__quickStartShown ? 'quick' : 'full',
+          has_last_setup: window.__hasLastSetup ? 1 : 0
         });
       }
+      // 完走率を始め方ごとに比べるため、ドラフト完了のイベントにも同じ値を付ける
+      window.__draftStartParams = { start_from: window.__quickStartShown ? 'quick' : 'full', has_last_setup: window.__hasLastSetup ? 1 : 0 };
       // 次に来たときの「すぐに始める」用に、今回の設定を覚えておく（この端末・このブラウザだけ）
       try { localStorage.setItem('dt9_last_setup_v1', JSON.stringify({ team: userTeamSelect, ai: aiCount, mode: draftModeSelect })); } catch (e) {}
 
@@ -5744,7 +5753,7 @@
 
       // ★ ドラフト会議が終わってスタメン編成画面に進んだタイミングをGA4で計測する
       if (typeof gtag === 'function') {
-        gtag('event', 'draft_complete', { team_count: teams.length, draft_mode: draftMode, play_mode: mpRoomId ? 'friend' : 'solo' });
+        gtag('event', 'draft_complete', Object.assign({ team_count: teams.length, draft_mode: draftMode, play_mode: mpRoomId ? 'friend' : 'solo' }, mpRoomId ? {} : (window.__draftStartParams || {})));
       }
 
       lineupAssignments = {};
