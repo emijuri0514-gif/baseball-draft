@@ -2184,6 +2184,19 @@
       <div class="p-5 md:p-6">
       <h2 class="text-lg font-bold mb-3 md:mb-4 border-b pb-2">ドラフト設定</h2>
 
+      <!-- ★ 2026-10「すぐに始める」：2回目以降の人には、前回の設定（担当球団・AI球団数・方式）を1行で見せ、
+           3つの選択欄は「設定を変える」の中にたたんで、開始ボタンまでの距離を縮める。
+           初めての人（保存された設定がない）には、これまでと同じく選択欄をそのまま見せる（開始ボタンの位置も変えない）。
+           たたむかどうかは、この直後のインラインスクリプトで描画前に決める（表示後に縮むとレイアウトがずれるため） -->
+      <div id="quick-start" class="hidden mb-4 text-left">
+        <p class="text-[11px] font-bold text-blue-800 mb-1">前回の設定</p>
+        <div class="flex items-center gap-2 bg-white border-2 border-gray-300 rounded p-3">
+          <p id="quick-start-summary" class="flex-1 min-w-0 text-sm font-bold text-gray-800 leading-snug"></p>
+          <button type="button" onclick="window.openSetupFields()" class="shrink-0 text-xs font-bold text-blue-700 underline px-1 py-2" aria-controls="setup-fields" aria-expanded="false" id="quick-start-change">設定を変える</button>
+        </div>
+      </div>
+
+      <div id="setup-fields">
       <label for="user-team" class="block font-bold mb-2 text-sm text-left text-blue-800">① あなたの担当球団</label>
       <select id="user-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500">
         <option value="巨人">読売ジャイアンツ</option>
@@ -2222,8 +2235,36 @@
         <option value="waiver">完全ウェーバー（抽選なし・順番指名）</option>
       </select>
       <p id="draft-mode-desc" class="text-[11px] text-left text-gray-600 mb-4 md:mb-6 leading-snug"></p>
+      </div>
 
-      <button onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
+      <button id="start-game-btn" onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
+      <script>
+        // ★「すぐに始める」：前回の設定があれば選択欄に戻し、選択欄をたたんで要約と「すぐに始める」ボタンを見せる
+        (function () {
+          var saved = null;
+          try { saved = JSON.parse(localStorage.getItem('dt9_last_setup_v1')); } catch (e) {}
+          if (!saved) return;
+          var set = function (id, v) {
+            var el = document.getElementById(id);
+            if (el && v != null && Array.prototype.some.call(el.options, function (o) { return o.value === String(v); })) el.value = String(v);
+          };
+          set('user-team', saved.team); set('ai-count', saved.ai); set('draft-mode', saved.mode);
+          var teams = Number(document.getElementById('ai-count').value) + 1;
+          var mode = { npb: 'NPB方式', lottery: '全巡 同時指名', waiver: '完全ウェーバー' }[document.getElementById('draft-mode').value] || '';
+          document.getElementById('quick-start-summary').textContent = document.getElementById('user-team').value + '／計' + teams + '球団／' + mode;
+          document.getElementById('quick-start').classList.remove('hidden');
+          document.getElementById('setup-fields').classList.add('hidden');
+          document.getElementById('start-game-btn').textContent = 'すぐに始める';
+          window.__quickStartShown = true;
+        })();
+        window.openSetupFields = function () {
+          document.getElementById('setup-fields').classList.remove('hidden');
+          document.getElementById('quick-start').classList.add('hidden');
+          document.getElementById('start-game-btn').textContent = 'ドラフト会議を開始する';
+          window.__quickStartShown = false;
+          var t = document.getElementById('user-team'); if (t) t.focus();
+        };
+      </script>
       <button onclick="window.openMpLobby()" class="w-full mt-2 bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg text-sm shadow">🤝 友達と対戦（β版）</button>
       <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
       <a href="draft-2026.html#watch" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
@@ -3432,13 +3473,17 @@
       const draftModeSelect = document.getElementById('draft-mode').value;
 
       // ★ 何人がドラフトを開始したかをGA4で計測する（担当球団・AI球団数・ドラフト方式も一緒に送る）
+      //   start_from：quick＝「すぐに始める」（前回の設定のまま）、full＝選択欄から開始
       if (typeof gtag === 'function') {
         gtag('event', 'draft_start', {
           team: userTeamSelect,
           ai_count: aiCount,
-          draft_mode: draftModeSelect
+          draft_mode: draftModeSelect,
+          start_from: window.__quickStartShown ? 'quick' : 'full'
         });
       }
+      // 次に来たときの「すぐに始める」用に、今回の設定を覚えておく（この端末・このブラウザだけ）
+      try { localStorage.setItem('dt9_last_setup_v1', JSON.stringify({ team: userTeamSelect, ai: aiCount, mode: draftModeSelect })); } catch (e) {}
 
       // 実績「方式マスター」：3つのドラフト方式をすべて使ったかどうかを記録する
       if (!achState.stats.draftModesUsed.includes(draftModeSelect)) {
