@@ -15,6 +15,7 @@
     gtag("js", new Date());
     gtag("config", "G-N7NP62TTYB");
   </script>
+  <script async src="js/error-tracking.js"></script>
   <title>AIドラフトシミュレーション｜NPBドラフト会議×スタメン編成ゲーム</title>
   <meta name="description" content="AI球団と現役NPB選手を取り合うドラフト会議シミュレーション。指名した選手でスタメンを編成し、AI採点＆試合シミュレーションまで無料で遊べます。">
   <meta property="og:site_name" content="AIドラフト">
@@ -149,9 +150,13 @@
       return { roomId: code.toUpperCase(), clientId, isHost: false, slotIndex: claimedSlotIndex };
     }
 
+    // ★ 通知の失敗（無料枠の上限超え＝resource-exhausted など）も本体側の mpReportError へ渡す。
+    //   以前はエラーの受け取り口がなく、上限を超えると通知が黙って止まり、画面が固まっていた
     function subscribeRoom(roomId, callback) {
       return onSnapshot(doc(db, 'rooms', roomId), (snap) => {
         if (snap.exists()) callback(snap.data());
+      }, (err) => {
+        if (window.mpReportError) window.mpReportError(err, 'snapshot');
       });
     }
 
@@ -203,6 +208,35 @@
       getClientId, createRoom, joinRoom, subscribeRoom, startRoom, submitPendingPick, commitPick,
       postLotteryResult, clearLotteryResult, submitLotteryChoice
     };
+    // ★ 2026-10 ドラフト当日の備え：読み書きの失敗をすべて本体の mpReportError に知らせてから、
+    //   これまでどおり呼び出し元へエラーを返す（呼び出し元の個別の .catch はそのまま動く）。
+    //   上限超えの案内と GA4 の mp_error はここを通る1か所でまとめて扱う。
+    //   テスト用：?mp_test_error=quota で、すべての読み書きを上限超えのエラーにする（本番のデータには触れない）
+    const MP_TEST_ERROR = new URLSearchParams(location.search).get('mp_test_error');
+    ['getDoc', 'setDoc', 'updateDoc', 'deleteDoc', 'runTransaction', 'createRoom', 'joinRoom', 'startRoom',
+     'submitPendingPick', 'commitPick', 'postLotteryResult', 'clearLotteryResult', 'submitLotteryChoice'].forEach(name => {
+      const orig = window.MP[name];
+      window.MP[name] = async (...args) => {
+        try {
+          if (MP_TEST_ERROR === 'quota') {
+            const e = new Error('Quota exceeded.（テスト）'); e.code = 'resource-exhausted'; throw e;
+          }
+          return await orig(...args);
+        } catch (e) {
+          if (window.mpReportError) window.mpReportError(e, name);
+          throw e;
+        }
+      };
+    });
+    if (MP_TEST_ERROR === 'quota') {
+      window.MP.subscribeRoom = (roomId, callback) => {
+        setTimeout(() => {
+          const e = new Error('Quota exceeded.（テスト）'); e.code = 'resource-exhausted';
+          if (window.mpReportError) window.mpReportError(e, 'snapshot');
+        }, 0);
+        return () => {};
+      };
+    }
     window.dispatchEvent(new Event('mp-ready'));
     return window.MP;
     })().catch(e => { mpLoading = null; throw e; }));
@@ -497,6 +531,19 @@
   </div>
 
   <!-- 実績一覧モーダル（localStorageにこのブラウザだけの達成状況を保存する） -->
+  <!-- ★ 友達対戦の混雑案内：Firebaseの無料枠（読み書きの回数）を超えたときに出す。
+       対戦の途中で出た場合も、画面が固まったままにならないよう、この案内から抜けられるようにする -->
+  <div id="mp-busy-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-80 z-[400] flex flex-col items-center justify-center px-4" role="alertdialog" aria-modal="true" aria-labelledby="mp-busy-title">
+    <div class="stitch-card bg-[#faf6ec] text-gray-800 rounded-lg shadow-2xl w-full max-w-sm text-center overflow-hidden">
+      <div class="h-1.5 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700"></div>
+      <div class="p-6">
+        <p id="mp-busy-title" class="text-lg font-black mb-2">友達対戦は一時的に使えません</p>
+        <p class="text-sm text-gray-700 leading-relaxed mb-5">混み合っているため、友達対戦は一時的に使えません。AI対戦で遊べます。</p>
+        <button onclick="window.mpBusyPlayAI()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">AI対戦で遊ぶ</button>
+      </div>
+    </div>
+  </div>
+
   <div id="achievements-modal" class="hidden-screen fixed inset-0 bg-black bg-opacity-80 z-[300] flex flex-col items-center justify-center px-4 fade-in">
     <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-md p-4 text-white flex flex-col max-h-[85vh]">
       <div class="flex items-center justify-between mb-3">
@@ -543,6 +590,8 @@
       document.getElementById('app-modal').classList.remove('hidden-screen');
     }
     function showAppAlert(message, onOk) {
+      // 友達対戦の混雑案内を出している間は、「送信に失敗しました」などの個別のお知らせを重ねて出さない
+      if (window.__mpBusyShown) return;
       showAppModal({ message, confirmText: 'OK', onConfirm: onOk });
     }
     function showAppConfirm(message, onConfirm, confirmText = '実行する') {
@@ -3070,6 +3119,11 @@
     let mpLastTurnData = null;        // ゲスト側：最後に受け取った手番情報（指名を反映するたびに当て直す）
     let mpLastRoomSig = null;         // 同じ内容を二重に処理しないための、直前に処理したルームの中身
     let mpPollTimer = null;           // リアルタイム同期が止まったときの保険の定期取得
+    let mpLastSnapshotAt = 0;         // 最後にリアルタイム通知が届いた時刻（保険の取得を間引くために使う）
+    let mpLastPollAt = 0;             // 最後に保険の取得をした時刻
+    let mpBusyShown = false;          // 混雑案内を出したか（1回の訪問で1回だけ出す）
+    const mpErrorSent = new Set();    // GA4の mp_error を同じ種類・場所で何度も送らないため
+    const MP_TEST_ERROR_MODE = new URLSearchParams(location.search).get('mp_test_error');
     let mpLastRevealKey = null;       // ゲスト側：最後に表示した「指名読み上げ」
     let mpRevealedPickIds = new Set(); // ゲスト側：読み上げ画面ですでに見せた選手（重複アナウンス防止）
     let revealScreenSeq = 0;          // 読み上げ画面を最後に使った処理の番号（古いタイマーが画面を切り替えないように）  // ゲスト側：抽選の開票演出ですでに見せたplayerId（重複アナウンス防止）
@@ -4695,6 +4749,45 @@
       return team.id; // teams[].idは常にFirestoreのslots配列の添字と一致させている
     }
 
+    // ★ 2026-10 ドラフト当日の備え：友達対戦の読み書き・通知の失敗をここで受け止める（Firebase側のラッパーから呼ばれる）。
+    //   種類を分けてGA4へ mp_error を送り、無料枠の上限超え（resource-exhausted）なら混雑案内を出す。
+    //   対戦の途中でも、案内からAI対戦の設定画面へ戻れるので画面が固まらない。
+    //   テスト：?mp_test_error=quota（作成・参加の時点で失敗）、?mp_test_error=quota_mid（対戦開始の15秒後に失敗）。
+    //   テスト中はGA4へ送らない
+    function mpErrorType(e) {
+      const code = (e && e.code) || '';
+      const msg = String((e && e.message) || '');
+      if (code === 'resource-exhausted' || /quota/i.test(msg)) return 'quota';
+      if (code === 'permission-denied') return 'permission';
+      if (code === 'unavailable' || code === 'deadline-exceeded' || /network|offline|fetch/i.test(msg)) return 'network';
+      if (code === 'not-found') return 'not_found';
+      return 'other';
+    }
+    window.mpReportError = function(e, where) {
+      // 合言葉の間違い・満員など、利用者の操作で起きる想定内の失敗は数えない
+      if (e && /^ROOM_(NOT_FOUND|ALREADY_STARTED|FULL)$/.test(e.message || '')) return;
+      const type = mpErrorType(e);
+      const key = type + ':' + where;
+      if (!MP_TEST_ERROR_MODE && !mpErrorSent.has(key) && typeof gtag === 'function') {
+        mpErrorSent.add(key);
+        gtag('event', 'mp_error', { error_type: type, error_where: where, in_game: mpGameStarted ? 1 : 0 });
+      }
+      if (type === 'quota') mpShowBusy();
+    };
+    function mpShowBusy() {
+      if (mpBusyShown) return;
+      mpBusyShown = true;
+      window.__mpBusyShown = true;
+      // これ以上読み書きしないよう、通知の購読と保険の取得を止める
+      mpTeardownRoom();
+      document.getElementById('mp-busy-modal').classList.remove('hidden-screen');
+    }
+    // 対戦の途中だと、ドラフトの進行（AIの指名のタイマーなど）が裏で動き続けることがあるため、
+    // ページを読み込み直して、まっさらな設定画面から始めてもらう（テスト用のパラメータも外す）
+    window.mpBusyPlayAI = function() {
+      location.href = location.pathname;
+    };
+
     function mpTeardownRoom() {
       if (mpUnsubRoom) { mpUnsubRoom(); mpUnsubRoom = null; }
       mpRoomId = null; mpIsHost = false; mpMySlotIndex = null;
@@ -4760,7 +4853,7 @@
       try {
         const { roomId } = await window.MP.createRoom({ teamName, totalSlots: 2, draftMode: document.getElementById('draft-mode').value });
         mpRoomId = roomId; mpIsHost = true; mpMySlotIndex = 0;
-        mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomUpdate);
+        mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomSnapshot);
         mpStartPolling();
         document.getElementById('mp-room-code').textContent = roomId;
         document.getElementById('mp-waiting-host-only').classList.remove('hidden');
@@ -4786,7 +4879,7 @@
       try {
         const { roomId, slotIndex } = await window.MP.joinRoom(code, teamName);
         mpRoomId = roomId; mpIsHost = false; mpMySlotIndex = slotIndex;
-        mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomUpdate);
+        mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomSnapshot);
         mpStartPolling();
         document.getElementById('mp-waiting-host-only').classList.add('hidden');
         document.getElementById('mp-waiting-guest-msg').classList.remove('hidden');
@@ -4841,15 +4934,29 @@
       try { return JSON.stringify(data, (k, v) => (k === 'updatedAt' || k === 'createdAt') ? undefined : v); }
       catch (e) { return String(Math.random()); }
     }
+    // ★ 2026-10 読み取り回数を減らす：以前は5秒ごとに必ず取りに行っていた（1台で1分12回）。
+    //   リアルタイム通知が12秒以上届いていないときだけ取りに行き、取りに行ったあとも12秒は間を空ける。
+    //   通知が正常に届いている間は、保険の取得は1回も発生しない
+    const MP_POLL_QUIET_MS = 12000;
     function mpStartPolling() {
       if (mpPollTimer) clearInterval(mpPollTimer);
+      mpLastSnapshotAt = Date.now();
+      mpLastPollAt = 0;
       mpPollTimer = setInterval(async () => {
         if (!mpRoomId || !window.MP || document.hidden) return;
+        const now = Date.now();
+        if (now - mpLastSnapshotAt < MP_POLL_QUIET_MS || now - mpLastPollAt < MP_POLL_QUIET_MS) return;
+        mpLastPollAt = now;
         try {
           const snap = await window.MP.getDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId));
           if (snap.exists()) mpOnRoomUpdate(snap.data(), { fromPoll: true });
         } catch (e) {}
-      }, 5000);
+      }, 3000);
+    }
+    // リアルタイム通知の受け取り口：届いた時刻を記録してから処理する
+    function mpOnRoomSnapshot(data) {
+      mpLastSnapshotAt = Date.now();
+      mpOnRoomUpdate(data);
     }
 
     function mpOnRoomUpdate(data, opts) {
@@ -4885,6 +4992,14 @@
     // ★ 対戦開始：Firestoreのslots情報から、ホスト・ゲストどちらのブラウザでも
     //   同じteams配列を組み立てる（team.id＝スロット番号で常に一致させる）。
     function mpBeginGame(data) {
+      // テスト用：?mp_test_error=quota_mid のとき、対戦が始まって15秒後に上限超えのエラーが起きたことにする
+      if (MP_TEST_ERROR_MODE === 'quota_mid') {
+        setTimeout(() => {
+          if (!mpRoomId) return;
+          const e = new Error('Quota exceeded.（テスト）'); e.code = 'resource-exhausted';
+          window.mpReportError(e, 'snapshot');
+        }, 15000);
+      }
       userHadSRankThisRun = false;
       availablePlayers = [...initialDatabase];
       resetPositionBoard();

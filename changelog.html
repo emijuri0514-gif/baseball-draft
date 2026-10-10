@@ -15,6 +15,7 @@
     gtag("js", new Date());
     gtag("config", "G-N7NP62TTYB");
   </script>
+  <script async src="js/error-tracking.js"></script>
   <title>更新履歴｜NPBドラフト会議シミュレーション</title>
   <meta name="description" content="NPBドラフト会議シミュレーションのアップデート履歴。AIドラフトロジックの改善やUI変更、新機能追加など、これまでの変更点を新しい順にまとめています。">
   <meta property="og:site_name" content="AIドラフト">
@@ -85,6 +86,12 @@
 
       <li class="ml-6">
         <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
+        <h2 class="font-black text-base mb-1">友達対戦が混み合ったときの案内を追加</h2>
+        <p class="text-sm text-gray-300">友達対戦の通信が上限に達したときに、画面が止まらず「一時的に使えません。AI対戦で遊べます」と案内するようにした（対戦の途中でも出る）。あわせて、通知が届いている間は確認の通信をしないようにして、通信の回数を減らした。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
         <h2 class="font-black text-base mb-1">球団カラーの帯の文字を読みやすく</h2>
         <p class="text-sm text-gray-300">選手名鑑・球団紹介・おすすめ・1位指名予想で、巨人・DeNA・ヤクルト・西武の球団カラーの上の文字を黒にした。球団の色はそのまま。帯の中の小さな補足の文字も、薄くせずに表示するようにした。</p>
       </li>
