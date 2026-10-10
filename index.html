@@ -538,7 +538,7 @@
       <div class="h-1.5 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700"></div>
       <div class="p-6">
         <p id="mp-busy-title" class="text-lg font-black mb-2">友達対戦は一時的に使えません</p>
-        <p class="text-sm text-gray-700 leading-relaxed mb-5">混み合っているため、友達対戦は一時的に使えません。AI対戦で遊べます。</p>
+        <p class="text-sm text-gray-700 leading-relaxed mb-5">混み合っているため、友達対戦は一時的に使えません。<br><span id="mp-busy-reopen">明日の16時ごろ</span>に再開する予定です。<br>それまでは、AI対戦で遊べます。</p>
         <button onclick="window.mpBusyPlayAI()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">AI対戦で遊ぶ</button>
       </div>
     </div>
@@ -4774,12 +4774,34 @@
       }
       if (type === 'quota') mpShowBusy();
     };
+    // ★ Firestoreの無料枠は太平洋時間の0時にリセットされる（公式「Usage and limits」）。次の太平洋時間0時を
+    //   日本時間に直して「今日の16時ごろ」「明日の17時ごろ」のように返す。夏時間（3月〜11月の初め）は16時、
+    //   それ以外は17時になる。夏時間の切り替わる日は1時間ずれることがあるが、「ごろ」の表示なので許容する
+    function mpQuotaResetLabel(now) {
+      try {
+        now = now || new Date();
+        const la = {};
+        new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          .formatToParts(now).forEach(p => { la[p.type] = Number(p.value); });
+        const h = la.hour % 24;
+        const msToMidnight = ((24 - h) * 3600 - la.minute * 60 - la.second) * 1000 - now.getMilliseconds();
+        const reset = new Date(now.getTime() + msToMidnight);
+        const jst = d => new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+        const hourJst = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Tokyo', hour12: false, hour: '2-digit' }).format(reset)) % 24;
+        const dayWord = jst(reset) === jst(now) ? '今日' : '明日';
+        return `${dayWord}の${hourJst}時ごろ`;
+      } catch (e) {
+        return '明日の16時ごろ';
+      }
+    }
     function mpShowBusy() {
       if (mpBusyShown) return;
       mpBusyShown = true;
       window.__mpBusyShown = true;
       // これ以上読み書きしないよう、通知の購読と保険の取得を止める
       mpTeardownRoom();
+      const reopen = document.getElementById('mp-busy-reopen');
+      if (reopen) reopen.textContent = mpQuotaResetLabel();
       document.getElementById('mp-busy-modal').classList.remove('hidden-screen');
     }
     // 対戦の途中だと、ドラフトの進行（AIの指名のタイマーなど）が裏で動き続けることがあるため、
