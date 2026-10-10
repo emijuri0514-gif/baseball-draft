@@ -2250,6 +2250,8 @@
             if (el && v != null && Array.prototype.some.call(el.options, function (o) { return o.value === String(v); })) el.value = String(v);
           };
           set('user-team', saved.team); set('ai-count', saved.ai); set('draft-mode', saved.mode);
+          // 「設定を変える」の後にどの項目を変えたかを比べるため、選択欄に戻した値を控えておく
+          window.__lastSetupValues = { team: document.getElementById('user-team').value, ai: document.getElementById('ai-count').value, mode: document.getElementById('draft-mode').value };
           var teams = Number(document.getElementById('ai-count').value) + 1;
           var mode = { npb: 'NPB方式', lottery: '全巡 同時指名', waiver: '完全ウェーバー' }[document.getElementById('draft-mode').value] || '';
           document.getElementById('quick-start-summary').textContent = document.getElementById('user-team').value + '／計' + teams + '球団／' + mode;
@@ -2268,6 +2270,7 @@
           document.getElementById('quick-start').classList.add('hidden');
           document.getElementById('start-game-btn').textContent = 'ドラフト会議を開始する';
           window.__quickStartShown = false;
+          window.__setupChangeOpened = true;
           var t = document.getElementById('user-team'); if (t) t.focus();
         };
       </script>
@@ -3480,15 +3483,23 @@
 
       // ★ 何人がドラフトを開始したかをGA4で計測する（担当球団・AI球団数・ドラフト方式も一緒に送る）
       //   start_from：quick＝「すぐに始める」（前回の設定のまま）、full＝選択欄から開始
-      if (typeof gtag === 'function') {
-        gtag('event', 'draft_start', {
-          team: userTeamSelect,
-          ai_count: aiCount,
-          draft_mode: draftModeSelect,
-          start_from: window.__quickStartShown ? 'quick' : 'full',
-          has_last_setup: window.__hasLastSetup ? 1 : 0
-        });
+      //   setup_changed：「設定を変える」を開いてから始めたときだけ、前回から変えた項目
+      //     （team＝担当球団／count＝球団の数／mode＝方式。複数なら「team+count」のように+でつなぐ。何も変えなければ none）
+      const startParams = {
+        team: userTeamSelect,
+        ai_count: aiCount,
+        draft_mode: draftModeSelect,
+        start_from: window.__quickStartShown ? 'quick' : 'full',
+        has_last_setup: window.__hasLastSetup ? 1 : 0
+      };
+      if (window.__setupChangeOpened && window.__lastSetupValues) {
+        const last = window.__lastSetupValues, changed = [];
+        if (last.team !== userTeamSelect) changed.push('team');
+        if (String(last.ai) !== String(aiCount)) changed.push('count');
+        if (last.mode !== draftModeSelect) changed.push('mode');
+        startParams.setup_changed = changed.length ? changed.join('+') : 'none';
       }
+      if (typeof gtag === 'function') gtag('event', 'draft_start', startParams);
       // 完走率を始め方ごとに比べるため、ドラフト完了のイベントにも同じ値を付ける
       window.__draftStartParams = { start_from: window.__quickStartShown ? 'quick' : 'full', has_last_setup: window.__hasLastSetup ? 1 : 0 };
       // 次に来たときの「すぐに始める」用に、今回の設定を覚えておく（この端末・このブラウザだけ）
