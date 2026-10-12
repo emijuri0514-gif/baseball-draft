@@ -3499,6 +3499,15 @@
         if (last.mode !== draftModeSelect) changed.push('mode');
         startParams.setup_changed = changed.length ? changed.join('+') : 'none';
       }
+      // teams_used：この端末で最近使った担当球団（最大5つ・重複なし・新しい順）を覚えておき、その種類の数（1〜5）を送る
+      //   （10/23以降の「担当球団をカードで選ぶ」で、最近使った球団を出すのにも使う予定。覚え始める前の分は前回の1球団だけ分かる）
+      try {
+        let recent = JSON.parse(localStorage.getItem('dt9_recent_teams_v1') || 'null');
+        if (!Array.isArray(recent)) recent = (window.__lastSetupValues && window.__lastSetupValues.team) ? [window.__lastSetupValues.team] : [];
+        recent = [userTeamSelect].concat(recent.filter(t => t !== userTeamSelect)).slice(0, 5);
+        localStorage.setItem('dt9_recent_teams_v1', JSON.stringify(recent));
+        startParams.teams_used = recent.length;
+      } catch (e) {}
       if (typeof gtag === 'function') gtag('event', 'draft_start', startParams);
       // 完走率を始め方ごとに比べるため、ドラフト完了のイベントにも同じ値を付ける
       window.__draftStartParams = { start_from: window.__quickStartShown ? 'quick' : 'full', has_last_setup: window.__hasLastSetup ? 1 : 0 };
