@@ -39,6 +39,29 @@
       .replace(/[^\p{L}\p{N}]/gu, '');
   }
 
+  // 表示を崩す文字を取り除く：改行・制御文字（Cc）、右から左に書く指定やゼロ幅の文字（Cf）、
+  // 文字を重ねる記号（結合文字 M。濁点などはNFCで1文字にまとめてから取り除く）、私用領域の文字、行・段落の区切り。
+  // 続いた空白は1つにまとめ、前後の空白は取る
+  function sanitize(s) {
+    return String(s || '')
+      .normalize('NFC')
+      .replace(/[\p{Cc}\p{Cf}\p{Co}\p{M}\p{Zl}\p{Zp}]/gu, '')
+      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+      .replace(/\p{Zs}+/gu, ' ')
+      .trim();
+  }
+
+  // 文字数は見た目の1文字ずつ数える（絵文字も1文字。Intl.Segmenterがない古いブラウザはコードポイントで数える）
+  function graphemes(s) {
+    const str = String(s || '');
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      return Array.from(new Intl.Segmenter('ja', { granularity: 'grapheme' }).segment(str), x => x.segment);
+    }
+    return Array.from(str);
+  }
+  function countChars(s) { return graphemes(s).length; }
+  function truncateChars(s, max) { return graphemes(s).slice(0, max).join(''); }
+
   // URL・メールアドレス・電話番号・@ID（記号を取り除く前の文字で見る）
   function looksLikeContact(s) {
     const t = String(s || '').normalize('NFKC').toLowerCase();
@@ -94,7 +117,7 @@
     return null;
   }
 
-  const api = { normalize, buildRealNameSet, isRealName, hasBannedWord, looksLikeContact, check };
+  const api = { normalize, sanitize, countChars, truncateChars, buildRealNameSet, isRealName, hasBannedWord, looksLikeContact, check };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PickCardSafety = api;
 })(typeof window !== 'undefined' ? window : globalThis);

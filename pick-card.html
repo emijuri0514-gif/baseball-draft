@@ -78,12 +78,12 @@
     <section class="bg-gray-800 border border-gray-700 rounded-lg p-4 space-y-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label class="block text-sm">
-          <span class="block text-xs font-bold text-gray-300 mb-1">名前（12文字まで）</span>
-          <input id="pc-name" type="text" maxlength="12" autocomplete="off" placeholder="例：ドラフト太郎" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
+          <span class="flex justify-between text-xs font-bold text-gray-300 mb-1"><span>名前（12文字まで）</span><span id="pc-name-count" class="text-gray-400 font-normal">0/12</span></span>
+          <input id="pc-name" type="text" maxlength="60" autocomplete="off" placeholder="例：ドラフト太郎" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
         </label>
         <label class="block text-sm">
-          <span class="block text-xs font-bold text-gray-300 mb-1">所属（学校・チームなど。任意・16文字まで）</span>
-          <input id="pc-org" type="text" maxlength="16" autocomplete="off" placeholder="例：〇〇草野球クラブ" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
+          <span class="flex justify-between text-xs font-bold text-gray-300 mb-1"><span>所属（学校・チームなど。任意・16文字まで）</span><span id="pc-org-count" class="text-gray-400 font-normal">0/16</span></span>
+          <input id="pc-org" type="text" maxlength="80" autocomplete="off" placeholder="例：〇〇草野球クラブ" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
         </label>
         <label class="block text-sm">
           <span class="block text-xs font-bold text-gray-300 mb-1">指名する球団</span>
@@ -198,6 +198,24 @@
       $('pc-comp-wrap').classList.toggle('hidden', !won);
     }
     $('pc-round').addEventListener('change', syncResultFields);
+
+    // ★ 入力の整え：表示を崩す文字（改行・制御文字・右から左の指定・文字を重ねる記号など）を取り除き、
+    //   絵文字も1文字として数えて上限で止める（maxlengthは絵文字を2文字と数えるので、画面側で数える）。
+    //   日本語の変換中（確定前）は触らない
+    const LIMITS = { 'pc-name': 12, 'pc-org': 16 };
+    function tidyInput(el) {
+      const max = LIMITS[el.id];
+      let v = el.value.replace(/[\r\n\t]+/g, ' ');
+      v = v.replace(/[\p{Cc}\p{Cf}\p{Co}\p{M}\p{Zl}\p{Zp}]/gu, '');
+      if (PickCardSafety.countChars(v) > max) v = PickCardSafety.truncateChars(v, max);
+      if (v !== el.value) el.value = v;
+      $(el.id + '-count').textContent = `${PickCardSafety.countChars(v)}/${max}`;
+    }
+    Object.keys(LIMITS).forEach(id => {
+      const el = $(id);
+      el.addEventListener('input', e => { if (!e.isComposing) tidyInput(el); });
+      el.addEventListener('compositionend', () => tidyInput(el));
+    });
     $('pc-result').addEventListener('change', syncResultFields);
     syncResultFields();
 
@@ -377,8 +395,9 @@
     }
     $('pc-make').addEventListener('click', () => {
       if (!realNameSet) return;
-      const name = $('pc-name').value.trim();
-      const org = $('pc-org').value.trim();
+      tidyInput($('pc-name')); tidyInput($('pc-org'));
+      const name = PickCardSafety.truncateChars(PickCardSafety.sanitize($('pc-name').value), LIMITS['pc-name']);
+      const org = PickCardSafety.truncateChars(PickCardSafety.sanitize($('pc-org').value), LIMITS['pc-org']);
       if (!name) { showError('名前を入力してください'); return; }
       const reason = PickCardSafety.check(name, realNameSet) || PickCardSafety.check(org, realNameSet);
       if (reason) {
