@@ -41,14 +41,21 @@
 
   // 表示を崩す文字を取り除く：改行・制御文字（Cc）、右から左に書く指定やゼロ幅の文字（Cf）、
   // 文字を重ねる記号（結合文字 M。濁点などはNFCで1文字にまとめてから取り除く）、私用領域の文字、行・段落の区切り。
-  // 続いた空白は1つにまとめ、前後の空白は取る
+  // ただし絵文字は、家族の絵文字（ゼロ幅でつなぐ）・肌の色・キーキャップ（1️⃣）などの組み合わせを1文字のまま残す。
+  // そのため見た目の1文字（書記素）ごとに見て、絵文字を含むものは右から左の指定などだけを取り除く。
+  const BIDI = /[\u200E\u200F\u202A-\u202E\u2066-\u2069\u061C]/g;
+  function stripChars(s) {
+    return graphemes(String(s || '').normalize('NFC')).map(g => {
+      if (/\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20E3/u.test(g)) return g.replace(BIDI, '').replace(/\p{Cc}/gu, '');
+      return g.replace(/[\p{Cc}\p{Cf}\p{Co}\p{M}\p{Zl}\p{Zp}]/gu, '');
+    }).join('')
+      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '');
+  }
+  // 入力中に使う：取り除くだけ（打っている途中の空白は残す）
+  function sanitizeTyping(s) { return stripChars(String(s || '').replace(/[\r\n\t]+/g, ' ')); }
+  // 画像に使う：取り除いたうえで、続いた空白を1つにまとめ、前後の空白を取る
   function sanitize(s) {
-    return String(s || '')
-      .normalize('NFC')
-      .replace(/[\p{Cc}\p{Cf}\p{Co}\p{M}\p{Zl}\p{Zp}]/gu, '')
-      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
-      .replace(/\p{Zs}+/gu, ' ')
-      .trim();
+    return stripChars(s).replace(/\p{Zs}+/gu, ' ').trim();
   }
 
   // 文字数は見た目の1文字ずつ数える（絵文字も1文字。Intl.Segmenterがない古いブラウザはコードポイントで数える）
@@ -117,7 +124,7 @@
     return null;
   }
 
-  const api = { normalize, sanitize, countChars, truncateChars, buildRealNameSet, isRealName, hasBannedWord, looksLikeContact, check };
+  const api = { normalize, sanitize, sanitizeTyping, countChars, truncateChars, buildRealNameSet, isRealName, hasBannedWord, looksLikeContact, check };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PickCardSafety = api;
 })(typeof window !== 'undefined' ? window : globalThis);
