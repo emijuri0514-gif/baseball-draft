@@ -255,20 +255,21 @@
     const KNOWN_DRAFT_DATES = { 2026: '2026-10-22' };
 
     function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
-      const first = new Date(year, monthIndex, 1);
-      const offset = (weekday - first.getDay() + 7) % 7;
-      return new Date(year, monthIndex, 1 + offset + (n - 1) * 7);
+      const first = new Date(Date.UTC(year, monthIndex, 1));
+      const offset = (weekday - first.getUTCDay() + 7) % 7;
+      return Date.UTC(year, monthIndex, 1 + offset + (n - 1) * 7);
     }
 
     function getDraftDate(year) {
-      if (KNOWN_DRAFT_DATES[year]) return new Date(KNOWN_DRAFT_DATES[year]);
+      if (KNOWN_DRAFT_DATES[year]) return Date.parse(KNOWN_DRAFT_DATES[year]); // UTCの0時。日本時間の「今日」もUTCの0時に置いて日付だけを比べる
       return nthWeekdayOfMonth(year, 9, 4, 4); // 10月・木曜(4)・第4週
     }
 
     function renderDraftCountdown() {
-      const today = new Date();
-      const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      let year = today.getFullYear();
+      // 端末の時間帯（海外設定など）に関係なく、日本時間の「今日」で数える
+      const nowJst = new Date(Date.now() + 9 * 3600000);
+      const todayMid = Date.UTC(nowJst.getUTCFullYear(), nowJst.getUTCMonth(), nowJst.getUTCDate());
+      let year = nowJst.getUTCFullYear();
       let draftDate = getDraftDate(year);
       if (todayMid > draftDate) {
         year += 1;
