@@ -107,7 +107,8 @@
         </select>
         <button id="toggle-all-candidates" onclick="window.toggleShowAllCandidates()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap"></button>
       </div>
-      <p id="candidate-count-note" class="text-[11px] text-gray-400 text-center mb-3"></p>
+      <p id="candidate-count-note" class="text-[11px] text-gray-400 text-center mb-1"></p>
+      <p id="candidate-notes" class="hidden-screen text-[11px] text-amber-300 text-center mb-3 whitespace-pre-line"></p>
 
       <div id="predict-list" class="space-y-2"></div>
       <div id="predict-loading" class="text-center text-sm text-gray-400 py-6">候補選手データを読み込み中...</div>
@@ -240,8 +241,9 @@
       });
     }
 
+    // ★ note（任意）：ドラフト前に分かった進路の変化など。選手は選べるまま、選択肢と一覧の上に注記を出す（2026-10-18〜）
     function candidateOptionLabel(c) {
-      return `${c.name}（${c.org}${c.pos ? '・' + c.pos : ''}）`;
+      return `${c.name}（${c.org}${c.pos ? '・' + c.pos : ''}）${c.note ? '※' + c.note : ''}`;
     }
 
     function updateCandidateCountNote() {
@@ -251,6 +253,10 @@
         ? `のうち条件に合う${filtered.length}人を表示中`
         : 'を表示中';
       document.getElementById('candidate-count-note').textContent = `${scopeText}${filterText}`;
+      const noted = candidates.filter(c => c.note);
+      const notesEl = document.getElementById('candidate-notes');
+      notesEl.textContent = noted.map(c => `※${c.name}（${c.org}）：${c.note}`).join('\n');
+      notesEl.classList.toggle('hidden-screen', noted.length === 0);
       const btn = document.getElementById('toggle-all-candidates');
       btn.textContent = showAllCandidates
         ? `⭐ 注目選手のみ表示する（${candidates.filter(c => c.featured).length}人）`
