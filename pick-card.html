@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="js/error-tracking.js"></script>
+  <title>指名カードメーカー｜架空のドラフト指名カードを作ろう｜AIドラフト</title>
+  <meta name="description" content="好きな名前で、テレビ中継風の架空のドラフト指名カードを作れるページ。球団・巡目・ポジションを選んで画像を保存し、Xでシェアできます。実在の選手名は使えません。入力した文字はこの端末の中だけで使います。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="指名カードメーカー｜架空のドラフト指名カードを作ろう">
+  <meta property="og:description" content="好きな名前で、テレビ中継風の架空のドラフト指名カードが作れます。12球団・巡目・ポジションを選んで画像に。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/pick-card.html">
+  <link rel="canonical" href="https://dreamteam9.com/pick-card.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-draft-predict.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="js/affiliate-tracking.js" defer></script>
+  <style>
+    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+    .hidden-screen { display: none !important; }
+  </style>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🃏 指名カードメーカー</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="draft-predict.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">🎯 1位指名予想</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <a href="howto.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📖 遊び方</a>
+            <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
+            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-8">
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="text-center">
+      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">架空のドラフト指名カードを作ってみよう</h2>
+      <p class="text-sm md:text-base text-gray-300 leading-relaxed">
+        好きな名前で、テレビ中継風の指名カードを作れます。自分の名前、草野球のチームメイト、ペットの名前など、遊び方は自由です。<br>
+        <span class="text-xs text-gray-400">実在の選手の名前は使えません。カードには「フィクション」の札が入ります。</span>
+      </p>
+    </section>
+
+    <section class="bg-gray-800 border border-gray-700 rounded-lg p-4 space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label class="block text-sm">
+          <span class="flex justify-between text-xs font-bold text-gray-300 mb-1"><span>名前（12文字まで）</span><span id="pc-name-count" class="text-gray-400 font-normal">0/12</span></span>
+          <input id="pc-name" type="text" autocomplete="off" placeholder="例：ドラフト太郎" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
+        </label>
+        <label class="block text-sm">
+          <span class="flex justify-between text-xs font-bold text-gray-300 mb-1"><span>所属（学校・チームなど。任意・16文字まで）</span><span id="pc-org-count" class="text-gray-400 font-normal">0/16</span></span>
+          <input id="pc-org" type="text" autocomplete="off" placeholder="例：〇〇草野球クラブ" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
+        </label>
+        <label class="block text-sm">
+          <span class="block text-xs font-bold text-gray-300 mb-1">指名する球団</span>
+          <select id="pc-team" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100"></select>
+        </label>
+        <label class="block text-sm">
+          <span class="block text-xs font-bold text-gray-300 mb-1">ポジション</span>
+          <select id="pc-pos" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
+            <option>投手</option><option>捕手</option><option>内野手</option><option>外野手</option>
+          </select>
+        </label>
+        <label class="block text-sm">
+          <span class="block text-xs font-bold text-gray-300 mb-1">巡目</span>
+          <select id="pc-round" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100"></select>
+        </label>
+        <label id="pc-result-wrap" class="block text-sm">
+          <span class="block text-xs font-bold text-gray-300 mb-1">1巡目の結果</span>
+          <select id="pc-result" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100">
+            <option value="single">単独指名</option>
+            <option value="won">抽選の結果（交渉権確定）</option>
+            <option value="single_after">外れ1位 ─ 単独指名</option>
+            <option value="won_after">外れ1位 ─ 抽選の結果</option>
+          </select>
+        </label>
+        <label id="pc-comp-wrap" class="block text-sm hidden">
+          <span class="block text-xs font-bold text-gray-300 mb-1">競合した球団の数</span>
+          <select id="pc-comp" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-base text-gray-100"></select>
+        </label>
+        <fieldset class="text-sm">
+          <legend class="block text-xs font-bold text-gray-300 mb-1">画像の形</legend>
+          <div class="flex gap-2">
+            <label class="flex-1 flex items-center gap-2 bg-gray-900 border border-gray-600 rounded px-3 py-2"><input type="radio" name="pc-format" value="x" checked> 𝕏用（横長）</label>
+            <label class="flex-1 flex items-center gap-2 bg-gray-900 border border-gray-600 rounded px-3 py-2"><input type="radio" name="pc-format" value="story"> ストーリー用（縦長）</label>
+          </div>
+        </fieldset>
+      </div>
+      <p id="pc-error" class="hidden text-sm font-bold text-red-400 text-center" role="alert" aria-live="assertive"></p>
+      <button id="pc-make" type="button" class="w-full bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 rounded-full shadow-lg disabled:opacity-60" disabled>選手名の確認を準備中…</button>
+      <p id="pc-load-error" class="hidden text-xs text-red-400 text-center">実在の選手名の一覧を読み込めなかったため、今はカードを作れません。<button id="pc-retry" type="button" class="underline font-bold">もう一度読み込む</button></p>
+    </section>
+
+    <section id="pc-result-area" class="hidden-screen space-y-3">
+      <img id="pc-preview" class="w-full rounded shadow-lg border border-gray-600" alt="作った指名カードのプレビュー">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button id="pc-save" type="button" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-full">画像を保存</button>
+        <button id="pc-x" type="button" class="flex-1 bg-black hover:bg-gray-900 border border-gray-600 text-white font-black py-3 rounded-full">𝕏でシェア</button>
+      </div>
+      <p class="text-[11px] text-gray-400 text-center leading-relaxed">「画像を保存」で共有メニューが開いたら「写真に保存」などを選んでください。𝕏でシェアするときは、保存した画像を投稿に添えてください（シェアの文章に名前は入りません）。</p>
+    </section>
+
+    <section class="space-y-3 text-sm text-gray-300 leading-relaxed">
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1">使えない言葉について</h3>
+      <ul class="space-y-1.5">
+        <li>・<strong class="text-white">実在の選手の名前</strong>（ゲームに登場する現役選手と、1位指名予想の候補選手）は使えません。実在の人が本当に指名されたように見える画像を作らないためです。</li>
+        <li>・人を傷つける言葉、公式の発表や速報に見える言葉、URL・メールアドレス・電話番号なども使えません。</li>
+        <li>・入力した名前や所属は、この端末の中で画像を作るためだけに使い、どこにも送りません。</li>
+        <li>・作った画像を投稿するときは、ほかの人の名前を勝手に使わないようにしてください。</li>
+      </ul>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 pt-2">本物の指名カードとの違い</h3>
+      <p>このカードは、AIドラフトのゲームの中で表示している「1位指名カード」と同じデザインの、架空のカードです。本物のドラフト会議の指名とは関係がなく、球団のロゴや選手の写真は使っていません。カードの中には「フィクション」の札が入ります。</p>
+      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 pt-2">ゲームでも指名してみませんか</h3>
+      <p>AIドラフトでは、12球団のAIと現役のプロ野球選手を取り合って、自分だけのチームを作れます。1位で選んだ選手は、ゲームの中でも指名カードにできます。</p>
+      <div class="flex flex-col sm:flex-row gap-2 pt-1">
+        <a href="index.html" class="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-full">⚾ AIドラフトで遊ぶ</a>
+        <a href="draft-predict.html" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-full">🎯 12球団の1位指名を予想する</a>
+      </div>
+    </section>
+
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+
+  <footer class="text-center text-gray-400 text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+
+  <script src="js/pick-card-safety.js"></script>
+  <script>
+    // ★ X1 指名カードメーカー（2026-10 オーナー決定）。
+    //   安全策：実在の選手名は使えない（index.htmlのinitialDatabase＋予想ページの候補選手）、禁止語チェック、
+    //   カードに「フィクション」の札、題字は「AIドラフト 指名カード」。透かしは入れない。● LIVEはゲーム内のカードに合わせて残す。
+    //   名前の一覧を読み込めないときは、カードを作れないようにする（確認できないまま作らせない）。
+    //   入力した文字はGA4に送らない（送るのは球団・巡目・結果・画像の形・止めた理由だけ）。
+    const TEAMS = [
+      { name: '巨人', hex: '#f97316', text: '#ffffff' },
+      { name: '阪神', hex: '#eab308', text: '#111827' },
+      { name: 'DeNA', hex: '#0ea5e9', text: '#ffffff' },
+      { name: 'ヤクルト', hex: '#22c55e', text: '#ffffff' },
+      { name: '中日', hex: '#2563eb', text: '#ffffff' },
+      { name: '広島', hex: '#dc2626', text: '#ffffff' },
+      // オリックスの球団カラー(#0f172a)はカードの紺の背景と見分けがつかないので、帯だけ明るい紺にする（結果シェア画像と同じ扱い）
+      { name: 'オリックス', hex: '#1e3a8a', text: '#ffffff' },
+      { name: 'ロッテ', hex: '#6b7280', text: '#ffffff' },
+      { name: 'ソフトバンク', hex: '#fde047', text: '#111827' },
+      { name: '楽天', hex: '#9f1239', text: '#ffffff' },
+      { name: '日本ハム', hex: '#7dd3fc', text: '#111827' },
+      { name: '西武', hex: '#06b6d4', text: '#ffffff' }
+    ];
+    const ROUNDS = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ value: String(n), top: `第${n}巡 選択希望選手`, label: `第${n}巡 指名` }))
+      .concat([1, 2, 3].map(n => ({ value: 'ikusei' + n, top: `育成第${n}巡 選択希望選手`, label: `育成第${n}巡 指名` })));
+    const RESULT_LABEL = { single: '単独指名', won: '抽選の結果', single_after: '外れ1位 ─ 単独指名', won_after: '外れ1位 ─ 抽選の結果' };
+    const POS_LABEL = { '投手': '投手', '捕手': '捕手', '内野手': '内野手', '外野手': '外野手' };
+
+    const $ = id => document.getElementById(id);
+    $('pc-team').innerHTML = TEAMS.map(t => `<option>${t.name}</option>`).join('');
+    $('pc-round').innerHTML = ROUNDS.map(r => `<option value="${r.value}">${r.value.startsWith('ikusei') ? '育成' + r.value.slice(6) + '巡' : r.value + '巡'}</option>`).join('');
+    $('pc-comp').innerHTML = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => `<option value="${n}">${n}球団</option>`).join('');
+
+    function syncResultFields() {
+      const first = $('pc-round').value === '1';
+      $('pc-result-wrap').classList.toggle('hidden', !first);
+      const won = first && /^won/.test($('pc-result').value);
+      $('pc-comp-wrap').classList.toggle('hidden', !won);
+    }
+    $('pc-round').addEventListener('change', syncResultFields);
+
+    // ★ 入力の整え：表示を崩す文字（改行・制御文字・右から左の指定・文字を重ねる記号など）を取り除き、
+    //   絵文字も1文字として数えて上限で止める（maxlengthは家族の絵文字などを途中で切ってしまうので使わず、画面側で見た目の1文字ずつ数える）。
+    //   日本語の変換中（確定前）は触らない
+    const LIMITS = { 'pc-name': 12, 'pc-org': 16 };
+    function tidyInput(el) {
+      const max = LIMITS[el.id];
+      let v = PickCardSafety.sanitizeTyping(el.value);
+      if (PickCardSafety.countChars(v) > max) v = PickCardSafety.truncateChars(v, max);
+      if (v !== el.value) el.value = v;
+      $(el.id + '-count').textContent = `${PickCardSafety.countChars(v)}/${max}`;
+    }
+    Object.keys(LIMITS).forEach(id => {
+      const el = $(id);
+      el.addEventListener('input', e => { if (!e.isComposing) tidyInput(el); });
+      el.addEventListener('compositionend', () => tidyInput(el));
+    });
+    $('pc-result').addEventListener('change', syncResultFields);
+    syncResultFields();
+
+    if (typeof gtag === 'function') gtag('event', 'pick_card_maker_open');
+
+    // ---- 実在の選手名の一覧（ゲームの現役選手＋予想ページの候補選手） ----
+    let realNameSet = null;
+    function loadRealNames() {
+      $('pc-load-error').classList.add('hidden');
+      $('pc-make').disabled = true;
+      $('pc-make').textContent = '選手名の確認を準備中…';
+      const db = fetch('index.html').then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.text(); }).then(html => {
+        const start = html.indexOf('const initialDatabase');
+        const end = start === -1 ? -1 : html.indexOf('];', start);
+        if (end === -1) throw new Error('parse-failed');
+        const players = new Function(html.slice(start, end + 2) + '; return initialDatabase;')();
+        if (!Array.isArray(players) || !players.length) throw new Error('empty');
+        return players.map(p => p.name);
+      });
+      const cand = fetch('data/draft-2026-candidates.json').then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
+        .then(d => (d.players || []).map(p => p.name));
+      Promise.all([db, cand]).then(([a, b]) => {
+        realNameSet = PickCardSafety.buildRealNameSet(a.concat(b));
+        $('pc-make').disabled = false;
+        $('pc-make').textContent = '🃏 カードを作る';
+      }).catch(e => {
+        console.error(e);
+        $('pc-make').textContent = 'カードを作れません';
+        $('pc-load-error').classList.remove('hidden');
+      });
+    }
+    $('pc-retry').addEventListener('click', loadRealNames);
+    loadRealNames();
+
+    // ---- カードを描く（ゲーム内の1位指名カードと同じデザイン。題字とフィクションの札だけ違う） ----
+    function fitFont(ctx, text, weight, size, maxW, minSize) {
+      ctx.font = `${weight} ${size}px sans-serif`;
+      while (ctx.measureText(text).width > maxW && size > minSize) { size -= 2; ctx.font = `${weight} ${size}px sans-serif`; }
+      return size;
+    }
+    function drawStamp(ctx, cx, cy, r) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-14 * Math.PI / 180);
+      ctx.fillStyle = 'rgba(239,68,68,0.10)';
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ef4444'; ctx.lineWidth = r * 0.1;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.94, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `900 ${Math.round(r * 0.46)}px sans-serif`;
+      ctx.fillText('交渉権', 0, -r * 0.24, r * 1.6);
+      ctx.fillText('確定', 0, r * 0.3, r * 1.6);
+      ctx.restore();
+    }
+    // 「フィクション」の札（白い枠の角丸。文字は白）
+    function drawFictionTag(ctx, x, y, size, align) {
+      ctx.save();
+      ctx.font = `900 ${size}px sans-serif`;
+      const label = 'フィクション';
+      const w = ctx.measureText(label).width + size * 1.2, h = size * 1.7;
+      const left = align === 'right' ? x - w : align === 'center' ? x - w / 2 : x;
+      ctx.fillStyle = 'rgba(2,6,23,0.75)';
+      ctx.beginPath(); ctx.roundRect(left, y - h / 2, w, h, h / 2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(2, size / 10);
+      ctx.beginPath(); ctx.roundRect(left, y - h / 2, w, h, h / 2); ctx.stroke();
+      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, left + w / 2, y + 1);
+      ctx.restore();
+    }
+    function buildCard(info, format) {
+      const story = format === 'story';
+      const W = story ? 1080 : 1200, H = story ? 1920 : 675;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, '#0b1328'); bg.addColorStop(1, '#111c38');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.textBaseline = 'middle';
+
+      // 上の帯：LIVE・題字・巡目
+      const topH = story ? 120 : 74;
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, topH);
+      ctx.fillStyle = info.team.hex; ctx.fillRect(0, topH, W, story ? 10 : 6);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#ef4444'; ctx.font = `900 ${story ? 36 : 24}px sans-serif`;
+      ctx.fillText('● LIVE', story ? 40 : 36, topH / 2);
+      ctx.fillStyle = '#ffffff'; ctx.font = `900 ${story ? 42 : 30}px sans-serif`;
+      ctx.fillText('AIドラフト 指名カード', story ? 210 : 148, topH / 2, story ? 470 : 430);
+      ctx.textAlign = 'right'; ctx.fillStyle = '#facc15';
+      fitFont(ctx, info.round.top, 900, story ? 42 : 30, story ? 330 : 360, 18);
+      ctx.fillText(info.round.top, W - (story ? 40 : 36), topH / 2, story ? 330 : 360);
+
+      // 下の帯：サイト名とURL
+      const footH = story ? 110 : 64;
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, H - footH, W, footH);
+      ctx.textAlign = 'left'; ctx.fillStyle = '#facc15'; ctx.font = `900 ${story ? 40 : 28}px sans-serif`;
+      ctx.fillText('AIドラフト', story ? 40 : 36, H - footH / 2);
+      ctx.textAlign = 'right'; ctx.fillStyle = '#94a3b8';
+      ctx.fillText('dreamteam9.com', W - (story ? 40 : 36), H - footH / 2);
+
+      const bodyTop = topH + (story ? 10 : 6), bodyBottom = H - footH;
+      const sub = info.org ? `${info.pos}｜所属：${info.org}` : info.pos;
+      if (!story) {
+        const bandW = 300;
+        ctx.fillStyle = info.team.hex; ctx.fillRect(0, bodyTop, bandW, bodyBottom - bodyTop);
+        ctx.fillStyle = info.team.text; ctx.textAlign = 'center';
+        const name = info.team.name;
+        if (/^[\x00-\x7F]+$/.test(name)) {
+          fitFont(ctx, name, 900, 84, bandW - 40, 30);
+          ctx.fillText(name, bandW / 2, (bodyTop + bodyBottom) / 2, bandW - 30);
+        } else {
+          const chars = [...name];
+          const size = Math.min(84, Math.floor((bodyBottom - bodyTop - 60) / chars.length));
+          ctx.font = `900 ${size}px sans-serif`;
+          const startY = (bodyTop + bodyBottom) / 2 - (chars.length - 1) * size / 2;
+          chars.forEach((c, i) => ctx.fillText(c, bandW / 2, startY + i * size, bandW - 30));
+        }
+        const x0 = bandW + 48, textMaxW = W - x0 - (info.won ? 250 : 48);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#facc15'; ctx.font = `900 34px sans-serif`;
+        ctx.fillText(info.label, x0, bodyTop + 120, textMaxW);
+        ctx.fillStyle = '#ffffff';
+        fitFont(ctx, info.name, 900, 150, textMaxW, 60);
+        ctx.fillText(info.name, x0, bodyTop + 260, textMaxW);
+        ctx.fillStyle = '#cbd5e1';
+        fitFont(ctx, sub, 800, 44, W - x0 - 48, 28);
+        ctx.fillText(sub, x0, bodyTop + 400, W - x0 - 48);
+        drawFictionTag(ctx, W - 40, bodyBottom - 44, 26, 'right');
+        if (info.won) {
+          drawStamp(ctx, W - 150, bodyTop + 140, 105);
+          if (info.competitors >= 2) {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath(); ctx.roundRect(W - 250, bodyTop + 280, 200, 52, 26); ctx.fill();
+            ctx.fillStyle = '#111827'; ctx.textAlign = 'center'; ctx.font = `900 28px sans-serif`;
+            ctx.fillText(`${info.competitors}球団競合`, W - 150, bodyTop + 307, 184);
+          }
+        }
+      } else {
+        const bandH = 300;
+        ctx.fillStyle = info.team.hex; ctx.fillRect(0, bodyTop, W, bandH);
+        ctx.fillStyle = info.team.text; ctx.textAlign = 'center';
+        fitFont(ctx, info.team.name, 900, 150, W - 120, 60);
+        ctx.fillText(info.team.name, W / 2, bodyTop + bandH / 2, W - 100);
+        const cx = W / 2;
+        ctx.fillStyle = '#facc15'; ctx.font = `900 54px sans-serif`;
+        ctx.fillText(info.label, cx, bodyTop + bandH + 150, W - 120);
+        ctx.fillStyle = '#ffffff';
+        fitFont(ctx, info.name, 900, 190, W - 100, 70);
+        ctx.fillText(info.name, cx, bodyTop + bandH + 360, W - 80);
+        ctx.fillStyle = '#cbd5e1'; ctx.font = `800 56px sans-serif`;
+        ctx.fillText(info.pos, cx, bodyTop + bandH + 540, W - 120);
+        if (info.org) {
+          fitFont(ctx, `所属：${info.org}`, 800, 56, W - 120, 32);
+          ctx.fillText(`所属：${info.org}`, cx, bodyTop + bandH + 630, W - 120);
+        }
+        if (info.won) {
+          drawStamp(ctx, cx, bodyTop + bandH + 960, 190);
+          if (info.competitors >= 2) {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath(); ctx.roundRect(cx - 170, bodyTop + bandH + 1200, 340, 80, 40); ctx.fill();
+            ctx.fillStyle = '#111827'; ctx.font = `900 44px sans-serif`;
+            ctx.fillText(`${info.competitors}球団競合`, cx, bodyTop + bandH + 1241, 310);
+          }
+        }
+        drawFictionTag(ctx, cx, bodyBottom - 70, 40, 'center');
+      }
+      ctx.textBaseline = 'alphabetic';
+      return canvas;
+    }
+
+    // ---- 作る ----
+    let lastCard = null;
+    function showError(msg) {
+      $('pc-error').textContent = msg;
+      $('pc-error').classList.toggle('hidden', !msg);
+    }
+    $('pc-make').addEventListener('click', () => {
+      if (!realNameSet) return;
+      tidyInput($('pc-name')); tidyInput($('pc-org'));
+      const name = PickCardSafety.truncateChars(PickCardSafety.sanitize($('pc-name').value), LIMITS['pc-name']).trim();
+      const org = PickCardSafety.truncateChars(PickCardSafety.sanitize($('pc-org').value), LIMITS['pc-org']).trim();
+      if (!name) { showError('名前を入力してください'); return; }
+      const reason = PickCardSafety.check(name, realNameSet) || PickCardSafety.check(org, realNameSet);
+      if (reason) {
+        showError(reason === 'real_name' ? '実在の選手名は使えません' : '使えない言葉が含まれています');
+        $('pc-result-area').classList.add('hidden-screen');
+        if (typeof gtag === 'function') gtag('event', 'pick_card_maker_blocked', { reason });
+        return;
+      }
+      showError('');
+      const team = TEAMS.find(t => t.name === $('pc-team').value) || TEAMS[0];
+      const round = ROUNDS.find(r => r.value === $('pc-round').value) || ROUNDS[0];
+      const first = round.value === '1';
+      const result = first ? $('pc-result').value : 'later';
+      const won = first && /^won/.test(result);
+      const format = (document.querySelector('input[name="pc-format"]:checked') || {}).value === 'story' ? 'story' : 'x';
+      const info = {
+        name, org, team, round, won,
+        pos: POS_LABEL[$('pc-pos').value] || '投手',
+        label: first ? RESULT_LABEL[result] : round.label,
+        competitors: won ? parseInt($('pc-comp').value, 10) : 0
+      };
+      const dataUrl = buildCard(info, format).toDataURL('image/png');
+      lastCard = { dataUrl, format, team: team.name, round: round.value, result };
+      $('pc-preview').src = dataUrl;
+      $('pc-result-area').classList.remove('hidden-screen');
+      $('pc-result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (typeof gtag === 'function') gtag('event', 'pick_card_maker_create', { team: team.name, round: round.value, result, format });
+    });
+
+    // ---- 保存・シェア ----
+    function dataURLtoBlob(dataUrl) {
+      const [header, base64] = dataUrl.split(',');
+      const mime = /:(.*?);/.exec(header)[1];
+      const binary = atob(base64);
+      const arr = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+      return new Blob([arr], { type: mime });
+    }
+    $('pc-save').addEventListener('click', () => {
+      if (!lastCard) return;
+      if (typeof gtag === 'function') gtag('event', 'pick_card_maker_share', { method: 'image_save', format: lastCard.format });
+      const filename = `ai_draft_pick_card_${lastCard.format}.png`;
+      const file = new File([dataURLtoBlob(lastCard.dataUrl)], filename, { type: 'image/png' });
+      if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).catch(() => {});
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = lastCard.dataUrl; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+    $('pc-x').addEventListener('click', () => {
+      if (!lastCard) return;
+      if (typeof gtag === 'function') gtag('event', 'pick_card_maker_share', { method: 'x_share', format: lastCard.format });
+      // シェアの文章には入力した名前を入れない（画像は保存して投稿に添えてもらう）
+      const params = new URLSearchParams({
+        text: 'AIドラフトの指名カードメーカーで、架空の指名カードを作ってみた',
+        url: 'https://dreamteam9.com/pick-card.html?utm_source=x&utm_medium=share&utm_campaign=pickcard',
+        hashtags: 'AIドラフト,指名カード'
+      });
+      window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
+    });
+  </script>
+</body>
+</html>

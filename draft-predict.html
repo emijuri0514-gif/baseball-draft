@@ -57,6 +57,7 @@
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
             <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="pick-card.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー</a>
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
@@ -119,6 +120,11 @@
       <button onclick="window.resetPrediction()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full">🗑️ リセット</button>
     </div>
     <p class="text-xs text-amber-300 text-center leading-relaxed">🏅 期間限定の実績：12球団すべてを予想して保存すると「予想屋」、答え合わせで1位入札を3球団以上当てると「名スカウト」、6球団以上で「千里眼」。<span id="ach-predict-wait">名スカウト・千里眼は10/22のドラフト会議後に挑戦できます。</span>（指名開始の10/22 16:50より前に保存した予想が対象です）</p>
+
+    <a href="pick-card.html" class="block bg-gray-800 border border-gray-600 hover:border-yellow-500 rounded-lg px-4 py-3 text-center">
+      <span class="block text-sm font-black text-yellow-400">🃏 指名カードメーカー</span>
+      <span class="block text-xs text-gray-300 mt-1">好きな名前で、架空のドラフト指名カードを作れます（実在の選手名は使えません）</span>
+    </a>
 
     <!-- ★ 答え合わせセクション：data/draft-2026-results.jsonが存在しない間はhidden-screenのまま。
          取得に成功した時だけJS側でhidden-screenを外して表示する（T2-1事前準備） -->
