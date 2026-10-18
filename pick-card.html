@@ -71,7 +71,7 @@
       <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">架空のドラフト指名カードを作ってみよう</h2>
       <p class="text-sm md:text-base text-gray-300 leading-relaxed">
         好きな名前で、テレビ中継風の指名カードを作れます。自分の名前、草野球のチームメイト、ペットの名前など、遊び方は自由です。<br>
-        <span class="text-xs text-gray-400">実在の選手の名前は使えません。カードには「フィクション」の札が入ります。</span>
+        <span class="text-xs text-gray-400">実在の選手の名前は使えません。</span>
       </p>
     </section>
 
@@ -147,7 +147,7 @@
         <li>・作った画像を投稿するときは、ほかの人の名前を勝手に使わないようにしてください。</li>
       </ul>
       <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 pt-2">本物の指名カードとの違い</h3>
-      <p>このカードは、AIドラフトのゲームの中で表示している「1位指名カード」と同じデザインの、架空のカードです。本物のドラフト会議の指名とは関係がなく、球団のロゴや選手の写真は使っていません。カードの中には「フィクション」の札が入ります。</p>
+      <p>このカードは、AIドラフトのゲームの中で表示している「1位指名カード」と同じデザインの、架空のカードです。本物のドラフト会議の指名とは関係がなく、球団のロゴや選手の写真は使っていません。カードの下には「AIドラフトで作成」と、このサイトのアドレスが入ります。</p>
       <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 pt-2">ゲームでも指名してみませんか</h3>
       <p>AIドラフトでは、12球団のAIと現役のプロ野球選手を取り合って、自分だけのチームを作れます。1位で選んだ選手は、ゲームの中でも指名カードにできます。</p>
       <div class="flex flex-col sm:flex-row gap-2 pt-1">
@@ -167,7 +167,7 @@
   <script>
     // ★ X1 指名カードメーカー（2026-10 オーナー決定）。
     //   安全策：実在の選手名は使えない（index.htmlのinitialDatabase＋予想ページの候補選手）、禁止語チェック、
-    //   カードに「フィクション」の札、題字は「AIドラフト 指名カード」。透かしは入れない。● LIVEはゲーム内のカードに合わせて残す。
+    //   題字は「AIドラフト 指名カード」、下の帯に「AIドラフトで作成」とサイトのアドレス（2026-10-18にフィクションの札は外した）。透かしは入れない。● LIVEはゲーム内のカードに合わせて残す。
     //   名前の一覧を読み込めないときは、カードを作れないようにする（確認できないまま作らせない）。
     //   入力した文字はGA4に送らない（送るのは球団・巡目・結果・画像の形・止めた理由だけ）。
     const TEAMS = [
@@ -253,7 +253,7 @@
     $('pc-retry').addEventListener('click', loadRealNames);
     loadRealNames();
 
-    // ---- カードを描く（ゲーム内の1位指名カードと同じデザイン。題字とフィクションの札だけ違う） ----
+    // ---- カードを描く（ゲーム内の1位指名カードと同じデザイン。題字と下の帯の表記だけ違う） ----
     function fitFont(ctx, text, weight, size, maxW, minSize) {
       ctx.font = `${weight} ${size}px sans-serif`;
       while (ctx.measureText(text).width > maxW && size > minSize) { size -= 2; ctx.font = `${weight} ${size}px sans-serif`; }
@@ -271,21 +271,6 @@
       ctx.font = `900 ${Math.round(r * 0.46)}px sans-serif`;
       ctx.fillText('交渉権', 0, -r * 0.24, r * 1.6);
       ctx.fillText('確定', 0, r * 0.3, r * 1.6);
-      ctx.restore();
-    }
-    // 「フィクション」の札（白い枠の角丸。文字は白）
-    function drawFictionTag(ctx, x, y, size, align) {
-      ctx.save();
-      ctx.font = `900 ${size}px sans-serif`;
-      const label = 'フィクション';
-      const w = ctx.measureText(label).width + size * 1.2, h = size * 1.7;
-      const left = align === 'right' ? x - w : align === 'center' ? x - w / 2 : x;
-      ctx.fillStyle = 'rgba(2,6,23,0.75)';
-      ctx.beginPath(); ctx.roundRect(left, y - h / 2, w, h, h / 2); ctx.fill();
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(2, size / 10);
-      ctx.beginPath(); ctx.roundRect(left, y - h / 2, w, h, h / 2); ctx.stroke();
-      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(label, left + w / 2, y + 1);
       ctx.restore();
     }
     function buildCard(info, format) {
@@ -316,7 +301,7 @@
       const footH = story ? 110 : 64;
       ctx.fillStyle = '#020617'; ctx.fillRect(0, H - footH, W, footH);
       ctx.textAlign = 'left'; ctx.fillStyle = '#facc15'; ctx.font = `900 ${story ? 40 : 28}px sans-serif`;
-      ctx.fillText('AIドラフト', story ? 40 : 36, H - footH / 2);
+      ctx.fillText('AIドラフトで作成', story ? 40 : 36, H - footH / 2, story ? 520 : 600);
       ctx.textAlign = 'right'; ctx.fillStyle = '#94a3b8';
       ctx.fillText('dreamteam9.com', W - (story ? 40 : 36), H - footH / 2);
 
@@ -347,7 +332,6 @@
         ctx.fillStyle = '#cbd5e1';
         fitFont(ctx, sub, 800, 44, W - x0 - 48, 28);
         ctx.fillText(sub, x0, bodyTop + 400, W - x0 - 48);
-        drawFictionTag(ctx, W - 40, bodyBottom - 44, 26, 'right');
         if (info.won) {
           drawStamp(ctx, W - 150, bodyTop + 140, 105);
           if (info.competitors >= 2) {
@@ -384,7 +368,6 @@
             ctx.fillText(`${info.competitors}球団競合`, cx, bodyTop + bandH + 1241, 310);
           }
         }
-        drawFictionTag(ctx, cx, bodyBottom - 70, 40, 'center');
       }
       ctx.textBaseline = 'alphabetic';
       return canvas;
