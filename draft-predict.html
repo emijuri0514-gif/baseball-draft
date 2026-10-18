@@ -50,6 +50,7 @@
       <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
             <a href="howto.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📖 遊び方</a>
             <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
             <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
@@ -57,7 +58,6 @@
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
             <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
-            <a href="pick-card.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー</a>
           </div>
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
@@ -119,9 +119,14 @@
       <button onclick="window.openPredictionShare()" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-3 px-6 rounded-full shadow-lg">📤 予想をシェアする</button>
       <button onclick="window.resetPrediction()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full">🗑️ リセット</button>
     </div>
+    <!-- ★ 保存ボタンで保存した直後だけ、指名カードメーカーへの入口を出す（下の常設の案内はその間たたむ） -->
+    <div id="predict-saved-cta" class="hidden-screen bg-gray-800 border border-yellow-500/60 rounded-lg px-4 py-3 text-center">
+      <p class="text-sm font-black text-yellow-300">予想はばっちり。次は自分が指名される番です</p>
+      <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_predict_saved'})" class="inline-block mt-2 border border-yellow-400 hover:bg-yellow-400/10 text-yellow-300 font-bold text-sm py-2 px-5 rounded-full">🃏 自分の名前で指名カードを作る</a>
+    </div>
     <p class="text-xs text-amber-300 text-center leading-relaxed">🏅 期間限定の実績：12球団すべてを予想して保存すると「予想屋」、答え合わせで1位入札を3球団以上当てると「名スカウト」、6球団以上で「千里眼」。<span id="ach-predict-wait">名スカウト・千里眼は10/22のドラフト会議後に挑戦できます。</span>（指名開始の10/22 16:50より前に保存した予想が対象です）</p>
 
-    <a href="pick-card.html" class="block bg-gray-800 border border-gray-600 hover:border-yellow-500 rounded-lg px-4 py-3 text-center">
+    <a id="predict-pickcard-card" href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_predict_card'})" class="block bg-gray-800 border border-gray-600 hover:border-yellow-500 rounded-lg px-4 py-3 text-center">
       <span class="block text-sm font-black text-yellow-400">🃏 指名カードメーカー</span>
       <span class="block text-xs text-gray-300 mt-1">好きな名前で、架空のドラフト指名カードを作れます（実在の選手名は使えません）</span>
     </a>
@@ -141,6 +146,9 @@
         </div>
         <div class="text-center mt-4">
           <button onclick="window.openAnswerCheckShare()" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 px-6 rounded-full text-sm shadow">📤 答え合わせ結果をシェアする</button>
+        </div>
+        <div class="text-center mt-3">
+          <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_answercheck'})" class="inline-block border border-yellow-400 hover:bg-yellow-400/10 text-yellow-300 font-bold text-sm py-2 px-5 rounded-full">自分も指名されてみる？指名カードを作る ›</a>
         </div>
         <p class="text-[11px] text-gray-400 mt-3 leading-relaxed">※ 判定は2種類あります。<b>🎯1位入札的中</b>＝予想した選手にその球団が最初に1位で入札したか（抽選で外れても的中）。<b>🏆交渉権獲得的中</b>＝抽選も含めて、その球団が実際に交渉権を獲得した選手と一致するか。称号は🎯1位入札的中の数で決まります。名前の判定は前後・途中の空白や一部の異体字（髙→高、﨑→崎など）を吸収したうえで比較しています。</p>
       </div>
@@ -359,6 +367,8 @@
       const count = Object.keys(picks).length;
       updateStatus();
       el.textContent = `保存しました（${count}/12球団）`;
+      document.getElementById('predict-saved-cta').classList.remove('hidden-screen');
+      document.getElementById('predict-pickcard-card').classList.add('hidden-screen');
       if (typeof gtag === 'function') gtag('event', 'predict_save', { team_count: count });
       sendPredictPicks(picks);
       if (count === 12 && Date.now() < PREDICT_PICK_DEADLINE) unlockPredictAchievement('ltd_predict_all');

@@ -132,6 +132,10 @@
         <button id="pc-x" type="button" class="flex-1 bg-black hover:bg-gray-900 border border-gray-600 text-white font-black py-3 rounded-full">𝕏でシェア</button>
       </div>
       <p class="text-[11px] text-gray-400 text-center leading-relaxed">「画像を保存」で共有メニューが開いたら「写真に保存」などを選んでください。𝕏でシェアするときは、保存した画像を投稿に添えてください（シェアの文章に名前は入りません）。</p>
+      <div class="flex flex-col sm:flex-row gap-2 pt-1">
+        <a href="index.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'game_from_pickcard'})" class="flex-1 block text-center border border-gray-500 hover:border-yellow-500 text-gray-100 font-bold text-sm py-2.5 rounded-full">⚾ ゲームでドラフトに参加する</a>
+        <a href="draft-predict.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'predict_from_pickcard'})" class="flex-1 block text-center border border-gray-500 hover:border-yellow-500 text-gray-100 font-bold text-sm py-2.5 rounded-full">🎯 12球団の1位を予想する</a>
+      </div>
     </section>
 
     <section class="space-y-3 text-sm text-gray-300 leading-relaxed">
