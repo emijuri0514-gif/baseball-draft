@@ -502,15 +502,17 @@
       return { name: r.name, org: r.org, pos: r.pos };
     }
 
+    // ★ 絵文字はページ上の表示だけに付ける。シェア画像（canvas）には絵文字を入れない（文字だけで描く）
     const TITLE_TIERS = [
-      { min: 12, title: '🏆 パーフェクトスカウト' },
-      { min: 9, title: '🥇 敏腕スカウト' },
-      { min: 6, title: '🥈 一人前スカウト' },
-      { min: 3, title: '🥉 駆け出しスカウト' },
-      { min: 0, title: '🔰 見習いスカウト' }
+      { min: 12, icon: '🏆', title: 'パーフェクトスカウト' },
+      { min: 9, icon: '🥇', title: '敏腕スカウト' },
+      { min: 6, icon: '🥈', title: '一人前スカウト' },
+      { min: 3, icon: '🥉', title: '駆け出しスカウト' },
+      { min: 0, icon: '🔰', title: '見習いスカウト' }
     ];
-    function getTitleForScore(score) {
-      return TITLE_TIERS.find(t => score >= t.min).title;
+    function getTitleForScore(score, withIcon = true) {
+      const t = TITLE_TIERS.find(t => score >= t.min);
+      return withIcon ? `${t.icon} ${t.title}` : t.title;
     }
 
     async function tryLoadAnswerCheck() {
@@ -638,16 +640,16 @@
       ctx.textAlign = 'left';
       ctx.fillStyle = '#4ade80';
       ctx.font = `900 ${story ? 60 : 36}px sans-serif`;
-      const hitText = `🎯 入札的中 ${bidHitCount} / 12`;
+      const hitText = `入札的中 ${bidHitCount} / 12`;
       ctx.fillText(hitText, M + 4, line2Y, story ? W * 0.5 : W * 0.36);
       const hitW = Math.min(ctx.measureText(hitText).width, story ? W * 0.5 : W * 0.36);
       ctx.fillStyle = '#ffffff';
       ctx.font = `900 ${story ? 36 : 24}px sans-serif`;
-      ctx.fillText(getTitleForScore(bidHitCount), M + 4 + hitW + (story ? 24 : 18), line2Y + 2, story ? W * 0.44 : W * 0.3);
+      ctx.fillText(getTitleForScore(bidHitCount, false), M + 4 + hitW + (story ? 24 : 18), line2Y + 2, story ? W * 0.44 : W * 0.3);
       ctx.textAlign = story ? 'left' : 'right';
       ctx.fillStyle = '#facc15';
       ctx.font = `900 ${story ? 34 : 22}px sans-serif`;
-      ctx.fillText(`🏆 交渉権獲得的中 ${acquiredHitCount} / 12`, story ? M + 4 : W - M - 4, story ? 186 : line2Y + 1, story ? W * 0.5 : W * 0.3);
+      ctx.fillText(`交渉権獲得的中 ${acquiredHitCount} / 12`, story ? M + 4 : W - M - 4, story ? 186 : line2Y + 1, story ? W * 0.5 : W * 0.3);
 
       const cols = story ? 1 : 2;
       const rowsPerCol = Math.ceil(12 / cols);
