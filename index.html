@@ -538,7 +538,7 @@
       <div class="h-1.5 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700"></div>
       <div class="p-6">
         <p id="mp-busy-title" class="text-lg font-black mb-2">友達対戦は一時的に使えません</p>
-        <p class="text-sm text-gray-700 leading-relaxed mb-5">混み合っているため、友達対戦は一時的に使えません。<br><span id="mp-busy-reopen">明日の16時ごろ</span>に再開する予定です。<br>それまでは、AI対戦で遊べます。</p>
+        <p class="text-sm text-gray-700 leading-relaxed mb-5">混み合っているため、友達対戦は一時的に使えません。<br><span id="mp-busy-reopen">明日の夕方ごろ</span>に再開する予定です。<br>それまでは、AI対戦で遊べます。</p>
         <button onclick="window.mpBusyPlayAI()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">AI対戦で遊ぶ</button>
       </div>
     </div>
@@ -2117,7 +2117,7 @@
       <div class="demo-slide"><canvas data-src="images/demo-2-lottery.webp" role="img" aria-label="競合した選手の抽選で交渉権を引き当てたところ" width="1200" height="400"></canvas><p class="demo-cap"><span>STEP 2</span>競合したら封筒で抽選</p></div>
       <div class="demo-slide"><canvas data-src="images/demo-3-lineup.webp" role="img" aria-label="指名した選手でスタメンを組むところ" width="1200" height="400"></canvas><p class="demo-cap"><span>STEP 3</span>指名した選手でスタメンを組む</p></div>
       <div class="demo-slide"><canvas data-src="images/demo-4-result.webp" role="img" aria-label="AIが採点して順位を発表したところ" width="1200" height="400"></canvas><p class="demo-cap"><span>STEP 4</span>AIが採点して順位発表</p></div>
-      <span class="demo-badge">ドラフトは約3分。<br>そのあと、組んだチームで試合やプレーオフも楽しめます</span>
+      <span class="demo-badge">ドラフトのあとは、組んだチームで<br>試合やプレーオフも楽しめます</span>
       <div class="demo-dots"></div>
     </div>
     <button type="button" id="demo-open" class="demo-open hidden" aria-controls="demo-loop">▶ 遊び方デモ</button>
@@ -2283,7 +2283,7 @@
       </script>
       <button onclick="window.openMpLobby()" class="w-full mt-2 bg-blue-700 hover:bg-blue-600 text-white font-black py-3 rounded-lg text-sm shadow">🤝 友達と対戦（β版）</button>
       <button onclick="window.showAchievementsModal()" class="w-full mt-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow">🏅 実績を見る <span id="achievements-badge-count" class="font-black"></span></button>
-      <a href="draft-2026.html#watch" target="_blank" rel="noopener noreferrer" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
+      <a href="draft-2026.html#watch" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'watch_top'})" class="block w-full mt-2 bg-orange-500 hover:bg-orange-400 text-gray-900 font-black py-2.5 rounded-lg text-sm shadow text-center">👀 2026ドラフト注目選手 <span id="home-draft-countdown"></span></a>
       <button onclick="document.getElementById('home-nav-menu').classList.toggle('hidden')" class="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-sm border border-gray-300">☰ その他のページ</button>
       <div id="home-nav-menu" class="hidden mt-2 text-left bg-gray-50 border border-gray-200 rounded-lg p-3">
         <div class="mb-3 last:mb-0">
@@ -4858,7 +4858,7 @@
     };
     // ★ Firestoreの無料枠は太平洋時間の0時にリセットされる（公式「Usage and limits」）。次の太平洋時間0時を
     //   日本時間に直して「今日の16時ごろ」「明日の17時ごろ」のように返す。夏時間（3月〜11月の初め）は16時、
-    //   それ以外は17時になる。夏時間の切り替わる日は1時間ずれることがあるが、「ごろ」の表示なので許容する
+    //   それ以外は17時になる。計算できないときは、時刻を出さずに「明日の夕方ごろ」にする
     function mpQuotaResetLabel(now) {
       try {
         now = now || new Date();
@@ -4867,13 +4867,18 @@
           .formatToParts(now).forEach(p => { la[p.type] = Number(p.value); });
         const h = la.hour % 24;
         const msToMidnight = ((24 - h) * 3600 - la.minute * 60 - la.second) * 1000 - now.getMilliseconds();
-        const reset = new Date(now.getTime() + msToMidnight);
+        let reset = new Date(now.getTime() + msToMidnight);
+        // ★ 夏時間が切り替わる日は1日が23時間・25時間になり、上の「24時間」の計算が1時間ずれる。
+        //   求めた時刻を太平洋時間に直し、0時からずれていたら1時間ずらして合わせる（23時→＋1時間、1時→−1時間）
+        const resetHourLa = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hour12: false, hour: '2-digit' }).format(reset)) % 24;
+        if (resetHourLa === 23) reset = new Date(reset.getTime() + 3600000);
+        else if (resetHourLa === 1) reset = new Date(reset.getTime() - 3600000);
         const jst = d => new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
         const hourJst = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Tokyo', hour12: false, hour: '2-digit' }).format(reset)) % 24;
         const dayWord = jst(reset) === jst(now) ? '今日' : '明日';
         return `${dayWord}の${hourJst}時ごろ`;
       } catch (e) {
-        return '明日の16時ごろ';
+        return '明日の夕方ごろ';
       }
     }
     function mpShowBusy() {
