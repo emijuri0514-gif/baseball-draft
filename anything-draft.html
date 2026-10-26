@@ -38,6 +38,22 @@
     .ad-field:focus-visible, .ad-btn:focus-visible, .ad-opt:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
     .ad-btn { min-height: 44px; }
     .ad-opt { min-height: 48px; }
+    /* ★ スマホでは、押したボタンの位置に次の画面のボタンが出ると、そこだけ「マウスが乗った」色のまま残る（iPhoneで、選択肢の1つだけ
+       色が違って見えた）。色の変化は、マウスで操作できる端末だけにする（画面を作るときに hover: のクラスは外している） */
+    @media (hover: hover) { .ad-btn:hover, .ad-opt:hover, .ad-env:hover { filter: brightness(1.15); } }
+    /* 封筒の抽選（ゲーム本体の封筒くじに合わせた見た目。当たりの封筒は、開けるまで画面のどこにも出さない） */
+    .ad-env { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #f8fafc; border-radius: 4px; box-shadow: 0 8px 16px rgba(0,0,0,.35); overflow: hidden; color: #111827; }
+    .ad-env::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 38%; background: #e2e8f0; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+    .ad-env[disabled] { cursor: default; }
+    .ad-env .ad-env-name { position: absolute; left: 4px; right: 4px; bottom: 8px; font-size: 12px; font-weight: 900; text-align: center; z-index: 1; }
+    .ad-env .ad-env-no { position: absolute; left: 0; right: 0; top: 46%; font-size: 22px; font-weight: 900; color: #94a3b8; text-align: center; z-index: 1; }
+    .ad-env.is-open::before { display: none; }
+    .ad-env .ad-stamp { position: absolute; left: 50%; top: 40%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border: 3px solid #dc2626; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; line-height: 1.15; font-weight: 900; transform: rotate(-15deg); z-index: 1; animation: adstamp .32s ease-out both; }
+    .ad-env.is-lose { opacity: .55; }
+    .ad-env .ad-miss { position: absolute; left: 0; right: 0; top: 36%; text-align: center; font-size: 16px; font-weight: 900; color: #64748b; z-index: 1; }
+    .ad-env.is-win { box-shadow: 0 0 0 3px #facc15, 0 0 22px rgba(250,204,21,.8); }
+    @keyframes adstamp { from { opacity: 0; transform: rotate(-15deg) scale(2.2); } to { opacity: 1; transform: rotate(-15deg) scale(1); } }
+    @media (prefers-reduced-motion: reduce) { .ad-env .ad-stamp { animation: none; } }
     @media (prefers-reduced-motion: reduce) { .ad-anim { animation: none !important; } }
     .ad-anim { animation: adpop .35s ease-out; }
     @keyframes adpop { from { transform: scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -115,7 +131,7 @@
         <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">指名の方式：同時指名・ウェーバー・抽選の違い</h2>
         <ul class="list-disc list-inside space-y-1.5">
           <li><span class="font-bold text-yellow-300">同時指名</span>：その巡は全員が同じ候補の中から、ほかの人に見えないように選びます。全員が選び終わったら一斉に発表。誰とも重ならなければそのまま確定です。</li>
-          <li><span class="font-bold text-yellow-300">抽選</span>：同時指名で同じものを選んだ人がいたら、抽選で1人に決まります。外れた人は、残った候補からもう一度選び直します。人気の選択肢ほど、思い切って狙うか、確実に取れるものを選ぶかの駆け引きが生まれます。</li>
+          <li><span class="font-bold text-yellow-300">抽選</span>：同時指名で同じものを選んだ人がいたら、重なった人どうしで封筒を1つずつ選び、一斉に開けて「交渉権確定」が入っていた人が獲得します。外れた人は、残った候補からもう一度選び直します。人気の選択肢ほど、思い切って狙うか、確実に取れるものを選ぶかの駆け引きが生まれます。</li>
           <li><span class="font-bold text-yellow-300">ウェーバー</span>：決まった順番で1人ずつ指名します。前の人が指名したものは候補から消えます。順番は1巡ごとに折り返すので、最初の巡で後ろだった人は、次の巡では先に選べます。</li>
         </ul>
       </section>
@@ -167,7 +183,7 @@
 
   <script src="js/pick-card-safety.js"></script>
   <script type="module">
-    import { LIMITS, addOptions, maxRounds, snakeOrder, shuffle, resolveSimultaneous, tallyVotes, matchesQuery, remainingOptions } from './js/anything-draft-core.mjs';
+    import { LIMITS, addOptions, maxRounds, snakeOrder, shuffle, groupSubmissions, setupLottery, takeEnvelope, nextDrawer, openLottery, tallyVotes, matchesQuery, remainingOptions } from './js/anything-draft-core.mjs';
 
     // ★ なんでもドラフト（1台で遊ぶ版）。設計：非公開リポジトリ docs/ANYTHING_DRAFT_SOLO_DESIGN.md
     //   ・Firebase・ログイン・通信は使わない。入力した文字は端末の中だけ（GA4にも送らない）
@@ -199,8 +215,9 @@
       for (const c of children.flat()) { if (c == null || c === false) continue; e.append(c instanceof Node ? c : document.createTextNode(String(c))); }
       return e;
     }
-    const btn = (text, onclick, cls = 'bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black') =>
-      el('button', { type: 'button', class: `ad-btn px-5 rounded-full ${cls}`, onclick }, text);
+    const noHover = cls => cls.split(/\s+/).filter(c => !c.startsWith('hover:')).join(' ');
+    const btn = (text, onclick, cls = 'bg-yellow-500 text-gray-900 font-black') =>
+      el('button', { type: 'button', class: noHover(`ad-btn px-5 rounded-full ${cls}`), onclick }, text);
     const clean = (s, max) => S.truncateChars(S.sanitize(s), max).trim();
     // 1回だけ押せるボタン（連打で二重に進まないように）
     function once(fn) { let done = false; return (...a) => { if (done) return; done = true; fn(...a); }; }
@@ -208,16 +225,18 @@
     // ---------- 状態 ----------
     let state = null;
     function newState() {
-      return { version: 1, phase: 'setup', title: '', template: 'free', teams: [], players: ['', ''], options: [], mode: 'lottery', rounds: 3,
-        order: [], round: 1, picks: [], turn: 0, sub: {}, queue: [], redo: [], lastReveal: null, votes: {}, voteIdx: 0, msg: '' };
+      return { version: 2, phase: 'setup', title: '', template: 'free', teams: [], players: ['', ''], options: [], mode: 'lottery', rounds: 3,
+        order: [], round: 1, picks: [], turn: 0, sub: {}, queue: [], redo: [], rv: null, votes: {}, voteIdx: 0, msg: '' };
     }
     function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
     function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
-    function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.version === 1 ? s : null; } catch (e) { return null; } }
+    // 保存の形が変わったら version を上げる（古い途中のデータは使わない）
+    function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.version === 2 ? s : null; } catch (e) { return null; } }
 
     const app = $('ad-app');
     let firstShow = true; // 開いた直後は、説明の位置から動かさない
-    function show(...nodes) { app.replaceChildren(...nodes); if (!firstShow) app.scrollIntoView({ block: 'start', behavior: 'smooth' }); firstShow = false; save(); }
+    let keepScroll = false; // 同じ画面の中の操作（封筒を取る・開ける）では、スクロールの位置を動かさない
+    function show(...nodes) { app.replaceChildren(...nodes); if (!firstShow && !keepScroll) app.scrollIntoView({ block: 'start', behavior: 'smooth' }); firstShow = false; keepScroll = false; save(); }
     const P = i => state.players[i];
     const opt = id => state.options.find(o => o.id === id);
     const teamOf = i => state.picks.filter(p => p.player === i).sort((a, b) => a.round - b.round);
@@ -345,7 +364,7 @@
         renderOptions(`${lines.length - res.dupes - res.overLimit}個を追加しました` + (res.dupes ? `（重複${res.dupes}件は除きました）` : '') + (res.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた${res.overLimit}件は入れていません）` : ''));
       }, 'bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm');
 
-      const startBtn = el('button', { type: 'button', class: 'ad-btn w-full rounded-full bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black text-lg', id: 'ad-start' }, 'ドラフトを始める');
+      const startBtn = el('button', { type: 'button', class: 'ad-btn w-full rounded-full bg-yellow-500 text-gray-900 font-black text-lg', id: 'ad-start' }, 'ドラフトを始める');
       startBtn.addEventListener('click', () => {
         state.title = clean(title.value, LIMITS.titleMax);
         state.players = state.players.map(n => clean(n, LIMITS.nameMax));
@@ -386,7 +405,7 @@
       beginRound();
     }
     function beginRound() {
-      state.sub = {}; state.lastReveal = null;
+      state.sub = {}; state.rv = null;
       if (state.mode === 'waiver') { state.queue = snakeOrder(state.order, state.round); state.turn = 0; renderWaiver(); }
       else { state.queue = state.order.slice(); state.turn = 0; state.redo = []; renderHandoff(); }
     }
@@ -407,7 +426,7 @@
       function draw() {
         const items = available.filter(o => (!team || o.team === team) && matchesQuery(o.label, q));
         count.textContent = `${items.length}個`;
-        listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left bg-gray-900 hover:bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 flex items-center justify-between gap-2', onclick: () => pick(o.id), 'aria-label': `${o.label}を指名` },
+        listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 flex items-center justify-between gap-2', onclick: () => pick(o.id), 'aria-label': `${o.label}を指名` },
           el('span', {}, el('span', { class: 'font-bold', text: o.label }), o.team ? el('span', { class: 'block text-[11px] text-gray-400', text: o.team }) : null),
           el('span', { class: 'shrink-0 text-xs font-black text-yellow-300', text: '指名' })))));
         if (!items.length) listBox.append(el('li', { class: 'text-sm text-gray-400', text: '条件に合う選択肢がありません' }));
@@ -466,26 +485,84 @@
             btn('次へ', once(renderHandoff))));
         })));
     }
-    // 発表：重ならなければ確定、重なったら抽選
+    // 発表：重ならなければ確定。重なったら、重なった人どうしで封筒の抽選（自分で封筒を選ぶ）
+    // state.rv：{ sub: 発表した指名, lots: [抽選], idx: いまの抽選, stage: 'list'｜'lottery'｜'done' }（途中で閉じても続きから）
     function reveal() {
-      const res = resolveSimultaneous(state.sub, rng);
-      res.confirmed.forEach(c => state.picks.push({ round: state.round, player: c.player, optionId: c.optionId, via: state.redo.length ? 'redo' : c.via }));
-      state.lastReveal = { sub: { ...state.sub }, lotteries: res.lotteries };
-      state.sub = {}; state.redo = res.losers; state.turn = 0;
-      const rows = Object.entries(state.lastReveal.sub).map(([p, id]) => {
-        const lot = res.lotteries.find(l => l.optionId === id);
-        const status = !lot ? '確定' : (lot.winner === Number(p) ? '抽選で獲得' : '抽選で外れ');
+      const isRedo = state.redo.length > 0;
+      const g = groupSubmissions(state.sub);
+      g.singles.forEach(c => state.picks.push({ round: state.round, player: c.player, optionId: c.optionId, via: isRedo ? 'redo' : 'single' }));
+      state.rv = { sub: { ...state.sub }, lots: g.conflicts.map(c => setupLottery(c, rng)), idx: 0, stage: g.conflicts.length ? 'list' : 'done', redo: isRedo };
+      state.sub = {}; state.redo = []; state.turn = 0;
+      renderReveal();
+    }
+    function statusOf(p, id) {
+      const lot = state.rv.lots.find(l => l.optionId === id && l.players.includes(p));
+      if (!lot) return ['確定', 'text-green-300'];
+      if (!lot.opened) return ['抽選へ', 'text-yellow-300'];
+      return lot.winner === p ? ['抽選で獲得', 'text-green-300'] : ['抽選で外れ', 'text-gray-400'];
+    }
+    function renderReveal() {
+      const rv = state.rv;
+      if (rv.stage === 'lottery') { renderLottery(); return; }
+      const rows = Object.entries(rv.sub).map(([p, id]) => {
+        const [status, color] = statusOf(Number(p), id);
         return el('li', { class: 'flex items-center justify-between gap-2 bg-gray-900 border border-gray-700 rounded px-3 py-2' },
           el('span', {}, el('span', { class: 'font-bold', text: P(Number(p)) }), '：', el('span', { text: opt(id).label })),
-          el('span', { class: `text-xs font-black ${status === '抽選で外れ' ? 'text-gray-400' : 'text-green-300'}`, text: status }));
+          el('span', { class: `text-xs font-black ${color}`, text: status }));
       });
-      const lotteries = res.lotteries.map(l => el('div', { class: 'ad-anim bg-gray-900 border-2 border-yellow-500 rounded-lg p-4 text-center space-y-1' },
-        el('p', { class: 'text-xs text-gray-400', text: `「${opt(l.optionId).label}」に${l.players.length}人が重なりました：${l.players.map(P).join('・')}` }),
-        el('p', { class: 'text-lg font-black' }, '抽選の結果、', el('span', { class: 'text-yellow-400', text: P(l.winner) }), ' さんが獲得')));
-      const next = state.redo.length
-        ? btn(`外れた人が選び直す（${state.redo.map(P).join('・')}）`, once(renderHandoff))
-        : btn(state.round >= state.rounds ? '結果へ進む' : `第${state.round + 1}巡へ`, once(nextRoundOrFinish));
-      show(el('div', { class: 'space-y-4' }, roundHead('発表'), el('ul', { class: 'space-y-2' }, ...rows), ...lotteries, el('div', { class: 'text-center' }, next)));
+      let next;
+      if (rv.stage === 'list') {
+        const l = rv.lots[rv.idx];
+        next = el('div', { class: 'ad-anim bg-gray-900 border-2 border-yellow-500 rounded-lg p-4 text-center space-y-3' },
+          el('p', { class: 'font-black' }, `「${opt(l.optionId).label}」に${l.players.length}人が重なりました`),
+          el('p', { class: 'text-sm text-gray-300', text: l.players.map(P).join('・') }),
+          btn('抽選へ（封筒を選ぶ）', once(() => { rv.stage = 'lottery'; renderLottery(); })));
+      } else {
+        const losers = state.redo;
+        next = el('div', { class: 'text-center' }, losers.length
+          ? btn(`外れた人が選び直す（${losers.map(P).join('・')}）`, once(() => { state.rv = null; state.turn = 0; renderHandoff(); }))
+          : btn(state.round >= state.rounds ? '結果へ進む' : `第${state.round + 1}巡へ`, once(() => { state.rv = null; nextRoundOrFinish(); })));
+      }
+      show(el('div', { class: 'space-y-4' }, roundHead(rv.redo ? '選び直しの発表' : '発表'), el('ul', { class: 'space-y-2' }, ...rows), next));
+    }
+    // 封筒の抽選：決まった順番に1人ずつ封筒を取る → 全員が取ったら一斉に開ける
+    function renderLottery() {
+      const rv = state.rv, l = rv.lots[rv.idx], n = l.players.length;
+      const who = nextDrawer(l);
+      const envs = el('div', { class: `grid ${n <= 3 ? 'grid-cols-3' : 'grid-cols-4'} gap-3 max-w-md mx-auto pt-2` });
+      for (let i = 0; i < n; i++) {
+        const owner = l.taken[i];
+        const kids = [];
+        if (!l.opened) kids.push(el('span', { class: 'ad-env-no', text: String(i + 1) }));
+        if (l.opened) kids.push(i === l.winEnv ? el('span', { class: 'ad-stamp' }, '交渉権', el('br'), '確定') : el('span', { class: 'ad-miss', text: 'はずれ' }));
+        if (owner != null) kids.push(el('span', { class: 'ad-env-name', text: P(owner) }));
+        const cls = `ad-env${l.opened ? ' is-open' + (i === l.winEnv ? ' is-win' : ' is-lose') : ''}`;
+        envs.append(el('button', { type: 'button', class: cls, disabled: owner != null || l.opened, 'aria-label': owner != null ? `${i + 1}番の封筒（${P(owner)}）` : `${i + 1}番の封筒を選ぶ`,
+          onclick: () => { if (takeEnvelope(l, i)) { keepScroll = true; renderLottery(); } } }, ...kids));
+      }
+      let head, action = null;
+      if (who != null) {
+        head = el('p', { class: 'text-lg font-black text-center' }, el('span', { class: 'text-yellow-400', text: P(who) }), ' さんの番：封筒を1つ選んでください');
+      } else if (!l.opened) {
+        head = el('p', { class: 'text-lg font-black text-center', text: '全員が封筒を選びました' });
+        action = btn('一斉に開ける', once(() => {
+          const res = openLottery(l);
+          state.picks.push({ round: state.round, player: res.winner, optionId: l.optionId, via: 'lottery' });
+          state.redo.push(...res.losers);
+          keepScroll = true; renderLottery();
+        }), 'bg-red-600 text-white font-black text-lg px-8');
+      } else {
+        head = el('p', { class: 'ad-anim text-xl font-black text-center' }, el('span', { class: 'text-yellow-400', text: P(l.winner) }), ' さんが「', el('span', { text: opt(l.optionId).label }), '」を獲得');
+        const last = rv.idx >= rv.lots.length - 1;
+        action = btn(last ? '発表に戻る' : '次の抽選へ', once(() => {
+          if (last) { state.redo.sort((a, b) => a - b); rv.stage = 'done'; renderReveal(); }
+          else { rv.idx++; rv.stage = 'list'; renderReveal(); }
+        }));
+      }
+      show(el('div', { class: 'space-y-4' }, roundHead('抽選'),
+        el('p', { class: 'text-sm text-gray-300 text-center' }, `「${opt(l.optionId).label}」の抽選（${l.players.map(P).join('・')}）`),
+        el('p', { class: 'text-xs text-gray-400 text-center', text: `封筒を選ぶ順番：${l.drawOrder.map(P).join(' → ')}` }),
+        head, envs, action ? el('div', { class: 'text-center pt-2' }, action) : null));
     }
 
     // 全員のチーム
@@ -660,7 +737,7 @@
       if (state.phase === 'setup') renderSetup();
       else if (state.phase === 'draft') {
         if (state.mode === 'waiver') renderWaiver();
-        else if (state.lastReveal && !Object.keys(state.sub).length && state.turn === 0 && !state.redo.length) nextRoundOrFinish();
+        else if (state.rv) renderReveal(); // 発表・抽選の途中から（取った封筒もそのまま）
         else renderHandoff(); // 選んだ内容は、発表までは選んだ人の分だけ保存されている。途中からは「渡す」画面から続ける
       } else if (state.phase === 'vote') renderVoteHandoff();
       else renderResult();

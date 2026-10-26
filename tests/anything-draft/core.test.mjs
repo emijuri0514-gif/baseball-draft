@@ -1,8 +1,8 @@
 // なんでもドラフトの計算のテスト。実行：npm run test:anything-draft（node だけで動く。ブラウザ不要）
-import { test } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LIMITS, optionKey, addOptions, maxRounds, snakeOrder, shuffle, resolveSimultaneous, tallyVotes, matchesQuery, remainingOptions } from '../../js/anything-draft-core.mjs';
+import { groupSubmissions, setupLottery, takeEnvelope, nextDrawer, openLottery, LIMITS, optionKey, addOptions, maxRounds, snakeOrder, shuffle, resolveSimultaneous, tallyVotes, matchesQuery, remainingOptions } from '../../js/anything-draft-core.mjs';
 
 // 決まった順に値を返す乱数（テスト用）
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
@@ -97,4 +97,31 @@ test('テンプレートの選手名（ゲームの選手データ）は、使�
   const hit = players.map(p => p.name).filter(n => safety.check(n, null));
   assert.deepEqual(hit, []);
   assert.equal(safety.check('好きな寿司ネタ', null), null);
+});
+
+test('同時指名：重なった指名は抽選に回し、当たりはここでは決めない', () => {
+  const g = groupSubmissions({ 0: 5, 1: 5, 2: 7, 3: 5 });
+  assert.deepEqual(g.singles, [{ player: 2, optionId: 7 }]);
+  assert.deepEqual(g.conflicts, [{ optionId: 5, players: [0, 1, 3] }]);
+});
+
+test('封筒の抽選：順番に1つずつ取り、全員が取ったら一斉に開ける。当たりの封筒を取った人が獲得', () => {
+  let seed = 0.3; const rng = () => { seed = (seed * 9301 + 0.49297) % 1; return seed; };
+  for (let k = 0; k < 20; k++) {
+    const lot = setupLottery({ optionId: 5, players: [0, 1, 3] }, rng);
+    assert.deepEqual([...lot.drawOrder].sort(), [0, 1, 3]);
+    assert.equal(openLottery(lot), null, '全員が取る前は開けない');
+    const first = nextDrawer(lot);
+    assert.ok(takeEnvelope(lot, 2));
+    assert.equal(lot.taken[2], first);
+    assert.ok(!takeEnvelope(lot, 2), '取られた封筒は取れない');
+    assert.ok(takeEnvelope(lot, 0));
+    assert.ok(takeEnvelope(lot, 1));
+    assert.ok(!takeEnvelope(lot, 1));
+    assert.equal(nextDrawer(lot), null);
+    const res = openLottery(lot);
+    assert.equal(res.winner, lot.taken[lot.winEnv]);
+    assert.deepEqual(res.losers.sort(), [0, 1, 3].filter(p => p !== res.winner).sort());
+    assert.equal(openLottery(lot), null, '2回は開けない');
+  }
 });

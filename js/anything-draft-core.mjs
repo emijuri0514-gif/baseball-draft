@@ -87,6 +87,43 @@ export function resolveSimultaneous(submitted, rng) {
   return { confirmed, losers, lotteries };
 }
 
+// 同時指名の発表（抽選の前）：重ならなかった指名と、重なった指名（抽選が要るもの）に分ける。
+// 抽選は画面で参加者が封筒を選んで行うので、ここでは当たりを決めない
+export function groupSubmissions(submitted) {
+  const byOption = new Map();
+  Object.keys(submitted).map(Number).sort((a, b) => a - b).forEach(p => {
+    const id = submitted[p];
+    if (!byOption.has(id)) byOption.set(id, []);
+    byOption.get(id).push(p);
+  });
+  const singles = [], conflicts = [];
+  for (const [optionId, players] of byOption) {
+    if (players.length === 1) singles.push({ player: players[0], optionId });
+    else conflicts.push({ optionId, players });
+  }
+  return { singles, conflicts };
+}
+
+// 封筒の抽選を用意する：封筒を選ぶ順番（毎回まぜる）と、当たりの封筒の番号を決める（画面には出さない）
+export function setupLottery({ optionId, players }, rng) {
+  return { optionId, players, drawOrder: shuffle(players, rng), winEnv: randInt(players.length, rng), taken: {}, opened: false, winner: null };
+}
+// 封筒を取る：次に選ぶ人が envIdx の封筒を取る。取れたら true
+export function takeEnvelope(lot, envIdx) {
+  const n = lot.players.length, count = Object.keys(lot.taken).length;
+  if (lot.opened || count >= n || envIdx < 0 || envIdx >= n || lot.taken[envIdx] != null) return false;
+  lot.taken[envIdx] = lot.drawOrder[count];
+  return true;
+}
+export const nextDrawer = lot => lot.drawOrder[Object.keys(lot.taken).length] ?? null;
+// 全員が取ったら一斉に開ける：当たりの封筒を取った人が獲得。外れた人の一覧を返す
+export function openLottery(lot) {
+  if (lot.opened || Object.keys(lot.taken).length < lot.players.length) return null;
+  lot.opened = true;
+  lot.winner = lot.taken[lot.winEnv];
+  return { winner: lot.winner, losers: lot.players.filter(p => p !== lot.winner) };
+}
+
 // 投票の集計：votes は { 投票した人: 投票先 }。自分への票は数えない。最多の人が複数なら全員が同率優勝
 export function tallyVotes(votes, nPlayers) {
   const counts = new Array(nPlayers).fill(0);
