@@ -13,6 +13,7 @@
     "build:position-thresholds": "node scripts/position-thresholds/build.mjs",
     "check:position-thresholds": "node scripts/position-thresholds/check.mjs",
     "check:player-data": "node scripts/check-player-data.mjs",
+    "test:anything-draft": "node --test tests/anything-draft/core.test.mjs",
     "test:firestore-rules": "cd tests/firestore-rules && npm test"
   },
   "devDependencies": {

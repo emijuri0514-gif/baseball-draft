@@ -88,7 +88,7 @@
     </div>
 
     <!-- アプリ本体（画面はJavaScriptで切り替える） -->
-    <section id="ad-app" aria-live="polite" class="bg-gray-800 border border-gray-700 rounded-lg p-4 md:p-6"></section>
+    <section id="ad-app" aria-live="polite" class="scroll-mt-20 bg-gray-800 border border-gray-700 rounded-lg p-4 md:p-6"></section>
 
     <div id="ad-slot-mid" class="ad-slot"></div>
 
@@ -213,7 +213,8 @@
     function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.version === 1 ? s : null; } catch (e) { return null; } }
 
     const app = $('ad-app');
-    function show(...nodes) { app.replaceChildren(...nodes); app.scrollIntoView({ block: 'start', behavior: 'smooth' }); save(); }
+    let firstShow = true; // 開いた直後は、説明の位置から動かさない
+    function show(...nodes) { app.replaceChildren(...nodes); if (!firstShow) app.scrollIntoView({ block: 'start', behavior: 'smooth' }); firstShow = false; save(); }
     const P = i => state.players[i];
     const opt = id => state.options.find(o => o.id === id);
     const teamOf = i => state.picks.filter(p => p.player === i).sort((a, b) => a.round - b.round);
@@ -341,8 +342,6 @@
         renderOptions(`${lines.length - res.dupes - res.overLimit}個を追加しました` + (res.dupes ? `（重複${res.dupes}件は除きました）` : '') + (res.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた${res.overLimit}件は入れていません）` : ''));
       }, 'bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm');
 
-      const start = btn('ドラフトを始める', once(() => {}), 'bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black text-lg w-full');
-      start.replaceWith; // (下で付け直す)
       const startBtn = el('button', { type: 'button', class: 'ad-btn w-full rounded-full bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black text-lg', id: 'ad-start' }, 'ドラフトを始める');
       startBtn.addEventListener('click', () => {
         state.title = clean(title.value, LIMITS.titleMax);
@@ -673,8 +672,6 @@
     } else {
       state = saved || newState();
       renderSetup();
-      app.scrollIntoView = () => {}; // 開いた直後は説明の位置から動かさない
-      setTimeout(() => { delete app.scrollIntoView; }, 0);
     }
   </script>
 </body>
