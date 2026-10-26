@@ -50,7 +50,6 @@
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
             <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎲 なんでもドラフト <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
             <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
             <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
             <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
@@ -253,7 +252,6 @@
         <li><a href="#ep160" class="hover:underline">ドラフト4日前の、候補選手の訂正</a></li>
         <li><a href="#ep161" class="hover:underline">1年に2回だけ、1時間ずれる案内</a></li>
         <li><a href="#ep162" class="hover:underline">ドラフトが終わった翌々日の、ページの片付け</a></li>
-        <li><a href="#ep163" class="hover:underline">野球じゃなくてもドラフトしたい、を1台でできるようにした</a></li>
       </ol>
     </nav>
 
@@ -1240,12 +1238,6 @@
       <h2 class="text-lg font-black text-yellow-400 mb-3">第162回：ドラフトが終わった翌々日の、ページの片付け</h2>
       <p>ドラフト会議の次の日にトップを開いたら、「2026ドラフト注目選手（あと370日）」というボタンが出ていた。カウントダウンが来年のドラフトに切り替わっただけなんだけど、終わったばかりのドラフトの「注目選手」を、あと370日と言われても困る。ドラフト特集のページも「配信・見る方法は？」という開催前の題のままだったので、「2026ドラフトの結果と振り返り」に書き直した。12球団の1位指名の表、抽選になった渡部海と鈴木泰成の話、ドラフト前にこのページで注目していた7人がどうなったか、を並べている。結果は答え合わせのために入力したデータと同じものだけを使って、2位以下のことは書いていない。前田侑大と柴崎聖人は1位指名がなかったので、その先はNPBの公式ページを見てもらう形にした。</p>
       <p>ついでに、サイトの名前が「AIドラフト」と「NPBドラフト会議シミュレーション」の2つ混ざっていたのを「AIドラフト」にそろえた。数えたら33ページに69か所あって、ページの題名の後ろについているものがほとんどだった。プライバシーポリシーは、広告と Cookie の説明をGoogleの案内に近い書き方にして、端末の中に何を保存しているかも一覧にした。書き出してみたら、前回の設定・実績・予想・デモを見たかどうか・友達対戦の識別用のIDなど6種類あって、前の書き方の「識別用のID等」はかなりざっくりしていたと思う。あとは、存在しないURLを開いたときに、英語の画面ではなくトップや予想ページへの入口が出る専用のページも作った。</p>
-    </article>
-
-    <article id="ep163" class="post mb-12 scroll-mt-20">
-      <h2 class="text-lg font-black text-yellow-400 mb-3">第163回：野球じゃなくてもドラフトしたい、を1台でできるようにした</h2>
-      <p>「好きな寿司ネタ」みたいなお題で、みんなでドラフトできる「なんでもドラフト」を作った。最初はみんなのスマホをつないで遊ぶ形も考えたんだけど、まずはFirebaseを使わずに、1台のスマホを順番に回す形にした。同時指名のときは「◯◯さんに渡してください」の画面をはさんで、選んだものは全員がそろうまで見えないようにしている。重なったら抽選で、外れた人だけが残りから選び直す。ドラフト会議の外れ1位と同じ流れだ。入力したお題や名前は、どこにも送らずに端末の中だけで使う。シェアの文章にも入れていなくて、使えない言葉のチェックは指名カードメーカーと同じものを使い回した。</p>
-      <p>作っていて地味に効いたのが、選択肢の重なりの見分け方。「まぐろ」「マグロ」「まぐろ 」（後ろに空白）を入れたら、全部別の選択肢として並んでしまうので、カタカナとひらがな・全角と半角・空白の違いを無視して同じものとして扱うようにした。テンプレートで巨人と西武の選手を読み込むと40人入るので、球団ごとに「まとめて外す」ボタンも付けた。あと、ページを開いた直後に、勝手にアプリの位置までスクロールしてしまう書き方をしていて、説明文が読めない状態になっていた。開いた直後だけは動かさないように直した。8人で2巡のテストをしたら、全員が同じものを狙うと抽選と選び直しが延々と続いて、それはそれで盛り上がりそうだと思った。</p>
     </article>
 
     <p class="text-center text-gray-400 text-sm mt-14">— 続く —</p>
