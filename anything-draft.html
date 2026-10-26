@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="js/error-tracking.js"></script>
+  <!-- ★ 2026-10-26 オーナー指示：運営者がスマホで確認するまで、入口を付けず検索にも出さない（noindex・サイトマップに載せない）。
+       OKが出たら、この2行を消し、メニューの入口・sitemap.xml・更新履歴・開発ブログを別のPRで足す（非公開リポジトリ docs/ANYTHING_DRAFT_ENTRY_FOLLOWUP.patch） -->
+  <meta name="robots" content="noindex, follow">
+  <title>なんでもドラフト｜好きなお題でみんなでドラフト（1台で遊べる）｜AIドラフト</title>
+  <meta name="description" content="好きなお題を決めて、みんなで選択肢を取り合うドラフトゲーム。スマホやパソコン1台を回して2〜8人で遊べます。同時指名と抽選、ウェーバー方式、投票で一番いいチームを決めて、結果を画像に。登録不要・無料。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="なんでもドラフト｜好きなお題でみんなでドラフト">
+  <meta property="og:description" content="お題を決めて、1台のスマホを回しながら2〜8人で選択肢を取り合うドラフトゲーム。登録不要・無料。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/anything-draft.html">
+  <link rel="canonical" href="https://dreamteam9.com/anything-draft.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+    .hidden-screen { display: none !important; }
+    .ad-field { width: 100%; background: #111827; border: 1px solid #4b5563; border-radius: .375rem; padding: .5rem .75rem; font-size: 16px; color: #f3f4f6; }
+    .ad-field:focus-visible, .ad-btn:focus-visible, .ad-opt:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+    .ad-btn { min-height: 44px; }
+    .ad-opt { min-height: 48px; }
+    @media (prefers-reduced-motion: reduce) { .ad-anim { animation: none !important; } }
+    .ad-anim { animation: adpop .35s ease-out; }
+    @keyframes adpop { from { transform: scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
+  </style>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="text-gray-100">
+  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="text-sm md:text-base font-black tracking-wider">🎲 なんでもドラフト</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
+        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">AIドラフトへ</a>
+      </div>
+      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
+            <a href="index.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">⚾ AIドラフト（ゲーム）</a>
+            <a href="pick-card.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー</a>
+            <a href="howto.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📖 遊び方</a>
+            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📋 2026ドラフトの結果と振り返り</a>
+            <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-6 space-y-8">
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="text-center">
+      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">好きなお題で、みんなでドラフト</h2>
+      <p class="text-sm md:text-base text-gray-300 leading-relaxed">お題を決めて、スマホやパソコン1台を順番に回しながら、2〜8人で選択肢を取り合います。<br><span class="text-xs text-gray-400">入力したお題・名前・選択肢は、この端末の中だけで使います（どこにも送りません）。</span></p>
+    </section>
+
+    <!-- 続きから（途中で閉じたとき） -->
+    <div id="ad-resume" class="hidden-screen bg-gray-800 border-2 border-yellow-500 rounded-lg p-4 text-center" role="status">
+      <p class="font-bold mb-3">途中のドラフトがあります（<span id="ad-resume-title"></span>）</p>
+      <div class="flex gap-3 justify-center flex-wrap">
+        <button type="button" id="ad-resume-yes" class="ad-btn bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black px-6 rounded-full">続きから遊ぶ</button>
+        <button type="button" id="ad-resume-no" class="ad-btn bg-gray-700 hover:bg-gray-600 text-white font-bold px-6 rounded-full">最初から</button>
+      </div>
+    </div>
+
+    <!-- アプリ本体（画面はJavaScriptで切り替える） -->
+    <section id="ad-app" aria-live="polite" class="scroll-mt-20 bg-gray-800 border border-gray-700 rounded-lg p-4 md:p-6"></section>
+
+    <div id="ad-slot-mid" class="ad-slot"></div>
+
+    <!-- 説明（docs/ANYTHING_DRAFT_COPY.md の下書き。運営者の一言は、運営者が書くまで載せない） -->
+    <article class="space-y-6 text-sm md:text-base text-gray-200 leading-relaxed">
+      <section>
+        <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">なんでもドラフトとは</h2>
+        <p>「なんでもドラフト」は、好きなお題を決めて、みんなで選択肢を取り合うドラフトゲームです。プロ野球のドラフト会議のように、順番に指名したり、同時に指名して重なったら抽選したりしながら、自分だけの「チーム」を作ります。最後はみんなで投票して、一番いいチームを決めます。</p>
+        <p class="mt-2">お題は野球に限りません。「好きな寿司ネタ」「無人島に持っていくもの」のような身近なテーマでも遊べます。スマホやパソコン1台を順番に回して遊ぶ形なので、登録やアプリのインストールは不要です。2人から8人まで参加できます。</p>
+      </section>
+      <section>
+        <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">遊び方（4ステップ）</h2>
+        <ol class="list-decimal list-inside space-y-1.5">
+          <li><span class="font-bold text-yellow-300">お題と参加者を決める</span>：お題を入力し、参加者の名前を登録します。テンプレートを使うと、選択肢がすぐにそろいます。</li>
+          <li><span class="font-bold text-yellow-300">選択肢を用意する</span>：1行に1つずつ入力します。テンプレートで読み込んだ選択肢も、あとから自由に足したり消したりできます。</li>
+          <li><span class="font-bold text-yellow-300">ドラフトする</span>：決めた巡の数だけ、順番に指名していきます。同時指名のときは「次の人に渡してください」の画面が出るので、ほかの人に見られないように選べます。</li>
+          <li><span class="font-bold text-yellow-300">投票して結果を見る</span>：3人以上のときは、自分以外のチームに1票ずつ投票して、一番いいチームを決めます。結果は画像にして保存・シェアできます。</li>
+        </ol>
+      </section>
+      <section>
+        <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">指名の方式：同時指名・ウェーバー・抽選の違い</h2>
+        <ul class="list-disc list-inside space-y-1.5">
+          <li><span class="font-bold text-yellow-300">同時指名</span>：その巡は全員が同じ候補の中から、ほかの人に見えないように選びます。全員が選び終わったら一斉に発表。誰とも重ならなければそのまま確定です。</li>
+          <li><span class="font-bold text-yellow-300">抽選</span>：同時指名で同じものを選んだ人がいたら、抽選で1人に決まります。外れた人は、残った候補からもう一度選び直します。人気の選択肢ほど、思い切って狙うか、確実に取れるものを選ぶかの駆け引きが生まれます。</li>
+          <li><span class="font-bold text-yellow-300">ウェーバー</span>：決まった順番で1人ずつ指名します。前の人が指名したものは候補から消えます。順番は1巡ごとに折り返すので、最初の巡で後ろだった人は、次の巡では先に選べます。</li>
+        </ul>
+      </section>
+      <section>
+        <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">お題のアイデア集</h2>
+        <p class="font-bold text-yellow-300">野球のお題</p>
+        <p>12球団の推し選手ドラフト（テンプレート）／応援歌ドラフト（テンプレート。好きな応援歌の選手を選ぶ）／地元球団の歴代名選手／好きな野球用語／一度は行ってみたい球場／かっこいいと思う背番号／心に残っているプロ野球の名場面／好きな変化球</p>
+        <p class="font-bold text-yellow-300 mt-2">野球以外のお題</p>
+        <p>好きな寿司ネタ／鍋に入れたい具／ラーメンのトッピング／無人島に持っていくもの／住んでみたい都道府県／最強の朝ごはんメニュー／子どものころ好きだった駄菓子／もう一度入りたい部活／理想の休日の過ごし方／冬に食べたいもの／旅行に持っていきたい便利グッズ／家族で行きたいお出かけ先</p>
+      </section>
+      <section>
+        <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">遊ぶときのコツ</h2>
+        <ul class="list-disc list-inside space-y-1.5">
+          <li><span class="font-bold text-yellow-300">飲み会で</span>：1台のスマホを回しながら遊べます。同時指名で重なったときの抽選が盛り上がりやすいので、人気が集まりそうな選択肢を多めに入れておくのがおすすめです。</li>
+          <li><span class="font-bold text-yellow-300">通話で画面を共有して</span>：司会者が画面を共有し、参加者の指名を聞きながら操作すれば、離れていても遊べます。同時指名は、参加者にチャットで司会者だけに送ってもらうと、ほかの人に知られずに選べます。</li>
+          <li><span class="font-bold text-yellow-300">家族で</span>：「今度の旅行先」や「晩ごはんの献立」のようなお題にすると、ゲームを楽しみながら、実際の予定決めにも使えます。小さな子どもと遊ぶときは、選択肢を少なめにして巡の数を減らすと、短い時間で終わります。</li>
+        </ul>
+      </section>
+      <section>
+        <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">よくある質問</h2>
+        <dl class="space-y-3">
+          <div><dt class="font-bold text-yellow-300">Q. 無料ですか？登録は必要ですか？</dt><dd>A. 無料で、登録も不要です。ページを開けばすぐに遊べます。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. 何人で遊べますか？</dt><dd>A. 2〜8人です。投票は3人以上のときに行います。2人のときは投票なしで結果を表示します。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. 入力したお題や選択肢は、どこかに送られますか？</dt><dd>A. 送られません。入力した内容は、遊んでいる端末の中だけで扱います。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. 途中で画面を閉じてしまいました。</dt><dd>A. 同じ端末・同じブラウザで開き直せば、続きから再開できます。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. 投票が同じ数になったら？</dt><dd>A. 同じ票数のチームが、すべて同率で優勝になります。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. テンプレートに選びたい選手がいません。</dt><dd>A. テンプレートで読み込んだあとに、選択肢を自由に追加できます。不要な選択肢は削除もできます。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. 応援歌ドラフトで、応援歌は流れますか？</dt><dd>A. 流れません。歌詞の表示もしていません。選手名だけを選ぶので、それぞれの応援歌を思い浮かべながら選んでください。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. 選択肢はいくつまで入れられますか？</dt><dd>A. 250個までです。1つの選択肢は30文字までです。巡の数は、選択肢の数÷人数（最大15巡）までです。</dd></div>
+          <div><dt class="font-bold text-yellow-300">Q. 使えない言葉はありますか？</dt><dd>A. 人を傷つける言葉、公式の発表に見える言葉、URL・メールアドレス・電話番号などは使えません（指名カードメーカーと同じきまりです）。</dd></div>
+        </dl>
+      </section>
+    </article>
+
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+  <footer class="text-center text-gray-400 text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ © 2026 dreamteam9.com
+  </footer>
+
+  <!-- 全員のチーム（ドラフト中にいつでも見られる） -->
+  <dialog id="ad-board" class="bg-gray-900 text-gray-100 border border-gray-600 rounded-lg p-0 w-[min(640px,calc(100vw-24px))] backdrop:bg-black/60" aria-labelledby="ad-board-title">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700 sticky top-0 bg-gray-900">
+      <h2 id="ad-board-title" class="font-black">全員のチーム</h2>
+      <button type="button" class="ad-btn px-4 text-sm font-bold bg-gray-700 hover:bg-gray-600 rounded-full" data-close>閉じる</button>
+    </div>
+    <div id="ad-board-body" class="p-4 max-h-[70vh] overflow-y-auto"></div>
+  </dialog>
+
+  <script src="js/pick-card-safety.js"></script>
+  <script type="module">
+    import { LIMITS, addOptions, maxRounds, snakeOrder, shuffle, resolveSimultaneous, tallyVotes, matchesQuery, remainingOptions } from './js/anything-draft-core.mjs';
+
+    // ★ なんでもドラフト（1台で遊ぶ版）。設計：非公開リポジトリ docs/ANYTHING_DRAFT_SOLO_DESIGN.md
+    //   ・Firebase・ログイン・通信は使わない。入力した文字は端末の中だけ（GA4にも送らない）
+    //   ・画面に出す文字は必ず textContent で入れる（innerHTML に入れない）
+    //   ・途中保存は localStorage の専用のキー（本体のゲームの dt9_ で始まる既存のキーとは重ならない名前）
+    //   ・使えない言葉のチェックは指名カードメーカーと同じ js/pick-card-safety.js（実在の選手名のチェックは入れない）
+    const SAVE_KEY = 'dt9_anything_v1';
+    const S = window.PickCardSafety;
+    const rng = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; };
+    const TEAMS = ['巨人', '阪神', 'DeNA', 'ヤクルト', '中日', '広島', 'オリックス', 'ロッテ', 'ソフトバンク', '楽天', '日本ハム', '西武'];
+    const TEMPLATES = {
+      free: { label: '自由にお題を作る', title: '' },
+      oshi: { label: '12球団の推し選手ドラフト', title: '12球団の推し選手ドラフト' },
+      cheer: { label: '応援歌ドラフト', title: '応援歌ドラフト' },
+    };
+    const track = (name, params) => { if (typeof gtag === 'function') gtag('event', name, params); };
+
+    // ---------- 小さな道具 ----------
+    const $ = id => document.getElementById(id);
+    function el(tag, attrs = {}, ...children) {
+      const e = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v == null || v === false) continue;
+        if (k === 'class') e.className = v;
+        else if (k === 'text') e.textContent = v;
+        else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+        else e.setAttribute(k, v === true ? '' : v);
+      }
+      for (const c of children.flat()) { if (c == null || c === false) continue; e.append(c instanceof Node ? c : document.createTextNode(String(c))); }
+      return e;
+    }
+    const btn = (text, onclick, cls = 'bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black') =>
+      el('button', { type: 'button', class: `ad-btn px-5 rounded-full ${cls}`, onclick }, text);
+    const clean = (s, max) => S.truncateChars(S.sanitize(s), max).trim();
+    // 1回だけ押せるボタン（連打で二重に進まないように）
+    function once(fn) { let done = false; return (...a) => { if (done) return; done = true; fn(...a); }; }
+
+    // ---------- 状態 ----------
+    let state = null;
+    function newState() {
+      return { version: 1, phase: 'setup', title: '', template: 'free', teams: [], players: ['', ''], options: [], mode: 'lottery', rounds: 3,
+        order: [], round: 1, picks: [], turn: 0, sub: {}, queue: [], redo: [], lastReveal: null, votes: {}, voteIdx: 0, msg: '' };
+    }
+    function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
+    function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+    function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.version === 1 ? s : null; } catch (e) { return null; } }
+
+    const app = $('ad-app');
+    let firstShow = true; // 開いた直後は、説明の位置から動かさない
+    function show(...nodes) { app.replaceChildren(...nodes); if (!firstShow) app.scrollIntoView({ block: 'start', behavior: 'smooth' }); firstShow = false; save(); }
+    const P = i => state.players[i];
+    const opt = id => state.options.find(o => o.id === id);
+    const teamOf = i => state.picks.filter(p => p.player === i).sort((a, b) => a.round - b.round);
+
+    // ---------- 1. 設定 ----------
+    let playerData = null; // テンプレート用：ゲームの選手データ（選手名と球団だけ）
+    function loadPlayerData() {
+      if (playerData) return Promise.resolve(playerData);
+      return fetch('index.html').then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.text(); }).then(html => {
+        const start = html.indexOf('const initialDatabase');
+        const end = start === -1 ? -1 : html.indexOf('];', start);
+        if (end === -1) throw new Error('parse-failed');
+        const players = new Function(html.slice(start, end + 2) + '; return initialDatabase;')();
+        playerData = players.map(p => ({ name: p.name, team: p.team }));
+        return playerData;
+      });
+    }
+
+    function renderSetup() {
+      const errors = el('div', { class: 'space-y-1 text-sm font-bold text-red-300', role: 'alert' });
+      const counter = (input, max) => {
+        const c = el('span', { class: 'text-xs text-gray-400 font-normal' });
+        const upd = () => { c.textContent = `${S.countChars(input.value)}/${max}`; };
+        input.addEventListener('input', () => {
+          const v = S.sanitizeTyping(input.value);
+          if (v !== input.value || S.countChars(v) > max) input.value = S.truncateChars(v, max);
+          upd();
+        });
+        upd(); return c;
+      };
+
+      // お題
+      const title = el('input', { class: 'ad-field', id: 'ad-title', type: 'text', autocomplete: 'off', placeholder: '例：好きな寿司ネタ' });
+      title.value = state.title;
+
+      // テンプレート
+      const tplWrap = el('div', { class: 'flex flex-wrap gap-2' });
+      const teamWrap = el('div', { class: 'grid grid-cols-3 sm:grid-cols-4 gap-1 text-sm' });
+      const teamBox = el('div', { class: 'space-y-2' + (state.template === 'free' ? ' hidden-screen' : '') },
+        el('p', { class: 'text-xs text-gray-400', text: '読み込む球団を選んでください（選手名だけを使います）' }), teamWrap,
+        btn('選んだ球団の選手を選択肢に読み込む', () => {
+          const sel = TEAMS.filter(t => teamWrap.querySelector(`input[value="${t}"]`).checked);
+          if (!sel.length) { setError('球団を1つ以上選んでください'); return; }
+          loadPlayerData().then(list => {
+            let res = { options: state.options, dupes: 0, overLimit: 0 };
+            sel.forEach(t => { res = addOptions(res.options, list.filter(p => p.team === t).map(p => clean(p.name, LIMITS.optionMax)), { team: t }); });
+            state.options = res.options; state.teams = sel;
+            setError(''); renderOptions(`${sel.length}球団の選手を読み込みました` + (res.dupes ? `（重複${res.dupes}件は除きました）` : '') + (res.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた分は入れていません）` : ''));
+          }).catch(() => setError('選手の一覧を読み込めませんでした。時間をおいてもう一度お試しください'));
+        }, 'bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm'));
+      TEAMS.forEach(t => teamWrap.append(el('label', { class: 'flex items-center gap-1 py-1' }, el('input', { type: 'checkbox', value: t, checked: state.teams.includes(t) }), t)));
+      Object.entries(TEMPLATES).forEach(([k, v]) => {
+        const r = el('input', { type: 'radio', name: 'ad-tpl', value: k, checked: state.template === k });
+        r.addEventListener('change', () => {
+          state.template = k; teamBox.classList.toggle('hidden-screen', k === 'free');
+          if (v.title && !title.value) { title.value = v.title; title.dispatchEvent(new Event('input')); }
+        });
+        tplWrap.append(el('label', { class: 'flex items-center gap-2 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm' }, r, v.label));
+      });
+
+      // 参加者
+      const playersBox = el('div', { class: 'space-y-2' });
+      function renderPlayers() {
+        playersBox.replaceChildren();
+        state.players.forEach((name, i) => {
+          const inp = el('input', { class: 'ad-field', type: 'text', autocomplete: 'off', 'aria-label': `参加者${i + 1}の名前`, placeholder: `参加者${i + 1}` });
+          inp.value = name;
+          const c = counter(inp, LIMITS.nameMax);
+          inp.addEventListener('input', () => { state.players[i] = inp.value; });
+          const del = state.players.length > LIMITS.minPlayers ? btn('×', () => { state.players.splice(i, 1); renderPlayers(); updateRounds(); }, 'bg-gray-700 hover:bg-gray-600 text-white text-sm w-11 px-0') : null;
+          if (del) del.setAttribute('aria-label', `参加者${i + 1}を外す`);
+          playersBox.append(el('div', { class: 'flex items-center gap-2' }, el('div', { class: 'flex-1' }, inp), c, del));
+        });
+        if (state.players.length < LIMITS.maxPlayers) playersBox.append(btn('＋ 参加者を足す', () => { state.players.push(''); renderPlayers(); updateRounds(); }, 'bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold'));
+      }
+      renderPlayers();
+
+      // 選択肢
+      const ta = el('textarea', { class: 'ad-field', rows: '4', id: 'ad-opt-input', placeholder: '1行に1つずつ（貼り付けもできます）' });
+      const optMsg = el('p', { class: 'text-xs text-green-300', role: 'status' });
+      const optList = el('div', { class: 'space-y-2' });
+      const optCount = el('span', { class: 'text-xs text-gray-400 font-normal' });
+      function renderOptions(message) {
+        optMsg.textContent = message || '';
+        optCount.textContent = `${state.options.length}/${LIMITS.optionsMax}個`;
+        optList.replaceChildren();
+        const groups = new Map();
+        state.options.forEach(o => { const k = o.team || ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); });
+        for (const [team, list] of groups) {
+          const head = el('div', { class: 'flex items-center justify-between text-xs text-gray-400' }, el('span', { text: team || '入力した選択肢' }),
+            el('button', { type: 'button', class: 'underline px-2 py-2', onclick: () => { state.options = state.options.filter(o => (o.team || '') !== team); if (team) state.teams = state.teams.filter(t => t !== team); renderOptions(''); } }, `まとめて外す（${list.length}個）`));
+          const chips = el('ul', { class: 'flex flex-wrap gap-1.5' });
+          list.forEach(o => chips.append(el('li', { class: 'flex items-center bg-gray-900 border border-gray-600 rounded-full pl-3 text-sm' }, el('span', { text: o.label }),
+            el('button', { type: 'button', class: 'w-9 h-9 text-gray-300 hover:text-white', 'aria-label': `${o.label}を外す`, onclick: () => { state.options = state.options.filter(x => x.id !== o.id); renderOptions(''); } }, '×'))));
+          optList.append(el('div', { class: 'space-y-1' }, head, chips));
+        }
+        updateRounds();
+      }
+
+      // 方式と巡の数
+      const modeBox = el('div', { class: 'flex flex-wrap gap-2' });
+      [['lottery', '同時指名（重なったら抽選）'], ['waiver', 'ウェーバー（順番に1人ずつ）']].forEach(([k, label]) => {
+        const r = el('input', { type: 'radio', name: 'ad-mode', value: k, checked: state.mode === k });
+        r.addEventListener('change', () => { state.mode = k; });
+        modeBox.append(el('label', { class: 'flex items-center gap-2 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm' }, r, label));
+      });
+      const roundsSel = el('select', { class: 'ad-field', id: 'ad-rounds' });
+      const roundsNote = el('p', { class: 'text-xs text-gray-400' });
+      function updateRounds() {
+        const mx = maxRounds(state.options.length, state.players.length);
+        roundsSel.replaceChildren(...Array.from({ length: Math.max(mx, 0) }, (_, i) => el('option', { value: i + 1, selected: i + 1 === Math.min(state.rounds, mx) }, `${i + 1}巡`)));
+        roundsSel.disabled = mx === 0;
+        roundsNote.textContent = mx === 0 ? `選択肢が人数（${state.players.length}人）より少ないため、まだ始められません` : `最大${mx}巡（選択肢${state.options.length}個 ÷ ${state.players.length}人、最大${LIMITS.roundsMax}巡）`;
+      }
+      roundsSel.addEventListener('change', () => { state.rounds = Number(roundsSel.value); });
+
+      function setError(msg) { errors.replaceChildren(...(msg ? [el('p', { text: msg })] : [])); if (msg) errors.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+
+      const addBtn = btn('選択肢に追加', () => {
+        const lines = ta.value.split(/\r?\n/).map(l => clean(l, LIMITS.optionMax)).filter(Boolean);
+        const bad = lines.filter(l => S.check(l, null));
+        if (bad.length) { setError(`使えない言葉が含まれています：${bad.slice(0, 3).join('、')}${bad.length > 3 ? ` ほか${bad.length - 3}件` : ''}`); return; }
+        const res = addOptions(state.options, lines);
+        state.options = res.options; ta.value = ''; setError('');
+        renderOptions(`${lines.length - res.dupes - res.overLimit}個を追加しました` + (res.dupes ? `（重複${res.dupes}件は除きました）` : '') + (res.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた${res.overLimit}件は入れていません）` : ''));
+      }, 'bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm');
+
+      const startBtn = el('button', { type: 'button', class: 'ad-btn w-full rounded-full bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black text-lg', id: 'ad-start' }, 'ドラフトを始める');
+      startBtn.addEventListener('click', () => {
+        state.title = clean(title.value, LIMITS.titleMax);
+        state.players = state.players.map(n => clean(n, LIMITS.nameMax));
+        if (!state.title) return setError('お題を入力してください');
+        if (state.players.some(n => !n)) return setError('参加者の名前をすべて入力してください');
+        const keys = state.players.map(n => S.normalize(n) || n);
+        if (new Set(keys).size !== keys.length) return setError('参加者の名前が重なっています。区別できる名前にしてください');
+        const bad = [state.title, ...state.players].filter(t => S.check(t, null));
+        if (bad.length) return setError(`使えない言葉が含まれています：${bad.join('、')}`);
+        const badOpt = state.options.filter(o => S.check(o.label, null));
+        if (badOpt.length) return setError(`使えない言葉の選択肢があります：${badOpt.slice(0, 3).map(o => o.label).join('、')}`);
+        const mx = maxRounds(state.options.length, state.players.length);
+        if (mx === 0) return setError(`選択肢を${state.players.length}個以上にしてください（いま${state.options.length}個）`);
+        state.rounds = Math.min(Number(roundsSel.value) || 1, mx);
+        startDraft();
+      });
+
+      const field = (label, ...kids) => el('div', { class: 'space-y-2' }, el('p', { class: 'text-sm font-bold text-yellow-300 flex justify-between gap-2' }, ...[].concat(label)), ...kids);
+      const titleCount = counter(title, LIMITS.titleMax);
+      show(el('div', { class: 'space-y-6' },
+        el('h2', { class: 'text-lg font-black', text: 'ドラフトの設定' }),
+        field(['お題', titleCount], el('label', { for: 'ad-title', class: 'sr-only', text: 'お題' }), title),
+        field('テンプレート', tplWrap, teamBox),
+        field(`参加者（${LIMITS.minPlayers}〜${LIMITS.maxPlayers}人）`, playersBox),
+        field(['選択肢', optCount], el('label', { for: 'ad-opt-input', class: 'sr-only', text: '選択肢を1行に1つずつ' }), ta, addBtn, optMsg, optList),
+        field('指名の方式', modeBox),
+        field('巡の数（1人が取る数）', el('label', { for: 'ad-rounds', class: 'sr-only', text: '巡の数' }), roundsSel, roundsNote),
+        errors, startBtn));
+      renderOptions('');
+    }
+
+    // ---------- 2. ドラフト ----------
+    function startDraft() {
+      state.phase = 'draft';
+      state.order = shuffle(state.players.map((_, i) => i), rng);
+      state.round = 1; state.picks = []; state.votes = {}; state.voteIdx = 0;
+      track('anything_start', { team_count: state.players.length, draft_mode: state.mode, target: state.template });
+      beginRound();
+    }
+    function beginRound() {
+      state.sub = {}; state.lastReveal = null;
+      if (state.mode === 'waiver') { state.queue = snakeOrder(state.order, state.round); state.turn = 0; renderWaiver(); }
+      else { state.queue = state.order.slice(); state.turn = 0; state.redo = []; renderHandoff(); }
+    }
+    function nextRoundOrFinish() {
+      if (state.round >= state.rounds) { finishDraft(); return; }
+      state.round++; beginRound();
+    }
+    const roundHead = (extra) => el('div', { class: 'flex items-center justify-between gap-2 flex-wrap' },
+      el('p', { class: 'text-sm text-gray-300' }, el('span', { class: 'font-black text-yellow-400', text: `第${state.round}巡` }), ` ／ 全${state.rounds}巡 ・ ${state.mode === 'waiver' ? 'ウェーバー' : '同時指名'}`, extra ? ` ・ ${extra}` : ''),
+      btn('全員のチーム', openBoard, 'bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold'));
+
+    // 選ぶ画面（検索・球団の絞り込み・指名ボタン）
+    function chooser(available, onPick, label) {
+      let q = '', team = '';
+      const listBox = el('ul', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-2' });
+      const count = el('p', { class: 'text-xs text-gray-400', 'aria-live': 'polite' });
+      const pick = once(id => onPick(id));
+      function draw() {
+        const items = available.filter(o => (!team || o.team === team) && matchesQuery(o.label, q));
+        count.textContent = `${items.length}個`;
+        listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left bg-gray-900 hover:bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 flex items-center justify-between gap-2', onclick: () => pick(o.id), 'aria-label': `${o.label}を指名` },
+          el('span', {}, el('span', { class: 'font-bold', text: o.label }), o.team ? el('span', { class: 'block text-[11px] text-gray-400', text: o.team }) : null),
+          el('span', { class: 'shrink-0 text-xs font-black text-yellow-300', text: '指名' })))));
+        if (!items.length) listBox.append(el('li', { class: 'text-sm text-gray-400', text: '条件に合う選択肢がありません' }));
+      }
+      const tools = [];
+      if (available.length > 30) {
+        const s = el('input', { class: 'ad-field', type: 'search', placeholder: '選択肢を探す', 'aria-label': '選択肢を探す', autocomplete: 'off' });
+        s.addEventListener('input', () => { q = s.value; draw(); });
+        tools.push(s);
+      }
+      const teams = [...new Set(available.map(o => o.team).filter(Boolean))];
+      if (teams.length > 1) {
+        const wrap = el('div', { class: 'flex flex-wrap gap-1.5' });
+        const chip = (t, label) => el('button', { type: 'button', class: 'px-3 py-2 rounded-full text-xs font-bold border border-gray-600', 'aria-pressed': String(team === t), onclick: () => { team = t; [...wrap.children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t))); draw(); }, 'data-t': t }, label);
+        wrap.append(chip('', 'すべて'), ...teams.map(t => chip(t, t)));
+        tools.push(wrap);
+      }
+      draw();
+      return el('div', { class: 'space-y-3' }, label ? el('p', { class: 'text-sm text-gray-300', text: label }) : null, ...tools, count, listBox);
+    }
+
+    // ウェーバー：今の番の人が選ぶ
+    function renderWaiver() {
+      const who = state.queue[state.turn];
+      const avail = remainingOptions(state.options, state.picks);
+      show(el('div', { class: 'space-y-4' }, roundHead(`${state.turn + 1}/${state.queue.length}人目`),
+        el('p', { class: 'text-xl font-black text-center' }, el('span', { class: 'text-yellow-400', text: P(who) }), ' さんの番です'),
+        chooser(avail, id => {
+          state.picks.push({ round: state.round, player: who, optionId: id, via: 'waiver' });
+          state.msg = `${P(who)} さんが「${opt(id).label}」を指名しました`;
+          state.turn++;
+          if (state.turn >= state.queue.length) nextRoundOrFinish(); else renderWaiver();
+        }),
+        state.msg ? el('p', { class: 'text-xs text-gray-400 text-center', text: `直前：${state.msg}` }) : null));
+    }
+
+    // 同時指名：端末を渡す画面（選択肢は見せない）
+    function renderHandoff() {
+      const list = state.redo.length ? state.redo : state.queue;
+      if (state.turn >= list.length) { reveal(); return; }
+      const who = list[state.turn];
+      show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(state.redo.length ? '選び直し' : null),
+        el('p', { class: 'text-lg' }, el('span', { class: 'text-2xl font-black text-yellow-400', text: P(who) }), ' さんに渡してください'),
+        el('p', { class: 'text-xs text-gray-400', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
+        btn(`${P(who)} です（選ぶ）`, once(() => renderSecretPick(who)), 'bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black text-lg px-8')));
+    }
+    function renderSecretPick(who) {
+      const avail = remainingOptions(state.options, state.picks);
+      show(el('div', { class: 'space-y-4' }, roundHead(null),
+        el('p', { class: 'text-lg font-black text-center' }, el('span', { class: 'text-yellow-400', text: P(who) }), ' さんが選ぶ番です（ほかの人には見せないでください）'),
+        chooser(avail, id => {
+          state.sub[who] = id; state.turn++;
+          show(el('div', { class: 'space-y-6 text-center py-8' },
+            el('p', { class: 'text-xl font-black', text: '選びました' }),
+            el('p', { class: 'text-sm text-gray-300', text: '何を選んだかは、全員がそろってから発表します。次の人に渡してください。' }),
+            btn('次へ', once(renderHandoff))));
+        })));
+    }
+    // 発表：重ならなければ確定、重なったら抽選
+    function reveal() {
+      const res = resolveSimultaneous(state.sub, rng);
+      res.confirmed.forEach(c => state.picks.push({ round: state.round, player: c.player, optionId: c.optionId, via: state.redo.length ? 'redo' : c.via }));
+      state.lastReveal = { sub: { ...state.sub }, lotteries: res.lotteries };
+      state.sub = {}; state.redo = res.losers; state.turn = 0;
+      const rows = Object.entries(state.lastReveal.sub).map(([p, id]) => {
+        const lot = res.lotteries.find(l => l.optionId === id);
+        const status = !lot ? '確定' : (lot.winner === Number(p) ? '抽選で獲得' : '抽選で外れ');
+        return el('li', { class: 'flex items-center justify-between gap-2 bg-gray-900 border border-gray-700 rounded px-3 py-2' },
+          el('span', {}, el('span', { class: 'font-bold', text: P(Number(p)) }), '：', el('span', { text: opt(id).label })),
+          el('span', { class: `text-xs font-black ${status === '抽選で外れ' ? 'text-gray-400' : 'text-green-300'}`, text: status }));
+      });
+      const lotteries = res.lotteries.map(l => el('div', { class: 'ad-anim bg-gray-900 border-2 border-yellow-500 rounded-lg p-4 text-center space-y-1' },
+        el('p', { class: 'text-xs text-gray-400', text: `「${opt(l.optionId).label}」に${l.players.length}人が重なりました：${l.players.map(P).join('・')}` }),
+        el('p', { class: 'text-lg font-black' }, '抽選の結果、', el('span', { class: 'text-yellow-400', text: P(l.winner) }), ' さんが獲得')));
+      const next = state.redo.length
+        ? btn(`外れた人が選び直す（${state.redo.map(P).join('・')}）`, once(renderHandoff))
+        : btn(state.round >= state.rounds ? '結果へ進む' : `第${state.round + 1}巡へ`, once(nextRoundOrFinish));
+      show(el('div', { class: 'space-y-4' }, roundHead('発表'), el('ul', { class: 'space-y-2' }, ...rows), ...lotteries, el('div', { class: 'text-center' }, next)));
+    }
+
+    // 全員のチーム
+    function teamList(i, opts = {}) {
+      const items = teamOf(i).map(p => el('li', { class: 'text-sm' }, el('span', { class: 'text-gray-400 mr-1', text: `${p.round}.` }), el('span', { text: opt(p.optionId).label })));
+      return el('div', { class: `bg-gray-800 border ${opts.winner ? 'border-yellow-400' : 'border-gray-700'} rounded-lg p-3` },
+        el('p', { class: 'font-black mb-1' }, opts.winner ? el('span', { class: 'text-yellow-400 mr-1', text: '優勝' }) : null, el('span', { text: P(i) }), opts.votes != null ? el('span', { class: 'text-xs text-gray-400 ml-2', text: `${opts.votes}票` }) : null),
+        el('ol', { class: 'space-y-0.5' }, ...(items.length ? items : [el('li', { class: 'text-xs text-gray-400', text: 'まだありません' })])));
+    }
+    function openBoard() {
+      $('ad-board-body').replaceChildren(el('div', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, ...state.players.map((_, i) => teamList(i))));
+      $('ad-board').showModal();
+    }
+    $('ad-board').addEventListener('click', e => { if (e.target.closest('[data-close]')) $('ad-board').close(); });
+
+    // ---------- 3. 投票 ----------
+    function finishDraft() {
+      track('anything_complete', { team_count: state.players.length, draft_mode: state.mode, target: state.template });
+      if (state.players.length >= 3) { state.phase = 'vote'; state.voteIdx = 0; state.votes = {}; renderVoteHandoff(); }
+      else { state.phase = 'result'; renderResult(); }
+    }
+    function renderVoteHandoff() {
+      if (state.voteIdx >= state.players.length) { state.phase = 'result'; renderResult(); return; }
+      const who = state.voteIdx;
+      show(el('div', { class: 'space-y-6 text-center py-6' },
+        el('p', { class: 'text-sm text-gray-300', text: `投票 ${who + 1}/${state.players.length}人目` }),
+        el('p', { class: 'text-lg' }, el('span', { class: 'text-2xl font-black text-yellow-400', text: P(who) }), ' さんに渡してください'),
+        btn(`${P(who)} です（投票する）`, once(() => renderVote(who)), 'bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black text-lg px-8')));
+    }
+    function renderVote(who) {
+      const vote = once(t => { state.votes[who] = t; state.voteIdx++; renderVoteHandoff(); });
+      show(el('div', { class: 'space-y-4' },
+        el('p', { class: 'text-lg font-black text-center' }, el('span', { class: 'text-yellow-400', text: P(who) }), ' さん：一番いいと思うチームに1票（自分以外）'),
+        el('div', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, ...state.players.map((_, i) => i === who ? null :
+          el('div', { class: 'space-y-2' }, teamList(i), btn(`${P(i)} さんに投票`, () => vote(i), 'bg-blue-600 hover:bg-blue-500 text-white font-bold w-full'))))));
+    }
+
+    // ---------- 4. 結果 ----------
+    function results() {
+      if (state.players.length < 3) return { counts: null, winners: [] };
+      return tallyVotes(state.votes, state.players.length);
+    }
+    function renderResult() {
+      const { counts, winners } = results();
+      const head = winners.length
+        ? el('p', { class: 'ad-anim text-2xl font-black text-center' }, el('span', { class: 'text-yellow-400', text: winners.length > 1 ? '同率優勝' : '優勝' }), '：', el('span', { text: winners.map(P).join('・') }))
+        : el('p', { class: 'text-lg font-black text-center', text: state.players.length < 3 ? 'ドラフト終了（2人のときは投票なし）' : 'ドラフト終了（投票がありませんでした）' });
+      const fmt = { v: 'x' };
+      const preview = el('img', { class: 'w-full rounded border border-gray-600 hidden-screen', alt: '結果の画像のプレビュー' });
+      const imgErr = el('p', { class: 'text-sm font-bold text-red-300', role: 'alert' });
+      const fmtBox = el('div', { class: 'flex gap-2 justify-center' });
+      [['x', '横長（X用）'], ['story', '縦長（ストーリー用）']].forEach(([k, label]) => {
+        const r = el('input', { type: 'radio', name: 'ad-fmt', value: k, checked: k === 'x' });
+        r.addEventListener('change', () => { fmt.v = k; preview.classList.add('hidden-screen'); last = null; });
+        fmtBox.append(el('label', { class: 'flex items-center gap-2 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm' }, r, label));
+      });
+      let last = null;
+      const make = () => {
+        const texts = [state.title, ...state.players, ...state.picks.map(p => opt(p.optionId).label)];
+        if (texts.some(t => S.check(t, null))) { imgErr.textContent = '使えない言葉が含まれているため、画像を作れません'; return null; }
+        imgErr.textContent = '';
+        const url = buildImage(fmt.v, counts, winners).toDataURL('image/png');
+        last = { url, format: fmt.v }; preview.src = url; preview.classList.remove('hidden-screen');
+        return last;
+      };
+      const saveBtn = btn('画像を作って保存', () => {
+        const r = last && last.format === fmt.v ? last : make(); if (!r) return;
+        track('anything_share', { method: 'image_save', format: r.format, target: state.template });
+        const blob = dataURLtoBlob(r.url); const name = `ai_draft_anything_${r.format}.png`;
+        const file = new File([blob], name, { type: 'image/png' });
+        if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).catch(() => {}); return; }
+        const a = document.createElement('a'); a.href = r.url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      }, 'bg-blue-600 hover:bg-blue-500 text-white font-black');
+      const xBtn = btn('𝕏でシェア', () => {
+        track('anything_share', { method: 'x_share', format: fmt.v, target: state.template });
+        // シェアの文章には、入力したお題・名前・選択肢を入れない（画像は保存して投稿に添えてもらう）
+        const params = new URLSearchParams({ text: 'AIドラフトの「なんでもドラフト」で、みんなでドラフトしてみた', url: 'https://dreamteam9.com/anything-draft.html?utm_source=x&utm_medium=share&utm_campaign=anything', hashtags: 'AIドラフト,なんでもドラフト' });
+        window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
+      }, 'bg-black hover:bg-gray-900 border border-gray-600 text-white font-black');
+      show(el('div', { class: 'space-y-5' },
+        el('p', { class: 'text-xs text-gray-400 text-center', text: 'お題' }), el('p', { class: 'text-xl font-black text-center -mt-4', text: state.title }),
+        head,
+        el('div', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, ...state.players.map((_, i) => teamList(i, { winner: winners.includes(i), votes: counts ? counts[i] : null }))),
+        el('div', { class: 'space-y-3 border-t border-gray-700 pt-4' }, el('p', { class: 'text-sm font-bold text-yellow-300 text-center', text: '結果を画像にする' }), fmtBox,
+          el('div', { class: 'flex flex-col sm:flex-row gap-2 justify-center' }, btn('画像を作る', make, 'bg-gray-700 hover:bg-gray-600 text-white font-bold'), saveBtn, xBtn), imgErr, preview,
+          el('p', { class: 'text-[11px] text-gray-400 text-center', text: '「画像を作って保存」で共有メニューが開いたら「写真に保存」などを選んでください。𝕏でシェアするときは、保存した画像を投稿に添えてください（シェアの文章にお題や名前は入りません）。' })),
+        el('div', { class: 'flex flex-wrap gap-2 justify-center border-t border-gray-700 pt-4' },
+          btn('同じ設定でもう一度', () => { const keep = { title: state.title, template: state.template, teams: state.teams, players: state.players, options: state.options, mode: state.mode, rounds: state.rounds }; state = Object.assign(newState(), keep); startDraft(); }, 'bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-black'),
+          btn('設定を変える', () => { const keep = { title: state.title, template: state.template, teams: state.teams, players: state.players, options: state.options, mode: state.mode, rounds: state.rounds }; state = Object.assign(newState(), keep); renderSetup(); }, 'bg-gray-700 hover:bg-gray-600 text-white font-bold'),
+          btn('最初から', () => { clearSave(); state = newState(); renderSetup(); }, 'bg-gray-700 hover:bg-gray-600 text-white font-bold'))));
+    }
+
+    // ---------- 結果の画像（横長 1200×675・縦長 1080×1920。絵文字・写真・ロゴは入れない） ----------
+    function dataURLtoBlob(dataUrl) {
+      const [header, base64] = dataUrl.split(',');
+      const mime = /:(.*?);/.exec(header)[1];
+      const bin = atob(base64); const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], { type: mime });
+    }
+    function fit(ctx, text, weight, size, maxW, min) {
+      ctx.font = `${weight} ${size}px sans-serif`;
+      while (ctx.measureText(text).width > maxW && size > min) { size -= 1; ctx.font = `${weight} ${size}px sans-serif`; }
+      return size;
+    }
+    function buildImage(format, counts, winners) {
+      const story = format === 'story';
+      const W = story ? 1080 : 1200, H = story ? 1920 : 675;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#0b1328'; ctx.fillRect(0, 0, W, H);
+      ctx.textBaseline = 'middle';
+      const M = story ? 40 : 32;
+      // 上の帯：題字（本物の指名と誤解されないよう「遊び」と明記）
+      const topH = story ? 110 : 64;
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, topH);
+      ctx.fillStyle = '#facc15'; ctx.textAlign = 'left';
+      fit(ctx, 'AIドラフト なんでもドラフト（遊び）', 900, story ? 40 : 28, W - 2 * M, 16);
+      ctx.fillText('AIドラフト なんでもドラフト（遊び）', M, topH / 2, W - 2 * M);
+      // お題と優勝
+      let y = topH + (story ? 80 : 50);
+      ctx.fillStyle = '#ffffff';
+      fit(ctx, `お題：${state.title}`, 900, story ? 60 : 38, W - 2 * M, 20);
+      ctx.fillText(`お題：${state.title}`, M, y, W - 2 * M);
+      y += story ? 80 : 50;
+      const win = winners.length ? `${winners.length > 1 ? '同率優勝' : '優勝'}：${winners.map(P).join('・')}` : (state.players.length < 3 ? '（2人のときは投票なし）' : '（投票なし）');
+      ctx.fillStyle = '#facc15';
+      fit(ctx, win, 900, story ? 46 : 30, W - 2 * M, 16);
+      ctx.fillText(win, M, y, W - 2 * M);
+      // チームの一覧
+      const footH = story ? 90 : 52;
+      const top = y + (story ? 60 : 36), bottom = H - footH - (story ? 30 : 16);
+      const n = state.players.length;
+      const cols = story ? (n <= 4 ? 1 : 2) : (n <= 2 ? 2 : n <= 6 ? 3 : 4);
+      const rowsN = Math.ceil(n / cols);
+      const gap = story ? 20 : 12;
+      const cw = (W - 2 * M - gap * (cols - 1)) / cols, ch = (bottom - top - gap * (rowsN - 1)) / rowsN;
+      state.players.forEach((_, i) => {
+        const x = M + (i % cols) * (cw + gap), yy = top + Math.floor(i / cols) * (ch + gap);
+        const isWin = winners.includes(i);
+        ctx.fillStyle = isWin ? 'rgba(250,204,21,0.14)' : 'rgba(255,255,255,0.06)';
+        ctx.beginPath(); ctx.roundRect(x, yy, cw, ch, 10); ctx.fill();
+        if (isWin) { ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.stroke(); }
+        const pad = story ? 20 : 14;
+        const nameSize = story ? 40 : 24;
+        ctx.textAlign = 'left'; ctx.fillStyle = isWin ? '#facc15' : '#ffffff';
+        const label = P(i) + (counts ? `（${counts[i]}票）` : '');
+        fit(ctx, label, 900, nameSize, cw - 2 * pad, 12);
+        ctx.fillText(label, x + pad, yy + pad + nameSize / 2, cw - 2 * pad);
+        const picks = teamOf(i);
+        const lineH = Math.max(14, Math.min(story ? 46 : 28, (ch - pad * 2 - nameSize - 8) / Math.max(1, picks.length)));
+        let ly = yy + pad + nameSize + 8 + lineH / 2;
+        ctx.fillStyle = '#e5e7eb';
+        const maxLines = Math.floor((ch - pad * 2 - nameSize - 8) / lineH);
+        picks.slice(0, maxLines).forEach((p, k) => {
+          const t = (k === maxLines - 1 && picks.length > maxLines) ? `ほか${picks.length - maxLines + 1}個` : `${p.round}. ${opt(p.optionId).label}`;
+          fit(ctx, t, 700, Math.floor(lineH * 0.78), cw - 2 * pad, 10);
+          ctx.fillText(t, x + pad, ly, cw - 2 * pad); ly += lineH;
+        });
+      });
+      // 下の帯
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, H - footH, W, footH);
+      ctx.fillStyle = '#facc15'; ctx.font = `900 ${story ? 34 : 22}px sans-serif`; ctx.textAlign = 'left';
+      ctx.fillText('AIドラフトで作成', M, H - footH / 2, W / 2);
+      ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'right';
+      ctx.fillText('dreamteam9.com', W - M, H - footH / 2, W / 2 - M);
+      return c;
+    }
+
+    // ---------- 再開 ----------
+    function resume() {
+      if (state.phase === 'setup') renderSetup();
+      else if (state.phase === 'draft') {
+        if (state.mode === 'waiver') renderWaiver();
+        else if (state.lastReveal && !Object.keys(state.sub).length && state.turn === 0 && !state.redo.length) nextRoundOrFinish();
+        else renderHandoff(); // 選んだ内容は、発表までは選んだ人の分だけ保存されている。途中からは「渡す」画面から続ける
+      } else if (state.phase === 'vote') renderVoteHandoff();
+      else renderResult();
+    }
+    const saved = load();
+    if (saved && saved.phase !== 'setup') {
+      $('ad-resume-title').textContent = saved.title || 'お題なし';
+      $('ad-resume').classList.remove('hidden-screen');
+      $('ad-resume-yes').addEventListener('click', () => { state = saved; $('ad-resume').classList.add('hidden-screen'); resume(); });
+      $('ad-resume-no').addEventListener('click', () => { clearSave(); state = newState(); $('ad-resume').classList.add('hidden-screen'); renderSetup(); });
+      state = newState(); app.replaceChildren(el('p', { class: 'text-sm text-gray-400 text-center', text: '上のボタンから選んでください' }));
+    } else {
+      state = saved || newState();
+      renderSetup();
+    }
+  </script>
+</body>
+</html>
