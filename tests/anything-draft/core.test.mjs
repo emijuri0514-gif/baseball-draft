@@ -2,19 +2,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { groupSubmissions, setupLottery, takeEnvelope, nextDrawer, openLottery, LIMITS, optionKey, addOptions, maxRounds, snakeOrder, shuffle, resolveSimultaneous, tallyVotes, matchesQuery, remainingOptions } from '../../js/anything-draft-core.mjs';
+import { PRESETS, validateState, SAVE_VERSION, groupSubmissions, setupLottery, takeEnvelope, nextDrawer, openLottery, LIMITS, optionKey, addOptions, maxRounds, snakeOrder, shuffle, resolveSimultaneous, tallyVotes, matchesQuery, remainingOptions } from '../../js/anything-draft-core.mjs';
 
 // 決まった順に値を返す乱数（テスト用）
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
 
-test('重複の判定は全角半角・カタカナひらがな・空白・記号の違いを無視する', () => {
-  assert.equal(optionKey('ﾏｸﾞﾛ'), optionKey('まぐろ'));
-  assert.equal(optionKey('大 トロ!'), optionKey('大トロ'));
-  assert.equal(optionKey('ＡＢＣ'), optionKey('abc'));
+test('重複の判定は全角・半角と空白の違いだけを同じとみなす（記号・大小・ひらがなとカタカナは別）', () => {
+  assert.equal(optionKey('ﾏｸﾞﾛ'), optionKey('マグロ'));
+  assert.equal(optionKey('ＡＢＣ　１'), optionKey('ABC1'));
+  assert.equal(optionKey('大 トロ'), optionKey('大トロ'));
+  assert.notEqual(optionKey('A-1'), optionKey('A1'));
+  assert.notEqual(optionKey('大トロ!'), optionKey('大トロ'));
+  assert.notEqual(optionKey('まぐろ'), optionKey('マグロ'));
+  assert.notEqual(optionKey('ABC'), optionKey('abc'));
 });
 
 test('選択肢を足す：重複・空・上限を数える', () => {
-  let r = addOptions([], ['まぐろ', 'マグロ', '  ', 'いくら']);
+  let r = addOptions([], ['まぐろ', 'まぐろ ', '  ', 'いくら']);
   assert.deepEqual(r.options.map(o => o.label), ['まぐろ', 'いくら']);
   assert.equal(r.dupes, 1); assert.equal(r.empty, 1);
   assert.deepEqual(r.options.map(o => o.id), [1, 2]);
@@ -123,5 +127,76 @@ test('封筒の抽選：順番に1つずつ取り、全員が取ったら一斉�
     assert.equal(res.winner, lot.taken[lot.winEnv]);
     assert.deepEqual(res.losers.sort(), [0, 1, 3].filter(p => p !== res.winner).sort());
     assert.equal(openLottery(lot), null, '2回は開けない');
+  }
+});
+
+test('選択肢を足す：追加できなかった入力（上限超え・記号だけ）を返す（入力欄に残すため）', () => {
+  const many = Array.from({ length: 249 }, (_, i) => `x${i}`);
+  const r = addOptions(addOptions([], many).options, ['🍣', 'い', '!!', ' ']);
+  assert.equal(r.added, 1, '記号・絵文字だけの候補も、ほかと重ならなければ入る');
+  assert.equal(r.overLimit, 2);
+  assert.equal(r.empty, 1);
+  assert.deepEqual(r.leftover, ['い', '!!']);
+});
+
+// ---------- 途中保存のデータの確かめ ----------
+const base = () => ({ version: 2, phase: 'setup', title: '寿司', template: 'free', teams: [], players: ['あ', 'い', 'う'], options: [1, 2, 3, 4, 5, 6].map(i => ({ id: i, label: `候補${i}` })), mode: 'lottery', rounds: 2,
+  order: [], round: 1, picks: [], turn: 0, sub: {}, queue: [], redo: [], rv: null, votes: {}, voteIdx: 0, msg: '' });
+
+test('保存データ：v2 の設定中・途中のゲームを v3 にして受け入れる（元のデータは変えない）', () => {
+  const raw = base();
+  const r = validateState(raw);
+  assert.ok(r.ok, r.reason);
+  assert.equal(r.state.version, SAVE_VERSION);
+  assert.equal(r.state.voteMode, 'vote');
+  assert.equal(r.state.draftText, '');
+  assert.equal(raw.version, 2);
+  // 同時指名の途中（2人が選び終わった）
+  const d = Object.assign(base(), { phase: 'draft', order: [2, 0, 1], queue: [2, 0, 1], turn: 2, sub: { 2: 1, 0: 3 } });
+  assert.ok(validateState(d).ok, validateState(d).reason);
+  // 抽選の途中（封筒を1人が取った）
+  const lot = Object.assign(base(), { phase: 'draft', order: [0, 1, 2], queue: [0, 1, 2], picks: [{ round: 1, player: 2, optionId: 4, via: 'single' }], redo: [],
+    rv: { sub: { 0: 1, 1: 1, 2: 4 }, lots: [{ optionId: 1, players: [0, 1], drawOrder: [1, 0], winEnv: 0, taken: { 1: 1 }, opened: false, winner: null }], idx: 0, stage: 'lottery', redo: false } });
+  assert.ok(validateState(lot).ok, validateState(lot).reason);
+  // 抽選が開いた後（外れた人が選び直す前）
+  const opened = structuredClone(lot);
+  Object.assign(opened.rv.lots[0], { taken: { 1: 1, 0: 0 }, opened: true, winner: 0 }); // 当たり＝0番の封筒＝0番の人
+  opened.picks.push({ round: 1, player: 0, optionId: 1, via: 'lottery' }); opened.redo = [1]; opened.rv.stage = 'done';
+  assert.ok(validateState(opened).ok, validateState(opened).reason);
+  // 投票の途中
+  const v = Object.assign(base(), { phase: 'vote', order: [0, 1, 2], voteIdx: 1, votes: { 0: 2 },
+    picks: [0, 1, 2].flatMap(p => [1, 2].map(r => ({ round: r, player: p, optionId: p * 2 + r, via: 'waiver' }))) });
+  assert.ok(validateState(v).ok, validateState(v).reason);
+});
+
+test('保存データ：壊れたもの・対応していない版は、理由つきで受け入れない（例外を出さない）', () => {
+  const cases = [
+    [null, '形'], [{ version: 9 }, '版'], [{ version: 2, phase: 'draft' }, ''],
+    [Object.assign(base(), { phase: 'draft' }), '順番'],
+    [Object.assign(base(), { players: ['あ'] }), '参加者'],
+    [Object.assign(base(), { options: [{ id: 1, label: 'a' }, { id: 1, label: 'b' }] }), '選択肢'],
+    [Object.assign(base(), { phase: 'draft', order: [0, 1, 2], queue: [0, 1, 2], picks: [{ round: 1, player: 0, optionId: 99 }] }), '指名'],
+    [Object.assign(base(), { phase: 'draft', order: [0, 1, 2], queue: [0, 1, 2], picks: [{ round: 1, player: 0, optionId: 1 }, { round: 1, player: 1, optionId: 1 }] }), '指名'],
+    [Object.assign(base(), { phase: 'draft', order: [0, 1, 2], queue: [0, 1, 2], turn: 1, sub: {} }), '同時指名'],
+    [Object.assign(base(), { phase: 'draft', order: [0, 1, 2], queue: [0, 1, 2], rv: { sub: {}, lots: [{ optionId: 1, players: [0, 1], drawOrder: [0, 1], winEnv: 5, taken: {}, opened: false }], idx: 0, stage: 'lottery' } }), '抽選'],
+    [Object.assign(base(), { phase: 'result', order: [0, 1, 2] }), 'そろって'],
+    [Object.assign(base(), { phase: 'vote', order: [0, 1, 2], votes: { 0: 0 }, picks: [0, 1, 2].flatMap(p => [1, 2].map(r => ({ round: r, player: p, optionId: p * 2 + r }))) }), '投票'],
+    [Object.assign(base(), { rounds: 0 }), '巡'],
+  ];
+  for (const [raw, word] of cases) {
+    const r = validateState(raw);
+    assert.equal(r.ok, false, JSON.stringify(raw).slice(0, 80));
+    assert.ok(r.reason.includes(word), `${r.reason} / ${word}`);
+  }
+});
+
+test('野球以外の候補の例：重複がなく、使えない言葉のチェックを通る', () => {
+  const code = readFileSync(new URL('../../js/pick-card-safety.js', import.meta.url), 'utf8');
+  const g = {}; new Function('globalThis', 'window', code)(g, g);
+  const S = g.PickCardSafety || globalThis.PickCardSafety;
+  for (const p of PRESETS) {
+    const r = addOptions([], p.items);
+    assert.equal(r.options.length, p.items.length, p.title);
+    for (const it of [p.title, ...p.items]) assert.equal(S.check(it, null), null, `${p.title}：${it}`);
   }
 });

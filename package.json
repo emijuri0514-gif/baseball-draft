@@ -14,6 +14,9 @@
     "check:position-thresholds": "node scripts/position-thresholds/check.mjs",
     "check:player-data": "node scripts/check-player-data.mjs",
     "test:anything-draft": "node --test tests/anything-draft/core.test.mjs",
+    "test:anything-draft-e2e": "node tests/anything-draft/e2e.mjs",
+    "build:anything-players": "node scripts/build-anything-draft-players.mjs",
+    "check:anything-players": "node scripts/build-anything-draft-players.mjs --check",
     "test:firestore-rules": "cd tests/firestore-rules && npm test"
   },
   "devDependencies": {
