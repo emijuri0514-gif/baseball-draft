@@ -353,6 +353,8 @@
     }
     // ボタンの種類：b-ink（墨の塗り：進める操作）／b-shu（朱赤：主要な確定操作だけ）／b-ghost（白地に墨の枠：そのほか）
     const btn = (text, onclick, cls = 'b-ink') => el('button', { type: 'button', class: `p-btn ${cls}`, onclick }, text);
+    // 「◯◯です。選びはじめる」のような2つに分かれる文言のボタン。狭い画面では「。」の後ろで折り返す（言葉の途中で切らない）
+    const btn2 = (a, b, onclick, cls = 'b-ink') => el('button', { type: 'button', class: `p-btn ${cls} py-2 leading-snug`, onclick }, el('span', { class: 'inline-block break-all', text: a }), el('span', { class: 'inline-block', text: b }));
     const clean = (s, max) => S.truncateChars(S.sanitize(s), max).trim();
     // 1回だけ押せるボタン（連打で二重に進まないように）
     function once(fn) { let done = false; return (...a) => { if (done) return; done = true; fn(...a); }; }
@@ -653,7 +655,7 @@
           }
         }
         const added = state.options.length - before;
-        if (tryStart() && added) app.prepend(el('p', { class: 'p-notice px-3 py-2 mb-4 text-sm text-center', role: 'status', text: `入力欄に残っていた${added}個を、選択肢に追加してから始めました` }));
+        if (tryStart() && added) app.prepend(el('p', { id: 'ad-start-note', class: 'p-notice px-3 py-2 mb-4 text-sm text-center', role: 'status', text: `入力欄に残っていた${added}個を、選択肢に追加してから始めました` }));
       });
       function tryStart() {
         const t = clean(title.value, LIMITS.titleMax);
@@ -731,10 +733,10 @@
     const passCard = (label, ...kids) => el('div', { class: 'p-pass w-full max-w-lg mx-auto px-4 pt-8 pb-6 space-y-5' }, el('span', { class: 'p-pass-label', text: label }), ...kids);
     function progress(list, done, title, doneText = '指名済み') {
       return el('div', { class: 'space-y-2' },
-        el('p', { class: 'text-xs p-sub', text: title }),
+        el('p', { class: 'text-sm p-sub', text: title }),
         el('ol', { class: 'flex flex-wrap justify-center gap-2' }, ...list.map((p, k) => el('li', { class: 'p-prog' + (k < done ? ' is-done' : k === done ? ' is-next' : '') },
           el('span', { class: 'text-sm font-bold break-all', text: P(p) }),
-          el('span', { class: 'text-[11px]', text: k < done ? doneText : k === done ? 'つぎ' : 'まだ' })))));
+          el('span', { class: 'text-xs', text: k < done ? doneText : k === done ? 'つぎ' : 'まだ' })))));
     }
 
     // 選ぶ画面（検索・球団の絞り込み）。候補を押すと「選択中」になるだけ。下の指名票の「この候補で指名する」で確定する（R5）。
@@ -752,6 +754,7 @@
         el('p', { class: 'text-xs p-sub truncate' }, 'お題：', state.title),
         nameEl, el('div', { class: 'p-perf', 'aria-hidden': 'true' }), confirmBtn);
       function choose(id) {
+        $('ad-start-note')?.remove(); // 「入力欄に残っていた◯個を追加して始めました」は、最初の人が選びはじめたら消す（ウェーバーは最初の画面が選ぶ画面のため）
         selected = id;
         listBox.querySelectorAll('button.ad-opt').forEach(b => { const on = Number(b.dataset.id) === id; b.setAttribute('aria-pressed', String(on)); b.querySelector('.p-pickmark').textContent = on ? '選択中' : '選ぶ'; });
         nameEl.textContent = opt(id).label; nameEl.classList.remove('is-empty');
@@ -806,7 +809,7 @@
       if (state.turn >= list.length) {
         show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
           passCard('発表', el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: isRedo ? '選び直しの指名がそろいました' : '全員の指名がそろいました' }),
-            el('p', { class: 'text-sm p-sub', text: 'みんなで画面を見られるようにしてから、発表してください' }),
+            el('p', { class: 'text-base leading-relaxed p-sub', text: 'みんなで画面を見られるようにしてから、発表してください' }),
             btn('発表する', once(reveal), 'b-ink text-lg px-8')),
           progress(list, list.length, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
         return;
@@ -815,8 +818,8 @@
       show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
         passCard(`${state.turn + 1}人目／${list.length}人（あと${list.length - state.turn}人）`,
           el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-3xl', text: P(who) }), el('br'), 'さんに渡してください'),
-          el('p', { class: 'text-xs p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
-          btn(`${P(who)} です（選ぶ）`, once(() => renderSecretPick(who)), 'b-ink text-lg px-8')),
+          el('p', { class: 'text-base leading-relaxed p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
+          btn2(`${P(who)}です。`, '選びはじめる', once(() => renderSecretPick(who)), 'b-ink text-lg px-6')),
         progress(list, state.turn, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
     }
     function renderSecretPick(who) {
@@ -831,7 +834,7 @@
           const next = list[state.turn];
           show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
             passCard('指名しました', el('p', { class: 'p-mincho text-2xl', 'data-focus': true, text: '選びました' }),
-              el('p', { class: 'text-sm p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
+              el('p', { class: 'text-base leading-relaxed p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
               btn(`${P(next)} さんに渡す`, once(renderHandoff), 'b-ink text-lg px-8')),
             progress(list, state.turn, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
         }, who, isRedo ? '選び直し' : null)));
@@ -1001,8 +1004,8 @@
         el('p', { class: 'text-xs p-sub truncate' }, 'お題：', el('span', { class: 'font-bold text-[#232320]', text: state.title })),
         passCard(`投票 ${who + 1}/${state.players.length}人目`,
           el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-3xl', text: P(who) }), el('br'), 'さんに渡してください'),
-          el('p', { class: 'text-xs p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
-          btn(`${P(who)} です（投票する）`, once(() => renderVote(who)), 'b-ink text-lg px-8')),
+          el('p', { class: 'text-base leading-relaxed p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
+          btn2(`${P(who)}です。`, '投票する', once(() => renderVote(who)), 'b-ink text-lg px-6')),
         progress(state.players.map((_, i) => i), who, '投票の進み具合', '投票済み')));
     }
     function renderVote(who) {
