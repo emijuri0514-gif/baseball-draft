@@ -336,7 +336,7 @@ section('R9 8人×15巡：全体の画像・1人ずつの画像・文章・共�
 {
   const { ctx, page, errs } = await open({ seed: 3, init: () => {
     navigator.canShare = () => true;
-    navigator.share = () => Promise.reject(window.__shareAbort ? new DOMException('x', 'AbortError') : new Error('fail'));
+    navigator.share = d => { (window.__shares = window.__shares || []).push(d.files.map(f => f.name)); return Promise.reject(window.__shareAbort ? new DOMException('x', 'AbortError') : new Error('fail')); };
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('denied')) } });
   } });
   const names = ['いちろう', 'じろう', 'さぶろう', 'しろう', 'ごろう', 'ろくろう', 'ななこ', 'はちこ'];
@@ -353,6 +353,8 @@ section('R9 8人×15巡：全体の画像・1人ずつの画像・文章・共�
   ok(await imgs.count() === 8, '1人ずつの画像を8枚');
   const dim = await imgs.first().evaluate(i => new Promise(r => i.complete ? r([i.naturalWidth, i.naturalHeight]) : i.onload = () => r([i.naturalWidth, i.naturalHeight])));
   ok(dim[0] === 1080 && dim[1] === 1350, `1人ずつの画像は1080×1350（${dim}）`);
+  await clickBtn(page, /^じろう さんの画像を保存$/);
+  ok(JSON.stringify(await page.evaluate(() => window.__shares.at(-1))) === '["ai_draft_anything_2.png"]', '「◯◯さんの画像を保存」は、その人の画像1枚で共有メニュー（写真に保存）を開く');
   if (OUT) fs.writeFileSync(path.join(OUT, 'e2e_detail_15.png'), Buffer.from((await imgs.first().getAttribute('src')).split(',')[1], 'base64'));
   await clickBtn(page, /文章でコピー/);
   const area = page.locator('#ad-app textarea[aria-label="結果の文章"]');
@@ -518,6 +520,9 @@ section('PC幅');
   await page.click('#ad-start');
   await playThrough(page, { choose: () => null, voteFor: () => 0 });
   ok(/優勝/.test(await text(page)) && await noOverflow(page), 'PC幅：4人の同時指名で最後まで');
+  await clickBtn(page, /1人ずつの画像を作る/);
+  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }).catch(() => null), clickBtn(page, /^B さんの画像を保存$/)]);
+  ok(dl && dl.suggestedFilename() === 'ai_draft_anything_2.png', `共有メニューがない端末（PC）では「◯◯さんの画像を保存」でファイルとして保存（${dl && dl.suggestedFilename()}）`);
   if (OUT) fs.writeFileSync(path.join(OUT, 'e2e_x_4.png'), Buffer.from((await page.locator('#ad-app img.p-preview').first().getAttribute('src')).split(',')[1], 'base64'));
   ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
   await ctx.close();
