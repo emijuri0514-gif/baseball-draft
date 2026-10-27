@@ -35,72 +35,21 @@
   <link rel="preload" as="image" href="images/anything-hero-sp.webp" type="image/webp" fetchpriority="high" media="(max-width: 639px)">
   <link rel="preload" as="image" href="images/anything-hero.webp" type="image/webp" fetchpriority="high" media="(min-width: 640px)">
   <meta name="twitter:card" content="summary_large_image">
+  <!-- 共通のデザイン（色・文字・罫線・ボタン・状態のラベル）。ページの <style> と Tailwind より前に読む -->
+  <link rel="stylesheet" href="css/paper.css">
   <style>
-    /* ★ 2026-10-27 オーナー指示：新しいデザイン（E：ドラフト指名票）の「試し」。本体のサイトに広げる前に、このページだけで試す。
-       紙白の背景・墨色の文字・太い区切り線と細い罫線。朱赤は「主要な確定操作（はじめる・ドラフトを始める）」と「抽選の結果の判子」だけ。
-       ネオン・強いグラデーション・発光は使わない。見出しは端末の明朝体、入力欄と説明はゴシック体（Webフォントは読み込まない） */
-    :root {
-      --paper: #F4F1E8; --sheet: #FFFEFA; --ink: #232320; --ink-2: #625F58; --shu: #B6382D;
-      --hair: #CFC9BA; --muted-bg: #ECE8DD; --warn-bg: #FFF1C7; --warn-ink: #795600; --focus: #1D4ED8;
-      --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif CJK JP", serif;
-      --gothic: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif;
-    }
-    body { font-family: var(--gothic); background-color: var(--paper); color: var(--ink); }
-    .p-mincho, .p-h, .p-h2, .p-title { font-family: var(--mincho); font-weight: 700; letter-spacing: .04em; }
-    .p-sub { color: var(--ink-2); }
-    .p-em { color: var(--ink); font-weight: 800; }
+    /* ★ 2026-10-27 オーナー決定：このページで試した新しいデザイン（E：ドラフト指名票）を、サイト全体のデザインとして採用。
+       共通の部品（色・文字・罫線・ボタン・入力欄・状態のラベル）は css/paper.css に移した。ここには、このページだけの部品を置く。
+       朱赤は「主要な確定操作（はじめる・ドラフトを始める・この候補で指名する）」と「抽選の結果の判子」だけ */
     .ad-slot:empty { display: none; }
     .ad-slot { margin: 1.5rem 0; text-align: center; }
     .hidden-screen { display: none !important; }
-    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-
-    /* 見出しの帯（上）・紙面 */
-    .p-head { background: var(--sheet); border-bottom: 3px solid var(--ink); }
-    .p-menu { background: var(--sheet); border: 1px solid var(--ink); box-shadow: 0 6px 14px rgba(35,35,32,.12); }
-    .p-menu a { color: var(--ink); }
-    .p-menu a:hover { text-decoration: underline; }
-    .p-menu .p-menu-h { color: var(--ink-2); border-bottom: 1px solid var(--hair); }
     .p-hero-img { border: 1px solid var(--hair); border-radius: 2px; }
-    .p-sheet { background: var(--sheet); border: 1px solid var(--hair); border-top: 3px solid var(--ink); border-radius: 2px; }
-    .p-h { border-bottom: 3px solid var(--ink); padding-bottom: .25rem; }
-    .p-h2 { border-bottom: 3px solid var(--ink); padding-bottom: .25rem; }
     .p-label { color: var(--ink); }
-    /* 準備の画面：01〜04 の大きな区切りだけ太い線。中の項目は小さな見出しだけ */
-    .p-sec { border-top: 3px solid var(--ink); padding-top: .75rem; }
-    .p-sec-h { font-size: 1rem; font-weight: 800; display: flex; align-items: baseline; gap: .5rem; }
-    .p-sec-no { font-size: .7rem; font-weight: 700; color: var(--ink-2); letter-spacing: .08em; }
-    .p-sub-h { font-size: .8rem; font-weight: 700; color: var(--ink); display: flex; justify-content: space-between; gap: .5rem; }
-    .p-rule-top { border-top: 1px solid var(--hair); }
-
-    /* ボタン：角は小さく。塗りは墨（進める操作）か朱赤（主要な確定操作だけ）。ほかは白地に墨の枠 */
-    .ad-btn { min-height: 44px; padding: 0 1.25rem; border-radius: 4px; font-weight: 700; }
-    .b-ink { background: var(--ink); color: var(--sheet); border: 1px solid var(--ink); }
-    .b-shu { background: var(--shu); color: #fff; border: 1px solid var(--shu); font-weight: 800; letter-spacing: .04em; }
-    .b-ghost { background: var(--sheet); color: var(--ink); border: 1px solid var(--ink); }
-    /* ★ スマホでは、押したボタンの位置に次の画面のボタンが出ると、そこだけ「マウスが乗った」色のまま残る（iPhoneで、選択肢の1つだけ
-       色が違って見えた）。色の変化は、マウスで操作できる端末だけにする（画面を作るときに hover: のクラスは使わない） */
     @media (hover: hover) {
-      .b-ink:hover { background: #3A3A36; } .b-shu:hover { background: #9E2F25; } .b-ghost:hover, .ad-opt:hover, .p-filter:hover { background: var(--paper); }
+      .ad-opt:hover { background: var(--paper); }
       .ad-env:not([disabled]):hover .ad-env-card { transform: translateY(-3px); }
     }
-    .ad-btn[disabled] { background: var(--muted-bg); color: var(--ink-2); border-color: var(--hair); }
-
-    /* 入力欄・選ぶ欄 */
-    /* 入力欄：枠は強くしすぎない（#8E887B は白地に対して3:1以上）。入力中は墨の枠 */
-    .ad-field { width: 100%; background: var(--sheet); border: 1px solid #8E887B; border-radius: 2px; padding: .5rem .75rem; font-size: 16px; color: var(--ink); }
-    .ad-field:focus { border-color: var(--ink); }
-    .ad-field::placeholder { color: #6F6B63; }
-    .ad-field:disabled { background: var(--muted-bg); }
-    /* 選択肢：枠は常に2px。選んだときは色だけ変える（太さや文字の太さを変えて、隣が動かないように） */
-    .p-choice { background: var(--sheet); border: 2px solid #C9C2B2; border-radius: 2px; cursor: pointer; }
-    .p-choice:has(input:checked) { border-color: var(--ink); background: #FBF9F2; }
-    .p-choice:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
-    .p-choice input, .p-check input { accent-color: var(--ink); }
-    .p-chip { background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; }
-    .p-filter { background: var(--sheet); border: 1px solid var(--ink); border-radius: 2px; color: var(--ink); }
-    .p-filter[aria-pressed="true"] { background: var(--ink); color: var(--sheet); }
-    .p-alert:not(:empty) { background: var(--warn-bg); color: var(--warn-ink); border-left: 4px solid var(--warn-ink); padding: .5rem .75rem; }
-    .p-ok { color: var(--ink-2); }
 
     /* 選択肢の一覧（指名票の行） */
     .ad-opt { min-height: 60px; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; color: var(--ink); }
@@ -110,10 +59,8 @@
     .p-pickmark { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 4.5rem; border: 1px solid var(--ink); border-radius: 2px; padding: 0 .75rem; }
     .p-line { background: var(--sheet); border-bottom: 1px solid var(--hair); }
     .p-lines { border-top: 2px solid var(--ink); }
-    .p-notice { background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; }
     .p-team { background: var(--sheet); border: 1px solid var(--hair); border-top: 2px solid var(--ink); border-radius: 2px; }
     .p-team.is-winner { border: 2px solid var(--ink); border-top-width: 4px; }
-    .p-badge { display: inline-block; background: var(--ink); color: var(--sheet); font-size: .75rem; padding: 0 .4rem; border-radius: 2px; vertical-align: 2px; }
     .p-preview { border: 1px solid var(--hair); }
     /* 選ぶ→指名する（R5）：選んでいる候補は太い枠。確定のボタンは一覧の下に留める */
     .ad-opt[aria-pressed="true"] { border: 2px solid var(--ink); background: var(--muted-bg); }
@@ -121,9 +68,6 @@
     /* 画面を切り替えた直後は押せない（連打が次の画面の操作として通らないように） */
     #ad-app.is-locked { pointer-events: none; }
     .p-fold > summary { list-style: revert; }
-    .p-status { background: var(--warn-bg); color: var(--warn-ink); border-left: 4px solid var(--warn-ink); }
-    .p-dialog { background: var(--sheet); color: var(--ink); border: 1px solid var(--ink); border-top: 3px solid var(--ink); border-radius: 2px; }
-    .p-dialog::backdrop { background: rgba(35,35,32,.5); }
 
     /* 封筒の抽選（ゲーム本体の封筒くじに合わせた形。当たりの封筒は、開けるまで画面のどこにも出さない）。
        押せる範囲は「封筒＋その下の名前」全体。名前は封筒の外に出して、判子や番号と重ならないようにする。
@@ -160,13 +104,13 @@
   </style>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
-<body>
+<body class="paper">
   <header class="p-head sticky top-0 z-20">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
       <h1 class="p-mincho text-base md:text-lg">なんでもドラフト</h1>
       <div class="flex items-center gap-2 flex-wrap">
-        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="ad-btn b-ghost text-xs whitespace-nowrap" style="min-height:36px;padding:0 .75rem">☰ メニュー</button>
-        <a href="index.html" class="ad-btn b-ghost text-xs whitespace-nowrap inline-flex items-center" style="min-height:36px;padding:0 .75rem">AIドラフトへ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn b-ghost text-xs whitespace-nowrap" style="min-height:36px;padding:0 .75rem">☰ メニュー</button>
+        <a href="index.html" class="p-btn b-ghost text-xs whitespace-nowrap inline-flex items-center" style="min-height:36px;padding:0 .75rem">AIドラフトへ</a>
       </div>
       <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
@@ -202,7 +146,7 @@
         <img src="images/anything-hero.webp" alt="友人同士で1台のスマホを囲んで遊ぶ様子のイラスト" width="1200" height="600" fetchpriority="high" decoding="async" class="block w-full h-auto max-h-[30vh] sm:max-h-[50vh] object-cover p-hero-img">
       </picture>
       <p class="text-sm md:text-base leading-relaxed">お題を決めて、スマホやパソコン1台を順番に回しながら、2〜8人で選択肢を取り合います。<br><span class="text-xs p-sub">入力したお題・名前・選択肢は、この端末の中だけで使います（どこにも送りません）。</span></p>
-      <a href="#ad-app" class="ad-btn b-shu inline-flex items-center justify-center px-8 text-lg">お題を決めてはじめる</a>
+      <a href="#ad-app" class="p-btn b-shu inline-flex items-center justify-center px-8 text-lg">お題を決めてはじめる</a>
     </section>
 
     <!-- 続きから（途中で閉じたとき） -->
@@ -281,7 +225,7 @@
   <dialog id="ad-board" class="p-dialog p-0 w-[min(640px,calc(100vw-24px))]" aria-labelledby="ad-board-title">
     <div class="flex items-center justify-between px-4 py-3 border-b border-[#CFC9BA] sticky top-0 bg-[#FFFEFA]">
       <h2 id="ad-board-title" class="p-mincho text-lg">全員のチーム</h2>
-      <button type="button" class="ad-btn b-ghost px-4 text-sm" data-close>閉じる</button>
+      <button type="button" class="p-btn b-ghost px-4 text-sm" data-close>閉じる</button>
     </div>
     <div id="ad-board-body" class="p-4 max-h-[70vh] overflow-y-auto"></div>
   </dialog>
@@ -323,7 +267,7 @@
       return e;
     }
     // ボタンの種類：b-ink（墨の塗り：進める操作）／b-shu（朱赤：主要な確定操作だけ）／b-ghost（白地に墨の枠：そのほか）
-    const btn = (text, onclick, cls = 'b-ink') => el('button', { type: 'button', class: `ad-btn ${cls}`, onclick }, text);
+    const btn = (text, onclick, cls = 'b-ink') => el('button', { type: 'button', class: `p-btn ${cls}`, onclick }, text);
     const clean = (s, max) => S.truncateChars(S.sanitize(s), max).trim();
     // 1回だけ押せるボタン（連打で二重に進まないように）
     function once(fn) { let done = false; return (...a) => { if (done) return; done = true; fn(...a); }; }
@@ -435,7 +379,7 @@
       };
 
       // お題
-      const title = el('input', { class: 'ad-field', id: 'ad-title', type: 'text', autocomplete: 'off', placeholder: '例：好きな寿司ネタ' });
+      const title = el('input', { class: 'p-field', id: 'ad-title', type: 'text', autocomplete: 'off', placeholder: '例：好きな寿司ネタ' });
       title.value = state.title;
       const titleCount = counter(title, LIMITS.titleMax, v => { state.title = v; scheduleSave(); });
       const setTitleIfEmpty = t => { if (t && !title.value.trim()) { title.value = t; title.dispatchEvent(new Event('input')); } };
@@ -500,7 +444,7 @@
       function renderPlayers() {
         playersBox.replaceChildren();
         state.players.forEach((name, i) => {
-          const inp = el('input', { class: 'ad-field', type: 'text', autocomplete: 'off', 'aria-label': `参加者${i + 1}の名前`, placeholder: `参加者${i + 1}` });
+          const inp = el('input', { class: 'p-field', type: 'text', autocomplete: 'off', 'aria-label': `参加者${i + 1}の名前`, placeholder: `参加者${i + 1}` });
           inp.value = name;
           const c = counter(inp, LIMITS.nameMax, v => { state.players[i] = v; scheduleSave(); });
           const del = state.players.length > LIMITS.minPlayers ? btn('×', () => { state.players.splice(i, 1); renderPlayers(); updateRounds(); save(); }, 'b-ghost text-sm w-11 px-0') : null;
@@ -512,7 +456,7 @@
       }
 
       // 選択肢
-      const ta = el('textarea', { class: 'ad-field', rows: '4', id: 'ad-opt-input', placeholder: '1行に1つずつ（貼り付けもできます）' });
+      const ta = el('textarea', { class: 'p-field', rows: '4', id: 'ad-opt-input', placeholder: '1行に1つずつ（貼り付けもできます）' });
       ta.value = state.draftText || '';
       ta.addEventListener('input', () => { state.draftText = ta.value.slice(0, 20000); scheduleSave(); }); // 未追加の入力も保存する（変換中も書き換えない）
       const optMsg = el('div', { class: 'text-xs p-ok space-y-1', role: 'status' });
@@ -545,7 +489,7 @@
         }
         const n = state.options.length;
         if (n > 12) {
-          const search = el('input', { class: 'ad-field', type: 'search', placeholder: '登録した候補を探す', 'aria-label': '登録した候補を探す', autocomplete: 'off' });
+          const search = el('input', { class: 'p-field', type: 'search', placeholder: '登録した候補を探す', 'aria-label': '登録した候補を探す', autocomplete: 'off' });
           const none = el('p', { class: 'text-xs p-sub hidden-screen', text: '見つかりません' });
           const filter = () => {
             let any = false;
@@ -600,7 +544,7 @@
         voteBox.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm' }, r, label));
       });
       const voteNote = el('p', { class: 'text-xs p-sub' });
-      const roundsSel = el('select', { class: 'ad-field', id: 'ad-rounds' });
+      const roundsSel = el('select', { class: 'p-field', id: 'ad-rounds' });
       const roundsNote = el('p', { class: 'text-xs p-sub' });
       function updateRounds() {
         const mx = maxRounds(state.options.length, state.players.length);
@@ -610,7 +554,7 @@
       }
       roundsSel.addEventListener('change', () => { state.rounds = Number(roundsSel.value); save(); });
 
-      const startBtn = el('button', { type: 'button', class: 'ad-btn b-shu w-full text-lg', id: 'ad-start' }, 'ドラフトを始める');
+      const startBtn = el('button', { type: 'button', class: 'p-btn b-shu w-full text-lg', id: 'ad-start' }, 'ドラフトを始める');
       startBtn.addEventListener('click', () => {
         if (loadingTemplate) return setError('選手の一覧を読み込んでいます。読み込みが終わるまで待つか、取り消してから始めてください', btn('読み込みを取り消す', () => { cancelLoad('読み込みを取り消しました'); setError(''); }, 'b-ghost text-sm'));
         // ★ 2026-10-27 オーナー指示：入力欄に「選択肢に追加」を押していない候補が残っていたら、自動で追加してから始める
@@ -728,7 +672,7 @@
       }
       const tools = [];
       if (available.length > 30) {
-        const s = el('input', { class: 'ad-field', type: 'search', placeholder: '選択肢を探す', 'aria-label': '選択肢を探す', autocomplete: 'off' });
+        const s = el('input', { class: 'p-field', type: 'search', placeholder: '選択肢を探す', 'aria-label': '選択肢を探す', autocomplete: 'off' });
         s.addEventListener('input', () => { q = s.value; draw(); });
         tools.push(s);
       }
@@ -1005,7 +949,7 @@
         const text = resultText(counts, winners);
         track('anything_share', { method: 'text_copy', format: 'text', target: state.template });
         const fallback = (msg) => {
-          const area = el('textarea', { class: 'ad-field text-sm', rows: '8', readonly: true, 'aria-label': '結果の文章' }); area.value = text;
+          const area = el('textarea', { class: 'p-field text-sm', rows: '8', readonly: true, 'aria-label': '結果の文章' }); area.value = text;
           textBox.replaceChildren(el('p', { class: 'text-xs p-sub', text: msg }), area); area.focus(); area.select();
         };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => textBox.replaceChildren(el('p', { class: 'text-xs p-ok', role: 'status', text: 'コピーしました。メモやメッセージに貼り付けて残せます。' })), () => fallback('自動でコピーできませんでした。下の文章を選んでコピーしてください。'));
@@ -1252,7 +1196,7 @@
       }
       showResumeBox(el('p', { class: 'font-bold mb-3' }, '途中のドラフトがあります（', el('span', { id: 'ad-resume-title', text: r.state.title || 'お題なし' }), '）'),
         el('div', { class: 'flex gap-3 justify-center flex-wrap' },
-          el('button', { type: 'button', id: 'ad-resume-yes', class: 'ad-btn b-ink px-6', onclick: () => {
+          el('button', { type: 'button', id: 'ad-resume-yes', class: 'p-btn b-ink px-6', onclick: () => {
             store.saveEnabled = true; state = r.state; $('ad-resume').classList.add('hidden-screen');
             try { resume(); }
             catch (e) {
@@ -1261,7 +1205,7 @@
               app.replaceChildren(el('div', { class: 'p-alert space-y-2 text-sm' }, el('p', { text: '続きの画面を表示できませんでした。新しく始めることができます（保存データは新しい内容で上書きされます）。' }), btn('新しく始める', newGameFromScratch, 'b-ink text-sm')));
             }
           } }, '続きから遊ぶ'),
-          el('button', { type: 'button', id: 'ad-resume-no', class: 'ad-btn b-ghost px-6', onclick: newGameFromScratch }, '最初から')));
+          el('button', { type: 'button', id: 'ad-resume-no', class: 'p-btn b-ghost px-6', onclick: newGameFromScratch }, '最初から')));
       renderStatus();
     }
     boot();
