@@ -93,6 +93,9 @@ GitHub Pagesでそのまま公開している。主なファイル:
   `npm run build:position-thresholds`でポジション残数ボードの基準表を作り直す**（約3分。見逃し0件でなければ書き込まれない）。
   対象の関数は`scripts/position-thresholds/source-hash.mjs`の`HASHED_NAMES`。変わったPRでは「Position board thresholds」チェックが警告を出す。
   手順の詳細は非公開リポジトリの`docs/POSITION_BOARD_THRESHOLDS.md`。
+- **選手データ（`initialDatabase`）を変えたら、`npm run build:anything-players` で `data/anything-draft-players.json` も作り直す**。
+  なんでもドラフトのテンプレート（12球団の推し選手・応援歌）は、index.html の中身を読まずにこのJSON（名前と球団だけ）を読む。
+  作り直し忘れは、PRの「Anything-draft players data」チェックが知らせる。
 - **選手データを新規追加するときは、`id`に週刊ベースボールONLINE（`sp.baseball.findfriends.jp`）の
   実在の選手ページIDをそのまま使う**。仮の連番などを入れると「選手詳細を見る」リンクが壊れる
   （過去に82人分やってしまい、後から実IDへの差し替えが必要になった）。

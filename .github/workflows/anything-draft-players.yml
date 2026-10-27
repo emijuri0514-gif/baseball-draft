@@ -1,0 +1,18 @@
+# なんでもドラフトのテンプレート用の選手一覧（data/anything-draft-players.json）が、本体の選手データ（index.html）と食い違っていないかを確かめる。
+# 選手を足したり球団を直したりしたのに npm run build:anything-players を忘れると、なんでもドラフトのテンプレートだけ古いままになるため。
+name: Anything-draft players data
+
+on:
+  pull_request:
+  push:
+    branches: [claude/draft-simulator-refactor-2tl4kh]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/build-anything-draft-players.mjs --check

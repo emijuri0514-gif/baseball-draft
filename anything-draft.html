@@ -105,6 +105,14 @@
     .p-team.is-winner { border: 2px solid var(--ink); border-top-width: 4px; }
     .p-badge { display: inline-block; background: var(--ink); color: var(--sheet); font-size: .75rem; padding: 0 .4rem; border-radius: 2px; vertical-align: 2px; }
     .p-preview { border: 1px solid var(--hair); }
+    /* 選ぶ→指名する（R5）：選んでいる候補は太い枠。確定のボタンは一覧の下に留める */
+    .ad-opt[aria-pressed="true"] { border: 2px solid var(--ink); background: var(--muted-bg); }
+    .ad-opt[aria-pressed="true"] .p-pickmark { background: var(--ink); color: var(--sheet); }
+    .p-confirm { position: sticky; bottom: 0; z-index: 5; background: var(--sheet); border-top: 2px solid var(--ink); padding: .75rem 0 .5rem; }
+    /* 画面を切り替えた直後は押せない（連打が次の画面の操作として通らないように） */
+    #ad-app.is-locked { pointer-events: none; }
+    .p-fold > summary { list-style: revert; }
+    .p-status { background: var(--warn-bg); color: var(--warn-ink); border-left: 4px solid var(--warn-ink); }
     .p-dialog { background: var(--sheet); color: var(--ink); border: 1px solid var(--ink); border-top: 3px solid var(--ink); border-radius: 2px; }
     .p-dialog::backdrop { background: rgba(35,35,32,.5); }
 
@@ -172,13 +180,10 @@
     </section>
 
     <!-- 続きから（途中で閉じたとき） -->
-    <div id="ad-resume" class="hidden-screen p-notice p-4 text-center" role="status">
-      <p class="font-bold mb-3">途中のドラフトがあります（<span id="ad-resume-title"></span>）</p>
-      <div class="flex gap-3 justify-center flex-wrap">
-        <button type="button" id="ad-resume-yes" class="ad-btn b-ink px-6">続きから遊ぶ</button>
-        <button type="button" id="ad-resume-no" class="ad-btn b-ghost px-6">最初から</button>
-      </div>
-    </div>
+    <div id="ad-resume" class="hidden-screen p-notice p-4 text-center" role="status"></div>
+
+    <!-- 保存についての知らせ（保存できない・消せない・ほかのタブで書き換わった）。出し続ける形にして、何度もダイアログを出さない -->
+    <div id="ad-status" class="hidden-screen p-status p-3 text-sm space-y-2" role="status" aria-live="polite"></div>
 
     <!-- アプリ本体（画面はJavaScriptで切り替える） -->
     <section id="ad-app" aria-live="polite" class="scroll-mt-20 p-sheet p-4 md:p-6"></section>
@@ -195,10 +200,10 @@
       <section>
         <h2 class="p-h2 text-lg md:text-xl mb-3">遊び方（4ステップ）</h2>
         <ol class="list-decimal list-inside space-y-1.5">
-          <li><span class="font-bold">お題と参加者を決める</span>：お題を入力し、参加者の名前を登録します。テンプレートを使うと、選択肢がすぐにそろいます。</li>
+          <li><span class="font-bold">お題と参加者を決める</span>：お題を入力し、参加者の名前を登録します。野球のテンプレートや、寿司ネタ・鍋の具などの「候補の例」を使うと、選択肢がすぐにそろいます。</li>
           <li><span class="font-bold">選択肢を用意する</span>：1行に1つずつ入力します。テンプレートで読み込んだ選択肢も、あとから自由に足したり消したりできます。</li>
-          <li><span class="font-bold">ドラフトする</span>：決めた巡の数だけ、順番に指名していきます。同時指名のときは「次の人に渡してください」の画面が出るので、ほかの人に見られないように選べます。</li>
-          <li><span class="font-bold">投票して結果を見る</span>：3人以上のときは、自分以外のチームに1票ずつ投票して、一番いいチームを決めます。結果は画像にして保存・シェアできます。</li>
+          <li><span class="font-bold">ドラフトする</span>：決めた巡の数だけ、順番に指名していきます。候補を選んでから「〜で指名する」を押すと決まります。同時指名のときは「〜さんに渡してください」の画面が出るので、ほかの人に見られないように選べます。</li>
+          <li><span class="font-bold">投票して結果を見る</span>：3人以上のときは、自分以外のチームに1票ずつ投票して、一番いいチームを決めます（投票せずに、結果を見せ合うだけにもできます）。結果は画像や文章にして保存・シェアできます。</li>
         </ol>
       </section>
       <section>
@@ -228,9 +233,9 @@
         <h2 class="p-h2 text-lg md:text-xl mb-3">よくある質問</h2>
         <dl class="space-y-3">
           <div><dt class="font-bold">Q. 無料ですか？登録は必要ですか？</dt><dd>A. 無料で、登録も不要です。ページを開けばすぐに遊べます。</dd></div>
-          <div><dt class="font-bold">Q. 何人で遊べますか？</dt><dd>A. 2〜8人です。投票は3人以上のときに行います。2人のときは投票なしで結果を表示します。</dd></div>
+          <div><dt class="font-bold">Q. 何人で遊べますか？</dt><dd>A. 2〜8人です。3人以上のときは、最後に投票するか、結果を見せ合うだけにするかを選べます。2人のときは投票なしで結果を表示します。</dd></div>
           <div><dt class="font-bold">Q. 入力したお題や選択肢は、どこかに送られますか？</dt><dd>A. 送られません。入力した内容は、遊んでいる端末の中だけで扱います。</dd></div>
-          <div><dt class="font-bold">Q. 途中で画面を閉じてしまいました。</dt><dd>A. 同じ端末・同じブラウザで開き直せば、続きから再開できます。</dd></div>
+          <div><dt class="font-bold">Q. 途中で画面を閉じてしまいました。</dt><dd>A. 同じ端末・同じブラウザで開き直すと、ふつうは続きから再開できます（設定の途中の入力も残ります）。ブラウザの設定や空き容量によって保存できないときは、画面の上でお知らせします。</dd></div>
           <div><dt class="font-bold">Q. 投票が同じ数になったら？</dt><dd>A. 同じ票数のチームが、すべて同率で優勝になります。</dd></div>
           <div><dt class="font-bold">Q. テンプレートに選びたい選手がいません。</dt><dd>A. テンプレートで読み込んだあとに、選択肢を自由に追加できます。不要な選択肢は削除もできます。</dd></div>
           <div><dt class="font-bold">Q. 応援歌ドラフトで、応援歌は流れますか？</dt><dd>A. 流れません。歌詞の表示もしていません。選手名だけを選ぶので、それぞれの応援歌を思い浮かべながら選んでください。</dd></div>
@@ -257,13 +262,15 @@
 
   <script src="js/pick-card-safety.js"></script>
   <script type="module">
-    import { LIMITS, addOptions, maxRounds, snakeOrder, shuffle, groupSubmissions, setupLottery, takeEnvelope, nextDrawer, openLottery, tallyVotes, matchesQuery, remainingOptions } from './js/anything-draft-core.mjs';
+    import { LIMITS, PRESETS, SAVE_VERSION, validateState, addOptions, maxRounds, snakeOrder, shuffle, groupSubmissions, setupLottery, takeEnvelope, nextDrawer, openLottery, tallyVotes, matchesQuery, remainingOptions } from './js/anything-draft-core.mjs';
 
     // ★ なんでもドラフト（1台で遊ぶ版）。設計：非公開リポジトリ docs/ANYTHING_DRAFT_SOLO_DESIGN.md
     //   ・Firebase・ログイン・通信は使わない。入力した文字は端末の中だけ（GA4にも送らない）
     //   ・画面に出す文字は必ず textContent で入れる（innerHTML に入れない）
-    //   ・途中保存は localStorage の専用のキー（本体のゲームの dt9_ で始まる既存のキーとは重ならない名前）
+    //   ・途中保存は localStorage の専用のキー（本体のゲームの dt9_ で始まる既存のキーとは重ならない名前）。中身の版は SAVE_VERSION
     //   ・使えない言葉のチェックは指名カードメーカーと同じ js/pick-card-safety.js（実在の選手名のチェックは入れない）
+    // ★ 2026-10-27 レビューを受けて直したこと：設定の途中も保存する／遅れて届いたテンプレートで候補が変わらない／保存の失敗を知らせる／
+    //   保存データを確かめてから再開する／候補は「選ぶ」と「指名する」を分ける／最後の人に「次の人に渡して」と出さない など
     const SAVE_KEY = 'dt9_anything_v1';
     const S = window.PickCardSafety;
     const rng = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; };
@@ -294,81 +301,172 @@
     const clean = (s, max) => S.truncateChars(S.sanitize(s), max).trim();
     // 1回だけ押せるボタン（連打で二重に進まないように）
     function once(fn) { let done = false; return (...a) => { if (done) return; done = true; fn(...a); }; }
+    const lines = text => String(text || '').split(/\r?\n/).map(l => clean(l, LIMITS.optionMax)).filter(Boolean);
 
-    // ---------- 状態 ----------
+    // ---------- 状態と保存 ----------
     let state = null;
     function newState() {
-      return { version: 2, phase: 'setup', title: '', template: 'free', teams: [], players: ['', ''], options: [], mode: 'lottery', rounds: 3,
+      return { version: SAVE_VERSION, phase: 'setup', title: '', template: 'free', teams: [], players: ['', ''], options: [], mode: 'lottery', rounds: 3, voteMode: 'vote', draftText: '',
         order: [], round: 1, picks: [], turn: 0, sub: {}, queue: [], redo: [], rv: null, votes: {}, voteIdx: 0, msg: '' };
     }
-    function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
-    function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
-    // 保存の形が変わったら version を上げる（古い途中のデータは使わない）
-    function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.version === 2 ? s : null; } catch (e) { return null; } }
+    // 保存の状態（画面の上の知らせに出す）。saveEnabled：「続きから／最初から」を選ぶ前は保存しない（保存データを上書きしないため）
+    const store = { saveEnabled: true, saveFailed: false, clearFailed: false, unavailable: false, otherTab: false };
+    function save() {
+      if (!store.saveEnabled || !state) return false;
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); store.saveFailed = false; }
+      catch (e) { store.saveFailed = true; }
+      renderStatus();
+      return !store.saveFailed;
+    }
+    function clearSave() {
+      try { localStorage.removeItem(SAVE_KEY); store.clearFailed = false; } catch (e) { store.clearFailed = true; }
+      renderStatus();
+      return !store.clearFailed;
+    }
+    // 設定の入力は、打つたびではなく少し待ってまとめて保存する。ページを閉じる・隠れるときは、すぐ保存する
+    let saveTimer = null;
+    function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => { saveTimer = null; save(); }, 300); }
+    function flushSave() { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; save(); } }
+    window.addEventListener('pagehide', flushSave);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSave(); });
+    // ほかのタブで同じ保存データが書き換わったら知らせる（オンラインの同期はしない）
+    window.addEventListener('storage', e => { if (e.key === SAVE_KEY && store.saveEnabled) { store.otherTab = true; renderStatus(); } });
+
+    // 画面の上の知らせ（保存できない・消せない・ほかのタブ）。同じ知らせを何度もダイアログで出さず、ここに出し続ける
+    function renderStatus() {
+      const box = $('ad-status');
+      const items = [];
+      if (store.unavailable || store.saveFailed) items.push(el('p', { text: 'この端末に途中保存できません。ページを閉じると、今の進行を復元できない場合があります（ブラウザの設定や空き容量によって起きます）。' }));
+      if (store.clearFailed) items.push(el('p', { text: '途中のデータを消せませんでした。次に開いたとき、前のドラフトの「続きから」が出ることがあります。' }));
+      if (store.otherTab) items.push(el('div', { class: 'space-y-2' },
+        el('p', { text: '別のタブ（またはウィンドウ）で、なんでもドラフトの途中のデータが書き換わりました。このタブで続けると、そちらの進行を上書きします。' }),
+        el('div', { class: 'flex flex-wrap gap-2' },
+          btn('このタブで続ける', () => { store.otherTab = false; save(); }, 'b-ghost text-sm'),
+          btn('読み込み直す', () => location.reload(), 'b-ghost text-sm'))));
+      box.replaceChildren(...items);
+      box.classList.toggle('hidden-screen', !items.length);
+    }
 
     const app = $('ad-app');
-    let firstShow = true; // 開いた直後は、説明の位置から動かさない
-    let keepScroll = false; // 同じ画面の中の操作（封筒を取る・開ける）では、スクロールの位置を動かさない
-    function show(...nodes) { app.replaceChildren(...nodes); if (!firstShow && !keepScroll) app.scrollIntoView({ block: 'start', behavior: 'smooth' }); firstShow = false; keepScroll = false; save(); }
+    let firstShow = true;    // 開いた直後は、説明の位置から動かさない
+    let keepScroll = false;  // 同じ画面の中の操作（封筒を取る・開ける）では、スクロールの位置を動かさない
+    let lockTimer = null;
+    // 画面を切り替えた直後の 0.35秒は押せないようにする（同じ場所の連打が、次の人の画面の操作として通らないように）
+    function lockInput() { app.classList.add('is-locked'); clearTimeout(lockTimer); lockTimer = setTimeout(() => app.classList.remove('is-locked'), 350); }
+    function show(...nodes) {
+      app.replaceChildren(...nodes);
+      if (!firstShow) {
+        lockInput();
+        if (!keepScroll) app.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        // キーボードや読み上げで使う人のために、新しい画面の見出しへフォーカスを移す（スクロールはさせない）
+        const f = app.querySelector('[data-focus]');
+        if (f) { f.setAttribute('tabindex', '-1'); f.focus({ preventScroll: true }); }
+      }
+      firstShow = false; keepScroll = false;
+      save();
+    }
     const P = i => state.players[i];
     const opt = id => state.options.find(o => o.id === id);
     const teamOf = i => state.picks.filter(p => p.player === i).sort((a, b) => a.round - b.round);
 
     // ---------- 1. 設定 ----------
-    let playerData = null; // テンプレート用：ゲームの選手データ（選手名と球団だけ）
+    // テンプレート用の選手一覧（名前と球団だけ）。data/anything-draft-players.json（本体の選手データから npm run build:anything-players で作る）
+    let playerData = null;
     function loadPlayerData() {
       if (playerData) return Promise.resolve(playerData);
-      return fetch('index.html').then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.text(); }).then(html => {
-        const start = html.indexOf('const initialDatabase');
-        const end = start === -1 ? -1 : html.indexOf('];', start);
-        if (end === -1) throw new Error('parse-failed');
-        const players = new Function(html.slice(start, end + 2) + '; return initialDatabase;')();
-        playerData = players.map(p => ({ name: p.name, team: p.team }));
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      return fetch('data/anything-draft-players.json', { signal: ctrl.signal }).then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.json(); }).then(d => {
+        const list = d && Array.isArray(d.players) ? d.players.filter(p => p && typeof p.name === 'string' && p.name.trim() && TEAMS.includes(p.team)) : [];
+        if (!list.length) throw new Error('empty');
+        playerData = list.map(p => ({ name: p.name, team: p.team }));
         return playerData;
-      });
+      }).finally(() => clearTimeout(timer));
     }
+    let setupEpoch = 0;  // 設定の画面を作り直す・ゲームを始めるたびに増やす（古い読み込みの結果を反映しないため）
+    let loadReq = 0;     // テンプレートの読み込みの番号（新しい読み込み・取り消しで増やす）
+    let loadingTemplate = false;
 
     function renderSetup() {
-      const errors = el('div', { class: 'p-alert space-y-1 text-sm font-bold', role: 'alert' });
-      const counter = (input, max) => {
+      const epoch = ++setupEpoch;
+      loadReq++; loadingTemplate = false;
+      const errors = el('div', { class: 'p-alert space-y-2 text-sm font-bold', role: 'alert' });
+      function setError(msg, ...extra) { errors.replaceChildren(...(msg ? [el('p', { text: msg }), ...extra] : [])); if (msg) errors.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+      // 文字数の表示と、見えない文字・上限のそろえ。日本語の変換中（確定前）は入力を書き換えない
+      const counter = (input, max, onValue) => {
         const c = el('span', { class: 'text-xs p-sub font-normal' });
-        const upd = () => { c.textContent = `${S.countChars(input.value)}/${max}`; };
-        input.addEventListener('input', () => {
+        const apply = () => {
           const v = S.sanitizeTyping(input.value);
           if (v !== input.value || S.countChars(v) > max) input.value = S.truncateChars(v, max);
-          upd();
-        });
-        upd(); return c;
+          c.textContent = `${S.countChars(input.value)}/${max}`;
+          onValue(input.value);
+        };
+        input.addEventListener('input', e => { if (e.isComposing) { c.textContent = `${S.countChars(input.value)}/${max}`; return; } apply(); });
+        input.addEventListener('compositionend', apply);
+        c.textContent = `${S.countChars(input.value)}/${max}`;
+        return c;
       };
 
       // お題
       const title = el('input', { class: 'ad-field', id: 'ad-title', type: 'text', autocomplete: 'off', placeholder: '例：好きな寿司ネタ' });
       title.value = state.title;
+      const titleCount = counter(title, LIMITS.titleMax, v => { state.title = v; scheduleSave(); });
+      const setTitleIfEmpty = t => { if (t && !title.value.trim()) { title.value = t; title.dispatchEvent(new Event('input')); } };
 
-      // テンプレート
+      // テンプレート（野球）
       const tplWrap = el('div', { class: 'flex flex-wrap gap-2' });
       const teamWrap = el('div', { class: 'grid grid-cols-3 sm:grid-cols-4 gap-1 text-sm' });
+      const loadMsg = el('p', { class: 'text-xs p-sub', role: 'status' });
+      const loadBtn = btn('選んだ球団の選手を選択肢に読み込む', () => startLoad(), 'b-ghost text-sm');
+      const cancelBtn = btn('読み込みを取り消す', () => cancelLoad('読み込みを取り消しました'), 'b-ghost text-sm hidden-screen');
+      function setLoading(on, msg = '') {
+        loadingTemplate = on;
+        loadBtn.disabled = on; loadBtn.textContent = on ? '読み込んでいます…' : '選んだ球団の選手を選択肢に読み込む';
+        cancelBtn.classList.toggle('hidden-screen', !on);
+        loadMsg.textContent = msg;
+      }
+      function cancelLoad(msg) { loadReq++; setLoading(false, msg); }
+      function startLoad() {
+        const sel = TEAMS.filter(t => teamWrap.querySelector(`input[value="${t}"]`).checked);
+        if (!sel.length) { setError('球団を1つ以上選んでください'); return; }
+        const req = ++loadReq;
+        setError(''); setLoading(true, `${sel.length}球団の選手を読み込んでいます…`);
+        loadPlayerData().then(list => {
+          // ★ 届いた時点で、同じ設定の画面のまま・同じ読み込みのままのときだけ反映する（始めた後・取り消した後・新しい読み込みの後は捨てる）
+          if (req !== loadReq || epoch !== setupEpoch || state.phase !== 'setup') return;
+          let options = state.options; const sum = { added: 0, dupes: 0, overLimit: 0 };
+          for (const t of sel) {
+            const r = addOptions(options, list.filter(p => p.team === t).map(p => clean(p.name, LIMITS.optionMax)), { team: t });
+            options = r.options; sum.added += r.added; sum.dupes += r.dupes; sum.overLimit += r.overLimit;
+          }
+          state.options = options; clearUndo(); save();
+          setLoading(false);
+          renderOptions(`${sel.length}球団の選手を${sum.added}人読み込みました` + (sum.dupes ? `（すでにある${sum.dupes}件は除きました）` : '') + (sum.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた${sum.overLimit}人は入れていません）` : ''));
+        }).catch(() => {
+          if (req !== loadReq || epoch !== setupEpoch) return;
+          setLoading(false);
+          setError('選手の一覧を読み込めませんでした。通信の状態を確かめて、もう一度お試しください');
+        });
+      }
       const teamBox = el('div', { class: 'space-y-2' + (state.template === 'free' ? ' hidden-screen' : '') },
         el('p', { class: 'text-xs p-sub', text: '読み込む球団を選んでください（選手名だけを使います）' }), teamWrap,
-        btn('選んだ球団の選手を選択肢に読み込む', () => {
-          const sel = TEAMS.filter(t => teamWrap.querySelector(`input[value="${t}"]`).checked);
-          if (!sel.length) { setError('球団を1つ以上選んでください'); return; }
-          loadPlayerData().then(list => {
-            let res = { options: state.options, dupes: 0, overLimit: 0 };
-            sel.forEach(t => { res = addOptions(res.options, list.filter(p => p.team === t).map(p => clean(p.name, LIMITS.optionMax)), { team: t }); });
-            state.options = res.options; state.teams = sel;
-            setError(''); renderOptions(`${sel.length}球団の選手を読み込みました` + (res.dupes ? `（重複${res.dupes}件は除きました）` : '') + (res.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた分は入れていません）` : ''));
-          }).catch(() => setError('選手の一覧を読み込めませんでした。時間をおいてもう一度お試しください'));
-        }, 'b-ghost text-sm'));
-      TEAMS.forEach(t => teamWrap.append(el('label', { class: 'p-check flex items-center gap-1 py-1' }, el('input', { type: 'checkbox', value: t, checked: state.teams.includes(t) }), t)));
+        el('div', { class: 'flex flex-wrap gap-2' }, loadBtn, cancelBtn), loadMsg);
+      TEAMS.forEach(t => {
+        const cb = el('input', { type: 'checkbox', value: t, checked: state.teams.includes(t) });
+        cb.addEventListener('change', () => { state.teams = TEAMS.filter(x => teamWrap.querySelector(`input[value="${x}"]`).checked); scheduleSave(); });
+        teamWrap.append(el('label', { class: 'p-check flex items-center gap-1 py-1' }, cb, t));
+      });
       Object.entries(TEMPLATES).forEach(([k, v]) => {
         const r = el('input', { type: 'radio', name: 'ad-tpl', value: k, checked: state.template === k });
-        r.addEventListener('change', () => {
-          state.template = k; teamBox.classList.toggle('hidden-screen', k === 'free');
-          if (v.title && !title.value) { title.value = v.title; title.dispatchEvent(new Event('input')); }
-        });
+        r.addEventListener('change', () => { state.template = k; teamBox.classList.toggle('hidden-screen', k === 'free'); setTitleIfEmpty(v.title); scheduleSave(); });
         tplWrap.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm' }, r, v.label));
       });
+      // 野球以外の候補の例（今ある候補に足す。置き換えない）
+      const presetBox = el('div', { class: 'flex flex-wrap gap-2' }, ...PRESETS.map(pr => btn(`${pr.title}（${pr.items.length}個）`, () => {
+        const r = addOptions(state.options, pr.items.map(x => clean(x, LIMITS.optionMax)), { team: `例：${pr.title}` });
+        state.options = r.options; clearUndo(); setTitleIfEmpty(pr.title); save();
+        renderOptions(`「${pr.title}」の候補を${r.added}個足しました` + (r.dupes ? `（すでにある${r.dupes}件は除きました）` : '') + (r.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた${r.overLimit}件は入れていません）` : ''));
+      }, 'b-ghost text-sm')));
 
       // 参加者
       const playersBox = el('div', { class: 'space-y-2' });
@@ -377,45 +475,104 @@
         state.players.forEach((name, i) => {
           const inp = el('input', { class: 'ad-field', type: 'text', autocomplete: 'off', 'aria-label': `参加者${i + 1}の名前`, placeholder: `参加者${i + 1}` });
           inp.value = name;
-          const c = counter(inp, LIMITS.nameMax);
-          inp.addEventListener('input', () => { state.players[i] = inp.value; });
-          const del = state.players.length > LIMITS.minPlayers ? btn('×', () => { state.players.splice(i, 1); renderPlayers(); updateRounds(); }, 'b-ghost text-sm w-11 px-0') : null;
+          const c = counter(inp, LIMITS.nameMax, v => { state.players[i] = v; scheduleSave(); });
+          const del = state.players.length > LIMITS.minPlayers ? btn('×', () => { state.players.splice(i, 1); renderPlayers(); updateRounds(); save(); }, 'b-ghost text-sm w-11 px-0') : null;
           if (del) del.setAttribute('aria-label', `参加者${i + 1}を外す`);
           playersBox.append(el('div', { class: 'flex items-center gap-2' }, el('div', { class: 'flex-1' }, inp), c, del));
         });
-        if (state.players.length < LIMITS.maxPlayers) playersBox.append(btn('＋ 参加者を足す', () => { state.players.push(''); renderPlayers(); updateRounds(); }, 'b-ghost text-sm'));
+        if (state.players.length < LIMITS.maxPlayers) playersBox.append(btn('＋ 参加者を足す', () => { state.players.push(''); renderPlayers(); updateRounds(); save(); }, 'b-ghost text-sm'));
+        voteNote.textContent = state.players.length < 3 ? '2人のときは投票しません（結果を見せ合うだけ）' : '';
       }
-      renderPlayers();
 
       // 選択肢
       const ta = el('textarea', { class: 'ad-field', rows: '4', id: 'ad-opt-input', placeholder: '1行に1つずつ（貼り付けもできます）' });
-      const optMsg = el('p', { class: 'text-xs p-ok', role: 'status' });
+      ta.value = state.draftText || '';
+      ta.addEventListener('input', () => { state.draftText = ta.value.slice(0, 20000); scheduleSave(); }); // 未追加の入力も保存する（変換中も書き換えない）
+      const optMsg = el('div', { class: 'text-xs p-ok space-y-1', role: 'status' });
       const optList = el('div', { class: 'space-y-2' });
       const optCount = el('span', { class: 'text-xs p-sub font-normal' });
-      function renderOptions(message) {
-        optMsg.textContent = message || '';
+      let undo = null;       // まとめて外した直後だけ「元に戻す」
+      let listOpen = false;  // 候補が多いときの「すべて表示」
+      function clearUndo() { undo = null; }
+      // 登録済みの候補の表示。多いとき（13個以上）は「登録済み○個」にたたむ。開くと探す・外すができる
+      // （探す欄は画面を作り直さずに表示だけ切り替える。日本語の変換中に入力欄が作り直されないように）
+      function renderOptions(message, undoBtn) {
+        optMsg.replaceChildren(...(message ? [el('p', { text: message })] : []), ...(undoBtn ? [undoBtn] : []));
         optCount.textContent = `${state.options.length}/${LIMITS.optionsMax}個`;
-        optList.replaceChildren();
         const groups = new Map();
         state.options.forEach(o => { const k = o.team || ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); });
+        const body = [];
         for (const [team, list] of groups) {
           const head = el('div', { class: 'flex items-center justify-between text-xs p-sub' }, el('span', { text: team || '入力した選択肢' }),
-            el('button', { type: 'button', class: 'underline px-2 py-2', onclick: () => { state.options = state.options.filter(o => (o.team || '') !== team); if (team) state.teams = state.teams.filter(t => t !== team); renderOptions(''); } }, `まとめて外す（${list.length}個）`));
+            el('button', { type: 'button', class: 'underline px-2 py-2', onclick: () => {
+              undo = { options: state.options, teams: state.teams };
+              state.options = state.options.filter(o => (o.team || '') !== team);
+              if (team) state.teams = state.teams.filter(t => t !== team);
+              save(); syncTeams();
+              renderOptions(`「${team || '入力した選択肢'}」の${list.length}個を外しました`, btn('元に戻す', () => { if (!undo) return; state.options = undo.options; state.teams = undo.teams; undo = null; save(); syncTeams(); renderOptions('外した候補を戻しました'); }, 'b-ghost text-sm'));
+            } }, `まとめて外す（${list.length}個）`));
           const chips = el('ul', { class: 'flex flex-wrap gap-1.5' });
-          list.forEach(o => chips.append(el('li', { class: 'p-chip flex items-center pl-3 text-sm' }, el('span', { text: o.label }),
-            el('button', { type: 'button', class: 'w-9 h-9 p-sub', 'aria-label': `${o.label}を外す`, onclick: () => { state.options = state.options.filter(x => x.id !== o.id); renderOptions(''); } }, '×'))));
-          optList.append(el('div', { class: 'space-y-1' }, head, chips));
+          list.forEach(o => chips.append(el('li', { class: 'p-chip flex items-center pl-3 text-sm', 'data-label': o.label }, el('span', { text: o.label }),
+            el('button', { type: 'button', class: 'w-9 h-9 p-sub', 'aria-label': `${o.label}を外す`, onclick: () => { state.options = state.options.filter(x => x.id !== o.id); clearUndo(); save(); renderOptions(''); } }, '×'))));
+          body.push(el('div', { class: 'space-y-1 p-group' }, head, chips));
+        }
+        const n = state.options.length;
+        if (n > 12) {
+          const search = el('input', { class: 'ad-field', type: 'search', placeholder: '登録した候補を探す', 'aria-label': '登録した候補を探す', autocomplete: 'off' });
+          const none = el('p', { class: 'text-xs p-sub hidden-screen', text: '見つかりません' });
+          const filter = () => {
+            let any = false;
+            optList.querySelectorAll('.p-group').forEach(g => {
+              let vis = 0;
+              g.querySelectorAll('li[data-label]').forEach(li => { const on = matchesQuery(li.dataset.label, search.value); li.classList.toggle('hidden-screen', !on); if (on) vis++; });
+              g.classList.toggle('hidden-screen', !vis); if (vis) any = true;
+            });
+            none.classList.toggle('hidden-screen', any);
+          };
+          search.addEventListener('input', filter);
+          const summary = el('summary', { class: 'text-sm font-bold py-2 cursor-pointer' }, `登録済み ${n}個（${listOpen ? 'たたむ' : 'すべて表示・探す・外す'}）`);
+          const det = el('details', { class: 'p-fold', open: listOpen }, summary, el('div', { class: 'space-y-2 pt-1' }, search, none, ...body));
+          det.addEventListener('toggle', () => { listOpen = det.open; summary.textContent = `登録済み ${n}個（${det.open ? 'たたむ' : 'すべて表示・探す・外す'}）`; });
+          optList.replaceChildren(det);
+        } else {
+          optList.replaceChildren(...body);
         }
         updateRounds();
       }
+      function syncTeams() { teamWrap.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = state.teams.includes(cb.value); }); }
+      // 入力欄の候補を足す。足せなかった行（使えない言葉・上限超え・記号だけ）は入力欄に残す。戻り値：入力欄が空になったか
+      function addFromTextarea() {
+        const ls = lines(ta.value);
+        if (!ls.length) return true;
+        const bad = ls.filter(l => S.check(l, null));
+        if (bad.length) { setError(`使えない言葉が含まれています：${bad.slice(0, 3).join('、')}${bad.length > 3 ? ` ほか${bad.length - 3}件` : ''}（入力欄に残しています）`); return false; }
+        const r = addOptions(state.options, ls);
+        state.options = r.options; clearUndo();
+        ta.value = r.leftover.join('\n'); state.draftText = ta.value;
+        setError(''); save();
+        const notes = [];
+        if (r.dupes) notes.push(`すでにある${r.dupes}件は除きました`);
+        if (r.overLimit) notes.push(`上限の${LIMITS.optionsMax}個を超えた${r.overLimit}件は入れずに、入力欄に残しています`);
+        if (r.empty) notes.push(`文字や数字のない${r.empty}件（記号・絵文字だけ）は入れずに、入力欄に残しています`);
+        renderOptions(`${r.added}個を追加しました` + (notes.length ? `（${notes.join('。')}）` : ''));
+        return !ta.value.trim();
+      }
+      const addBtn = btn('選択肢に追加', () => addFromTextarea(), 'b-ghost text-sm');
 
-      // 方式と巡の数
+      // 方式・投票・巡の数
       const modeBox = el('div', { class: 'flex flex-wrap gap-2' });
       [['lottery', '同時指名（重なったら抽選）'], ['waiver', 'ウェーバー（順番に1人ずつ）']].forEach(([k, label]) => {
         const r = el('input', { type: 'radio', name: 'ad-mode', value: k, checked: state.mode === k });
-        r.addEventListener('change', () => { state.mode = k; });
+        r.addEventListener('change', () => { state.mode = k; save(); });
         modeBox.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm' }, r, label));
       });
+      const voteBox = el('div', { class: 'flex flex-wrap gap-2' });
+      [['vote', '最後に投票する（3人以上）'], ['none', '結果を見せ合うだけ']].forEach(([k, label]) => {
+        const r = el('input', { type: 'radio', name: 'ad-vote', value: k, checked: state.voteMode === k });
+        r.addEventListener('change', () => { state.voteMode = k; save(); });
+        voteBox.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm' }, r, label));
+      });
+      const voteNote = el('p', { class: 'text-xs p-sub' });
       const roundsSel = el('select', { class: 'ad-field', id: 'ad-rounds' });
       const roundsNote = el('p', { class: 'text-xs p-sub' });
       function updateRounds() {
@@ -424,46 +581,48 @@
         roundsSel.disabled = mx === 0;
         roundsNote.textContent = mx === 0 ? `選択肢が人数（${state.players.length}人）より少ないため、まだ始められません` : `最大${mx}巡（選択肢${state.options.length}個 ÷ ${state.players.length}人、最大${LIMITS.roundsMax}巡）`;
       }
-      roundsSel.addEventListener('change', () => { state.rounds = Number(roundsSel.value); });
-
-      function setError(msg) { errors.replaceChildren(...(msg ? [el('p', { text: msg })] : [])); if (msg) errors.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
-
-      const addBtn = btn('選択肢に追加', () => {
-        const lines = ta.value.split(/\r?\n/).map(l => clean(l, LIMITS.optionMax)).filter(Boolean);
-        const bad = lines.filter(l => S.check(l, null));
-        if (bad.length) { setError(`使えない言葉が含まれています：${bad.slice(0, 3).join('、')}${bad.length > 3 ? ` ほか${bad.length - 3}件` : ''}`); return; }
-        const res = addOptions(state.options, lines);
-        state.options = res.options; ta.value = ''; setError('');
-        renderOptions(`${lines.length - res.dupes - res.overLimit}個を追加しました` + (res.dupes ? `（重複${res.dupes}件は除きました）` : '') + (res.overLimit ? `（上限の${LIMITS.optionsMax}個を超えた${res.overLimit}件は入れていません）` : ''));
-      }, 'b-ghost text-sm');
+      roundsSel.addEventListener('change', () => { state.rounds = Number(roundsSel.value); save(); });
 
       const startBtn = el('button', { type: 'button', class: 'ad-btn b-shu w-full text-lg', id: 'ad-start' }, 'ドラフトを始める');
       startBtn.addEventListener('click', () => {
-        state.title = clean(title.value, LIMITS.titleMax);
-        state.players = state.players.map(n => clean(n, LIMITS.nameMax));
-        if (!state.title) return setError('お題を入力してください');
-        if (state.players.some(n => !n)) return setError('参加者の名前をすべて入力してください');
-        const keys = state.players.map(n => S.normalize(n) || n);
+        if (loadingTemplate) return setError('選手の一覧を読み込んでいます。読み込みが終わるまで待つか、取り消してから始めてください', btn('読み込みを取り消す', () => { cancelLoad('読み込みを取り消しました'); setError(''); }, 'b-ghost text-sm'));
+        // 入力欄に、まだ追加していない候補が残っているときは、黙って捨てずに確かめる
+        const pending = lines(ta.value);
+        if (pending.length) return setError(`選択肢の入力欄に、まだ追加していない候補が${pending.length}行あります`,
+          el('div', { class: 'flex flex-wrap gap-2' },
+            btn('追加して始める', () => { if (addFromTextarea()) tryStart(); }, 'b-ink text-sm'),
+            btn('入力欄に戻る', () => { setError(''); ta.focus(); ta.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 'b-ghost text-sm')));
+        tryStart();
+      });
+      function tryStart() {
+        const t = clean(title.value, LIMITS.titleMax);
+        const names = state.players.map(n => clean(n, LIMITS.nameMax));
+        if (!t) return setError('お題を入力してください');
+        if (names.some(n => !n)) return setError('参加者の名前をすべて入力してください');
+        const keys = names.map(n => S.normalize(n) || n);
         if (new Set(keys).size !== keys.length) return setError('参加者の名前が重なっています。区別できる名前にしてください');
-        const bad = [state.title, ...state.players].filter(t => S.check(t, null));
+        const bad = [t, ...names].filter(x => S.check(x, null));
         if (bad.length) return setError(`使えない言葉が含まれています：${bad.join('、')}`);
         const badOpt = state.options.filter(o => S.check(o.label, null));
         if (badOpt.length) return setError(`使えない言葉の選択肢があります：${badOpt.slice(0, 3).map(o => o.label).join('、')}`);
-        const mx = maxRounds(state.options.length, state.players.length);
-        if (mx === 0) return setError(`選択肢を${state.players.length}個以上にしてください（いま${state.options.length}個）`);
+        const mx = maxRounds(state.options.length, names.length);
+        if (mx === 0) return setError(`選択肢を${names.length}個以上にしてください（いま${state.options.length}個）`);
+        state.title = t; state.players = names;
         state.rounds = Math.min(Number(roundsSel.value) || 1, mx);
         startDraft();
-      });
+      }
 
       const field = (label, ...kids) => el('div', { class: 'space-y-2' }, el('p', { class: 'p-label text-sm font-bold flex justify-between gap-2' }, ...[].concat(label)), ...kids);
-      const titleCount = counter(title, LIMITS.titleMax);
+      renderPlayers();
       show(el('div', { class: 'space-y-6' },
-        el('h2', { class: 'p-h text-xl', text: 'ドラフトの設定' }),
+        el('h2', { class: 'p-h text-xl', text: 'ドラフトの設定', 'data-focus': true }),
         field(['お題', titleCount], el('label', { for: 'ad-title', class: 'sr-only', text: 'お題' }), title),
-        field('テンプレート', tplWrap, teamBox),
+        field('テンプレート（野球）', tplWrap, teamBox),
+        field('候補の例（野球以外。今の候補に足します）', presetBox),
         field(`参加者（${LIMITS.minPlayers}〜${LIMITS.maxPlayers}人）`, playersBox),
         field(['選択肢', optCount], el('label', { for: 'ad-opt-input', class: 'sr-only', text: '選択肢を1行に1つずつ' }), ta, addBtn, optMsg, optList),
         field('指名の方式', modeBox),
+        field('最後に', voteBox, voteNote),
         field('巡の数（1人が取る数）', el('label', { for: 'ad-rounds', class: 'sr-only', text: '巡の数' }), roundsSel, roundsNote),
         errors, startBtn));
       renderOptions('');
@@ -471,9 +630,11 @@
 
     // ---------- 2. ドラフト ----------
     function startDraft() {
+      setupEpoch++; loadReq++; loadingTemplate = false; // 設定の画面の読み込みは、ここで打ち切る（始めた後に候補が変わらない）
       state.phase = 'draft';
+      state.options = state.options.map(o => ({ ...o }));
       state.order = shuffle(state.players.map((_, i) => i), rng);
-      state.round = 1; state.picks = []; state.votes = {}; state.voteIdx = 0;
+      state.round = 1; state.picks = []; state.votes = {}; state.voteIdx = 0; state.msg = '';
       track('anything_start', { team_count: state.players.length, draft_mode: state.mode, target: state.template });
       beginRound();
     }
@@ -486,24 +647,39 @@
       if (state.round >= state.rounds) { finishDraft(); return; }
       state.round++; beginRound();
     }
-    const roundHead = (extra) => el('div', { class: 'flex items-center justify-between gap-2 flex-wrap' },
-      el('p', { class: 'text-sm p-sub' }, el('span', { class: 'p-mincho text-base text-[#232320]', text: `第${state.round}巡` }), ` ／ 全${state.rounds}巡 ・ ${state.mode === 'waiver' ? 'ウェーバー' : '同時指名'}`, extra ? ` ・ ${extra}` : ''),
-      btn('全員のチーム', openBoard, 'b-ghost text-sm'));
+    // 上の見出し：お題・巡・方式（狭い画面でもお題を見失わない）
+    const roundHead = (extra) => el('div', { class: 'space-y-1' },
+      el('p', { class: 'text-xs p-sub truncate' }, 'お題：', el('span', { class: 'font-bold text-[#232320]', text: state.title })),
+      el('div', { class: 'flex items-center justify-between gap-2 flex-wrap' },
+        el('p', { class: 'text-sm p-sub' }, el('span', { class: 'p-mincho text-base text-[#232320]', text: `第${state.round}巡` }), ` ／ 全${state.rounds}巡 ・ ${state.mode === 'waiver' ? 'ウェーバー' : '同時指名'}`, extra ? ` ・ ${extra}` : ''),
+        btn('全員のチーム', openBoard, 'b-ghost text-sm')));
 
-    // 選ぶ画面（検索・球団の絞り込み・指名ボタン）
-    function chooser(available, onPick, label) {
-      let q = '', team = '';
+    // 選ぶ画面（検索・球団の絞り込み）。候補を押すと「選んでいる」だけ。下の「◯◯で指名する」を押して確定する
+    function chooser(available, onConfirm, label) {
+      let q = '', team = '', selected = null;
       const listBox = el('ul', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-2' });
       const count = el('p', { class: 'text-xs p-sub', 'aria-live': 'polite' });
-      const pick = once(id => onPick(id));
+      const chosenText = el('p', { class: 'text-sm', 'aria-live': 'polite' });
+      const confirmBtn = btn('候補を選んでください', null, 'b-ink w-full sm:w-auto sm:px-8');
+      confirmBtn.disabled = true;
+      confirmBtn.addEventListener('click', once(() => onConfirm(selected)));
+      const bar = el('div', { class: 'p-confirm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2' }, chosenText, confirmBtn);
+      function choose(id) {
+        selected = id;
+        listBox.querySelectorAll('button.ad-opt').forEach(b => { const on = Number(b.dataset.id) === id; b.setAttribute('aria-pressed', String(on)); b.querySelector('.p-pickmark').textContent = on ? '選択中' : '選ぶ'; });
+        const o = opt(id);
+        chosenText.replaceChildren('選んでいる候補：', el('span', { class: 'font-bold', text: o.label }));
+        confirmBtn.textContent = `「${o.label}」で指名する`; confirmBtn.disabled = false;
+      }
       function draw() {
         const items = available.filter(o => (!team || o.team === team) && matchesQuery(o.label, q));
         count.textContent = `${items.length}個`;
-        listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left px-3 py-2 flex items-center justify-between gap-2', onclick: () => pick(o.id), 'aria-label': `${o.label}を指名` },
-          el('span', {}, el('span', { class: 'font-bold', text: o.label }), o.team ? el('span', { class: 'block text-[11px] p-sub', text: o.team }) : null),
-          el('span', { class: 'shrink-0 p-pickmark text-xs font-bold', text: '指名' })))));
+        listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left px-3 py-2 flex items-center justify-between gap-2', 'data-id': o.id, 'aria-pressed': String(o.id === selected), onclick: () => choose(o.id), 'aria-label': `${o.label}を選ぶ` },
+          el('span', {}, el('span', { class: 'font-bold', text: o.label }), TEAMS.includes(o.team) ? el('span', { class: 'block text-[11px] p-sub', text: o.team }) : null),
+          el('span', { class: 'shrink-0 p-pickmark text-xs font-bold', text: o.id === selected ? '選択中' : '選ぶ' })))));
         if (!items.length) listBox.append(el('li', { class: 'text-sm p-sub', text: '条件に合う選択肢がありません' }));
       }
+      chosenText.textContent = '選んでいる候補：まだありません';
       const tools = [];
       if (available.length > 30) {
         const s = el('input', { class: 'ad-field', type: 'search', placeholder: '選択肢を探す', 'aria-label': '選択肢を探す', autocomplete: 'off' });
@@ -513,49 +689,63 @@
       const teams = [...new Set(available.map(o => o.team).filter(Boolean))];
       if (teams.length > 1) {
         const wrap = el('div', { class: 'flex flex-wrap gap-1.5' });
-        const chip = (t, label) => el('button', { type: 'button', class: 'p-filter px-3 py-2 text-xs font-bold', 'aria-pressed': String(team === t), onclick: () => { team = t; [...wrap.children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t))); draw(); }, 'data-t': t }, label);
+        const chip = (t, lb) => el('button', { type: 'button', class: 'p-filter px-3 py-2 text-xs font-bold', 'aria-pressed': String(team === t), onclick: () => { team = t; [...wrap.children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t))); draw(); }, 'data-t': t }, lb);
         wrap.append(chip('', 'すべて'), ...teams.map(t => chip(t, t)));
         tools.push(wrap);
       }
       draw();
-      return el('div', { class: 'space-y-3' }, label ? el('p', { class: 'text-sm p-sub', text: label }) : null, ...tools, count, listBox);
+      return el('div', { class: 'space-y-3' }, label ? el('p', { class: 'text-sm p-sub', text: label }) : null, ...tools, count, listBox, bar);
     }
 
-    // ウェーバー：今の番の人が選ぶ
+    // ウェーバー：今の番の人が選ぶ（公開の指名）
     function renderWaiver() {
       const who = state.queue[state.turn];
+      const next = state.turn + 1 < state.queue.length ? state.queue[state.turn + 1] : null;
       const avail = remainingOptions(state.options, state.picks);
       show(el('div', { class: 'space-y-4' }, roundHead(`${state.turn + 1}/${state.queue.length}人目`),
-        el('p', { class: 'p-mincho text-xl text-center' }, el('span', { class: 'p-em', text: P(who) }), ' さんの番です'),
+        el('p', { class: 'p-mincho text-xl text-center', 'data-focus': true }, el('span', { class: 'p-em', text: P(who) }), ' さんの番です'),
+        el('p', { class: 'text-xs p-sub text-center', text: next != null ? `この次は ${P(next)} さん` : (state.round >= state.rounds ? 'この巡の最後の指名です（このあと結果へ）' : 'この巡の最後の指名です') }),
+        state.msg ? el('p', { class: 'text-xs p-sub text-center', text: `直前：${state.msg}` }) : null,
         chooser(avail, id => {
           state.picks.push({ round: state.round, player: who, optionId: id, via: 'waiver' });
           state.msg = `${P(who)} さんが「${opt(id).label}」を指名しました`;
           state.turn++;
           if (state.turn >= state.queue.length) nextRoundOrFinish(); else renderWaiver();
-        }),
-        state.msg ? el('p', { class: 'text-xs p-sub text-center', text: `直前：${state.msg}` }) : null));
+        })));
     }
 
-    // 同時指名：端末を渡す画面（選択肢は見せない）
+    // 同時指名：端末を渡す画面（選択肢は見せない）。全員が選んだら「全員の指名がそろいました」→ 発表
     function renderHandoff() {
-      const list = state.redo.length ? state.redo : state.queue;
-      if (state.turn >= list.length) { reveal(); return; }
+      const isRedo = state.redo.length > 0;
+      const list = isRedo ? state.redo : state.queue;
+      if (state.turn >= list.length) {
+        show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(isRedo ? '選び直し' : null),
+          el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: isRedo ? '選び直しの指名がそろいました' : '全員の指名がそろいました' }),
+          el('p', { class: 'text-xs p-sub', text: 'みんなで画面を見られるようにしてから、発表してください' }),
+          btn('発表する', once(reveal), 'b-ink text-lg px-8')));
+        return;
+      }
       const who = list[state.turn];
-      show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(state.redo.length ? '選び直し' : null),
-        el('p', { class: 'text-lg' }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
+      show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(isRedo ? '選び直し' : null),
+        el('p', { class: 'text-sm p-sub', text: `${state.turn + 1}人目／${list.length}人（あと${list.length - state.turn}人）` }),
+        el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
         el('p', { class: 'text-xs p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
         btn(`${P(who)} です（選ぶ）`, once(() => renderSecretPick(who)), 'b-ink text-lg px-8')));
     }
     function renderSecretPick(who) {
+      const isRedo = state.redo.length > 0;
+      const list = isRedo ? state.redo : state.queue;
       const avail = remainingOptions(state.options, state.picks);
-      show(el('div', { class: 'space-y-4' }, roundHead(null),
-        el('p', { class: 'p-mincho text-lg text-center' }, el('span', { class: 'p-em', text: P(who) }), ' さんが選ぶ番です（ほかの人には見せないでください）'),
+      show(el('div', { class: 'space-y-4' }, roundHead(isRedo ? '選び直し' : null),
+        el('p', { class: 'p-mincho text-lg text-center', 'data-focus': true }, el('span', { class: 'p-em', text: P(who) }), ' さんが選ぶ番です（ほかの人には見せないでください）'),
         chooser(avail, id => {
           state.sub[who] = id; state.turn++;
+          if (state.turn >= list.length) { renderHandoff(); return; } // 最後の人：そのまま「全員の指名がそろいました」へ（選んだ内容は出さない）
+          const next = list[state.turn];
           show(el('div', { class: 'space-y-6 text-center py-8' },
-            el('p', { class: 'p-mincho text-xl', text: '選びました' }),
-            el('p', { class: 'text-sm p-sub', text: '何を選んだかは、全員がそろってから発表します。次の人に渡してください。' }),
-            btn('次へ', once(renderHandoff))));
+            el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: '選びました' }),
+            el('p', { class: 'text-sm p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
+            btn(`${P(next)} さんに渡す`, once(renderHandoff))));
         })));
     }
     // 発表：重ならなければ確定。重なったら、重なった人どうしで封筒の抽選（自分で封筒を選ぶ）
@@ -596,7 +786,9 @@
           ? btn(`外れた人が選び直す（${losers.map(P).join('・')}）`, once(() => { state.rv = null; state.turn = 0; renderHandoff(); }))
           : btn(state.round >= state.rounds ? '結果へ進む' : `第${state.round + 1}巡へ`, once(() => { state.rv = null; nextRoundOrFinish(); })));
       }
-      show(el('div', { class: 'space-y-4' }, roundHead(rv.redo ? '選び直しの発表' : '発表'), el('ul', { class: 'p-lines' }, ...rows), next));
+      show(el('div', { class: 'space-y-4' }, roundHead(rv.redo ? '選び直しの発表' : '発表'),
+        el('h3', { class: 'p-mincho text-lg', 'data-focus': true, text: rv.redo ? '選び直しの発表' : `第${state.round}巡の発表` }),
+        el('ul', { class: 'p-lines' }, ...rows), next));
     }
     // 封筒の抽選：決まった順番に1人ずつ封筒を取る → 全員が取ったら一斉に開ける
     function renderLottery() {
@@ -615,9 +807,9 @@
       }
       let head, action = null;
       if (who != null) {
-        head = el('p', { class: 'p-mincho text-lg text-center' }, el('span', { class: 'p-em', text: P(who) }), ' さんの番：封筒を1つ選んでください');
+        head = el('p', { class: 'p-mincho text-lg text-center', 'data-focus': true }, el('span', { class: 'p-em', text: P(who) }), ' さんの番：封筒を1つ選んでください');
       } else if (!l.opened) {
-        head = el('p', { class: 'p-mincho text-lg text-center', text: '全員が封筒を選びました' });
+        head = el('p', { class: 'p-mincho text-lg text-center', 'data-focus': true, text: '全員が封筒を選びました' });
         action = btn('一斉に開ける', once(() => {
           const res = openLottery(l);
           state.picks.push({ round: state.round, player: res.winner, optionId: l.optionId, via: 'lottery' });
@@ -625,7 +817,7 @@
           keepScroll = true; renderLottery();
         }), 'b-ink text-lg px-8');
       } else {
-        head = el('p', { class: 'ad-anim p-mincho text-xl text-center' }, el('span', { class: 'p-em', text: P(l.winner) }), ' さんが「', el('span', { text: opt(l.optionId).label }), '」を獲得');
+        head = el('p', { class: 'ad-anim p-mincho text-xl text-center', 'data-focus': true }, el('span', { class: 'p-em', text: P(l.winner) }), ' さんが「', el('span', { text: opt(l.optionId).label }), '」を獲得');
         const last = rv.idx >= rv.lots.length - 1;
         action = btn(last ? '発表に戻る' : '次の抽選へ', once(() => {
           if (last) { state.redo.sort((a, b) => a - b); rv.stage = 'done'; renderReveal(); }
@@ -638,7 +830,7 @@
         head, envs, action ? el('div', { class: 'text-center pt-2' }, action) : null));
     }
 
-    // 全員のチーム
+    // 全員のチーム（確定した指名だけ。同時指名の途中で選んだ内容は出さない）
     function teamList(i, opts = {}) {
       const items = teamOf(i).map(p => el('li', { class: 'text-sm' }, el('span', { class: 'p-sub mr-1', text: `${p.round}.` }), el('span', { text: opt(p.optionId).label })));
       return el('div', { class: `p-team${opts.winner ? ' is-winner' : ''} p-3` },
@@ -652,62 +844,87 @@
     $('ad-board').addEventListener('click', e => { if (e.target.closest('[data-close]')) $('ad-board').close(); });
 
     // ---------- 3. 投票 ----------
+    const voting = () => state.players.length >= 3 && state.voteMode !== 'none';
     function finishDraft() {
       track('anything_complete', { team_count: state.players.length, draft_mode: state.mode, target: state.template });
-      if (state.players.length >= 3) { state.phase = 'vote'; state.voteIdx = 0; state.votes = {}; renderVoteHandoff(); }
+      if (voting()) { state.phase = 'vote'; state.voteIdx = 0; state.votes = {}; renderVoteHandoff(); }
       else { state.phase = 'result'; renderResult(); }
     }
     function renderVoteHandoff() {
       if (state.voteIdx >= state.players.length) { state.phase = 'result'; renderResult(); return; }
       const who = state.voteIdx;
       show(el('div', { class: 'space-y-6 text-center py-6' },
+        el('p', { class: 'text-xs p-sub truncate' }, 'お題：', el('span', { class: 'font-bold text-[#232320]', text: state.title })),
         el('p', { class: 'text-sm p-sub', text: `投票 ${who + 1}/${state.players.length}人目` }),
-        el('p', { class: 'text-lg' }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
+        el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
         btn(`${P(who)} です（投票する）`, once(() => renderVote(who)), 'b-ink text-lg px-8')));
     }
     function renderVote(who) {
       const vote = once(t => { state.votes[who] = t; state.voteIdx++; renderVoteHandoff(); });
       show(el('div', { class: 'space-y-4' },
-        el('p', { class: 'p-mincho text-lg text-center' }, el('span', { class: 'p-em', text: P(who) }), ' さん：一番いいと思うチームに1票（自分以外）'),
+        el('p', { class: 'p-mincho text-lg text-center', 'data-focus': true }, el('span', { class: 'p-em', text: P(who) }), ' さん：一番いいと思うチームに1票（自分以外）'),
         el('div', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, ...state.players.map((_, i) => i === who ? null :
           el('div', { class: 'space-y-2' }, teamList(i), btn(`${P(i)} さんに投票`, () => vote(i), 'b-ghost w-full'))))));
     }
 
     // ---------- 4. 結果 ----------
     function results() {
-      if (state.players.length < 3) return { counts: null, winners: [] };
+      if (state.players.length < 3 || state.voteMode === 'none') return { counts: null, winners: [] }; // 投票しないときは、勝者も票数も出さない
       return tallyVotes(state.votes, state.players.length);
     }
+    function resultText(counts, winners) {
+      const out = ['なんでもドラフト（遊び）', `お題：${state.title}`];
+      if (winners.length) out.push(`${winners.length > 1 ? '同率優勝' : '優勝'}：${winners.map(P).join('・')}`);
+      state.players.forEach((_, i) => {
+        out.push('', `■ ${P(i)}${counts ? `（${counts[i]}票）` : ''}`);
+        teamOf(i).forEach(p => out.push(`${p.round}. ${opt(p.optionId).label}`));
+      });
+      out.push('', 'AIドラフトで作成 dreamteam9.com');
+      return out.join('\n');
+    }
+    // 共有メニュー：利用者が閉じた（AbortError）ときは何もしない。本当に失敗したときは、画像の保存の仕方を案内する
+    function shareFiles(files, onFail) {
+      if (!(navigator.canShare && navigator.share && navigator.canShare({ files }))) return false;
+      navigator.share({ files }).catch(err => { if (!err || err.name !== 'AbortError') onFail(); });
+      return true;
+    }
+    function download(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
     function renderResult() {
       const { counts, winners } = results();
       const head = winners.length
-        ? el('p', { class: 'ad-anim p-title text-3xl text-center' }, el('span', { text: winners.length > 1 ? '同率優勝' : '優勝' }), '：', el('span', { text: winners.map(P).join('・') }))
-        : el('p', { class: 'p-mincho text-lg text-center', text: state.players.length < 3 ? 'ドラフト終了（2人のときは投票なし）' : 'ドラフト終了（投票がありませんでした）' });
+        ? el('p', { class: 'ad-anim p-title text-3xl text-center', 'data-focus': true }, el('span', { text: winners.length > 1 ? '同率優勝' : '優勝' }), '：', el('span', { text: winners.map(P).join('・') }))
+        : el('p', { class: 'p-mincho text-lg text-center', 'data-focus': true, text: state.players.length < 3 ? 'ドラフト終了（2人のときは投票なし）' : (state.voteMode === 'none' ? 'ドラフト終了（結果を見せ合いましょう）' : 'ドラフト終了（投票がありませんでした）') });
       const fmt = { v: 'x' };
       const preview = el('img', { class: 'w-full p-preview hidden-screen', alt: '結果の画像のプレビュー' });
-      const imgErr = el('p', { class: 'p-alert text-sm font-bold', role: 'alert' });
+      const imgErr = el('div', { class: 'p-alert text-sm font-bold', role: 'alert' });
+      const imgNote = el('p', { class: 'text-xs p-sub', role: 'status' });
       const fmtBox = el('div', { class: 'flex gap-2 justify-center' });
       [['x', '横長（X用）'], ['story', '縦長（ストーリー用）']].forEach(([k, label]) => {
         const r = el('input', { type: 'radio', name: 'ad-fmt', value: k, checked: k === 'x' });
-        r.addEventListener('change', () => { fmt.v = k; preview.classList.add('hidden-screen'); last = null; });
+        r.addEventListener('change', () => { fmt.v = k; preview.classList.add('hidden-screen'); last = null; imgNote.textContent = ''; });
         fmtBox.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm whitespace-nowrap' }, r, label));
       });
+      const shareFail = () => { imgErr.textContent = '共有メニューを開けませんでした。表示した画像を長押し（パソコンは右クリック）して保存してください。'; };
+      const ngCheck = () => {
+        const texts = [state.title, ...state.players, ...state.picks.map(p => opt(p.optionId).label)];
+        if (texts.some(t => S.check(t, null))) { imgErr.textContent = '使えない言葉が含まれているため、画像を作れません'; return false; }
+        imgErr.textContent = ''; return true;
+      };
       let last = null;
       const make = () => {
-        const texts = [state.title, ...state.players, ...state.picks.map(p => opt(p.optionId).label)];
-        if (texts.some(t => S.check(t, null))) { imgErr.textContent = '使えない言葉が含まれているため、画像を作れません'; return null; }
-        imgErr.textContent = '';
-        const url = buildImage(fmt.v, counts, winners).toDataURL('image/png');
+        if (!ngCheck()) return null;
+        const c = buildImage(fmt.v, counts, winners);
+        const url = c.toDataURL('image/png');
         last = { url, format: fmt.v }; preview.src = url; preview.classList.remove('hidden-screen');
+        imgNote.textContent = c.truncated ? '全体の画像では、入りきらない分を「ほか◯個」とまとめています。全部を残すときは、下の「1人ずつの画像」か「文章でコピー」を使ってください。' : '';
         return last;
       };
       const saveBtn = btn('画像を作って保存', () => {
         const r = last && last.format === fmt.v ? last : make(); if (!r) return;
         track('anything_share', { method: 'image_save', format: r.format, target: state.template });
-        const blob = dataURLtoBlob(r.url); const name = `ai_draft_anything_${r.format}.png`;
-        const file = new File([blob], name, { type: 'image/png' });
-        if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).catch(() => {}); return; }
-        const a = document.createElement('a'); a.href = r.url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        const name = `ai_draft_anything_${r.format}.png`;
+        const file = new File([dataURLtoBlob(r.url)], name, { type: 'image/png' });
+        if (!shareFiles([file], shareFail)) download(r.url, name);
       }, 'b-ink');
       const xBtn = btn('𝕏でシェア', () => {
         track('anything_share', { method: 'x_share', format: fmt.v, target: state.template });
@@ -715,16 +932,46 @@
         const params = new URLSearchParams({ text: 'AIドラフトの「なんでもドラフト」で、みんなでドラフトしてみた', url: 'https://dreamteam9.com/anything-draft.html?utm_source=x&utm_medium=share&utm_campaign=anything', hashtags: 'AIドラフト,なんでもドラフト' });
         window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener,noreferrer');
       }, 'b-ghost');
+      // 1人ずつの画像（全部の指名を、読める大きさで）
+      const detailBox = el('div', { class: 'space-y-3' });
+      const detailBtn = btn('1人ずつの画像を作る（全部の指名）', () => {
+        if (!ngCheck()) return;
+        const imgs = state.players.map((_, i) => ({ i, url: buildPlayerImage(i, counts, winners).toDataURL('image/png'), name: `ai_draft_anything_${i + 1}.png` }));
+        const files = imgs.map(x => new File([dataURLtoBlob(x.url)], x.name, { type: 'image/png' }));
+        const shareAll = btn('まとめて保存・共有', () => { track('anything_share', { method: 'image_save', format: 'detail', target: state.template }); if (!shareFiles(files, shareFail)) imgs.forEach(x => download(x.url, x.name)); }, 'b-ink');
+        detailBox.replaceChildren(el('div', { class: 'text-center' }, shareAll),
+          el('div', { class: 'grid grid-cols-2 sm:grid-cols-3 gap-2' }, ...imgs.map(x => el('figure', { class: 'space-y-1' },
+            el('img', { src: x.url, alt: `${P(x.i)} さんのチームの画像`, class: 'w-full p-preview' }),
+            el('figcaption', { class: 'text-xs text-center' }, el('a', { href: x.url, download: x.name, class: 'underline', onclick: () => track('anything_share', { method: 'image_save', format: 'detail', target: state.template }) }, `${P(x.i)} さんの画像を保存`))))),
+          el('p', { class: 'text-xs p-sub', text: 'スマホでは、画像を長押しして保存することもできます。' }));
+      }, 'b-ghost');
+      // 文章でコピー（全部の指名を文字で残す）
+      const textBox = el('div', { class: 'space-y-2' });
+      const textBtn = btn('文章でコピー（全部の指名）', () => {
+        if (!ngCheck()) return;
+        const text = resultText(counts, winners);
+        track('anything_share', { method: 'text_copy', format: 'text', target: state.template });
+        const fallback = (msg) => {
+          const area = el('textarea', { class: 'ad-field text-sm', rows: '8', readonly: true, 'aria-label': '結果の文章' }); area.value = text;
+          textBox.replaceChildren(el('p', { class: 'text-xs p-sub', text: msg }), area); area.focus(); area.select();
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => textBox.replaceChildren(el('p', { class: 'text-xs p-ok', role: 'status', text: 'コピーしました。メモやメッセージに貼り付けて残せます。' })), () => fallback('自動でコピーできませんでした。下の文章を選んでコピーしてください。'));
+        else fallback('下の文章を選んでコピーしてください。');
+      }, 'b-ghost');
+      const keep = () => ({ title: state.title, template: state.template, teams: state.teams, players: state.players, options: state.options, mode: state.mode, rounds: state.rounds, voteMode: state.voteMode });
       show(el('div', { class: 'space-y-5' },
         el('p', { class: 'text-xs p-sub text-center', text: 'お題' }), el('p', { class: 'p-title text-2xl text-center -mt-4', text: state.title }),
         head,
         el('div', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, ...state.players.map((_, i) => teamList(i, { winner: winners.includes(i), votes: counts ? counts[i] : null }))),
-        el('div', { class: 'space-y-3 p-rule-top pt-4' }, el('p', { class: 'p-mincho text-base text-center', text: '結果を画像にする' }), fmtBox,
-          el('div', { class: 'flex flex-col sm:flex-row gap-2 justify-center' }, btn('画像を作る', make, 'b-ghost'), saveBtn, xBtn), imgErr, preview,
-          el('p', { class: 'text-[11px] p-sub text-center', text: '「画像を作って保存」で共有メニューが開いたら「写真に保存」などを選んでください。𝕏でシェアするときは、保存した画像を投稿に添えてください（シェアの文章にお題や名前は入りません）。' })),
+        el('div', { class: 'space-y-3 p-rule-top pt-4' }, el('p', { class: 'p-mincho text-base text-center', text: '結果を残す・見せる' }),
+          el('p', { class: 'text-xs p-sub text-center', text: '画像と文章には、お題・参加者の名前・選択肢が入ります。共有する前に確かめてください。' }),
+          fmtBox,
+          el('div', { class: 'flex flex-col sm:flex-row gap-2 justify-center' }, btn('画像を作る', make, 'b-ghost'), saveBtn, xBtn), imgErr, imgNote, preview,
+          el('p', { class: 'text-[11px] p-sub text-center', text: '「画像を作って保存」で共有メニューが開いたら「写真に保存」などを選んでください。𝕏でシェアするときは、保存した画像を投稿に添えてください（シェアの文章にお題や名前は入りません）。' }),
+          el('div', { class: 'flex flex-col sm:flex-row gap-2 justify-center pt-2' }, detailBtn, textBtn), detailBox, textBox),
         el('div', { class: 'flex flex-wrap gap-2 justify-center p-rule-top pt-4' },
-          btn('同じ設定でもう一度', () => { const keep = { title: state.title, template: state.template, teams: state.teams, players: state.players, options: state.options, mode: state.mode, rounds: state.rounds }; state = Object.assign(newState(), keep); startDraft(); }, 'b-ink'),
-          btn('設定を変える', () => { const keep = { title: state.title, template: state.template, teams: state.teams, players: state.players, options: state.options, mode: state.mode, rounds: state.rounds }; state = Object.assign(newState(), keep); renderSetup(); }, 'b-ghost'),
+          btn('同じ設定でもう一度', () => { state = Object.assign(newState(), keep()); startDraft(); }, 'b-ink'),
+          btn('設定を変える', () => { state = Object.assign(newState(), keep()); renderSetup(); }, 'b-ghost'),
           btn('最初から', () => { clearSave(); state = newState(); renderSetup(); }, 'b-ghost'))));
     }
 
@@ -745,6 +992,7 @@
       const story = format === 'story';
       const W = story ? 1080 : 1200, H = story ? 1920 : 675;
       const c = document.createElement('canvas'); c.width = W; c.height = H;
+      c.truncated = false;
       const ctx = c.getContext('2d');
       ctx.fillStyle = '#0b1328'; ctx.fillRect(0, 0, W, H);
       ctx.textBaseline = 'middle';
@@ -790,6 +1038,7 @@
         let ly = yy + pad + nameSize + 8 + lineH / 2;
         ctx.fillStyle = '#e5e7eb';
         const maxLines = Math.floor((ch - pad * 2 - nameSize - 8) / lineH);
+        if (picks.length > maxLines) c.truncated = true;
         picks.slice(0, maxLines).forEach((p, k) => {
           const t = (k === maxLines - 1 && picks.length > maxLines) ? `ほか${picks.length - maxLines + 1}個` : `${p.round}. ${opt(p.optionId).label}`;
           fit(ctx, t, 700, Math.floor(lineH * 0.78), cw - 2 * pad, 10);
@@ -804,8 +1053,46 @@
       ctx.fillText('dreamteam9.com', W - M, H - footH / 2, W / 2 - M);
       return c;
     }
+    // 1人ずつの画像（1080×1350）。最大15巡でも、指名を全部読める大きさで載せる（省略しない）
+    function buildPlayerImage(i, counts, winners) {
+      const W = 1080, H = 1350, M = 56;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#0b1328'; ctx.fillRect(0, 0, W, H);
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      const topH = 96;
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, topH);
+      ctx.fillStyle = '#facc15';
+      fit(ctx, 'AIドラフト なんでもドラフト（遊び）', 900, 36, W - 2 * M, 18);
+      ctx.fillText('AIドラフト なんでもドラフト（遊び）', M, topH / 2, W - 2 * M);
+      ctx.fillStyle = '#cbd5e1';
+      fit(ctx, `お題：${state.title}`, 700, 40, W - 2 * M, 20);
+      ctx.fillText(`お題：${state.title}`, M, topH + 60, W - 2 * M);
+      const isWin = winners.includes(i);
+      const name = P(i) + (counts ? `（${counts[i]}票）` : '') + (isWin ? (winners.length > 1 ? '・同率優勝' : '・優勝') : '');
+      ctx.fillStyle = isWin ? '#facc15' : '#ffffff';
+      fit(ctx, name, 900, 64, W - 2 * M, 24);
+      ctx.fillText(name, M, topH + 150, W - 2 * M);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(M, topH + 200, W - 2 * M, 3);
+      const footH = 80, top = topH + 230, bottom = H - footH - 30;
+      const picks = teamOf(i);
+      const lineH = Math.min(84, (bottom - top) / Math.max(1, picks.length));
+      let y = top + lineH / 2;
+      ctx.fillStyle = '#f1f5f9';
+      picks.forEach(p => {
+        const t = `${p.round}. ${opt(p.optionId).label}`;
+        fit(ctx, t, 700, Math.min(48, Math.floor(lineH * 0.72)), W - 2 * M, 22);
+        ctx.fillText(t, M, y, W - 2 * M); y += lineH;
+      });
+      ctx.fillStyle = '#020617'; ctx.fillRect(0, H - footH, W, footH);
+      ctx.fillStyle = '#facc15'; ctx.font = '900 30px sans-serif';
+      ctx.fillText('AIドラフトで作成', M, H - footH / 2, W / 2);
+      ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'right';
+      ctx.fillText('dreamteam9.com', W - M, H - footH / 2, W / 2 - M);
+      return c;
+    }
 
-    // ---------- 再開 ----------
+    // ---------- 開いたとき：保存データを確かめてから、再開・新規 ----------
     function resume() {
       if (state.phase === 'setup') renderSetup();
       else if (state.phase === 'draft') {
@@ -815,17 +1102,44 @@
       } else if (state.phase === 'vote') renderVoteHandoff();
       else renderResult();
     }
-    const saved = load();
-    if (saved && saved.phase !== 'setup') {
-      $('ad-resume-title').textContent = saved.title || 'お題なし';
-      $('ad-resume').classList.remove('hidden-screen');
-      $('ad-resume-yes').addEventListener('click', () => { state = saved; $('ad-resume').classList.add('hidden-screen'); resume(); });
-      $('ad-resume-no').addEventListener('click', () => { clearSave(); state = newState(); $('ad-resume').classList.add('hidden-screen'); renderSetup(); });
-      state = newState(); app.replaceChildren(el('p', { class: 'text-sm p-sub text-center', text: '上のボタンから選んでください' }));
-    } else {
-      state = saved || newState();
-      renderSetup();
+    function newGameFromScratch() { clearSave(); store.saveEnabled = true; state = newState(); $('ad-resume').classList.add('hidden-screen'); renderSetup(); }
+    function showResumeBox(...nodes) { $('ad-resume').replaceChildren(...nodes); $('ad-resume').classList.remove('hidden-screen'); }
+    function readSaved() {
+      let txt;
+      try { txt = localStorage.getItem(SAVE_KEY); } catch (e) { store.unavailable = true; return { none: true }; }
+      if (txt == null) return { none: true };
+      let raw;
+      try { raw = JSON.parse(txt); } catch (e) { return { ok: false, reason: '保存データの形が読み取れません' }; }
+      return validateState(raw);
     }
+    function boot() {
+      const r = readSaved();
+      if (r.none) { state = newState(); renderSetup(); renderStatus(); return; }
+      if (r.ok && r.state.phase === 'setup') { state = r.state; renderSetup(); renderStatus(); return; } // 設定の途中はそのまま戻す
+      // ★ 「続きから／最初から」を選ぶまでは保存しない（保存データを黙って上書きしない）
+      store.saveEnabled = false;
+      app.replaceChildren(el('p', { class: 'text-sm p-sub text-center', text: '上のボタンから選んでください' }));
+      if (!r.ok) {
+        showResumeBox(el('p', { class: 'font-bold mb-2', text: '保存されている途中のドラフトを読み込めませんでした' }),
+          el('p', { class: 'text-sm mb-3', text: `理由：${r.reason}。このデータでは続きから遊べません。新しく始めると、保存データは新しい内容で上書きされます。` }),
+          el('div', { class: 'flex gap-3 justify-center flex-wrap' }, btn('新しく始める', newGameFromScratch, 'b-ink px-6')));
+        return;
+      }
+      showResumeBox(el('p', { class: 'font-bold mb-3' }, '途中のドラフトがあります（', el('span', { id: 'ad-resume-title', text: r.state.title || 'お題なし' }), '）'),
+        el('div', { class: 'flex gap-3 justify-center flex-wrap' },
+          el('button', { type: 'button', id: 'ad-resume-yes', class: 'ad-btn b-ink px-6', onclick: () => {
+            store.saveEnabled = true; state = r.state; $('ad-resume').classList.add('hidden-screen');
+            try { resume(); }
+            catch (e) {
+              // 確かめをすり抜けた不具合でも、操作できない画面にしない
+              store.saveEnabled = false;
+              app.replaceChildren(el('div', { class: 'p-alert space-y-2 text-sm' }, el('p', { text: '続きの画面を表示できませんでした。新しく始めることができます（保存データは新しい内容で上書きされます）。' }), btn('新しく始める', newGameFromScratch, 'b-ink text-sm')));
+            }
+          } }, '続きから遊ぶ'),
+          el('button', { type: 'button', id: 'ad-resume-no', class: 'ad-btn b-ghost px-6', onclick: newGameFromScratch }, '最初から')));
+      renderStatus();
+    }
+    boot();
   </script>
 </body>
 </html>
