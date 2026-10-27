@@ -64,7 +64,12 @@
     .p-sheet { background: var(--sheet); border: 1px solid var(--hair); border-top: 3px solid var(--ink); border-radius: 2px; }
     .p-h { border-bottom: 3px solid var(--ink); padding-bottom: .25rem; }
     .p-h2 { border-bottom: 3px solid var(--ink); padding-bottom: .25rem; }
-    .p-label { color: var(--ink); border-bottom: 1px solid var(--hair); padding-bottom: .25rem; }
+    .p-label { color: var(--ink); }
+    /* 準備の画面：01〜04 の大きな区切りだけ太い線。中の項目は小さな見出しだけ */
+    .p-sec { border-top: 3px solid var(--ink); padding-top: .75rem; }
+    .p-sec-h { font-size: 1rem; font-weight: 800; display: flex; align-items: baseline; gap: .5rem; }
+    .p-sec-no { font-size: .7rem; font-weight: 700; color: var(--ink-2); letter-spacing: .08em; }
+    .p-sub-h { font-size: .8rem; font-weight: 700; color: var(--ink); display: flex; justify-content: space-between; gap: .5rem; }
     .p-rule-top { border-top: 1px solid var(--hair); }
 
     /* ボタン：角は小さく。塗りは墨（進める操作）か朱赤（主要な確定操作だけ）。ほかは白地に墨の枠 */
@@ -76,16 +81,20 @@
        色が違って見えた）。色の変化は、マウスで操作できる端末だけにする（画面を作るときに hover: のクラスは使わない） */
     @media (hover: hover) {
       .b-ink:hover { background: #3A3A36; } .b-shu:hover { background: #9E2F25; } .b-ghost:hover, .ad-opt:hover, .p-filter:hover { background: var(--paper); }
-      .ad-env:not([disabled]):hover { transform: translateY(-3px); }
+      .ad-env:not([disabled]):hover .ad-env-card { transform: translateY(-3px); }
     }
     .ad-btn[disabled] { background: var(--muted-bg); color: var(--ink-2); border-color: var(--hair); }
 
     /* 入力欄・選ぶ欄 */
-    .ad-field { width: 100%; background: var(--sheet); border: 1px solid var(--ink-2); border-radius: 2px; padding: .5rem .75rem; font-size: 16px; color: var(--ink); }
-    .ad-field::placeholder { color: #9A958A; }
+    /* 入力欄：枠は強くしすぎない（#8E887B は白地に対して3:1以上）。入力中は墨の枠 */
+    .ad-field { width: 100%; background: var(--sheet); border: 1px solid #8E887B; border-radius: 2px; padding: .5rem .75rem; font-size: 16px; color: var(--ink); }
+    .ad-field:focus { border-color: var(--ink); }
+    .ad-field::placeholder { color: #6F6B63; }
     .ad-field:disabled { background: var(--muted-bg); }
-    .p-choice { background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; }
-    .p-choice:has(input:checked) { border: 2px solid var(--ink); font-weight: 700; }
+    /* 選択肢：枠は常に2px。選んだときは色だけ変える（太さや文字の太さを変えて、隣が動かないように） */
+    .p-choice { background: var(--sheet); border: 2px solid #C9C2B2; border-radius: 2px; cursor: pointer; }
+    .p-choice:has(input:checked) { border-color: var(--ink); background: #FBF9F2; }
+    .p-choice:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
     .p-choice input, .p-check input { accent-color: var(--ink); }
     .p-chip { background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; }
     .p-filter { background: var(--sheet); border: 1px solid var(--ink); border-radius: 2px; color: var(--ink); }
@@ -96,7 +105,7 @@
     /* 選択肢の一覧（指名票の行） */
     .ad-opt { min-height: 48px; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; color: var(--ink); }
     /* 押した位置に次の画面の行が出たとき、端末のタップの色が新しい行に残って見えないように（一覧の行と封筒だけ） */
-    .ad-opt, .ad-env { -webkit-tap-highlight-color: transparent; }
+    .ad-opt { -webkit-tap-highlight-color: transparent; }
     .p-pickmark { border: 1px solid var(--ink); border-radius: 2px; padding: .25rem .6rem; }
     .p-line { background: var(--sheet); border-bottom: 1px solid var(--hair); }
     .p-lines { border-top: 2px solid var(--ink); }
@@ -108,7 +117,6 @@
     /* 選ぶ→指名する（R5）：選んでいる候補は太い枠。確定のボタンは一覧の下に留める */
     .ad-opt[aria-pressed="true"] { border: 2px solid var(--ink); background: var(--muted-bg); }
     .ad-opt[aria-pressed="true"] .p-pickmark { background: var(--ink); color: var(--sheet); }
-    .p-confirm { position: sticky; bottom: 0; z-index: 5; background: var(--sheet); border-top: 2px solid var(--ink); padding: .75rem 0 .5rem; }
     /* 画面を切り替えた直後は押せない（連打が次の画面の操作として通らないように） */
     #ad-app.is-locked { pointer-events: none; }
     .p-fold > summary { list-style: revert; }
@@ -116,19 +124,35 @@
     .p-dialog { background: var(--sheet); color: var(--ink); border: 1px solid var(--ink); border-top: 3px solid var(--ink); border-radius: 2px; }
     .p-dialog::backdrop { background: rgba(35,35,32,.5); }
 
-    /* 封筒の抽選（ゲーム本体の封筒くじに合わせた形。当たりの封筒は、開けるまで画面のどこにも出さない） */
-    .ad-env { position: relative; width: 100%; aspect-ratio: 3 / 4; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; box-shadow: 0 4px 10px rgba(35,35,32,.12); overflow: hidden; color: var(--ink); transition: transform .15s; }
-    .ad-env::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 38%; background: var(--muted-bg); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+    /* 封筒の抽選（ゲーム本体の封筒くじに合わせた形。当たりの封筒は、開けるまで画面のどこにも出さない）。
+       押せる範囲は「封筒＋その下の名前」全体。名前は封筒の外に出して、判子や番号と重ならないようにする。
+       判子・番号の大きさは封筒の幅に合わせる（container query。使えない端末は固定の大きさ） */
+    .ad-env { display: flex; flex-direction: column; gap: .35rem; min-width: 0; padding: 0; background: none; border: 0; color: var(--ink); text-align: center; -webkit-tap-highlight-color: transparent; }
     .ad-env[disabled] { cursor: default; }
-    .ad-env .ad-env-name { position: absolute; left: 4px; right: 4px; bottom: 8px; font-size: 12px; font-weight: 800; text-align: center; z-index: 1; }
-    .ad-env .ad-env-no { position: absolute; left: 0; right: 0; top: 46%; font-family: var(--mincho); font-size: 22px; font-weight: 700; color: var(--ink-2); text-align: center; z-index: 1; }
-    .ad-env.is-open::before { display: none; }
-    .ad-env .ad-stamp { position: absolute; left: 50%; top: 40%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border: 3px solid var(--shu); color: var(--shu); border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--mincho); font-size: 12px; line-height: 1.15; font-weight: 700; transform: rotate(-15deg); z-index: 1; animation: adstamp .32s ease-out both; }
-    .ad-env.is-lose { opacity: .55; }
-    .ad-env .ad-miss { position: absolute; left: 0; right: 0; top: 36%; text-align: center; font-size: 16px; font-weight: 700; color: var(--ink-2); z-index: 1; }
-    .ad-env.is-win { border: 2px solid var(--ink); }
-    @keyframes adstamp { from { opacity: 0; transform: rotate(-15deg) scale(2.2); } to { opacity: 1; transform: rotate(-15deg) scale(1); } }
-    @media (prefers-reduced-motion: reduce) { .ad-env .ad-stamp { animation: none; } .ad-env { transition: none; } }
+    .ad-env-card { position: relative; width: 100%; aspect-ratio: 3 / 4; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; box-shadow: 0 4px 10px rgba(35,35,32,.12); overflow: hidden; container-type: inline-size; transition: transform .15s; }
+    .ad-env-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 36%; background: var(--muted-bg); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+    .ad-env .ad-env-no { position: absolute; left: 0; right: 0; top: 56%; transform: translateY(-50%); font-family: var(--mincho); font-weight: 700; color: var(--ink-2); font-size: 22px; font-size: 20cqw; line-height: 1; }
+    .ad-env .ad-env-name { display: block; font-size: .8rem; font-weight: 700; line-height: 1.3; min-height: 2.6em; word-break: break-all; }
+    .ad-env .ad-env-name.is-empty { color: var(--ink-2); font-weight: 400; }
+    .ad-env.is-open .ad-env-card::before { display: none; }
+    .ad-env .ad-stamp { position: absolute; left: 50%; top: 50%; width: 64px; width: 72cqw; aspect-ratio: 1; border: 3px solid var(--shu); border-width: max(2px, 2.6cqw); color: var(--shu); border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--mincho); font-size: 12px; font-size: 13cqw; line-height: 1.15; font-weight: 700; transform: translate(-50%, -50%) rotate(-15deg); animation: adstamp .32s ease-out both; }
+    .ad-env.is-lose .ad-env-card, .ad-env.is-lose .ad-env-name { opacity: .55; }
+    .ad-env .ad-miss { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); font-size: 16px; font-size: 15cqw; font-weight: 700; color: var(--ink-2); }
+    .ad-env.is-win .ad-env-card { border: 2px solid var(--ink); }
+    .ad-env:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    /* 指名票（選んだ候補を大きく見せ、ミシン目の下に「この候補で指名する」）。一覧の下に留める */
+    .p-slip { position: sticky; bottom: 0; z-index: 5; background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; padding: .6rem .75rem .75rem; box-shadow: 0 -6px 14px rgba(35,35,32,.10); }
+    .p-slip-head { display: flex; flex-wrap: wrap; gap: .1rem .75rem; font-size: .75rem; color: var(--ink-2); }
+    .p-slip-head b { color: var(--ink); }
+    .p-slip-name { font-family: var(--mincho); font-weight: 700; font-size: 1.6rem; line-height: 1.25; margin: .2rem 0 .5rem; word-break: break-all; }
+    .p-slip-name.is-empty { font-family: var(--gothic); font-size: .95rem; font-weight: 400; color: var(--ink-2); }
+    /* ミシン目は1本。左右の切り欠きは小さく、ボタンの押せる範囲にはかからない */
+    .p-perf { position: relative; border-top: 2px dashed #8E887B; margin: 0 -.75rem .75rem; }
+    .p-perf::before, .p-perf::after { content: ''; position: absolute; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--paper); border: 2px solid var(--ink); }
+    .p-perf::before { left: -7px; clip-path: inset(0 0 0 50%); }
+    .p-perf::after { right: -7px; clip-path: inset(0 50% 0 0); }
+    @keyframes adstamp { from { opacity: 0; transform: translate(-50%, -50%) rotate(-15deg) scale(2.2); } to { opacity: 1; transform: translate(-50%, -50%) rotate(-15deg) scale(1); } }
+    @media (prefers-reduced-motion: reduce) { .ad-env .ad-stamp { animation: none; } .ad-env-card { transition: none; } }
     @media (prefers-reduced-motion: reduce) { .ad-anim { animation: none !important; } }
     .ad-anim { animation: adpop .35s ease-out; }
     @keyframes adpop { from { transform: scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -357,7 +381,7 @@
       app.replaceChildren(...nodes);
       if (!firstShow) {
         lockInput();
-        if (!keepScroll) app.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        if (!keepScroll) app.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
         // キーボードや読み上げで使う人のために、新しい画面の見出しへフォーカスを移す（スクロールはさせない）
         const f = app.querySelector('[data-focus]');
         if (f) { f.setAttribute('tabindex', '-1'); f.focus({ preventScroll: true }); }
@@ -365,6 +389,7 @@
       firstShow = false; keepScroll = false;
       save();
     }
+    const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     const P = i => state.players[i];
     const opt = id => state.options.find(o => o.id === id);
     const teamOf = i => state.picks.filter(p => p.player === i).sort((a, b) => a.round - b.round);
@@ -535,7 +560,7 @@
           det.addEventListener('toggle', () => { listOpen = det.open; summary.textContent = `登録済み ${n}個（${det.open ? 'たたむ' : 'すべて表示・探す・外す'}）`; });
           optList.replaceChildren(det);
         } else {
-          optList.replaceChildren(...body);
+          optList.replaceChildren(...(body.length ? body : [el('p', { class: 'text-xs p-sub', text: 'まだ登録していません' })]));
         }
         updateRounds();
       }
@@ -612,18 +637,25 @@
         startDraft();
       }
 
-      const field = (label, ...kids) => el('div', { class: 'space-y-2' }, el('p', { class: 'p-label text-sm font-bold flex justify-between gap-2' }, ...[].concat(label)), ...kids);
+      // 準備の画面：01 お題 → 02 参加者 → 03 候補 → 04 ルール。大きな区切りだけ太い線、中の項目は小さな見出し（R6）
+      const sec = (no, title, extra, ...kids) => el('section', { class: 'p-sec space-y-4' },
+        el('h3', { class: 'p-sec-h' }, el('span', { class: 'p-sec-no', text: no }), el('span', { text: title }), extra ? el('span', { class: 'ml-auto text-xs p-sub font-normal' }, extra) : null), ...kids);
+      const sub = (label, ...kids) => el('div', { class: 'space-y-2' }, el('p', { class: 'p-sub-h' }, ...[].concat(label)), ...kids);
       renderPlayers();
-      show(el('div', { class: 'space-y-6' },
+      show(el('div', { class: 'space-y-8' },
         el('h2', { class: 'p-h text-xl', text: 'ドラフトの設定', 'data-focus': true }),
-        field(['お題', titleCount], el('label', { for: 'ad-title', class: 'sr-only', text: 'お題' }), title),
-        field('テンプレート（野球）', tplWrap, teamBox),
-        field('候補の例（野球以外。今の候補に足します）', presetBox),
-        field(`参加者（${LIMITS.minPlayers}〜${LIMITS.maxPlayers}人）`, playersBox),
-        field(['選択肢', optCount], el('label', { for: 'ad-opt-input', class: 'sr-only', text: '選択肢を1行に1つずつ' }), ta, addBtn, optMsg, optList),
-        field('指名の方式', modeBox),
-        field('最後に', voteBox, voteNote),
-        field('巡の数（1人が取る数）', el('label', { for: 'ad-rounds', class: 'sr-only', text: '巡の数' }), roundsSel, roundsNote),
+        sec('01', 'お題', titleCount, el('label', { for: 'ad-title', class: 'sr-only', text: 'お題' }), title),
+        sec('02', `参加者（${LIMITS.minPlayers}〜${LIMITS.maxPlayers}人）`, null, playersBox),
+        sec('03', '候補', optCount,
+          sub('自分で入力する', el('p', { class: 'text-xs p-sub', text: `1行に1つずつ書いて「選択肢に追加」を押します。まとめて貼り付けもできます（1つ${LIMITS.optionMax}文字まで）。` }),
+            el('label', { for: 'ad-opt-input', class: 'sr-only', text: '選択肢を1行に1つずつ' }), ta, addBtn, optMsg),
+          sub('候補の例（野球以外。今の候補に足します）', presetBox),
+          sub('テンプレート（野球）', tplWrap, teamBox),
+          sub('登録した候補', optList)),
+        sec('04', 'ルール', null,
+          sub('指名の方式', modeBox),
+          sub('最後に', voteBox, voteNote),
+          sub('巡の数（1人が取る数）', el('label', { for: 'ad-rounds', class: 'sr-only', text: '巡の数' }), roundsSel, roundsNote)),
         errors, startBtn));
       renderOptions('');
     }
@@ -654,32 +686,34 @@
         el('p', { class: 'text-sm p-sub' }, el('span', { class: 'p-mincho text-base text-[#232320]', text: `第${state.round}巡` }), ` ／ 全${state.rounds}巡 ・ ${state.mode === 'waiver' ? 'ウェーバー' : '同時指名'}`, extra ? ` ・ ${extra}` : ''),
         btn('全員のチーム', openBoard, 'b-ghost text-sm')));
 
-    // 選ぶ画面（検索・球団の絞り込み）。候補を押すと「選んでいる」だけ。下の「◯◯で指名する」を押して確定する
-    function chooser(available, onConfirm, label) {
+    // 選ぶ画面（検索・球団の絞り込み）。候補を押すと「選択中」になるだけ。下の指名票の「この候補で指名する」で確定する（R5）。
+    // 指名票：お題・巡・誰の指名か・選んだ候補（一番大きく）→ ミシン目 → 確定のボタン。確認の画面は別に増やさない
+    function chooser(available, onConfirm, who, note) {
       let q = '', team = '', selected = null;
       const listBox = el('ul', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-2' });
       const count = el('p', { class: 'text-xs p-sub', 'aria-live': 'polite' });
-      const chosenText = el('p', { class: 'text-sm', 'aria-live': 'polite' });
-      const confirmBtn = btn('候補を選んでください', null, 'b-ink w-full sm:w-auto sm:px-8');
+      const nameEl = el('p', { class: 'p-slip-name is-empty', 'aria-live': 'polite', text: '上の一覧から候補を選んでください' });
+      const confirmBtn = btn('この候補で指名する', null, 'b-shu w-full text-lg');
       confirmBtn.disabled = true;
       confirmBtn.addEventListener('click', once(() => onConfirm(selected)));
-      const bar = el('div', { class: 'p-confirm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2' }, chosenText, confirmBtn);
+      const slip = el('div', { class: 'p-slip', role: 'group', 'aria-label': '指名票' },
+        el('div', { class: 'p-slip-head' }, el('b', { text: '指名票' }), el('span', { text: `第${state.round}巡${note ? `（${note}）` : ''}` }), el('span', {}, el('b', { text: P(who) }), ' さん')),
+        el('p', { class: 'text-xs p-sub truncate' }, 'お題：', state.title),
+        nameEl, el('div', { class: 'p-perf', 'aria-hidden': 'true' }), confirmBtn);
       function choose(id) {
         selected = id;
         listBox.querySelectorAll('button.ad-opt').forEach(b => { const on = Number(b.dataset.id) === id; b.setAttribute('aria-pressed', String(on)); b.querySelector('.p-pickmark').textContent = on ? '選択中' : '選ぶ'; });
-        const o = opt(id);
-        chosenText.replaceChildren('選んでいる候補：', el('span', { class: 'font-bold', text: o.label }));
-        confirmBtn.textContent = `「${o.label}」で指名する`; confirmBtn.disabled = false;
+        nameEl.textContent = opt(id).label; nameEl.classList.remove('is-empty');
+        confirmBtn.disabled = false;
       }
       function draw() {
         const items = available.filter(o => (!team || o.team === team) && matchesQuery(o.label, q));
         count.textContent = `${items.length}個`;
         listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left px-3 py-2 flex items-center justify-between gap-2', 'data-id': o.id, 'aria-pressed': String(o.id === selected), onclick: () => choose(o.id), 'aria-label': `${o.label}を選ぶ` },
-          el('span', {}, el('span', { class: 'font-bold', text: o.label }), TEAMS.includes(o.team) ? el('span', { class: 'block text-[11px] p-sub', text: o.team }) : null),
+          el('span', { class: 'min-w-0' }, el('span', { class: 'font-bold break-all', text: o.label }), TEAMS.includes(o.team) ? el('span', { class: 'block text-[11px] p-sub', text: o.team }) : null),
           el('span', { class: 'shrink-0 p-pickmark text-xs font-bold', text: o.id === selected ? '選択中' : '選ぶ' })))));
         if (!items.length) listBox.append(el('li', { class: 'text-sm p-sub', text: '条件に合う選択肢がありません' }));
       }
-      chosenText.textContent = '選んでいる候補：まだありません';
       const tools = [];
       if (available.length > 30) {
         const s = el('input', { class: 'ad-field', type: 'search', placeholder: '選択肢を探す', 'aria-label': '選択肢を探す', autocomplete: 'off' });
@@ -694,7 +728,7 @@
         tools.push(wrap);
       }
       draw();
-      return el('div', { class: 'space-y-3' }, label ? el('p', { class: 'text-sm p-sub', text: label }) : null, ...tools, count, listBox, bar);
+      return el('div', { class: 'space-y-3' }, ...tools, count, listBox, slip);
     }
 
     // ウェーバー：今の番の人が選ぶ（公開の指名）
@@ -711,7 +745,7 @@
           state.msg = `${P(who)} さんが「${opt(id).label}」を指名しました`;
           state.turn++;
           if (state.turn >= state.queue.length) nextRoundOrFinish(); else renderWaiver();
-        })));
+        }, who)));
     }
 
     // 同時指名：端末を渡す画面（選択肢は見せない）。全員が選んだら「全員の指名がそろいました」→ 発表
@@ -746,7 +780,7 @@
             el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: '選びました' }),
             el('p', { class: 'text-sm p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
             btn(`${P(next)} さんに渡す`, once(renderHandoff))));
-        })));
+        }, who, isRedo ? '選び直し' : null)));
     }
     // 発表：重ならなければ確定。重なったら、重なった人どうしで封筒の抽選（自分で封筒を選ぶ）
     // state.rv：{ sub: 発表した指名, lots: [抽選], idx: いまの抽選, stage: 'list'｜'lottery'｜'done' }（途中で閉じても続きから）
@@ -794,16 +828,19 @@
     function renderLottery() {
       const rv = state.rv, l = rv.lots[rv.idx], n = l.players.length;
       const who = nextDrawer(l);
-      const envs = el('div', { class: `grid ${n <= 3 ? 'grid-cols-3' : 'grid-cols-4'} gap-3 max-w-md mx-auto pt-2` });
+      // 列：2人は2列、3人はスマホ2列・広い画面3列、4人以上はスマホ2列・広い画面4列（小さい画面で封筒や名前が細くならないように）
+      const cols = n === 2 ? 'grid-cols-2 max-w-xs' : n === 3 ? 'grid-cols-2 sm:grid-cols-3 max-w-md' : 'grid-cols-2 sm:grid-cols-4 max-w-2xl';
+      const envs = el('div', { class: `grid ${cols} gap-x-3 gap-y-4 mx-auto pt-2` });
       for (let i = 0; i < n; i++) {
         const owner = l.taken[i];
-        const kids = [];
-        if (!l.opened) kids.push(el('span', { class: 'ad-env-no', text: String(i + 1) }));
-        if (l.opened) kids.push(i === l.winEnv ? el('span', { class: 'ad-stamp' }, '交渉権', el('br'), '確定') : el('span', { class: 'ad-miss', text: 'はずれ' }));
-        if (owner != null) kids.push(el('span', { class: 'ad-env-name', text: P(owner) }));
+        const card = [];
+        if (!l.opened) card.push(el('span', { class: 'ad-env-no', text: String(i + 1) }));
+        if (l.opened) card.push(i === l.winEnv ? el('span', { class: 'ad-stamp' }, '交渉権', el('br'), '確定') : el('span', { class: 'ad-miss', text: 'はずれ' }));
         const cls = `ad-env${l.opened ? ' is-open' + (i === l.winEnv ? ' is-win' : ' is-lose') : ''}`;
         envs.append(el('button', { type: 'button', class: cls, disabled: owner != null || l.opened, 'aria-label': owner != null ? `${i + 1}番の封筒（${P(owner)}）` : `${i + 1}番の封筒を選ぶ`,
-          onclick: () => { if (takeEnvelope(l, i)) { keepScroll = true; renderLottery(); } } }, ...kids));
+          onclick: () => { if (takeEnvelope(l, i)) { keepScroll = true; renderLottery(); } } },
+          el('span', { class: 'ad-env-card' }, ...card),
+          el('span', { class: `ad-env-name${owner == null ? ' is-empty' : ''}`, text: owner != null ? P(owner) : `${i + 1}番（まだ）` })));
       }
       let head, action = null;
       if (who != null) {
@@ -817,7 +854,9 @@
           keepScroll = true; renderLottery();
         }), 'b-ink text-lg px-8');
       } else {
-        head = el('p', { class: 'ad-anim p-mincho text-xl text-center', 'data-focus': true }, el('span', { class: 'p-em', text: P(l.winner) }), ' さんが「', el('span', { text: opt(l.optionId).label }), '」を獲得');
+        head = el('div', { class: 'ad-anim text-center', 'data-focus': true },
+          el('p', { class: 'p-mincho text-3xl break-all', text: P(l.winner) }),
+          el('p', { class: 'p-mincho text-lg' }, 'さんが「', el('span', { text: opt(l.optionId).label }), '」を獲得'));
         const last = rv.idx >= rv.lots.length - 1;
         action = btn(last ? '発表に戻る' : '次の抽選へ', once(() => {
           if (last) { state.redo.sort((a, b) => a - b); rv.stage = 'done'; renderReveal(); }
@@ -898,11 +937,11 @@
       const preview = el('img', { class: 'w-full p-preview hidden-screen', alt: '結果の画像のプレビュー' });
       const imgErr = el('div', { class: 'p-alert text-sm font-bold', role: 'alert' });
       const imgNote = el('p', { class: 'text-xs p-sub', role: 'status' });
-      const fmtBox = el('div', { class: 'flex gap-2 justify-center' });
+      const fmtBox = el('div', { class: 'grid grid-cols-1 min-[420px]:grid-cols-2 gap-2' }); // 狭い画面は縦に並べる（全文を読める大きさのまま）
       [['x', '横長（X用）'], ['story', '縦長（ストーリー用）']].forEach(([k, label]) => {
         const r = el('input', { type: 'radio', name: 'ad-fmt', value: k, checked: k === 'x' });
         r.addEventListener('change', () => { fmt.v = k; preview.classList.add('hidden-screen'); last = null; imgNote.textContent = ''; });
-        fmtBox.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm whitespace-nowrap' }, r, label));
+        fmtBox.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm' }, r, label));
       });
       const shareFail = () => { imgErr.textContent = '共有メニューを開けませんでした。表示した画像を長押し（パソコンは右クリック）して保存してください。'; };
       const ngCheck = () => {
@@ -975,7 +1014,9 @@
           btn('最初から', () => { clearSave(); state = newState(); renderSetup(); }, 'b-ghost'))));
     }
 
-    // ---------- 結果の画像（横長 1200×675・縦長 1080×1920。絵文字・写真・ロゴは入れない） ----------
+    // ---------- 結果の画像（横長 1200×675・縦長 1080×1920・1人ずつ 1080×1350。絵文字・写真・ロゴは入れない） ----------
+    // ★ 2026-10-27：画面と同じ紙白・墨色にそろえた。色は CSS の変数（:root）から読む（画面と画像で色がずれないように）。
+    //   朱赤は優勝の判子だけ。見出し・お題・名前は明朝体、候補の並びはゴシック体（どちらも端末の文字。Webフォントは読み込まない）
     function dataURLtoBlob(dataUrl) {
       const [header, base64] = dataUrl.split(',');
       const mime = /:(.*?);/.exec(header)[1];
@@ -983,112 +1024,129 @@
       for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
       return new Blob([arr], { type: mime });
     }
-    function fit(ctx, text, weight, size, maxW, min) {
-      ctx.font = `${weight} ${size}px sans-serif`;
-      while (ctx.measureText(text).width > maxW && size > min) { size -= 1; ctx.font = `${weight} ${size}px sans-serif`; }
+    const MINCHO = '"Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif CJK JP", serif';
+    const GOTHIC = '"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif';
+    function theme() {
+      const css = getComputedStyle(document.documentElement);
+      const v = (k, d) => (css.getPropertyValue(k) || '').trim() || d;
+      return { paper: v('--paper', '#F4F1E8'), sheet: v('--sheet', '#FFFEFA'), ink: v('--ink', '#232320'), ink2: v('--ink-2', '#625F58'), shu: v('--shu', '#B6382D'), hair: v('--hair', '#CFC9BA') };
+    }
+    function fit(ctx, text, weight, size, maxW, min, family = GOTHIC) {
+      ctx.font = `${weight} ${size}px ${family}`;
+      while (ctx.measureText(text).width > maxW && size > min) { size -= 1; ctx.font = `${weight} ${size}px ${family}`; }
       return size;
+    }
+    // 優勝の判子（朱赤の丸に「優勝」）
+    function stamp(ctx, T, cx, cy, r, label = '優勝') {
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(-15 * Math.PI / 180);
+      ctx.strokeStyle = T.shu; ctx.lineWidth = Math.max(3, r * 0.12);
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = T.shu; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      fit(ctx, label, 700, Math.round(r * 0.72), r * 1.6, 10, MINCHO);
+      ctx.fillText(label, 0, 0, r * 1.6);
+      ctx.restore();
+    }
+    // 上の題字と下の帯（紙の上に墨の太線）
+    function frame(ctx, T, W, H, M, s) {
+      ctx.fillStyle = T.paper; ctx.fillRect(0, 0, W, H);
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.fillStyle = T.ink2; fit(ctx, 'AIドラフト なんでもドラフト（遊び）', 700, Math.round(22 * s), W - 2 * M, 12);
+      ctx.fillText('AIドラフト なんでもドラフト（遊び）', M, Math.round(34 * s), W - 2 * M);
+      ctx.fillStyle = T.ink; ctx.fillRect(M, Math.round(58 * s), W - 2 * M, Math.max(3, Math.round(4 * s)));
+      const footY = H - Math.round(44 * s);
+      ctx.fillStyle = T.hair; ctx.fillRect(M, footY - Math.round(20 * s), W - 2 * M, 1);
+      ctx.fillStyle = T.ink; ctx.font = `700 ${Math.round(20 * s)}px ${GOTHIC}`; ctx.fillText('AIドラフトで作成', M, footY, W / 2);
+      ctx.fillStyle = T.ink2; ctx.textAlign = 'right'; ctx.fillText('dreamteam9.com', W - M, footY, W / 2 - M);
+      ctx.textAlign = 'left';
+      return { top: Math.round(58 * s) + Math.max(3, Math.round(4 * s)), bottom: footY - Math.round(20 * s) };
     }
     function buildImage(format, counts, winners) {
       const story = format === 'story';
-      const W = story ? 1080 : 1200, H = story ? 1920 : 675;
+      const W = story ? 1080 : 1200, H = story ? 1920 : 675, s = story ? 1.6 : 1;
+      const T = theme();
       const c = document.createElement('canvas'); c.width = W; c.height = H;
       c.truncated = false;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = '#0b1328'; ctx.fillRect(0, 0, W, H);
-      ctx.textBaseline = 'middle';
-      const M = story ? 40 : 32;
-      // 上の帯：題字（本物の指名と誤解されないよう「遊び」と明記）
-      const topH = story ? 110 : 64;
-      ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, topH);
-      ctx.fillStyle = '#facc15'; ctx.textAlign = 'left';
-      fit(ctx, 'AIドラフト なんでもドラフト（遊び）', 900, story ? 40 : 28, W - 2 * M, 16);
-      ctx.fillText('AIドラフト なんでもドラフト（遊び）', M, topH / 2, W - 2 * M);
+      const M = story ? 48 : 32;
+      const f = frame(ctx, T, W, H, M, s);
       // お題と優勝
-      let y = topH + (story ? 80 : 50);
-      ctx.fillStyle = '#ffffff';
-      fit(ctx, `お題：${state.title}`, 900, story ? 60 : 38, W - 2 * M, 20);
-      ctx.fillText(`お題：${state.title}`, M, y, W - 2 * M);
-      y += story ? 80 : 50;
+      let y = f.top + Math.round(40 * s);
+      ctx.fillStyle = T.ink2; ctx.font = `700 ${Math.round(16 * s)}px ${GOTHIC}`; ctx.fillText('お題', M, y);
+      y += Math.round(32 * s);
+      ctx.fillStyle = T.ink; fit(ctx, state.title, 700, Math.round(36 * s), W - 2 * M, 18, MINCHO);
+      ctx.fillText(state.title, M, y, W - 2 * M);
+      y += Math.round(48 * s);
       const win = winners.length ? `${winners.length > 1 ? '同率優勝' : '優勝'}：${winners.map(P).join('・')}` : (state.players.length < 3 ? '（2人のときは投票なし）' : '（投票なし）');
-      ctx.fillStyle = '#facc15';
-      fit(ctx, win, 900, story ? 46 : 30, W - 2 * M, 16);
-      ctx.fillText(win, M, y, W - 2 * M);
-      // チームの一覧
-      const footH = story ? 90 : 52;
-      const top = y + (story ? 60 : 36), bottom = H - footH - (story ? 30 : 16);
+      ctx.fillStyle = winners.length ? T.ink : T.ink2; fit(ctx, win, 700, Math.round(26 * s), W - 2 * M - 80 * s, 14, MINCHO);
+      ctx.fillText(win, M, y, W - 2 * M - 80 * s);
+      // チームの一覧（紙の上に白い面。上に墨の線。優勝のチームだけ枠を太くして、小さな判子）
+      const top = y + Math.round(30 * s), bottom = f.bottom - Math.round(12 * s);
       const n = state.players.length;
       const cols = story ? (n <= 4 ? 1 : 2) : (n <= 2 ? 2 : n <= 6 ? 3 : 4);
       const rowsN = Math.ceil(n / cols);
-      const gap = story ? 20 : 12;
+      const gap = Math.round(12 * s);
       const cw = (W - 2 * M - gap * (cols - 1)) / cols, ch = (bottom - top - gap * (rowsN - 1)) / rowsN;
       state.players.forEach((_, i) => {
         const x = M + (i % cols) * (cw + gap), yy = top + Math.floor(i / cols) * (ch + gap);
         const isWin = winners.includes(i);
-        ctx.fillStyle = isWin ? 'rgba(250,204,21,0.14)' : 'rgba(255,255,255,0.06)';
-        ctx.beginPath(); ctx.roundRect(x, yy, cw, ch, 10); ctx.fill();
-        if (isWin) { ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.stroke(); }
-        const pad = story ? 20 : 14;
-        const nameSize = story ? 40 : 24;
-        ctx.textAlign = 'left'; ctx.fillStyle = isWin ? '#facc15' : '#ffffff';
+        ctx.fillStyle = T.sheet; ctx.fillRect(x, yy, cw, ch);
+        ctx.strokeStyle = isWin ? T.ink : T.hair; ctx.lineWidth = isWin ? 3 : 1; ctx.strokeRect(x + 0.5, yy + 0.5, cw - 1, ch - 1);
+        ctx.fillStyle = T.ink; ctx.fillRect(x, yy, cw, Math.round(3 * s));
+        const pad = Math.round(14 * s);
+        const nameSize = Math.round(24 * s);
+        const stampR = isWin ? Math.min(nameSize * 0.95, ch * 0.18) : 0;
         const label = P(i) + (counts ? `（${counts[i]}票）` : '');
-        fit(ctx, label, 900, nameSize, cw - 2 * pad, 12);
-        ctx.fillText(label, x + pad, yy + pad + nameSize / 2, cw - 2 * pad);
+        ctx.fillStyle = T.ink; fit(ctx, label, 700, nameSize, cw - 2 * pad - stampR * 2, 12, MINCHO);
+        ctx.fillText(label, x + pad, yy + pad + nameSize / 2 + 4, cw - 2 * pad - stampR * 2);
+        if (isWin) stamp(ctx, T, x + cw - pad - stampR, yy + pad + stampR, stampR);
+        ctx.fillStyle = T.hair; ctx.fillRect(x + pad, yy + pad + nameSize + 10, cw - 2 * pad, 1);
         const picks = teamOf(i);
-        const lineH = Math.max(14, Math.min(story ? 46 : 28, (ch - pad * 2 - nameSize - 8) / Math.max(1, picks.length)));
-        let ly = yy + pad + nameSize + 8 + lineH / 2;
-        ctx.fillStyle = '#e5e7eb';
-        const maxLines = Math.floor((ch - pad * 2 - nameSize - 8) / lineH);
+        const avail = ch - pad * 2 - nameSize - 18;
+        // 1行の高さは読める大きさ（横長で20px以上）を下回らせない。入りきらない分は「ほか◯個」にまとめる
+        const lineH = Math.max(Math.round(20 * s), Math.min(Math.round(28 * s), avail / Math.max(1, picks.length)));
+        const maxLines = Math.max(1, Math.floor(avail / lineH));
         if (picks.length > maxLines) c.truncated = true;
+        let ly = yy + pad + nameSize + 18 + lineH / 2;
         picks.slice(0, maxLines).forEach((p, k) => {
-          const t = (k === maxLines - 1 && picks.length > maxLines) ? `ほか${picks.length - maxLines + 1}個` : `${p.round}. ${opt(p.optionId).label}`;
-          fit(ctx, t, 700, Math.floor(lineH * 0.78), cw - 2 * pad, 10);
+          const more = k === maxLines - 1 && picks.length > maxLines;
+          const t = more ? `ほか${picks.length - maxLines + 1}個` : `${p.round}. ${opt(p.optionId).label}`;
+          ctx.fillStyle = more ? T.ink2 : T.ink;
+          fit(ctx, t, 500, Math.floor(lineH * 0.74), cw - 2 * pad, 12);
           ctx.fillText(t, x + pad, ly, cw - 2 * pad); ly += lineH;
         });
       });
-      // 下の帯
-      ctx.fillStyle = '#020617'; ctx.fillRect(0, H - footH, W, footH);
-      ctx.fillStyle = '#facc15'; ctx.font = `900 ${story ? 34 : 22}px sans-serif`; ctx.textAlign = 'left';
-      ctx.fillText('AIドラフトで作成', M, H - footH / 2, W / 2);
-      ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'right';
-      ctx.fillText('dreamteam9.com', W - M, H - footH / 2, W / 2 - M);
       return c;
     }
     // 1人ずつの画像（1080×1350）。最大15巡でも、指名を全部読める大きさで載せる（省略しない）
     function buildPlayerImage(i, counts, winners) {
-      const W = 1080, H = 1350, M = 56;
+      const W = 1080, H = 1350, M = 64, s = 1.5;
+      const T = theme();
       const c = document.createElement('canvas'); c.width = W; c.height = H;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = '#0b1328'; ctx.fillRect(0, 0, W, H);
-      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-      const topH = 96;
-      ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, topH);
-      ctx.fillStyle = '#facc15';
-      fit(ctx, 'AIドラフト なんでもドラフト（遊び）', 900, 36, W - 2 * M, 18);
-      ctx.fillText('AIドラフト なんでもドラフト（遊び）', M, topH / 2, W - 2 * M);
-      ctx.fillStyle = '#cbd5e1';
-      fit(ctx, `お題：${state.title}`, 700, 40, W - 2 * M, 20);
-      ctx.fillText(`お題：${state.title}`, M, topH + 60, W - 2 * M);
-      const isWin = winners.includes(i);
-      const name = P(i) + (counts ? `（${counts[i]}票）` : '') + (isWin ? (winners.length > 1 ? '・同率優勝' : '・優勝') : '');
-      ctx.fillStyle = isWin ? '#facc15' : '#ffffff';
-      fit(ctx, name, 900, 64, W - 2 * M, 24);
-      ctx.fillText(name, M, topH + 150, W - 2 * M);
-      ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(M, topH + 200, W - 2 * M, 3);
-      const footH = 80, top = topH + 230, bottom = H - footH - 30;
+      const f = frame(ctx, T, W, H, M, s);
+      let y = f.top + 50;
+      ctx.fillStyle = T.ink2; ctx.font = `700 24px ${GOTHIC}`; ctx.fillText('お題', M, y);
+      ctx.fillStyle = T.ink; fit(ctx, state.title, 700, 40, W - 2 * M - 70, 20, MINCHO); ctx.fillText(state.title, M + 70, y, W - 2 * M - 70);
+      y += 90;
+      const isWin = winners.length && winners.includes(i);
+      const name = P(i) + (counts ? `（${counts[i]}票）` : '');
+      ctx.fillStyle = T.ink; fit(ctx, name, 700, 72, W - 2 * M - (isWin ? 150 : 0), 28, MINCHO); ctx.fillText(name, M, y, W - 2 * M - (isWin ? 150 : 0));
+      if (isWin) stamp(ctx, T, W - M - 62, y, 58, winners.length > 1 ? '同率' : '優勝');
+      y += 60;
+      ctx.fillStyle = T.ink; ctx.fillRect(M, y, W - 2 * M, 3);
+      const top = y + 24, bottom = f.bottom - 16;
       const picks = teamOf(i);
       const lineH = Math.min(84, (bottom - top) / Math.max(1, picks.length));
-      let y = top + lineH / 2;
-      ctx.fillStyle = '#f1f5f9';
-      picks.forEach(p => {
-        const t = `${p.round}. ${opt(p.optionId).label}`;
-        fit(ctx, t, 700, Math.min(48, Math.floor(lineH * 0.72)), W - 2 * M, 22);
-        ctx.fillText(t, M, y, W - 2 * M); y += lineH;
+      let ly = top + lineH / 2;
+      picks.forEach((p, k) => {
+        ctx.fillStyle = T.ink2; ctx.font = `700 ${Math.round(Math.min(40, lineH * 0.55))}px ${GOTHIC}`; ctx.textAlign = 'right';
+        ctx.fillText(String(p.round), M + 54, ly);
+        ctx.textAlign = 'left'; ctx.fillStyle = T.ink;
+        fit(ctx, opt(p.optionId).label, 500, Math.min(48, Math.floor(lineH * 0.66)), W - 2 * M - 76, 24);
+        ctx.fillText(opt(p.optionId).label, M + 76, ly, W - 2 * M - 76);
+        if (k < picks.length - 1) { ctx.fillStyle = T.hair; ctx.fillRect(M, ly + lineH / 2, W - 2 * M, 1); }
+        ly += lineH;
       });
-      ctx.fillStyle = '#020617'; ctx.fillRect(0, H - footH, W, footH);
-      ctx.fillStyle = '#facc15'; ctx.font = '900 30px sans-serif';
-      ctx.fillText('AIドラフトで作成', M, H - footH / 2, W / 2);
-      ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'right';
-      ctx.fillText('dreamteam9.com', W - M, H - footH / 2, W / 2 - M);
       return c;
     }
 

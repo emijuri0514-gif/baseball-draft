@@ -243,14 +243,16 @@ section('R5 選ぶ→指名する・連打');
   await page.locator('#ad-app button[aria-label="まぐろを選ぶ"]').click();
   ok((await saved(page)).picks.length === 0, '候補を押しただけでは指名にならない');
   await page.locator('#ad-app button[aria-label="えびを選ぶ"]').click();
-  ok(/選んでいる候補：えび/.test(await text(page)) && await page.locator('#ad-app button[aria-label="まぐろを選ぶ"]').getAttribute('aria-pressed') === 'false', '選び直せる');
+  ok((await page.locator('#ad-app .p-slip-name').innerText()) === 'えび' && await page.locator('#ad-app button[aria-label="まぐろを選ぶ"]').getAttribute('aria-pressed') === 'false', '選び直せる（指名票に選んだ候補）');
+  const slip = await page.locator('#ad-app .p-slip').innerText();
+  ok(/指名票/.test(slip) && /第1巡/.test(slip) && /(A太|B子|C介) さん/.test(slip) && /お題：寿司/.test(slip), `指名票に、お題・巡・誰の指名か（${slip.replace(/\n/g, ' ').slice(0, 60)}）`);
   const cb = await page.locator('#ad-app button', { hasText: /で指名する$/ }).boundingBox();
   // 指名するボタンを素早く3回押す（次の人の画面の操作として通らないこと）
   for (let i = 0; i < 3; i++) await page.mouse.click(cb.x + cb.width / 2, cb.y + cb.height / 2);
   await page.waitForTimeout(500);
   const s = await saved(page);
   ok(s.picks.length === 1 && s.picks[0].optionId === 3, `連打しても指名は1つだけ（${s.picks.length}）`);
-  ok(/さんの番です/.test(await text(page)) && /候補を選んでください/.test(await text(page)), '次の人の画面は、何も選んでいない状態から');
+  ok(/さんの番です/.test(await text(page)) && /上の一覧から候補を選んでください/.test(await text(page)) && await page.locator('#ad-app .p-slip button').isDisabled(), '次の人の画面は、何も選んでいない状態から（指名するボタンは押せない）');
   await pick(page);
   const f = await page.evaluate(() => document.activeElement && document.activeElement.hasAttribute('data-focus'));
   ok(f, '画面が変わったら、見出しにフォーカスを移す');
@@ -415,6 +417,52 @@ section('投票の途中から再開・複数のタブ');
   await ctx.close();
 }
 
+section('デザイン：封筒（2・4・8人、320・390px）・形式の選択・選択時の枠・画像の色');
+for (const width of [320, 390]) for (const n of [2, 4, 8]) {
+  const { ctx, page, errs } = await open({ width, height: 700, seed: 5 });
+  const names = Array.from({ length: n }, (_, i) => `十二文字の参加者名${'ABCDEFGH'[i]}${i}あ`.slice(0, 12));
+  await setup(page, { title: '寿司', players: names, options: sushi.concat(['かんぱち', 'はまち', 'いわし', 'さば', 'かつお', 'ぶり', 'あなご']), rounds: 1 });
+  await page.click('#ad-start');
+  for (let k = 0; k < n; k++) { await clickBtn(page, /です（選ぶ）/); await pick(page, 'まぐろ'); if (k < n - 1) await clickBtn(page, /さんに渡す$/); }
+  await clickBtn(page, /^発表する$/); await clickBtn(page, /抽選へ（封筒を選ぶ）/);
+  for (let k = 0; k < n; k++) await page.locator('#ad-app button.ad-env:not([disabled])').first().click();
+  await clickBtn(page, /一斉に開ける/);
+  await page.waitForTimeout(600); // 判子の動き（0.32秒）が終わってから測る
+  const m = await page.evaluate(() => [...document.querySelectorAll('#ad-app button.ad-env')].map(b => {
+    const r = b.getBoundingClientRect(), card = b.querySelector('.ad-env-card').getBoundingClientRect(), nm = b.querySelector('.ad-env-name');
+    const st = b.querySelector('.ad-stamp'); const sr = st && st.getBoundingClientRect();
+    return { w: r.width, left: r.left, right: r.right, nameFits: nm.scrollWidth <= nm.clientWidth + 1 && nm.textContent.length > 0, stampIn: !sr || (sr.left >= card.left - 4 && sr.right <= card.right + 4 && sr.top >= card.top - 4 && sr.bottom <= card.bottom + 4) };
+  }));
+  const cols = new Set(m.map(x => Math.round(x.left))).size;
+  ok(m.every(x => x.w >= 100 && x.right <= width) && m.every(x => x.nameFits) && m.every(x => x.stampIn) && cols === 2, `${width}px・${n}人：封筒は2列・幅${Math.round(Math.min(...m.map(x => x.w)))}px以上・名前が欠けない・判子が封筒の中（列${cols}）`);
+  ok(await noOverflow(page), `${width}px・${n}人：はみ出さない`);
+  if (OUT && n === 8) await page.screenshot({ path: path.join(OUT, `e2e_lottery_${width}_${n}.png`), fullPage: true });
+  ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
+  await ctx.close();
+}
+{
+  const { ctx, page, errs } = await open({ width: 320, height: 640 });
+  const bw = await page.evaluate(() => [...document.querySelectorAll('#ad-app label.p-choice')].map(l => getComputedStyle(l).borderTopWidth));
+  ok(new Set(bw).size === 1 && bw[0] === '2px', `選択肢の枠は、選んでも選ばなくても2px（${[...new Set(bw)]}）`);
+  const before = await page.locator('label.p-choice:has(input[value="waiver"])').boundingBox();
+  await page.check('input[name="ad-mode"][value="waiver"]');
+  const after = await page.locator('label.p-choice:has(input[value="waiver"])').boundingBox();
+  ok(before.width === after.width && before.height === after.height, '選んでも大きさが変わらない（隣が動かない）');
+  await setup(page, { title: '寿司', players: ['A', 'B'], options: sushi.slice(0, 2), mode: 'waiver', rounds: 1 });
+  await page.click('#ad-start'); await playThrough(page);
+  const labels = await page.evaluate(() => [...document.querySelectorAll('#ad-app label.p-choice')].map(l => { const r = l.getBoundingClientRect(); return { t: l.textContent, ok: r.right <= innerWidth && l.scrollWidth <= l.clientWidth + 1 }; }));
+  ok(labels.length === 2 && labels.every(x => x.ok) && labels.map(x => x.t).join('|') === '横長（X用）|縦長（ストーリー用）', `320px：画像の形式の選択が全文読めて、はみ出さない（${labels.map(x => x.t)}）`);
+  await page.locator('label.p-choice', { hasText: '縦長' }).click();
+  ok(await page.isChecked('input[name="ad-fmt"][value="story"]'), 'ラベルを押しても選べる');
+  await clickBtn(page, /^画像を作る$/);
+  const px = await page.evaluate(() => new Promise(r => { const img = document.querySelector('#ad-app img.p-preview'); const go = () => { const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img, 0, 0); r([img.naturalWidth, img.naturalHeight, [...x.getImageData(5, 5, 1, 1).data].slice(0, 3)]); }; img.complete && img.naturalWidth ? go() : img.onload = go; }));
+  ok(px[0] === 1080 && px[1] === 1920 && px[2].join() === '244,241,232', `縦長の画像：1080×1920、背景は画面と同じ紙白（${px[2]}）`);
+  if (OUT) fs.writeFileSync(path.join(OUT, 'e2e_story_2.png'), Buffer.from((await page.locator('#ad-app img.p-preview').first().getAttribute('src')).split(',')[1], 'base64'));
+  ok(await noOverflow(page), '320px：結果の画面がはみ出さない');
+  ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
+  await ctx.close();
+}
+
 section('PC幅');
 {
   const { ctx, page, errs } = await open({ width: 1280, height: 800 });
@@ -422,6 +470,8 @@ section('PC幅');
   await page.click('#ad-start');
   await playThrough(page, { choose: () => null, voteFor: () => 0 });
   ok(/優勝/.test(await text(page)) && await noOverflow(page), 'PC幅：4人の同時指名で最後まで');
+  await clickBtn(page, /^画像を作る$/);
+  if (OUT) fs.writeFileSync(path.join(OUT, 'e2e_x_4.png'), Buffer.from((await page.locator('#ad-app img.p-preview').first().getAttribute('src')).split(',')[1], 'base64'));
   ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
   await ctx.close();
 }
