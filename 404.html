@@ -21,44 +21,43 @@
   <title>ページが見つかりません｜AIドラフト</title>
   <meta name="description" content="お探しのページは見つかりませんでした。AIドラフトのトップ、12球団1位指名予想、指名カードメーカーからお進みください。">
   <meta name="robots" content="noindex">
-  <style>
-    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
-  </style>
+  <!-- ★ 2026-10-27 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="/css/paper.css">
   <link rel="stylesheet" href="/css/tailwind.css">
 </head>
-<body class="text-gray-100">
-  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-10">
+<body class="paper">
+  <header class="p-head sticky top-0 z-10">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-      <p class="text-sm md:text-base font-black tracking-wider">⚾ AIドラフト</p>
-      <a href="/" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+      <p class="p-mincho text-base md:text-lg">⚾ AIドラフト</p>
+      <a href="/" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap">ゲームに戻る</a>
     </div>
   </header>
 
-  <main class="max-w-3xl mx-auto px-4 py-10 space-y-8 text-sm md:text-base text-gray-200 leading-relaxed">
+  <main class="max-w-3xl mx-auto px-4 py-10 space-y-8 text-sm md:text-base leading-relaxed">
     <section class="text-center">
-      <p class="text-xs text-gray-400 tracking-widest mb-2">404 NOT FOUND</p>
-      <h1 class="text-xl md:text-2xl font-black text-yellow-400 mb-3">お探しのページは見つかりませんでした</h1>
+      <p class="text-xs p-sub tracking-widest mb-2">404 NOT FOUND</p>
+      <h1 class="p-mincho text-xl md:text-2xl mb-3">お探しのページは見つかりませんでした</h1>
       <p>URLが間違っているか、ページが移動・削除された可能性があります。下のページからお進みください。</p>
     </section>
 
     <nav aria-label="おもなページ" class="grid gap-3">
-      <a href="/" class="block bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-4 py-4 text-center">
+      <a href="/" class="block p-btn b-ink px-4 py-4 text-center">
         <span class="block font-black text-base">⚾ トップ（ゲームを遊ぶ）</span>
-        <span class="block text-xs text-blue-100 mt-1">現役NPB選手をAI球団と取り合うドラフト会議ゲーム</span>
+        <span class="block text-xs font-normal opacity-80 mt-1">現役NPB選手をAI球団と取り合うドラフト会議ゲーム</span>
       </a>
-      <a href="/draft-predict.html" class="block bg-gray-800 border border-gray-600 hover:border-yellow-500 rounded-lg px-4 py-4 text-center">
-        <span class="block font-black text-yellow-400">🎯 12球団1位指名予想</span>
-        <span class="block text-xs text-gray-300 mt-1">2026年ドラフトの予想と答え合わせ</span>
+      <a href="/draft-predict.html" class="p-card px-4 py-4 text-center">
+        <span class="block p-mincho">🎯 12球団1位指名予想</span>
+        <span class="block text-xs p-sub mt-1">2026年ドラフトの予想と答え合わせ</span>
       </a>
-      <a href="/pick-card.html" class="block bg-gray-800 border border-gray-600 hover:border-yellow-500 rounded-lg px-4 py-4 text-center">
-        <span class="block font-black text-yellow-400">🃏 指名カードメーカー</span>
-        <span class="block text-xs text-gray-300 mt-1">好きな名前で、架空のドラフト指名カードを作れます</span>
+      <a href="/pick-card.html" class="p-card px-4 py-4 text-center">
+        <span class="block p-mincho">🃏 指名カードメーカー</span>
+        <span class="block text-xs p-sub mt-1">好きな名前で、架空のドラフト指名カードを作れます</span>
       </a>
     </nav>
 
-    <p class="text-xs text-gray-400 text-center">ほかのページ：<a href="/howto.html" class="text-blue-400 underline">遊び方</a> ｜ <a href="/draft-2026.html" class="text-blue-400 underline">2026ドラフトの結果と振り返り</a> ｜ <a href="/faq.html" class="text-blue-400 underline">よくある質問</a> ｜ <a href="/contact.html" class="text-blue-400 underline">お問い合わせ</a></p>
+    <p class="text-xs p-sub text-center">ほかのページ：<a href="/howto.html" class="p-link">遊び方</a> ｜ <a href="/draft-2026.html" class="p-link">2026ドラフトの結果と振り返り</a> ｜ <a href="/faq.html" class="p-link">よくある質問</a> ｜ <a href="/contact.html" class="p-link">お問い合わせ</a></p>
   </main>
-  <footer class="text-center text-gray-400 text-xs py-6">
+  <footer class="text-center p-sub text-xs py-6">
     <a href="/privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="/about.html" class="hover:underline">運営者情報</a> ｜ © 2026 dreamteam9.com
   </footer>
 </body>
