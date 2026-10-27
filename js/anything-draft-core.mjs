@@ -12,8 +12,16 @@ export const LIMITS = Object.freeze({
   roundsMax: 15,     // 巡の数の上限（結果の画像に載せきれる数に合わせる）
 });
 
-// 重複を見分けるための形：全角半角（NFKC）・英字の大小・カタカナとひらがな・空白や記号の違いを無視する
+// 重複を見分けるための形（2026-10-27 オーナー決定）：全角・半角と空白の違いだけを同じとみなす。
+// 英字の大小・ひらがなとカタカナ・記号の違いは、別の候補として扱う（例：「A-1」と「A1」、「まぐろ」と「マグロ」は別）
 export function optionKey(s) {
+  return String(s || '')
+    .replace(/[\uFF01-\uFF5E]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)) // 全角の英数字・記号 → 半角
+    .replace(/[\uFF61-\uFF9F]+/g, m => m.normalize('NFKC'))                          // 半角カナ → 全角カナ（濁点もまとめる）
+    .replace(/\s+/g, '');                                                               // 空白（全角の空白も）を除く
+}
+// 探すときの形：探しやすさのため、全角半角・英字の大小・カタカナとひらがな・空白や記号の違いを無視する（重複の判定とは別）
+export function searchKey(s) {
   return String(s || '')
     .normalize('NFKC')
     .toLowerCase()
@@ -26,7 +34,7 @@ export function addOptions(existing, labels, { team = '', nextId } = {}) {
   const out = existing.slice();
   const keys = new Set(out.map(o => optionKey(o.label)));
   let dupes = 0, overLimit = 0, empty = 0, added = 0;
-  // leftover：追加できなかった入力（上限を超えた分・文字や数字を含まない記号だけの行）。入力欄に残して、黙って消さない
+  // leftover：追加できなかった入力（上限を超えた分・空白だけの行）。入力欄に残して、黙って消さない
   const leftover = [];
   let idSeq = nextId || (out.reduce((m, o) => Math.max(m, o.id), 0) + 1);
   for (const label of labels) {
@@ -142,9 +150,9 @@ export function tallyVotes(votes, nPlayers) {
 
 // 選ぶ画面の検索：全角半角・カタカナとひらがな・空白の違いを無視した部分一致
 export function matchesQuery(label, query) {
-  const q = optionKey(query);
+  const q = searchKey(query);
   if (!q) return true;
-  return optionKey(label).includes(q);
+  return searchKey(label).includes(q);
 }
 
 // まだ取られていない選択肢（確定した指名を除く）

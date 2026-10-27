@@ -576,9 +576,9 @@
         ta.value = r.leftover.join('\n'); state.draftText = ta.value;
         setError(''); save();
         const notes = [];
-        if (r.dupes) notes.push(`すでにある${r.dupes}件は除きました`);
+        if (r.dupes) notes.push(`すでにある${r.dupes}件は除きました（全角・半角と空白の違いだけのものは同じ候補として扱います）`);
         if (r.overLimit) notes.push(`上限の${LIMITS.optionsMax}個を超えた${r.overLimit}件は入れずに、入力欄に残しています`);
-        if (r.empty) notes.push(`文字や数字のない${r.empty}件（記号・絵文字だけ）は入れずに、入力欄に残しています`);
+        if (r.empty) notes.push(`空白だけの${r.empty}件は入れていません`);
         renderOptions(`${r.added}個を追加しました` + (notes.length ? `（${notes.join('。')}）` : ''));
         return !ta.value.trim();
       }

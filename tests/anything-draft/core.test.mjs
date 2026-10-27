@@ -7,14 +7,18 @@ import { PRESETS, validateState, SAVE_VERSION, groupSubmissions, setupLottery, t
 // 決まった順に値を返す乱数（テスト用）
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
 
-test('重複の判定は全角半角・カタカナひらがな・空白・記号の違いを無視する', () => {
-  assert.equal(optionKey('ﾏｸﾞﾛ'), optionKey('まぐろ'));
-  assert.equal(optionKey('大 トロ!'), optionKey('大トロ'));
-  assert.equal(optionKey('ＡＢＣ'), optionKey('abc'));
+test('重複の判定は全角・半角と空白の違いだけを同じとみなす（記号・大小・ひらがなとカタカナは別）', () => {
+  assert.equal(optionKey('ﾏｸﾞﾛ'), optionKey('マグロ'));
+  assert.equal(optionKey('ＡＢＣ　１'), optionKey('ABC1'));
+  assert.equal(optionKey('大 トロ'), optionKey('大トロ'));
+  assert.notEqual(optionKey('A-1'), optionKey('A1'));
+  assert.notEqual(optionKey('大トロ!'), optionKey('大トロ'));
+  assert.notEqual(optionKey('まぐろ'), optionKey('マグロ'));
+  assert.notEqual(optionKey('ABC'), optionKey('abc'));
 });
 
 test('選択肢を足す：重複・空・上限を数える', () => {
-  let r = addOptions([], ['まぐろ', 'マグロ', '  ', 'いくら']);
+  let r = addOptions([], ['まぐろ', 'まぐろ ', '  ', 'いくら']);
   assert.deepEqual(r.options.map(o => o.label), ['まぐろ', 'いくら']);
   assert.equal(r.dupes, 1); assert.equal(r.empty, 1);
   assert.deepEqual(r.options.map(o => o.id), [1, 2]);
@@ -128,11 +132,11 @@ test('封筒の抽選：順番に1つずつ取り、全員が取ったら一斉�
 
 test('選択肢を足す：追加できなかった入力（上限超え・記号だけ）を返す（入力欄に残すため）', () => {
   const many = Array.from({ length: 249 }, (_, i) => `x${i}`);
-  const r = addOptions(addOptions([], many).options, ['あ', 'い', '🍣', '!!']);
-  assert.equal(r.added, 1);
-  assert.equal(r.overLimit, 1);
-  assert.equal(r.empty, 2);
-  assert.deepEqual(r.leftover, ['い', '🍣', '!!']);
+  const r = addOptions(addOptions([], many).options, ['🍣', 'い', '!!', ' ']);
+  assert.equal(r.added, 1, '記号・絵文字だけの候補も、ほかと重ならなければ入る');
+  assert.equal(r.overLimit, 2);
+  assert.equal(r.empty, 1);
+  assert.deepEqual(r.leftover, ['い', '!!']);
 });
 
 // ---------- 途中保存のデータの確かめ ----------
