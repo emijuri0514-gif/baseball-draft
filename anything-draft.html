@@ -51,7 +51,18 @@
     html.is-play .home-only { display: none !important; }
     html.is-play { font-size: 17px; }
     html.is-play main { padding-top: .75rem; padding-bottom: 1.5rem; }
-    html.is-play #ad-app { min-height: calc(100dvh - 5.5rem); }
+    html.is-play #ad-app { min-height: calc(100dvh - 5.5rem); display: flex; flex-direction: column; }
+    /* ★ 2026-10-28：「渡してください」「選びました」のような短い画面は、下が空いて寂しく見えた（運営者のスクリーンショット）。
+       画面の高さの真ん中に寄せる（justify-center ではなく my-auto。入りきらないときに上が見切れないように） */
+    html.is-play #ad-app > .ad-center { margin-top: auto; margin-bottom: auto; }
+    /* 画面を切り替えたときにフォーカスを移す見出し（押せる部品ではない）には、枠を出さない */
+    [data-focus]:focus { outline: none; }
+    /* 渡す画面の札と、この巡の進み具合（誰が指名済みか。何を選んだかは出さない） */
+    .p-pass { background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; position: relative; }
+    .p-pass-label { position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); background: var(--sheet); padding: 0 .6rem; font-size: .75rem; font-weight: 700; color: var(--ink-2); letter-spacing: .08em; white-space: nowrap; }
+    .p-prog { display: inline-flex; flex-direction: column; align-items: center; min-width: 4.75rem; padding: .35rem .6rem; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; line-height: 1.3; }
+    .p-prog.is-done { background: var(--muted-bg); color: var(--ink-2); }
+    .p-prog.is-next { border: 2px solid var(--ink); padding: calc(.35rem - 1px) calc(.6rem - 1px); }
     @media (max-width: 639px) {
       html.is-play main { padding-left: .5rem; padding-right: .5rem; }
       html.is-play #ad-app { padding: 1rem .875rem; }
@@ -716,6 +727,16 @@
         el('p', { class: 'text-sm p-sub' }, el('span', { class: 'p-mincho text-base text-[#232320]', text: `第${state.round}巡` }), ` ／ 全${state.rounds}巡 ・ ${state.mode === 'waiver' ? 'ウェーバー' : '同時指名'}`, extra ? ` ・ ${extra}` : ''),
         btn('全員のチーム', openBoard, 'b-ghost text-sm')));
 
+    // 渡す画面の札（名前・案内・ボタン）と、この巡の進み具合
+    const passCard = (label, ...kids) => el('div', { class: 'p-pass w-full max-w-lg mx-auto px-4 pt-8 pb-6 space-y-5' }, el('span', { class: 'p-pass-label', text: label }), ...kids);
+    function progress(list, done, title, doneText = '指名済み') {
+      return el('div', { class: 'space-y-2' },
+        el('p', { class: 'text-xs p-sub', text: title }),
+        el('ol', { class: 'flex flex-wrap justify-center gap-2' }, ...list.map((p, k) => el('li', { class: 'p-prog' + (k < done ? ' is-done' : k === done ? ' is-next' : '') },
+          el('span', { class: 'text-sm font-bold break-all', text: P(p) }),
+          el('span', { class: 'text-[11px]', text: k < done ? doneText : k === done ? 'つぎ' : 'まだ' })))));
+    }
+
     // 選ぶ画面（検索・球団の絞り込み）。候補を押すと「選択中」になるだけ。下の指名票の「この候補で指名する」で確定する（R5）。
     // 指名票：お題・巡・誰の指名か・選んだ候補（一番大きく）→ ミシン目 → 確定のボタン。確認の画面は別に増やさない
     function chooser(available, onConfirm, who, note) {
@@ -783,18 +804,20 @@
       const isRedo = state.redo.length > 0;
       const list = isRedo ? state.redo : state.queue;
       if (state.turn >= list.length) {
-        show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(isRedo ? '選び直し' : null),
-          el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: isRedo ? '選び直しの指名がそろいました' : '全員の指名がそろいました' }),
-          el('p', { class: 'text-xs p-sub', text: 'みんなで画面を見られるようにしてから、発表してください' }),
-          btn('発表する', once(reveal), 'b-ink text-lg px-8')));
+        show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
+          passCard('発表', el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: isRedo ? '選び直しの指名がそろいました' : '全員の指名がそろいました' }),
+            el('p', { class: 'text-sm p-sub', text: 'みんなで画面を見られるようにしてから、発表してください' }),
+            btn('発表する', once(reveal), 'b-ink text-lg px-8')),
+          progress(list, list.length, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
         return;
       }
       const who = list[state.turn];
-      show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(isRedo ? '選び直し' : null),
-        el('p', { class: 'text-sm p-sub', text: `${state.turn + 1}人目／${list.length}人（あと${list.length - state.turn}人）` }),
-        el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
-        el('p', { class: 'text-xs p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
-        btn(`${P(who)} です（選ぶ）`, once(() => renderSecretPick(who)), 'b-ink text-lg px-8')));
+      show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
+        passCard(`${state.turn + 1}人目／${list.length}人（あと${list.length - state.turn}人）`,
+          el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-3xl', text: P(who) }), el('br'), 'さんに渡してください'),
+          el('p', { class: 'text-xs p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
+          btn(`${P(who)} です（選ぶ）`, once(() => renderSecretPick(who)), 'b-ink text-lg px-8')),
+        progress(list, state.turn, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
     }
     function renderSecretPick(who) {
       const isRedo = state.redo.length > 0;
@@ -806,10 +829,11 @@
           state.sub[who] = id; state.turn++;
           if (state.turn >= list.length) { renderHandoff(); return; } // 最後の人：そのまま「全員の指名がそろいました」へ（選んだ内容は出さない）
           const next = list[state.turn];
-          show(el('div', { class: 'space-y-6 text-center py-8' },
-            el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: '選びました' }),
-            el('p', { class: 'text-sm p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
-            btn(`${P(next)} さんに渡す`, once(renderHandoff))));
+          show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
+            passCard('指名しました', el('p', { class: 'p-mincho text-2xl', 'data-focus': true, text: '選びました' }),
+              el('p', { class: 'text-sm p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
+              btn(`${P(next)} さんに渡す`, once(renderHandoff), 'b-ink text-lg px-8')),
+            progress(list, state.turn, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
         }, who, isRedo ? '選び直し' : null)));
     }
     // 発表：重ならなければ確定。重なったら、重なった人どうしで封筒の抽選（自分で封筒を選ぶ）
@@ -973,11 +997,13 @@
     function renderVoteHandoff() {
       if (state.voteIdx >= state.players.length) { state.phase = 'result'; renderResult(); return; }
       const who = state.voteIdx;
-      show(el('div', { class: 'space-y-6 text-center py-6' },
+      show(el('div', { class: 'ad-center space-y-6 text-center' },
         el('p', { class: 'text-xs p-sub truncate' }, 'お題：', el('span', { class: 'font-bold text-[#232320]', text: state.title })),
-        el('p', { class: 'text-sm p-sub', text: `投票 ${who + 1}/${state.players.length}人目` }),
-        el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
-        btn(`${P(who)} です（投票する）`, once(() => renderVote(who)), 'b-ink text-lg px-8')));
+        passCard(`投票 ${who + 1}/${state.players.length}人目`,
+          el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-3xl', text: P(who) }), el('br'), 'さんに渡してください'),
+          el('p', { class: 'text-xs p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
+          btn(`${P(who)} です（投票する）`, once(() => renderVote(who)), 'b-ink text-lg px-8')),
+        progress(state.players.map((_, i) => i), who, '投票の進み具合', '投票済み')));
     }
     function renderVote(who) {
       const vote = once(t => { state.votes[who] = t; state.voteIdx++; renderVoteHandoff(); });
@@ -1008,7 +1034,12 @@
       navigator.share({ files }).catch(err => { if (!err || err.name !== 'AbortError') onFail(); });
       return true;
     }
-    function download(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+    // 共有メニューが使えない端末（主にパソコン）の保存。data: のURLは、ブラウザによって download が効かないため、Blob のURLにして保存する
+    function download(url, name) {
+      const href = url.startsWith('data:') ? URL.createObjectURL(dataURLtoBlob(url)) : url;
+      const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      if (href !== url) setTimeout(() => URL.revokeObjectURL(href), 30000);
+    }
     function renderResult() {
       const { counts, winners } = results();
       const head = winners.length
@@ -1064,7 +1095,13 @@
         detailBox.replaceChildren(el('div', { class: 'text-center' }, shareAll),
           el('div', { class: 'grid grid-cols-2 sm:grid-cols-3 gap-2' }, ...imgs.map(x => el('figure', { class: 'space-y-1' },
             el('img', { src: x.url, alt: `${P(x.i)} さんのチームの画像`, class: 'w-full p-preview' }),
-            el('figcaption', { class: 'text-xs text-center' }, el('a', { href: x.url, download: x.name, class: 'underline', onclick: () => track('anything_share', { method: 'image_save', format: 'detail', target: state.template }) }, `${P(x.i)} さんの画像を保存`))))),
+            // ★ 2026-10-28 運営者の報告：iPhoneで「◯◯さんの画像を保存」（download属性のリンク）を押しても保存できなかった
+            //   （Safariは data: のURLの download を受け付けないことがある）。まとめて保存と同じく共有メニュー（写真に保存）を開き、
+            //   使えない端末だけファイルとして保存する
+            el('figcaption', {}, btn(`${P(x.i)} さんの画像を保存`, () => {
+              track('anything_share', { method: 'image_save', format: 'detail', target: state.template });
+              if (!shareFiles([files[x.i]], shareFail)) download(x.url, x.name);
+            }, 'b-ghost w-full text-xs px-2'))))),
           el('p', { class: 'text-xs p-sub', text: 'スマホでは、画像を長押しして保存することもできます。' }));
       }, 'b-ghost');
       // 文章でコピー（全部の指名を文字で残す）
