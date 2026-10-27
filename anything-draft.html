@@ -55,6 +55,7 @@
     /* ★ 2026-10-28：「渡してください」「選びました」のような短い画面は、下が空いて寂しく見えた（運営者のスクリーンショット）。
        画面の高さの真ん中に寄せる（justify-center ではなく my-auto。入りきらないときに上が見切れないように） */
     html.is-play #ad-app > .ad-center { margin-top: auto; margin-bottom: auto; }
+    html.is-play #ad-app > * { flex-shrink: 0; } /* iPhoneのSafariで、中身が高いときに縮められて重ならないように */
     /* 画面を切り替えたときにフォーカスを移す見出し（押せる部品ではない）には、枠を出さない */
     [data-focus]:focus { outline: none; }
     /* 渡す画面の札と、この巡の進み具合（誰が指名済みか。何を選んだかは出さない） */
@@ -411,10 +412,13 @@
     // 画面を切り替えた直後の 0.35秒は押せないようにする（同じ場所の連打が、次の人の画面の操作として通らないように）
     function lockInput() { app.classList.add('is-locked'); clearTimeout(lockTimer); lockTimer = setTimeout(() => app.classList.remove('is-locked'), 350); }
     function show(...nodes) {
+      // ★ 2026-10-28 運営者の報告：iPhone（Brave）で8人の設定から「ドラフトを始める」を押すと、白い面だけで何も出なかった。
+      //   長い設定の画面の下の方から、短い画面に入れ替えて「なめらかに上へ」動かしたときに、iPhoneの描画が追いつかず
+      //   中身が描かれないままになったと考えている（PCのChromeでは再現しない）。先に一番上へ一気に移ってから入れ替える
+      if (!firstShow && !keepScroll && isPlay()) window.scrollTo(0, 0);
       app.replaceChildren(...nodes);
       if (!firstShow) {
         lockInput();
-        if (!keepScroll && isPlay()) window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' });
         // キーボードや読み上げで使う人のために、新しい画面の見出しへフォーカスを移す（スクロールはさせない）
         const f = app.querySelector('[data-focus]');
         if (f) { f.setAttribute('tabindex', '-1'); f.focus({ preventScroll: true }); }
@@ -422,7 +426,6 @@
       firstShow = false; keepScroll = false;
       save();
     }
-    const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     const P = i => state.players[i];
     const opt = id => state.options.find(o => o.id === id);
     const teamOf = i => state.picks.filter(p => p.player === i).sort((a, b) => a.round - b.round);
