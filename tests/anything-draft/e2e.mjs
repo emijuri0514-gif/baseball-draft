@@ -75,7 +75,7 @@ async function playThrough(page, { choose = () => null, voteFor = () => 0, max =
   for (let g = 0; g < max; g++) {
     const t = await text(page);
     if (/優勝：|同率優勝：|ドラフト終了/.test(t) && /結果を残す/.test(t)) return true;
-    if (/です（選ぶ）/.test(t)) { await clickBtn(page, /です（選ぶ）/); continue; }
+    if (/です。選びはじめる/.test(t)) { await clickBtn(page, /です。選びはじめる$/); continue; }
     if (/で指名する|候補を選んでください/.test(t) && /さんが選ぶ番|さんの番です/.test(t)) { await pick(page, choose(t)); continue; }
     if (/さんに渡す$/m.test(t)) { await clickBtn(page, /さんに渡す$/); continue; }
     if (/発表する/.test(t)) { await clickBtn(page, /^発表する$/); continue; }
@@ -85,7 +85,7 @@ async function playThrough(page, { choose = () => null, voteFor = () => 0, max =
     if (/次の抽選へ|発表に戻る/.test(t)) { await clickBtn(page, /次の抽選へ|発表に戻る/); continue; }
     if (/外れた人が選び直す/.test(t)) { await clickBtn(page, /外れた人が選び直す/); continue; }
     if (/第\d+巡へ|結果へ進む/.test(t)) { await clickBtn(page, /第\d+巡へ|結果へ進む/); continue; }
-    if (/です（投票する）/.test(t)) { await clickBtn(page, /です（投票する）/); continue; }
+    if (/です。投票する/.test(t)) { await clickBtn(page, /です。投票する$/); continue; }
     if (/さんに投票/.test(t)) { const bs = page.locator('#ad-app button', { hasText: /さんに投票/ }); await bs.nth(Math.min(voteFor(t), (await bs.count()) - 1)).click(); continue; }
     throw new Error('進められない画面：' + t.slice(0, 120));
   }
@@ -118,6 +118,8 @@ section('R1 設定の途中の保存と復元・未追加の入力');
   const s2 = await saved(page);
   ok(s2.phase === 'draft' && s2.options.length === 6 && s2.options.some(o => o.label === 'いくら') && s2.options.filter(o => o.label === 'まぐろ').length === 1, `「選択肢に追加」を押さずに始めても、入力欄の分を自動で追加して始める（重複は除く。${s2.options.length}個）`);
   ok(/入力欄に残っていた2個を、選択肢に追加してから始めました/.test(await text(page)), '自動で追加したことを一言表示する');
+  await page.locator('#ad-app button.ad-opt').first().click();
+  ok(!/入力欄に残っていた/.test(await text(page)), '最初の人が選びはじめたら、自動で追加した知らせを消す');
   ok(s2.rounds === 2, '開始後の巡の数が、画面で選んだ数と同じ');
   // 変換中（確定前）は入力を書き換えない
   const p2 = (await open()).page;
@@ -273,7 +275,7 @@ section('R6 最後の人の案内・お題の表示・選び直しの最後の�
   let t = await text(page);
   ok(/お題：好きな寿司ネタ/.test(t) && /1人目／3人（あと3人）/.test(t), 'お題と、何人目か・あと何人かを出す');
   for (let k = 0; k < 3; k++) {
-    await clickBtn(page, /です（選ぶ）/);
+    await clickBtn(page, /です。選びはじめる$/);
     ok(/お題：好きな寿司ネタ/.test(await text(page)), '選ぶ画面にもお題');
     await pick(page, 'まぐろ');
     t = await text(page);
@@ -287,7 +289,7 @@ section('R6 最後の人の案内・お題の表示・選び直しの最後の�
   await clickBtn(page, /外れた人が選び直す/);
   t = await text(page);
   ok(/1人目／2人（あと2人）/.test(t), '選び直しは、選び直す人数で数える');
-  for (let k = 0; k < 2; k++) { await clickBtn(page, /です（選ぶ）/); await pick(page, 'サーモン'); if (k === 0) await clickBtn(page, /さんに渡す$/); }
+  for (let k = 0; k < 2; k++) { await clickBtn(page, /です。選びはじめる$/); await pick(page, 'サーモン'); if (k === 0) await clickBtn(page, /さんに渡す$/); }
   ok(/選び直しの指名がそろいました/.test(await text(page)), '選び直しの最後の人も「そろいました」');
   ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
   await ctx.close();
@@ -410,14 +412,14 @@ section('投票の途中から再開・複数のタブ');
   await setup(page, { title: '寿司', players: ['A', 'B', 'C'], options: sushi, mode: 'waiver', rounds: 1 });
   await page.click('#ad-start');
   for (let k = 0; k < 3; k++) await pick(page);
-  await clickBtn(page, /です（投票する）/);
+  await clickBtn(page, /です。投票する$/);
   await page.locator('#ad-app button', { hasText: /さんに投票/ }).first().click();
   await page.reload(); await page.click('#ad-resume-yes');
   ok(/投票 2\/3人目/.test(await text(page)), '投票の途中から再開');
   // 同じ端末の別のタブで書き換わったら知らせる
   const other = await ctx.newPage();
   await other.goto(BASE); await other.waitForSelector('#ad-resume-yes'); await other.click('#ad-resume-yes');
-  await other.locator('#ad-app button', { hasText: /です（投票する）/ }).click();
+  await other.locator('#ad-app button', { hasText: /です。投票する$/ }).click();
   await other.locator('#ad-app button', { hasText: /さんに投票/ }).first().click();
   await page.waitForTimeout(300);
   ok(/別のタブ/.test(await page.locator('#ad-status').innerText()), 'ほかのタブで書き換わったら知らせる');
@@ -431,7 +433,7 @@ for (const width of [320, 390]) for (const n of [2, 4, 8]) {
   const names = Array.from({ length: n }, (_, i) => `十二文字の参加者名${'ABCDEFGH'[i]}${i}あ`.slice(0, 12));
   await setup(page, { title: '寿司', players: names, options: sushi.concat(['かんぱち', 'はまち', 'いわし', 'さば', 'かつお', 'ぶり', 'あなご']), rounds: 1 });
   await page.click('#ad-start');
-  for (let k = 0; k < n; k++) { await clickBtn(page, /です（選ぶ）/); await pick(page, 'まぐろ'); if (k < n - 1) await clickBtn(page, /さんに渡す$/); }
+  for (let k = 0; k < n; k++) { await clickBtn(page, /です。選びはじめる$/); await pick(page, 'まぐろ'); if (k < n - 1) await clickBtn(page, /さんに渡す$/); }
   await clickBtn(page, /^発表する$/); await clickBtn(page, /抽選へ（封筒を選ぶ）/);
   for (let k = 0; k < n; k++) await page.locator('#ad-app button.ad-env:not([disabled])').first().click();
   await clickBtn(page, /一斉に開ける/);
