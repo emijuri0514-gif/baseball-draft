@@ -643,7 +643,7 @@
       const sub = (label, ...kids) => el('div', { class: 'space-y-2' }, el('p', { class: 'p-sub-h' }, ...[].concat(label)), ...kids);
       renderPlayers();
       show(el('div', { class: 'space-y-8' },
-        el('h2', { class: 'p-h text-xl', text: 'ドラフトの設定', 'data-focus': true }),
+        el('h2', { class: 'p-mincho text-xl', text: 'ドラフトの設定', 'data-focus': true }), // 下の 01 の太線と二重にならないよう、見出しには線を引かない
         sec('01', 'お題', titleCount, el('label', { for: 'ad-title', class: 'sr-only', text: 'お題' }), title),
         sec('02', `参加者（${LIMITS.minPlayers}〜${LIMITS.maxPlayers}人）`, null, playersBox),
         sec('03', '候補', optCount,
@@ -1036,6 +1036,13 @@
       while (ctx.measureText(text).width > maxW && size > min) { size -= 1; ctx.font = `${weight} ${size}px ${family}`; }
       return size;
     }
+    // 決まった大きさのまま、入りきらない分を「…」で省く（横に押しつぶして詰め込まない）
+    function ellipsize(ctx, text, maxW) {
+      if (ctx.measureText(text).width <= maxW) return text;
+      const g = [...text];
+      while (g.length > 1 && ctx.measureText(g.join('') + '…').width > maxW) g.pop();
+      return g.join('') + '…';
+    }
     // 優勝の判子（朱赤の丸に「優勝」）
     function stamp(ctx, T, cx, cy, r, label = '優勝') {
       ctx.save(); ctx.translate(cx, cy); ctx.rotate(-15 * Math.PI / 180);
@@ -1094,16 +1101,17 @@
         ctx.fillStyle = T.ink; ctx.fillRect(x, yy, cw, Math.round(3 * s));
         const pad = Math.round(14 * s);
         const nameSize = Math.round(24 * s);
-        const stampR = isWin ? Math.min(nameSize * 0.95, ch * 0.18) : 0;
+        const stampR = isWin ? nameSize * 0.62 : 0; // 判子は名前の行の右に収める（候補の行に重ねない）
         const label = P(i) + (counts ? `（${counts[i]}票）` : '');
         ctx.fillStyle = T.ink; fit(ctx, label, 700, nameSize, cw - 2 * pad - stampR * 2, 12, MINCHO);
         ctx.fillText(label, x + pad, yy + pad + nameSize / 2 + 4, cw - 2 * pad - stampR * 2);
-        if (isWin) stamp(ctx, T, x + cw - pad - stampR, yy + pad + stampR, stampR);
+        if (isWin) stamp(ctx, T, x + cw - pad - stampR, yy + pad + nameSize / 2 + 4, stampR);
         ctx.fillStyle = T.hair; ctx.fillRect(x + pad, yy + pad + nameSize + 10, cw - 2 * pad, 1);
         const picks = teamOf(i);
         const avail = ch - pad * 2 - nameSize - 18;
-        // 1行の高さは読める大きさ（横長で20px以上）を下回らせない。入りきらない分は「ほか◯個」にまとめる
-        const lineH = Math.max(Math.round(20 * s), Math.min(Math.round(28 * s), avail / Math.max(1, picks.length)));
+        // 1行の高さは読める大きさ（文字16px＝横長で行22px以上）を下回らせない。入りきらない分は「ほか◯個」にまとめ、
+        // 長い候補は「…」で省く（全部は「1人ずつの画像」と「文章でコピー」で残せる）
+        const lineH = Math.max(Math.round(22 * s), Math.min(Math.round(28 * s), avail / Math.max(1, picks.length)));
         const maxLines = Math.max(1, Math.floor(avail / lineH));
         if (picks.length > maxLines) c.truncated = true;
         let ly = yy + pad + nameSize + 18 + lineH / 2;
@@ -1111,8 +1119,10 @@
           const more = k === maxLines - 1 && picks.length > maxLines;
           const t = more ? `ほか${picks.length - maxLines + 1}個` : `${p.round}. ${opt(p.optionId).label}`;
           ctx.fillStyle = more ? T.ink2 : T.ink;
-          fit(ctx, t, 500, Math.floor(lineH * 0.74), cw - 2 * pad, 12);
-          ctx.fillText(t, x + pad, ly, cw - 2 * pad); ly += lineH;
+          ctx.font = `500 ${Math.floor(lineH * 0.74)}px ${GOTHIC}`;
+          const shown = ellipsize(ctx, t, cw - 2 * pad);
+          if (shown !== t) c.truncated = true;
+          ctx.fillText(shown, x + pad, ly); ly += lineH;
         });
       });
       return c;
