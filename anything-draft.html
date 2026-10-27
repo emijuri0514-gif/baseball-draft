@@ -103,10 +103,11 @@
     .p-ok { color: var(--ink-2); }
 
     /* 選択肢の一覧（指名票の行） */
-    .ad-opt { min-height: 48px; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; color: var(--ink); }
+    .ad-opt { min-height: 60px; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; color: var(--ink); }
     /* 押した位置に次の画面の行が出たとき、端末のタップの色が新しい行に残って見えないように（一覧の行と封筒だけ） */
     .ad-opt { -webkit-tap-highlight-color: transparent; }
-    .p-pickmark { border: 1px solid var(--ink); border-radius: 2px; padding: .25rem .6rem; }
+    /* ★ 2026-10-27 オーナー指示：行の右の「選ぶ」は、スマホで押しやすい高さ（44px以上）。行と行の間も12px あけて、隣を押しにくくする */
+    .p-pickmark { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 4.5rem; border: 1px solid var(--ink); border-radius: 2px; padding: 0 .75rem; }
     .p-line { background: var(--sheet); border-bottom: 1px solid var(--hair); }
     .p-lines { border-top: 2px solid var(--ink); }
     .p-notice { background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; }
@@ -194,8 +195,9 @@
     <!-- ★ 雰囲気を伝えるためのイラスト（運営者が用意。遊び方の説明には使わない）。見出しは重ねずに上に置く（壁の色が明るく、黄色の文字が読みにくいため）。
          スマホの最初の画面に「はじめる」ボタンが入るよう、画面の高さが低い端末では画像の高さを縮める（max-h + object-cover） -->
     <section class="text-center space-y-3">
-      <h2 class="p-mincho text-xl sm:text-2xl md:text-3xl">好きなお題で、みんなでドラフト</h2>
-      <picture>
+      <h2 class="p-mincho text-xl sm:text-2xl md:text-3xl pb-1">好きなお題で、みんなでドラフト</h2>
+      <!-- ★ 2026-10-27 オーナー指示：見出しとイラストの間をあける（picture を block にして、上の space-y-3 の余白が効くように） -->
+      <picture class="block">
         <source media="(max-width: 639px)" srcset="images/anything-hero-sp.webp" type="image/webp" width="720" height="450">
         <img src="images/anything-hero.webp" alt="友人同士で1台のスマホを囲んで遊ぶ様子のイラスト" width="1200" height="600" fetchpriority="high" decoding="async" class="block w-full h-auto max-h-[30vh] sm:max-h-[50vh] object-cover p-hero-img">
       </picture>
@@ -611,13 +613,18 @@
       const startBtn = el('button', { type: 'button', class: 'ad-btn b-shu w-full text-lg', id: 'ad-start' }, 'ドラフトを始める');
       startBtn.addEventListener('click', () => {
         if (loadingTemplate) return setError('選手の一覧を読み込んでいます。読み込みが終わるまで待つか、取り消してから始めてください', btn('読み込みを取り消す', () => { cancelLoad('読み込みを取り消しました'); setError(''); }, 'b-ghost text-sm'));
-        // 入力欄に、まだ追加していない候補が残っているときは、黙って捨てずに確かめる
-        const pending = lines(ta.value);
-        if (pending.length) return setError(`選択肢の入力欄に、まだ追加していない候補が${pending.length}行あります`,
-          el('div', { class: 'flex flex-wrap gap-2' },
-            btn('追加して始める', () => { if (addFromTextarea()) tryStart(); }, 'b-ink text-sm'),
-            btn('入力欄に戻る', () => { setError(''); ta.focus(); ta.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 'b-ghost text-sm')));
-        tryStart();
+        // ★ 2026-10-27 オーナー指示：入力欄に「選択肢に追加」を押していない候補が残っていたら、自動で追加してから始める
+        //   （使えない言葉の確かめ・重複の除去は「選択肢に追加」と同じ）。追加できない行が残ったときは始めずに知らせる
+        const before = state.options.length;
+        if (lines(ta.value).length) {
+          if (!addFromTextarea()) {
+            const rest = lines(ta.value).length;
+            if (rest && !errors.textContent) setError(`入力欄に、追加できなかった行が${rest}行残っています（上限の${LIMITS.optionsMax}個を超えた・記号だけ など）。直すか消してから始めてください`);
+            return;
+          }
+        }
+        const added = state.options.length - before;
+        if (tryStart() && added) app.prepend(el('p', { class: 'p-notice px-3 py-2 mb-4 text-sm text-center', role: 'status', text: `入力欄に残っていた${added}個を、選択肢に追加してから始めました` }));
       });
       function tryStart() {
         const t = clean(title.value, LIMITS.titleMax);
@@ -635,24 +642,29 @@
         state.title = t; state.players = names;
         state.rounds = Math.min(Number(roundsSel.value) || 1, mx);
         startDraft();
+        return true;
       }
 
-      // 準備の画面：01 お題 → 02 参加者 → 03 候補 → 04 ルール。大きな区切りだけ太い線、中の項目は小さな見出し（R6）
+      // 準備の画面：01 テンプレート → 02 お題 → 03 参加者 → 04 候補 → 05 ルール。大きな区切りだけ太い線、中の項目は小さな見出し（R6）
+      // ★ 2026-10-27 オーナー指示：テンプレートをお題より上へ。テンプレートは「お題が空のときだけお題を入れる」「候補は足すだけ」で、
+      //   入力済みのお題・候補を消さない（消す動きを足すときは、消す前に確認を出すこと）
       const sec = (no, title, extra, ...kids) => el('section', { class: 'p-sec space-y-4' },
         el('h3', { class: 'p-sec-h' }, el('span', { class: 'p-sec-no', text: no }), el('span', { text: title }), extra ? el('span', { class: 'ml-auto text-xs p-sub font-normal' }, extra) : null), ...kids);
       const sub = (label, ...kids) => el('div', { class: 'space-y-2' }, el('p', { class: 'p-sub-h' }, ...[].concat(label)), ...kids);
       renderPlayers();
       show(el('div', { class: 'space-y-8' },
         el('h2', { class: 'p-mincho text-xl', text: 'ドラフトの設定', 'data-focus': true }), // 下の 01 の太線と二重にならないよう、見出しには線を引かない
-        sec('01', 'お題', titleCount, el('label', { for: 'ad-title', class: 'sr-only', text: 'お題' }), title),
-        sec('02', `参加者（${LIMITS.minPlayers}〜${LIMITS.maxPlayers}人）`, null, playersBox),
-        sec('03', '候補', optCount,
-          sub('自分で入力する', el('p', { class: 'text-xs p-sub', text: `1行に1つずつ書いて「選択肢に追加」を押します。まとめて貼り付けもできます（1つ${LIMITS.optionMax}文字まで）。` }),
+        sec('01', 'テンプレート', '使わなくても始められます',
+          el('p', { class: 'text-xs p-sub', text: '選ぶと、お題が空のときだけお題が入ります。入力したお題や候補は消えません（候補は今の候補に足します）。' }),
+          sub('野球', tplWrap, teamBox),
+          sub('野球以外の例', presetBox)),
+        sec('02', 'お題', titleCount, el('label', { for: 'ad-title', class: 'sr-only', text: 'お題' }), title),
+        sec('03', `参加者（${LIMITS.minPlayers}〜${LIMITS.maxPlayers}人）`, null, playersBox),
+        sec('04', '候補', optCount,
+          sub('自分で入力する', el('p', { class: 'text-xs p-sub', text: `1行に1つずつ書いて「選択肢に追加」を押します。まとめて貼り付けもできます（1つ${LIMITS.optionMax}文字まで）。「選択肢に追加」を押さずに始めたときは、入力欄に残っている分を自動で追加します。` }),
             el('label', { for: 'ad-opt-input', class: 'sr-only', text: '選択肢を1行に1つずつ' }), ta, addBtn, optMsg),
-          sub('候補の例（野球以外。今の候補に足します）', presetBox),
-          sub('テンプレート（野球）', tplWrap, teamBox),
           sub('登録した候補', optList)),
-        sec('04', 'ルール', null,
+        sec('05', 'ルール', null,
           sub('指名の方式', modeBox),
           sub('最後に', voteBox, voteNote),
           sub('巡の数（1人が取る数）', el('label', { for: 'ad-rounds', class: 'sr-only', text: '巡の数' }), roundsSel, roundsNote)),
@@ -690,7 +702,7 @@
     // 指名票：お題・巡・誰の指名か・選んだ候補（一番大きく）→ ミシン目 → 確定のボタン。確認の画面は別に増やさない
     function chooser(available, onConfirm, who, note) {
       let q = '', team = '', selected = null;
-      const listBox = el('ul', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-2' });
+      const listBox = el('ul', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' });
       const count = el('p', { class: 'text-xs p-sub', 'aria-live': 'polite' });
       const nameEl = el('p', { class: 'p-slip-name is-empty', 'aria-live': 'polite', text: '上の一覧から候補を選んでください' });
       const confirmBtn = btn('この候補で指名する', null, 'b-shu w-full text-lg');
@@ -709,9 +721,9 @@
       function draw() {
         const items = available.filter(o => (!team || o.team === team) && matchesQuery(o.label, q));
         count.textContent = `${items.length}個`;
-        listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left px-3 py-2 flex items-center justify-between gap-2', 'data-id': o.id, 'aria-pressed': String(o.id === selected), onclick: () => choose(o.id), 'aria-label': `${o.label}を選ぶ` },
+        listBox.replaceChildren(...items.map(o => el('li', {}, el('button', { type: 'button', class: 'ad-opt w-full text-left pl-3 pr-2 py-2 flex items-center justify-between gap-3', 'data-id': o.id, 'aria-pressed': String(o.id === selected), onclick: () => choose(o.id), 'aria-label': `${o.label}を選ぶ` },
           el('span', { class: 'min-w-0' }, el('span', { class: 'font-bold break-all', text: o.label }), TEAMS.includes(o.team) ? el('span', { class: 'block text-[11px] p-sub', text: o.team }) : null),
-          el('span', { class: 'shrink-0 p-pickmark text-xs font-bold', text: o.id === selected ? '選択中' : '選ぶ' })))));
+          el('span', { class: 'shrink-0 p-pickmark text-sm font-bold', text: o.id === selected ? '選択中' : '選ぶ' })))));
         if (!items.length) listBox.append(el('li', { class: 'text-sm p-sub', text: '条件に合う選択肢がありません' }));
       }
       const tools = [];
@@ -934,13 +946,13 @@
         ? el('p', { class: 'ad-anim p-title text-3xl text-center', 'data-focus': true }, el('span', { text: winners.length > 1 ? '同率優勝' : '優勝' }), '：', el('span', { text: winners.map(P).join('・') }))
         : el('p', { class: 'p-mincho text-lg text-center', 'data-focus': true, text: state.players.length < 3 ? 'ドラフト終了（2人のときは投票なし）' : (state.voteMode === 'none' ? 'ドラフト終了（結果を見せ合いましょう）' : 'ドラフト終了（投票がありませんでした）') });
       const fmt = { v: 'x' };
-      const preview = el('img', { class: 'w-full p-preview hidden-screen', alt: '結果の画像のプレビュー' });
+      const preview = el('img', { class: 'block mx-auto w-auto max-w-full max-h-[70vh] p-preview hidden-screen', alt: '結果の画像の見本' }); // 縦長でも画面からはみ出しすぎない高さ
       const imgErr = el('div', { class: 'p-alert text-sm font-bold', role: 'alert' });
       const imgNote = el('p', { class: 'text-xs p-sub', role: 'status' });
       const fmtBox = el('div', { class: 'grid grid-cols-1 min-[420px]:grid-cols-2 gap-2' }); // 狭い画面は縦に並べる（全文を読める大きさのまま）
       [['x', '横長（X用）'], ['story', '縦長（ストーリー用）']].forEach(([k, label]) => {
         const r = el('input', { type: 'radio', name: 'ad-fmt', value: k, checked: k === 'x' });
-        r.addEventListener('change', () => { fmt.v = k; preview.classList.add('hidden-screen'); last = null; imgNote.textContent = ''; });
+        r.addEventListener('change', () => { fmt.v = k; make(); }); // 形を変えたら、見本もすぐ作り直す
         fmtBox.append(el('label', { class: 'p-choice flex items-center gap-2 px-3 py-2 text-sm' }, r, label));
       });
       const shareFail = () => { imgErr.textContent = '共有メニューを開けませんでした。表示した画像を長押し（パソコンは右クリック）して保存してください。'; };
@@ -951,14 +963,16 @@
       };
       let last = null;
       const make = () => {
-        if (!ngCheck()) return null;
+        if (!ngCheck()) { last = null; preview.classList.add('hidden-screen'); imgNote.textContent = ''; return null; }
         const c = buildImage(fmt.v, counts, winners);
         const url = c.toDataURL('image/png');
         last = { url, format: fmt.v }; preview.src = url; preview.classList.remove('hidden-screen');
+        preview.alt = `結果の画像の見本（${fmt.v === 'story' ? '縦長' : '横長'}）`;
         imgNote.textContent = c.truncated ? '全体の画像では、入りきらない分を「ほか◯個」とまとめています。全部を残すときは、下の「1人ずつの画像」か「文章でコピー」を使ってください。' : '';
         return last;
       };
-      const saveBtn = btn('画像を作って保存', () => {
+      // ★ 2026-10-27 オーナー指示：「画像を作る」と「画像を作って保存」を「画像を保存」の1つにまとめる。見本は結果の画面を開いたときに自動で出す
+      const saveBtn = btn('画像を保存', () => {
         const r = last && last.format === fmt.v ? last : make(); if (!r) return;
         track('anything_share', { method: 'image_save', format: r.format, target: state.template });
         const name = `ai_draft_anything_${r.format}.png`;
@@ -1005,13 +1019,15 @@
         el('div', { class: 'space-y-3 p-rule-top pt-4' }, el('p', { class: 'p-mincho text-base text-center', text: '結果を残す・見せる' }),
           el('p', { class: 'text-xs p-sub text-center', text: '画像と文章には、お題・参加者の名前・選択肢が入ります。共有する前に確かめてください。' }),
           fmtBox,
-          el('div', { class: 'flex flex-col sm:flex-row gap-2 justify-center' }, btn('画像を作る', make, 'b-ghost'), saveBtn, xBtn), imgErr, imgNote, preview,
-          el('p', { class: 'text-[11px] p-sub text-center', text: '「画像を作って保存」で共有メニューが開いたら「写真に保存」などを選んでください。𝕏でシェアするときは、保存した画像を投稿に添えてください（シェアの文章にお題や名前は入りません）。' }),
+          imgErr, preview, imgNote,
+          el('div', { class: 'flex flex-col sm:flex-row gap-2 justify-center' }, saveBtn, xBtn),
+          el('p', { class: 'text-[11px] p-sub text-center', text: '「画像を保存」で共有メニューが開いたら「写真に保存」などを選んでください。𝕏でシェアするときは、保存した画像を投稿に添えてください（シェアの文章にお題や名前は入りません）。' }),
           el('div', { class: 'flex flex-col sm:flex-row gap-2 justify-center pt-2' }, detailBtn, textBtn), detailBox, textBox),
         el('div', { class: 'flex flex-wrap gap-2 justify-center p-rule-top pt-4' },
           btn('同じ設定でもう一度', () => { state = Object.assign(newState(), keep()); startDraft(); }, 'b-ink'),
           btn('設定を変える', () => { state = Object.assign(newState(), keep()); renderSetup(); }, 'b-ghost'),
           btn('最初から', () => { clearSave(); state = newState(); renderSetup(); }, 'b-ghost'))));
+      make();
     }
 
     // ---------- 結果の画像（横長 1200×675・縦長 1080×1920・1人ずつ 1080×1350。絵文字・写真・ロゴは入れない） ----------
@@ -1036,12 +1052,28 @@
       while (ctx.measureText(text).width > maxW && size > min) { size -= 1; ctx.font = `${weight} ${size}px ${family}`; }
       return size;
     }
-    // 決まった大きさのまま、入りきらない分を「…」で省く（横に押しつぶして詰め込まない）
-    function ellipsize(ctx, text, maxW) {
-      if (ctx.measureText(text).width <= maxW) return text;
-      const g = [...text];
-      while (g.length > 1 && ctx.measureText(g.join('') + '…').width > maxW) g.pop();
-      return g.join('') + '…';
+    // ★ 2026-10-27 オーナー指示：長いお題・名前・候補でも文字を欠かさない。「…」で省かずに、決まった幅で折り返す。
+    //   行の頭に「、。）」などが来るときは、前の行の最後の1文字と一緒に次の行へ送る
+    const NO_HEAD = /^[、。，．,.）)」』】〕！!？?ー…・：:；;ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮ々]/;
+    function wrap(ctx, text, maxW) {
+      const out = []; let cur = [];
+      for (const ch of [...text]) {
+        if (cur.length && ctx.measureText(cur.join('') + ch).width > maxW) {
+          if (NO_HEAD.test(ch) && cur.length > 1) { const last = cur.pop(); out.push(cur.join('')); cur = [last, ch]; }
+          else { out.push(cur.join('')); cur = [ch]; }
+        } else cur.push(ch);
+      }
+      if (cur.length) out.push(cur.join(''));
+      return out.length ? out : [''];
+    }
+    // 大きさを下げながら maxLines 行以内に折り返す。最小の大きさでも入らないときは、行を増やして全部を返す（省かない）
+    function fitLines(ctx, text, weight, size, maxW, maxLines, min, family = GOTHIC) {
+      for (;;) {
+        ctx.font = `${weight} ${size}px ${family}`;
+        const ls = wrap(ctx, text, maxW);
+        if (ls.length <= maxLines || size <= min) return { size, lines: ls };
+        size -= 1;
+      }
     }
     // 優勝の判子（朱赤の丸に「優勝」）
     function stamp(ctx, T, cx, cy, r, label = '優勝') {
@@ -1076,18 +1108,20 @@
       const ctx = c.getContext('2d');
       const M = story ? 48 : 32;
       const f = frame(ctx, T, W, H, M, s);
-      // お題と優勝
+      // お題と優勝（どちらも2行まで折り返す。字を小さくしても入らないときは行を増やす。省かない）
       let y = f.top + Math.round(40 * s);
       ctx.fillStyle = T.ink2; ctx.font = `700 ${Math.round(16 * s)}px ${GOTHIC}`; ctx.fillText('お題', M, y);
-      y += Math.round(32 * s);
-      ctx.fillStyle = T.ink; fit(ctx, state.title, 700, Math.round(36 * s), W - 2 * M, 18, MINCHO);
-      ctx.fillText(state.title, M, y, W - 2 * M);
-      y += Math.round(48 * s);
+      y += Math.round(14 * s);
+      const tl = fitLines(ctx, state.title, 700, Math.round(36 * s), W - 2 * M, 2, Math.round(24 * s), MINCHO);
+      ctx.fillStyle = T.ink;
+      tl.lines.forEach(t => { y += Math.round(tl.size * 1.25); ctx.fillText(t, M, y - Math.round(tl.size * 0.6)); });
+      y += Math.round(12 * s);
       const win = winners.length ? `${winners.length > 1 ? '同率優勝' : '優勝'}：${winners.map(P).join('・')}` : (state.players.length < 3 ? '（2人のときは投票なし）' : '（投票なし）');
-      ctx.fillStyle = winners.length ? T.ink : T.ink2; fit(ctx, win, 700, Math.round(26 * s), W - 2 * M - 80 * s, 14, MINCHO);
-      ctx.fillText(win, M, y, W - 2 * M - 80 * s);
+      const wl = fitLines(ctx, win, 700, Math.round(26 * s), W - 2 * M, 2, Math.round(16 * s), MINCHO);
+      ctx.fillStyle = winners.length ? T.ink : T.ink2;
+      wl.lines.forEach(t => { y += Math.round(wl.size * 1.3); ctx.fillText(t, M, y - Math.round(wl.size * 0.65)); });
       // チームの一覧（紙の上に白い面。上に墨の線。優勝のチームだけ枠を太くして、小さな判子）
-      const top = y + Math.round(30 * s), bottom = f.bottom - Math.round(12 * s);
+      const top = y + Math.round(14 * s), bottom = f.bottom - Math.round(12 * s);
       const n = state.players.length;
       const cols = story ? (n <= 4 ? 1 : 2) : (n <= 2 ? 2 : n <= 6 ? 3 : 4);
       const rowsN = Math.ceil(n / cols);
@@ -1100,30 +1134,53 @@
         ctx.strokeStyle = isWin ? T.ink : T.hair; ctx.lineWidth = isWin ? 3 : 1; ctx.strokeRect(x + 0.5, yy + 0.5, cw - 1, ch - 1);
         ctx.fillStyle = T.ink; ctx.fillRect(x, yy, cw, Math.round(3 * s));
         const pad = Math.round(14 * s);
-        const nameSize = Math.round(24 * s);
-        const stampR = isWin ? nameSize * 0.62 : 0; // 判子は名前の行の右に収める（候補の行に重ねない）
-        const label = P(i) + (counts ? `（${counts[i]}票）` : '');
-        ctx.fillStyle = T.ink; fit(ctx, label, 700, nameSize, cw - 2 * pad - stampR * 2, 12, MINCHO);
-        ctx.fillText(label, x + pad, yy + pad + nameSize / 2 + 4, cw - 2 * pad - stampR * 2);
-        if (isWin) stamp(ctx, T, x + cw - pad - stampR, yy + pad + nameSize / 2 + 4, stampR);
-        ctx.fillStyle = T.hair; ctx.fillRect(x + pad, yy + pad + nameSize + 10, cw - 2 * pad, 1);
+        const inner = cw - 2 * pad;
+        const stampR = isWin ? Math.round(15 * s) : 0; // 判子は名前の行の右に収める（候補の行に重ねない）
+        // 名前（と票数）は1行に収める。入らないときは、票数を名前の下の行に分ける（途中で切らない）
+        const nameW = inner - stampR * 2 - (isWin ? 6 : 0);
+        const votes = counts ? `（${counts[i]}票）` : '';
+        let nl = fitLines(ctx, P(i) + votes, 700, Math.round(24 * s), nameW, 1, Math.round(18 * s), MINCHO);
+        if (nl.lines.length > 1 && votes) {
+          const only = fitLines(ctx, P(i), 700, Math.round(24 * s), nameW, 1, Math.round(15 * s), MINCHO);
+          nl = { size: only.size, lines: [...only.lines, votes] };
+          ctx.font = `700 ${only.size}px ${MINCHO}`;
+        }
+        const nameLH = Math.round(nl.size * 1.25);
+        let ny = yy + pad + Math.round(4 * s);
+        ctx.fillStyle = T.ink;
+        nl.lines.forEach(t => { ctx.fillText(t, x + pad, ny + nameLH / 2); ny += nameLH; });
+        if (isWin) stamp(ctx, T, x + cw - pad - stampR, yy + pad + Math.round(4 * s) + nameLH / 2, stampR);
+        ny += Math.round(6 * s);
+        ctx.fillStyle = T.hair; ctx.fillRect(x + pad, ny, inner, 1);
+        const listTop = ny + Math.round(6 * s);
+        const avail = yy + ch - pad - listTop;
+        // 候補の行：文字は読める大きさ（横長で16px以上）を下回らせない。長い候補は折り返す（「…」で省かない）。
+        // 入りきらない分は「ほか◯個」にまとめる（全部は「1人ずつの画像」と「文章でコピー」で残せる）
         const picks = teamOf(i);
-        const avail = ch - pad * 2 - nameSize - 18;
-        // 1行の高さは読める大きさ（文字16px＝横長で行22px以上）を下回らせない。入りきらない分は「ほか◯個」にまとめ、
-        // 長い候補は「…」で省く（全部は「1人ずつの画像」と「文章でコピー」で残せる）
-        const lineH = Math.max(Math.round(22 * s), Math.min(Math.round(28 * s), avail / Math.max(1, picks.length)));
-        const maxLines = Math.max(1, Math.floor(avail / lineH));
-        if (picks.length > maxLines) c.truncated = true;
-        let ly = yy + pad + nameSize + 18 + lineH / 2;
-        picks.slice(0, maxLines).forEach((p, k) => {
-          const more = k === maxLines - 1 && picks.length > maxLines;
-          const t = more ? `ほか${picks.length - maxLines + 1}個` : `${p.round}. ${opt(p.optionId).label}`;
-          ctx.fillStyle = more ? T.ink2 : T.ink;
-          ctx.font = `500 ${Math.floor(lineH * 0.74)}px ${GOTHIC}`;
-          const shown = ellipsize(ctx, t, cw - 2 * pad);
-          if (shown !== t) c.truncated = true;
-          ctx.fillText(shown, x + pad, ly); ly += lineH;
+        const layout = lh => {
+          ctx.font = `500 ${Math.floor(lh * 0.74)}px ${GOTHIC}`;
+          return picks.map(p => { const pre = `${p.round}. `; const pw = ctx.measureText(pre).width; return { pre, pw, lines: wrap(ctx, opt(p.optionId).label, inner - pw) }; });
+        };
+        const minLH = Math.round(22 * s);
+        let lh = Math.round(28 * s), items = layout(lh);
+        const total = () => items.reduce((a, it) => a + it.lines.length, 0);
+        while (lh > minLH && total() * lh > avail) { lh -= 1; items = layout(lh); }
+        const maxLines = Math.max(1, Math.floor(avail / lh));
+        let used = 0, shown = 0;
+        for (let k = 0; k < items.length; k++) {
+          const reserve = k < items.length - 1 ? 1 : 0; // 後ろに残りがあるときは「ほか◯個」の1行を空けておく
+          if (used + items[k].lines.length + reserve > maxLines) break;
+          used += items[k].lines.length; shown++;
+        }
+        if (shown < picks.length) c.truncated = true;
+        ctx.font = `500 ${Math.floor(lh * 0.74)}px ${GOTHIC}`;
+        let ly = listTop + lh / 2;
+        items.slice(0, shown).forEach(it => {
+          ctx.fillStyle = T.ink;
+          ctx.fillText(it.pre, x + pad, ly);
+          it.lines.forEach(t => { ctx.fillText(t, x + pad + it.pw, ly); ly += lh; });
         });
+        if (shown < picks.length) { ctx.fillStyle = T.ink2; ctx.fillText(`ほか${picks.length - shown}個`, x + pad, ly); }
       });
       return c;
     }
