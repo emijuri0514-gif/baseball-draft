@@ -44,6 +44,35 @@
     .ad-slot:empty { display: none; }
     .ad-slot { margin: 1.5rem 0; text-align: center; }
     .hidden-screen { display: none !important; }
+    /* ★ 2026-10-28 オーナー指示：みんなで1台を回して遊ぶので、遊んでいる間は画面いっぱいをゲームにする。
+       はじめの画面（イラスト・説明）と、遊ぶ画面（設定〜結果）を分ける。遊ぶ画面では、イラスト・説明・下の帯を出さず、文字も少し大きくする。
+       遊び方は、見出しの帯の「遊び方」から、画面の写真つきの説明をいつでも開ける */
+    html:not(.is-play) .play-only { display: none !important; }
+    html.is-play .home-only { display: none !important; }
+    html.is-play { font-size: 17px; }
+    html.is-play main { padding-top: .75rem; padding-bottom: 1.5rem; }
+    html.is-play #ad-app { min-height: calc(100dvh - 5.5rem); display: flex; flex-direction: column; }
+    /* ★ 2026-10-28：「渡してください」「選びました」のような短い画面は、下が空いて寂しく見えた（運営者のスクリーンショット）。
+       画面の高さの真ん中に寄せる（justify-center ではなく my-auto。入りきらないときに上が見切れないように） */
+    html.is-play #ad-app > .ad-center { margin-top: auto; margin-bottom: auto; }
+    html.is-play #ad-app > * { flex-shrink: 0; } /* iPhoneのSafariで、中身が高いときに縮められて重ならないように */
+    /* 画面を切り替えたときにフォーカスを移す見出し（押せる部品ではない）には、枠を出さない */
+    [data-focus]:focus { outline: none; }
+    /* 渡す画面の札と、この巡の進み具合（誰が指名済みか。何を選んだかは出さない） */
+    .p-pass { background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; position: relative; }
+    .p-pass-label { position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); background: var(--sheet); padding: 0 .6rem; font-size: .75rem; font-weight: 700; color: var(--ink-2); letter-spacing: .08em; white-space: nowrap; }
+    .p-prog { display: inline-flex; flex-direction: column; align-items: center; min-width: 4.75rem; padding: .35rem .6rem; background: var(--sheet); border: 1px solid var(--hair); border-radius: 2px; line-height: 1.3; }
+    .p-prog.is-done { background: var(--muted-bg); color: var(--ink-2); }
+    .p-prog.is-next { border: 2px solid var(--ink); padding: calc(.35rem - 1px) calc(.6rem - 1px); }
+    @media (max-width: 639px) {
+      html.is-play main { padding-left: .5rem; padding-right: .5rem; }
+      html.is-play #ad-app { padding: 1rem .875rem; }
+    }
+    /* 遊び方（画面の写真つき） */
+    .p-shot { display: block; width: 100%; height: auto; max-height: 52vh; object-fit: contain; background: var(--paper); border: 1px solid var(--hair); }
+    .p-dots button { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; }
+    .p-dots button::before { content: ''; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--ink); background: var(--sheet); }
+    .p-dots button[aria-current="step"]::before { background: var(--ink); }
     .p-hero-img { border: 1px solid var(--hair); border-radius: 2px; }
     .p-label { color: var(--ink); }
     @media (hover: hover) {
@@ -109,10 +138,16 @@
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
       <h1 class="p-mincho text-base md:text-lg">なんでもドラフト</h1>
       <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" id="ad-howto-open" class="play-only p-btn b-ghost text-xs whitespace-nowrap" style="min-height:36px;padding:0 .75rem">遊び方</button>
         <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn b-ghost text-xs whitespace-nowrap" style="min-height:36px;padding:0 .75rem">☰ メニュー</button>
-        <a href="index.html" class="p-btn b-ghost text-xs whitespace-nowrap inline-flex items-center" style="min-height:36px;padding:0 .75rem">AIドラフトへ</a>
+        <a href="index.html" class="home-only p-btn b-ghost text-xs whitespace-nowrap inline-flex items-center" style="min-height:36px;padding:0 .75rem">AIドラフトへ</a>
       </div>
       <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="play-only mb-3">
+            <p class="p-menu-h text-[11px] font-bold mb-1">なんでもドラフト</p>
+            <button type="button" id="ad-home-link" class="block w-full text-left text-sm py-1 underline">はじめの画面（説明）に戻る</button>
+            <p class="text-[11px] p-sub">遊んでいる途中の内容は、この端末に残ります</p>
+          </div>
           <div class="mb-3 last:mb-0">
             <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
             <a href="index.html" class="block text-sm py-1">AIドラフト（ゲーム）</a>
@@ -134,11 +169,14 @@
   </header>
 
   <main class="max-w-3xl mx-auto px-4 py-6 space-y-8">
-    <div id="ad-slot-top" class="ad-slot"></div>
+    <div id="ad-slot-top" class="ad-slot home-only"></div>
+
+    <!-- 続きから（途中で閉じたとき）。はじめの画面の一番上に出す -->
+    <div id="ad-resume" class="hidden-screen p-notice p-4 text-center" role="status"></div>
 
     <!-- ★ 雰囲気を伝えるためのイラスト（運営者が用意。遊び方の説明には使わない）。見出しは重ねずに上に置く（壁の色が明るく、黄色の文字が読みにくいため）。
          スマホの最初の画面に「はじめる」ボタンが入るよう、画面の高さが低い端末では画像の高さを縮める（max-h + object-cover） -->
-    <section class="text-center space-y-3">
+    <section class="home-only text-center space-y-3">
       <h2 class="p-mincho text-xl sm:text-2xl md:text-3xl pb-1">好きなお題で、みんなでドラフト</h2>
       <!-- ★ 2026-10-27 オーナー指示：見出しとイラストの間をあける（picture を block にして、上の space-y-3 の余白が効くように） -->
       <picture class="block">
@@ -146,22 +184,22 @@
         <img src="images/anything-hero.webp" alt="友人同士で1台のスマホを囲んで遊ぶ様子のイラスト" width="1200" height="600" fetchpriority="high" decoding="async" class="block w-full h-auto max-h-[30vh] sm:max-h-[50vh] object-cover p-hero-img">
       </picture>
       <p class="text-sm md:text-base leading-relaxed">お題を決めて、スマホやパソコン1台を順番に回しながら、2〜8人で選択肢を取り合います。<br><span class="text-xs p-sub">入力したお題・名前・選択肢は、この端末の中だけで使います（どこにも送りません）。</span></p>
-      <a href="#ad-app" class="p-btn b-shu inline-flex items-center justify-center px-8 text-lg">お題を決めてはじめる</a>
+      <div class="flex flex-col items-center gap-2">
+        <button type="button" id="ad-enter" class="p-btn b-shu inline-flex items-center justify-center px-8 text-lg">お題を決めてはじめる</button>
+        <button type="button" id="ad-howto-open2" class="p-btn b-ghost inline-flex items-center justify-center px-6 text-sm">遊び方を見る（画面の写真つき）</button>
+      </div>
     </section>
-
-    <!-- 続きから（途中で閉じたとき） -->
-    <div id="ad-resume" class="hidden-screen p-notice p-4 text-center" role="status"></div>
 
     <!-- 保存についての知らせ（保存できない・消せない・ほかのタブで書き換わった）。出し続ける形にして、何度もダイアログを出さない -->
     <div id="ad-status" class="hidden-screen p-status p-3 text-sm space-y-2" role="status" aria-live="polite"></div>
 
     <!-- アプリ本体（画面はJavaScriptで切り替える） -->
-    <section id="ad-app" aria-live="polite" class="scroll-mt-20 p-sheet p-4 md:p-6"></section>
+    <section id="ad-app" aria-live="polite" class="play-only scroll-mt-20 p-sheet p-4 md:p-6"></section>
 
-    <div id="ad-slot-mid" class="ad-slot"></div>
+    <div id="ad-slot-mid" class="ad-slot home-only"></div>
 
     <!-- 説明（docs/ANYTHING_DRAFT_COPY.md の下書き。運営者の一言は、運営者が書くまで載せない） -->
-    <article class="space-y-8 text-sm md:text-base leading-relaxed">
+    <article class="home-only space-y-8 text-sm md:text-base leading-relaxed">
       <section>
         <h2 class="p-h2 text-lg md:text-xl mb-3">なんでもドラフトとは</h2>
         <p>「なんでもドラフト」は、好きなお題を決めて、みんなで選択肢を取り合うドラフトゲームです。プロ野球のドラフト会議のように、順番に指名したり、同時に指名して重なったら抽選したりしながら、自分だけの「チーム」を作ります。最後はみんなで投票して、一番いいチームを決めます。</p>
@@ -215,9 +253,9 @@
       </section>
     </article>
 
-    <div id="ad-slot-bottom" class="ad-slot"></div>
+    <div id="ad-slot-bottom" class="ad-slot home-only"></div>
   </main>
-  <footer class="text-center p-sub text-xs py-6 border-t border-[#CFC9BA] mt-8">
+  <footer class="home-only text-center p-sub text-xs py-6 border-t border-[#CFC9BA] mt-8">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ © 2026 dreamteam9.com
   </footer>
 
@@ -228,6 +266,54 @@
       <button type="button" class="p-btn b-ghost px-4 text-sm" data-close>閉じる</button>
     </div>
     <div id="ad-board-body" class="p-4 max-h-[70vh] overflow-y-auto"></div>
+  </dialog>
+
+  <!-- 遊び方（画面の写真つき。トップの「遊び方デモ」と同じく、1ステップずつ見せる）。写真は架空のお題・名前で撮った、このページの実際の画面 -->
+  <dialog id="ad-howto" class="p-dialog p-0 w-[min(560px,calc(100vw-24px))]" aria-labelledby="ad-howto-title">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-[#CFC9BA]">
+      <h2 id="ad-howto-title" class="p-mincho text-lg">遊び方</h2>
+      <button type="button" class="p-btn b-ghost px-4 text-sm" data-close>閉じる</button>
+    </div>
+    <div class="p-4 max-h-[calc(100dvh-7rem)] overflow-y-auto space-y-3">
+      <ol id="ad-howto-steps" class="list-none">
+        <li data-step class="space-y-2">
+          <img class="p-shot" src="images/anything-howto-1.webp" width="585" height="900" loading="lazy" alt="設定の画面。テンプレート・お題・参加者を入れているところ">
+          <p class="text-sm"><b class="p-mincho text-base">STEP 1　お題と参加者を決める</b><br>お題と参加者の名前を入れて、選択肢を用意します。野球のテンプレートや「候補の例」を使うと、すぐにそろいます。</p>
+        </li>
+        <li data-step class="space-y-2">
+          <img class="p-shot" src="images/anything-howto-2.webp" width="585" height="900" loading="lazy" alt="指名の画面。一覧から候補を選び、下の指名票の「この候補で指名する」を押すところ">
+          <p class="text-sm"><b class="p-mincho text-base">STEP 2　1台を回して指名する</b><br>自分の番になったら、一覧から候補を選んで「この候補で指名する」。同時指名では、ほかの人に見えないように1人ずつ選びます。</p>
+        </li>
+        <li data-step class="space-y-2">
+          <img class="p-shot" src="images/anything-howto-3.webp" width="585" height="900" loading="lazy" alt="抽選の画面。封筒を開けて、当たりに判子が押されたところ">
+          <p class="text-sm"><b class="p-mincho text-base">STEP 3　重なったら封筒で抽選</b><br>同じ候補を選んだ人がいたら、1人ずつ封筒を選んで一斉に開けます。当たりを引いた人が獲得、外れた人は選び直しです。</p>
+        </li>
+        <li data-step class="space-y-2">
+          <img class="p-shot" src="images/anything-howto-4.webp" width="585" height="900" loading="lazy" alt="投票の画面。自分以外のチームから1つを選ぶところ">
+          <p class="text-sm"><b class="p-mincho text-base">STEP 4　投票で一番いいチームを決める</b><br>3人以上のときは、自分以外のチームに1票ずつ投票します（投票せずに、見せ合うだけにもできます）。</p>
+        </li>
+        <li data-step class="space-y-2">
+          <img class="p-shot" src="images/anything-howto-5.webp" width="585" height="900" loading="lazy" alt="結果の画面。優勝のチームと、結果の画像の見本">
+          <p class="text-sm"><b class="p-mincho text-base">STEP 5　結果を画像で残す</b><br>結果は画像にして保存できます。全部の指名を残したいときは、1人ずつの画像や文章でも残せます。</p>
+        </li>
+      </ol>
+      <div class="flex items-center justify-between gap-2">
+        <button type="button" id="ad-howto-prev" class="p-btn b-ghost px-3 text-sm whitespace-nowrap">← 前へ</button>
+        <div id="ad-howto-dots" class="p-dots flex" aria-label="ステップ"></div>
+        <button type="button" id="ad-howto-next" class="p-btn b-ink px-3 text-sm whitespace-nowrap">次へ →</button>
+      </div>
+      <details class="p-fold p-rule-top pt-3 text-sm">
+        <summary class="font-bold py-2 cursor-pointer">ルールのくわしい説明</summary>
+        <ul class="list-disc list-inside space-y-1.5 pt-1">
+          <li><b>同時指名</b>：その巡は全員が、ほかの人に見えないように選びます。全員が選び終わったら一斉に発表し、重ならなければそのまま確定です。</li>
+          <li><b>抽選</b>：同じものを選んだ人どうしで封筒を1つずつ選び、一斉に開けて「交渉権確定」が入っていた人が獲得します。外れた人は、残った候補から選び直します。</li>
+          <li><b>ウェーバー</b>：決まった順番で1人ずつ指名します。順番は1巡ごとに折り返します。</li>
+          <li><b>巡の数</b>：1人が取る数です。最大で「選択肢の数÷人数」（15巡まで）。</li>
+          <li><b>投票</b>：3人以上のとき、自分以外のチームに1票ずつ。同じ票数は同率で優勝です。</li>
+          <li>入力したお題・名前・選択肢は、この端末の中だけで使います（どこにも送りません）。途中で閉じても、同じ端末で開き直すと続きから遊べます。</li>
+        </ul>
+      </details>
+    </div>
   </dialog>
 
   <script src="js/pick-card-safety.js"></script>
@@ -268,6 +354,8 @@
     }
     // ボタンの種類：b-ink（墨の塗り：進める操作）／b-shu（朱赤：主要な確定操作だけ）／b-ghost（白地に墨の枠：そのほか）
     const btn = (text, onclick, cls = 'b-ink') => el('button', { type: 'button', class: `p-btn ${cls}`, onclick }, text);
+    // 「◯◯です。選びはじめる」のような2つに分かれる文言のボタン。狭い画面では「。」の後ろで折り返す（言葉の途中で切らない）
+    const btn2 = (a, b, onclick, cls = 'b-ink') => el('button', { type: 'button', class: `p-btn ${cls} py-2 leading-snug`, onclick }, el('span', { class: 'inline-block break-all', text: a }), el('span', { class: 'inline-block', text: b }));
     const clean = (s, max) => S.truncateChars(S.sanitize(s), max).trim();
     // 1回だけ押せるボタン（連打で二重に進まないように）
     function once(fn) { let done = false; return (...a) => { if (done) return; done = true; fn(...a); }; }
@@ -324,10 +412,13 @@
     // 画面を切り替えた直後の 0.35秒は押せないようにする（同じ場所の連打が、次の人の画面の操作として通らないように）
     function lockInput() { app.classList.add('is-locked'); clearTimeout(lockTimer); lockTimer = setTimeout(() => app.classList.remove('is-locked'), 350); }
     function show(...nodes) {
+      // ★ 2026-10-28 運営者の報告：iPhone（Brave）で8人の設定から「ドラフトを始める」を押すと、白い面だけで何も出なかった。
+      //   長い設定の画面の下の方から、短い画面に入れ替えて「なめらかに上へ」動かしたときに、iPhoneの描画が追いつかず
+      //   中身が描かれないままになったと考えている（PCのChromeでは再現しない）。先に一番上へ一気に移ってから入れ替える
+      if (!firstShow && !keepScroll && isPlay()) window.scrollTo(0, 0);
       app.replaceChildren(...nodes);
       if (!firstShow) {
         lockInput();
-        if (!keepScroll) app.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
         // キーボードや読み上げで使う人のために、新しい画面の見出しへフォーカスを移す（スクロールはさせない）
         const f = app.querySelector('[data-focus]');
         if (f) { f.setAttribute('tabindex', '-1'); f.focus({ preventScroll: true }); }
@@ -335,7 +426,6 @@
       firstShow = false; keepScroll = false;
       save();
     }
-    const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     const P = i => state.players[i];
     const opt = id => state.options.find(o => o.id === id);
     const teamOf = i => state.picks.filter(p => p.player === i).sort((a, b) => a.round - b.round);
@@ -568,7 +658,7 @@
           }
         }
         const added = state.options.length - before;
-        if (tryStart() && added) app.prepend(el('p', { class: 'p-notice px-3 py-2 mb-4 text-sm text-center', role: 'status', text: `入力欄に残っていた${added}個を、選択肢に追加してから始めました` }));
+        if (tryStart() && added) app.prepend(el('p', { id: 'ad-start-note', class: 'p-notice px-3 py-2 mb-4 text-sm text-center', role: 'status', text: `入力欄に残っていた${added}個を、選択肢に追加してから始めました` }));
       });
       function tryStart() {
         const t = clean(title.value, LIMITS.titleMax);
@@ -642,6 +732,16 @@
         el('p', { class: 'text-sm p-sub' }, el('span', { class: 'p-mincho text-base text-[#232320]', text: `第${state.round}巡` }), ` ／ 全${state.rounds}巡 ・ ${state.mode === 'waiver' ? 'ウェーバー' : '同時指名'}`, extra ? ` ・ ${extra}` : ''),
         btn('全員のチーム', openBoard, 'b-ghost text-sm')));
 
+    // 渡す画面の札（名前・案内・ボタン）と、この巡の進み具合
+    const passCard = (label, ...kids) => el('div', { class: 'p-pass w-full max-w-lg mx-auto px-4 pt-8 pb-6 space-y-5' }, el('span', { class: 'p-pass-label', text: label }), ...kids);
+    function progress(list, done, title, doneText = '指名済み') {
+      return el('div', { class: 'space-y-2' },
+        el('p', { class: 'text-sm p-sub', text: title }),
+        el('ol', { class: 'flex flex-wrap justify-center gap-2' }, ...list.map((p, k) => el('li', { class: 'p-prog' + (k < done ? ' is-done' : k === done ? ' is-next' : '') },
+          el('span', { class: 'text-sm font-bold break-all', text: P(p) }),
+          el('span', { class: 'text-xs', text: k < done ? doneText : k === done ? 'つぎ' : 'まだ' })))));
+    }
+
     // 選ぶ画面（検索・球団の絞り込み）。候補を押すと「選択中」になるだけ。下の指名票の「この候補で指名する」で確定する（R5）。
     // 指名票：お題・巡・誰の指名か・選んだ候補（一番大きく）→ ミシン目 → 確定のボタン。確認の画面は別に増やさない
     function chooser(available, onConfirm, who, note) {
@@ -657,6 +757,7 @@
         el('p', { class: 'text-xs p-sub truncate' }, 'お題：', state.title),
         nameEl, el('div', { class: 'p-perf', 'aria-hidden': 'true' }), confirmBtn);
       function choose(id) {
+        $('ad-start-note')?.remove(); // 「入力欄に残っていた◯個を追加して始めました」は、最初の人が選びはじめたら消す（ウェーバーは最初の画面が選ぶ画面のため）
         selected = id;
         listBox.querySelectorAll('button.ad-opt').forEach(b => { const on = Number(b.dataset.id) === id; b.setAttribute('aria-pressed', String(on)); b.querySelector('.p-pickmark').textContent = on ? '選択中' : '選ぶ'; });
         nameEl.textContent = opt(id).label; nameEl.classList.remove('is-empty');
@@ -709,18 +810,20 @@
       const isRedo = state.redo.length > 0;
       const list = isRedo ? state.redo : state.queue;
       if (state.turn >= list.length) {
-        show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(isRedo ? '選び直し' : null),
-          el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: isRedo ? '選び直しの指名がそろいました' : '全員の指名がそろいました' }),
-          el('p', { class: 'text-xs p-sub', text: 'みんなで画面を見られるようにしてから、発表してください' }),
-          btn('発表する', once(reveal), 'b-ink text-lg px-8')));
+        show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
+          passCard('発表', el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: isRedo ? '選び直しの指名がそろいました' : '全員の指名がそろいました' }),
+            el('p', { class: 'text-base leading-relaxed p-sub', text: 'みんなで画面を見られるようにしてから、発表してください' }),
+            btn('発表する', once(reveal), 'b-ink text-lg px-8')),
+          progress(list, list.length, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
         return;
       }
       const who = list[state.turn];
-      show(el('div', { class: 'space-y-6 text-center py-6' }, roundHead(isRedo ? '選び直し' : null),
-        el('p', { class: 'text-sm p-sub', text: `${state.turn + 1}人目／${list.length}人（あと${list.length - state.turn}人）` }),
-        el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
-        el('p', { class: 'text-xs p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
-        btn(`${P(who)} です（選ぶ）`, once(() => renderSecretPick(who)), 'b-ink text-lg px-8')));
+      show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
+        passCard(`${state.turn + 1}人目／${list.length}人（あと${list.length - state.turn}人）`,
+          el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-3xl', text: P(who) }), el('br'), 'さんに渡してください'),
+          el('p', { class: 'text-base leading-relaxed p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
+          btn2(`${P(who)}です。`, '選びはじめる', once(() => renderSecretPick(who)), 'b-ink text-lg px-6')),
+        progress(list, state.turn, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
     }
     function renderSecretPick(who) {
       const isRedo = state.redo.length > 0;
@@ -732,10 +835,11 @@
           state.sub[who] = id; state.turn++;
           if (state.turn >= list.length) { renderHandoff(); return; } // 最後の人：そのまま「全員の指名がそろいました」へ（選んだ内容は出さない）
           const next = list[state.turn];
-          show(el('div', { class: 'space-y-6 text-center py-8' },
-            el('p', { class: 'p-mincho text-xl', 'data-focus': true, text: '選びました' }),
-            el('p', { class: 'text-sm p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
-            btn(`${P(next)} さんに渡す`, once(renderHandoff))));
+          show(el('div', { class: 'ad-center space-y-6 text-center' }, roundHead(isRedo ? '選び直し' : null),
+            passCard('指名しました', el('p', { class: 'p-mincho text-2xl', 'data-focus': true, text: '選びました' }),
+              el('p', { class: 'text-base leading-relaxed p-sub', text: `何を選んだかは、全員がそろってから発表します。次は ${P(next)} さんです（あと${list.length - state.turn}人）。` }),
+              btn(`${P(next)} さんに渡す`, once(renderHandoff), 'b-ink text-lg px-8')),
+            progress(list, state.turn, isRedo ? '選び直しの進み具合' : `第${state.round}巡の進み具合`)));
         }, who, isRedo ? '選び直し' : null)));
     }
     // 発表：重ならなければ確定。重なったら、重なった人どうしで封筒の抽選（自分で封筒を選ぶ）
@@ -838,6 +942,57 @@
     }
     $('ad-board').addEventListener('click', e => { if (e.target.closest('[data-close]')) $('ad-board').close(); });
 
+    // ---------- はじめの画面と遊ぶ画面（2026-10-28 オーナー指示：遊んでいる間は画面いっぱいをゲームに） ----------
+    // 遊ぶ画面に入るときは履歴を1つ積む（スマホの「戻る」で、はじめの画面に戻れる。遊んでいる内容は保存したまま）
+    const root = document.documentElement;
+    const isPlay = () => root.classList.contains('is-play');
+    function enterPlay(push = true) {
+      if (!isPlay()) {
+        root.classList.add('is-play');
+        if (push) { try { history.pushState({ adPlay: 1 }, ''); } catch (e) { /* 履歴に積めなくても遊べる */ } }
+      }
+      $('nav-menu').classList.add('hidden');
+      window.scrollTo(0, 0);
+      const f = app.querySelector('[data-focus]');
+      if (f) { f.setAttribute('tabindex', '-1'); f.focus({ preventScroll: true }); }
+    }
+    function leavePlay() {
+      root.classList.remove('is-play');
+      $('nav-menu').classList.add('hidden');
+      refreshHome();
+      window.scrollTo(0, 0);
+    }
+    // はじめの画面のボタン：遊んでいる途中なら「続きへ」。保存データを選ぶ前（続きから／最初から）は出さない
+    function refreshHome() {
+      const pending = !$('ad-resume').classList.contains('hidden-screen');
+      $('ad-enter').classList.toggle('hidden-screen', pending);
+      $('ad-enter').textContent = state && state.phase !== 'setup' ? 'ドラフトの続きへ' : 'お題を決めてはじめる';
+    }
+    $('ad-enter').addEventListener('click', () => enterPlay());
+    $('ad-home-link').addEventListener('click', () => { if (history.state && history.state.adPlay) history.back(); else leavePlay(); });
+    window.addEventListener('popstate', e => { if (e.state && e.state.adPlay) { if (!$('ad-resume').classList.contains('hidden-screen')) return; enterPlay(false); } else if (isPlay()) leavePlay(); });
+
+    // 遊び方（画面の写真つき。1ステップずつ）
+    const howto = $('ad-howto');
+    const steps = [...howto.querySelectorAll('[data-step]')];
+    let stepAt = 0;
+    const dots = steps.map((_, i) => el('button', { type: 'button', 'aria-label': `STEP ${i + 1}`, onclick: () => goStep(i) }));
+    $('ad-howto-dots').append(...dots);
+    function goStep(i) {
+      stepAt = Math.max(0, Math.min(steps.length - 1, i));
+      steps.forEach((li, k) => li.classList.toggle('hidden-screen', k !== stepAt));
+      dots.forEach((d, k) => { if (k === stepAt) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current'); });
+      $('ad-howto-prev').disabled = stepAt === 0;
+      $('ad-howto-next').textContent = stepAt === steps.length - 1 ? '閉じる' : '次へ →';
+    }
+    $('ad-howto-prev').addEventListener('click', () => goStep(stepAt - 1));
+    $('ad-howto-next').addEventListener('click', () => { if (stepAt === steps.length - 1) howto.close(); else goStep(stepAt + 1); });
+    const openHowto = () => { goStep(0); $('nav-menu').classList.add('hidden'); howto.showModal(); };
+    $('ad-howto-open').addEventListener('click', openHowto);
+    $('ad-howto-open2').addEventListener('click', openHowto);
+    howto.addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target === howto) howto.close(); });
+    goStep(0);
+
     // ---------- 3. 投票 ----------
     const voting = () => state.players.length >= 3 && state.voteMode !== 'none';
     function finishDraft() {
@@ -848,11 +1003,13 @@
     function renderVoteHandoff() {
       if (state.voteIdx >= state.players.length) { state.phase = 'result'; renderResult(); return; }
       const who = state.voteIdx;
-      show(el('div', { class: 'space-y-6 text-center py-6' },
+      show(el('div', { class: 'ad-center space-y-6 text-center' },
         el('p', { class: 'text-xs p-sub truncate' }, 'お題：', el('span', { class: 'font-bold text-[#232320]', text: state.title })),
-        el('p', { class: 'text-sm p-sub', text: `投票 ${who + 1}/${state.players.length}人目` }),
-        el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-2xl', text: P(who) }), ' さんに渡してください'),
-        btn(`${P(who)} です（投票する）`, once(() => renderVote(who)), 'b-ink text-lg px-8')));
+        passCard(`投票 ${who + 1}/${state.players.length}人目`,
+          el('p', { class: 'text-lg', 'data-focus': true }, el('span', { class: 'p-mincho text-3xl', text: P(who) }), el('br'), 'さんに渡してください'),
+          el('p', { class: 'text-base leading-relaxed p-sub', text: 'ほかの人に画面が見えないようにしてから、下のボタンを押してください' }),
+          btn2(`${P(who)}です。`, '投票する', once(() => renderVote(who)), 'b-ink text-lg px-6')),
+        progress(state.players.map((_, i) => i), who, '投票の進み具合', '投票済み')));
     }
     function renderVote(who) {
       const vote = once(t => { state.votes[who] = t; state.voteIdx++; renderVoteHandoff(); });
@@ -883,7 +1040,12 @@
       navigator.share({ files }).catch(err => { if (!err || err.name !== 'AbortError') onFail(); });
       return true;
     }
-    function download(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+    // 共有メニューが使えない端末（主にパソコン）の保存。data: のURLは、ブラウザによって download が効かないため、Blob のURLにして保存する
+    function download(url, name) {
+      const href = url.startsWith('data:') ? URL.createObjectURL(dataURLtoBlob(url)) : url;
+      const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      if (href !== url) setTimeout(() => URL.revokeObjectURL(href), 30000);
+    }
     function renderResult() {
       const { counts, winners } = results();
       const head = winners.length
@@ -939,7 +1101,13 @@
         detailBox.replaceChildren(el('div', { class: 'text-center' }, shareAll),
           el('div', { class: 'grid grid-cols-2 sm:grid-cols-3 gap-2' }, ...imgs.map(x => el('figure', { class: 'space-y-1' },
             el('img', { src: x.url, alt: `${P(x.i)} さんのチームの画像`, class: 'w-full p-preview' }),
-            el('figcaption', { class: 'text-xs text-center' }, el('a', { href: x.url, download: x.name, class: 'underline', onclick: () => track('anything_share', { method: 'image_save', format: 'detail', target: state.template }) }, `${P(x.i)} さんの画像を保存`))))),
+            // ★ 2026-10-28 運営者の報告：iPhoneで「◯◯さんの画像を保存」（download属性のリンク）を押しても保存できなかった
+            //   （Safariは data: のURLの download を受け付けないことがある）。まとめて保存と同じく共有メニュー（写真に保存）を開き、
+            //   使えない端末だけファイルとして保存する
+            el('figcaption', {}, btn(`${P(x.i)} さんの画像を保存`, () => {
+              track('anything_share', { method: 'image_save', format: 'detail', target: state.template });
+              if (!shareFiles([files[x.i]], shareFail)) download(x.url, x.name);
+            }, 'b-ghost w-full text-xs px-2'))))),
           el('p', { class: 'text-xs p-sub', text: 'スマホでは、画像を長押しして保存することもできます。' }));
       }, 'b-ghost');
       // 文章でコピー（全部の指名を文字で残す）
@@ -1171,7 +1339,7 @@
       } else if (state.phase === 'vote') renderVoteHandoff();
       else renderResult();
     }
-    function newGameFromScratch() { clearSave(); store.saveEnabled = true; state = newState(); $('ad-resume').classList.add('hidden-screen'); renderSetup(); }
+    function newGameFromScratch() { clearSave(); store.saveEnabled = true; state = newState(); $('ad-resume').classList.add('hidden-screen'); renderSetup(); refreshHome(); enterPlay(); }
     function showResumeBox(...nodes) { $('ad-resume').replaceChildren(...nodes); $('ad-resume').classList.remove('hidden-screen'); }
     function readSaved() {
       let txt;
@@ -1183,8 +1351,13 @@
     }
     function boot() {
       const r = readSaved();
-      if (r.none) { state = newState(); renderSetup(); renderStatus(); return; }
-      if (r.ok && r.state.phase === 'setup') { state = r.state; renderSetup(); renderStatus(); return; } // 設定の途中はそのまま戻す
+      // 開き直したとき：遊ぶ画面で設定をしていた途中なら、そのまま設定の画面に戻す（読み込み直し・タブの復帰）。ほかは、はじめの画面から
+      const wasPlaying = !!(history.state && history.state.adPlay);
+      if (r.none || (r.ok && r.state.phase === 'setup')) {
+        state = r.none ? newState() : r.state; renderSetup(); renderStatus(); refreshHome();
+        if (wasPlaying) enterPlay(false);
+        return;
+      }
       // ★ 「続きから／最初から」を選ぶまでは保存しない（保存データを黙って上書きしない）
       store.saveEnabled = false;
       app.replaceChildren(el('p', { class: 'text-sm p-sub text-center', text: '上のボタンから選んでください' }));
@@ -1192,21 +1365,24 @@
         showResumeBox(el('p', { class: 'font-bold mb-2', text: '保存されている途中のドラフトを読み込めませんでした' }),
           el('p', { class: 'text-sm mb-3', text: `理由：${r.reason}。このデータでは続きから遊べません。新しく始めると、保存データは新しい内容で上書きされます。` }),
           el('div', { class: 'flex gap-3 justify-center flex-wrap' }, btn('新しく始める', newGameFromScratch, 'b-ink px-6')));
+        refreshHome();
         return;
       }
       showResumeBox(el('p', { class: 'font-bold mb-3' }, '途中のドラフトがあります（', el('span', { id: 'ad-resume-title', text: r.state.title || 'お題なし' }), '）'),
         el('div', { class: 'flex gap-3 justify-center flex-wrap' },
           el('button', { type: 'button', id: 'ad-resume-yes', class: 'p-btn b-ink px-6', onclick: () => {
             store.saveEnabled = true; state = r.state; $('ad-resume').classList.add('hidden-screen');
-            try { resume(); }
+            refreshHome();
+            try { resume(); enterPlay(); }
             catch (e) {
               // 確かめをすり抜けた不具合でも、操作できない画面にしない
               store.saveEnabled = false;
               app.replaceChildren(el('div', { class: 'p-alert space-y-2 text-sm' }, el('p', { text: '続きの画面を表示できませんでした。新しく始めることができます（保存データは新しい内容で上書きされます）。' }), btn('新しく始める', newGameFromScratch, 'b-ink text-sm')));
+              enterPlay();
             }
           } }, '続きから遊ぶ'),
           el('button', { type: 'button', id: 'ad-resume-no', class: 'p-btn b-ghost px-6', onclick: newGameFromScratch }, '最初から')));
-      renderStatus();
+      renderStatus(); refreshHome();
     }
     boot();
   </script>

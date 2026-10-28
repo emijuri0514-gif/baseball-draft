@@ -31,7 +31,7 @@ function seedScript(seed) {
   const next = () => { x = (x + 0x6D2B79F5) | 0; let t = Math.imul(x ^ (x >>> 15), 1 | x); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return (t ^ (t >>> 14)) >>> 0; };
   crypto.getRandomValues = arr => { for (let i = 0; i < arr.length; i++) arr[i] = next(); return arr; };
 }
-async function open({ width = 390, height = 844, seed = 1, init = null, storage = null, context = null } = {}) {
+async function open({ width = 390, height = 844, seed = 1, init = null, storage = null, context = null, enter = true } = {}) {
   const ctx = context || await browser.newContext({ viewport: { width, height }, isMobile: width < 640, hasTouch: width < 640 });
   if (!context) await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.abort());
   const page = await ctx.newPage();
@@ -43,10 +43,14 @@ async function open({ width = 390, height = 844, seed = 1, init = null, storage 
   if (storage != null) await page.addInitScript(v => { if (!sessionStorage.getItem('__seeded')) { localStorage.setItem('dt9_anything_v1', v); sessionStorage.setItem('__seeded', '1'); } }, storage);
   if (init) await page.addInitScript(init);
   await page.goto(BASE);
-  await page.waitForSelector('#ad-app > *');
+  // はじめの画面（イラスト・説明）から、遊ぶ画面に入る（保存データがあるときは「続きから／最初から」を選ぶまで入らない）
+  if (enter && await page.locator('#ad-enter').isVisible()) await page.click('#ad-enter');
+  await page.waitForSelector('#ad-app > *', { state: 'attached' });
   return { ctx, page, errs };
 }
 const app = page => page.locator('#ad-app');
+// 読み込み直して、はじめの画面なら遊ぶ画面に入る
+async function reloadEnter(page) { await page.reload(); await page.waitForSelector('#ad-enter', { state: 'attached' }); if (await page.locator('#ad-enter').isVisible()) await page.click('#ad-enter'); await page.waitForSelector('#ad-title'); }
 const text = async page => (await app(page).innerText());
 const clickBtn = (page, re) => page.locator('#ad-app button', { hasText: re }).first().click();
 const saved = page => page.evaluate(() => JSON.parse(localStorage.getItem('dt9_anything_v1') || 'null'));
@@ -71,7 +75,7 @@ async function playThrough(page, { choose = () => null, voteFor = () => 0, max =
   for (let g = 0; g < max; g++) {
     const t = await text(page);
     if (/優勝：|同率優勝：|ドラフト終了/.test(t) && /結果を残す/.test(t)) return true;
-    if (/です（選ぶ）/.test(t)) { await clickBtn(page, /です（選ぶ）/); continue; }
+    if (/です。選びはじめる/.test(t)) { await clickBtn(page, /です。選びはじめる$/); continue; }
     if (/で指名する|候補を選んでください/.test(t) && /さんが選ぶ番|さんの番です/.test(t)) { await pick(page, choose(t)); continue; }
     if (/さんに渡す$/m.test(t)) { await clickBtn(page, /さんに渡す$/); continue; }
     if (/発表する/.test(t)) { await clickBtn(page, /^発表する$/); continue; }
@@ -81,7 +85,7 @@ async function playThrough(page, { choose = () => null, voteFor = () => 0, max =
     if (/次の抽選へ|発表に戻る/.test(t)) { await clickBtn(page, /次の抽選へ|発表に戻る/); continue; }
     if (/外れた人が選び直す/.test(t)) { await clickBtn(page, /外れた人が選び直す/); continue; }
     if (/第\d+巡へ|結果へ進む/.test(t)) { await clickBtn(page, /第\d+巡へ|結果へ進む/); continue; }
-    if (/です（投票する）/.test(t)) { await clickBtn(page, /です（投票する）/); continue; }
+    if (/です。投票する/.test(t)) { await clickBtn(page, /です。投票する$/); continue; }
     if (/さんに投票/.test(t)) { const bs = page.locator('#ad-app button', { hasText: /さんに投票/ }); await bs.nth(Math.min(voteFor(t), (await bs.count()) - 1)).click(); continue; }
     throw new Error('進められない画面：' + t.slice(0, 120));
   }
@@ -114,6 +118,8 @@ section('R1 設定の途中の保存と復元・未追加の入力');
   const s2 = await saved(page);
   ok(s2.phase === 'draft' && s2.options.length === 6 && s2.options.some(o => o.label === 'いくら') && s2.options.filter(o => o.label === 'まぐろ').length === 1, `「選択肢に追加」を押さずに始めても、入力欄の分を自動で追加して始める（重複は除く。${s2.options.length}個）`);
   ok(/入力欄に残っていた2個を、選択肢に追加してから始めました/.test(await text(page)), '自動で追加したことを一言表示する');
+  await page.locator('#ad-app button.ad-opt').first().click();
+  ok(!/入力欄に残っていた/.test(await text(page)), '最初の人が選びはじめたら、自動で追加した知らせを消す');
   ok(s2.rounds === 2, '開始後の巡の数が、画面で選んだ数と同じ');
   // 変換中（確定前）は入力を書き換えない
   const p2 = (await open()).page;
@@ -149,7 +155,7 @@ section('R2 テンプレートの読み込みの遅れ・取り消し・失敗�
   await clickBtn(page, /^最初から$/).catch(() => {});
   // 古い読み込みが新しい読み込みを上書きしない：巨人を読み込み→取り消し→阪神を読み込み
   const p2 = (await open({ context: ctx })).page;
-  await p2.evaluate(() => localStorage.clear()); await p2.reload(); await p2.waitForSelector('#ad-title');
+  await p2.evaluate(() => localStorage.clear()); await reloadEnter(p2);
   await p2.check('input[name="ad-tpl"][value="oshi"]');
   await p2.check('#ad-app input[type=checkbox][value="巨人"]');
   delay = 1500; await clickBtn(p2, /選んだ球団の選手を選択肢に読み込む/);
@@ -164,7 +170,7 @@ section('R2 テンプレートの読み込みの遅れ・取り消し・失敗�
   const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/anything-draft-players.json'), 'utf8')).players;
   const giants = data.filter(p => p.team === '巨人'), lions = data.filter(p => p.team === '西武');
   const p3 = (await open({ context: ctx })).page;
-  await p3.evaluate(() => localStorage.clear()); await p3.reload(); await p3.waitForSelector('#ad-title');
+  await p3.evaluate(() => localStorage.clear()); await reloadEnter(p3);
   await p3.fill('#ad-opt-input', giants[0].name + '\n' + lions[0].name); await clickBtn(p3, /^選択肢に追加$/);
   await p3.check('input[name="ad-tpl"][value="oshi"]');
   await p3.check('#ad-app input[type=checkbox][value="巨人"]'); await p3.check('#ad-app input[type=checkbox][value="西武"]');
@@ -176,7 +182,7 @@ section('R2 テンプレートの読み込みの遅れ・取り消し・失敗�
   // 失敗しても、また読み込める・始められる
   fail = true;
   const p4 = (await open({ context: ctx })).page;
-  await p4.evaluate(() => localStorage.clear()); await p4.reload(); await p4.waitForSelector('#ad-title');
+  await p4.evaluate(() => localStorage.clear()); await reloadEnter(p4);
   await p4.check('input[name="ad-tpl"][value="oshi"]'); await p4.check('#ad-app input[type=checkbox][value="広島"]');
   await clickBtn(p4, /選んだ球団の選手を選択肢に読み込む/);
   await p4.waitForFunction(() => /読み込めませんでした/.test(document.getElementById('ad-app').innerText));
@@ -269,7 +275,7 @@ section('R6 最後の人の案内・お題の表示・選び直しの最後の�
   let t = await text(page);
   ok(/お題：好きな寿司ネタ/.test(t) && /1人目／3人（あと3人）/.test(t), 'お題と、何人目か・あと何人かを出す');
   for (let k = 0; k < 3; k++) {
-    await clickBtn(page, /です（選ぶ）/);
+    await clickBtn(page, /です。選びはじめる$/);
     ok(/お題：好きな寿司ネタ/.test(await text(page)), '選ぶ画面にもお題');
     await pick(page, 'まぐろ');
     t = await text(page);
@@ -283,7 +289,7 @@ section('R6 最後の人の案内・お題の表示・選び直しの最後の�
   await clickBtn(page, /外れた人が選び直す/);
   t = await text(page);
   ok(/1人目／2人（あと2人）/.test(t), '選び直しは、選び直す人数で数える');
-  for (let k = 0; k < 2; k++) { await clickBtn(page, /です（選ぶ）/); await pick(page, 'サーモン'); if (k === 0) await clickBtn(page, /さんに渡す$/); }
+  for (let k = 0; k < 2; k++) { await clickBtn(page, /です。選びはじめる$/); await pick(page, 'サーモン'); if (k === 0) await clickBtn(page, /さんに渡す$/); }
   ok(/選び直しの指名がそろいました/.test(await text(page)), '選び直しの最後の人も「そろいました」');
   ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
   await ctx.close();
@@ -332,7 +338,7 @@ section('R9 8人×15巡：全体の画像・1人ずつの画像・文章・共�
 {
   const { ctx, page, errs } = await open({ seed: 3, init: () => {
     navigator.canShare = () => true;
-    navigator.share = () => Promise.reject(window.__shareAbort ? new DOMException('x', 'AbortError') : new Error('fail'));
+    navigator.share = d => { (window.__shares = window.__shares || []).push(d.files.map(f => f.name)); return Promise.reject(window.__shareAbort ? new DOMException('x', 'AbortError') : new Error('fail')); };
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('denied')) } });
   } });
   const names = ['いちろう', 'じろう', 'さぶろう', 'しろう', 'ごろう', 'ろくろう', 'ななこ', 'はちこ'];
@@ -349,6 +355,8 @@ section('R9 8人×15巡：全体の画像・1人ずつの画像・文章・共�
   ok(await imgs.count() === 8, '1人ずつの画像を8枚');
   const dim = await imgs.first().evaluate(i => new Promise(r => i.complete ? r([i.naturalWidth, i.naturalHeight]) : i.onload = () => r([i.naturalWidth, i.naturalHeight])));
   ok(dim[0] === 1080 && dim[1] === 1350, `1人ずつの画像は1080×1350（${dim}）`);
+  await clickBtn(page, /^じろう さんの画像を保存$/);
+  ok(JSON.stringify(await page.evaluate(() => window.__shares.at(-1))) === '["ai_draft_anything_2.png"]', '「◯◯さんの画像を保存」は、その人の画像1枚で共有メニュー（写真に保存）を開く');
   if (OUT) fs.writeFileSync(path.join(OUT, 'e2e_detail_15.png'), Buffer.from((await imgs.first().getAttribute('src')).split(',')[1], 'base64'));
   await clickBtn(page, /文章でコピー/);
   const area = page.locator('#ad-app textarea[aria-label="結果の文章"]');
@@ -404,14 +412,14 @@ section('投票の途中から再開・複数のタブ');
   await setup(page, { title: '寿司', players: ['A', 'B', 'C'], options: sushi, mode: 'waiver', rounds: 1 });
   await page.click('#ad-start');
   for (let k = 0; k < 3; k++) await pick(page);
-  await clickBtn(page, /です（投票する）/);
+  await clickBtn(page, /です。投票する$/);
   await page.locator('#ad-app button', { hasText: /さんに投票/ }).first().click();
   await page.reload(); await page.click('#ad-resume-yes');
   ok(/投票 2\/3人目/.test(await text(page)), '投票の途中から再開');
   // 同じ端末の別のタブで書き換わったら知らせる
   const other = await ctx.newPage();
   await other.goto(BASE); await other.waitForSelector('#ad-resume-yes'); await other.click('#ad-resume-yes');
-  await other.locator('#ad-app button', { hasText: /です（投票する）/ }).click();
+  await other.locator('#ad-app button', { hasText: /です。投票する$/ }).click();
   await other.locator('#ad-app button', { hasText: /さんに投票/ }).first().click();
   await page.waitForTimeout(300);
   ok(/別のタブ/.test(await page.locator('#ad-status').innerText()), 'ほかのタブで書き換わったら知らせる');
@@ -425,7 +433,7 @@ for (const width of [320, 390]) for (const n of [2, 4, 8]) {
   const names = Array.from({ length: n }, (_, i) => `十二文字の参加者名${'ABCDEFGH'[i]}${i}あ`.slice(0, 12));
   await setup(page, { title: '寿司', players: names, options: sushi.concat(['かんぱち', 'はまち', 'いわし', 'さば', 'かつお', 'ぶり', 'あなご']), rounds: 1 });
   await page.click('#ad-start');
-  for (let k = 0; k < n; k++) { await clickBtn(page, /です（選ぶ）/); await pick(page, 'まぐろ'); if (k < n - 1) await clickBtn(page, /さんに渡す$/); }
+  for (let k = 0; k < n; k++) { await clickBtn(page, /です。選びはじめる$/); await pick(page, 'まぐろ'); if (k < n - 1) await clickBtn(page, /さんに渡す$/); }
   await clickBtn(page, /^発表する$/); await clickBtn(page, /抽選へ（封筒を選ぶ）/);
   for (let k = 0; k < n; k++) await page.locator('#ad-app button.ad-env:not([disabled])').first().click();
   await clickBtn(page, /一斉に開ける/);
@@ -477,6 +485,36 @@ for (const width of [320, 390]) for (const n of [2, 4, 8]) {
   await ctx.close();
 }
 
+section('はじめの画面と遊ぶ画面・遊び方（画面の写真つき）');
+{
+  const { ctx, page, errs } = await open({ enter: false });
+  const vis = sel => page.locator(sel).first().isVisible();
+  ok(!(await vis('#ad-app')) && await vis('#ad-enter') && await vis('main section.home-only'), 'はじめの画面：イラストと「はじめる」だけ（ゲームの画面はまだ出さない）');
+  await page.click('#ad-enter');
+  ok(await vis('#ad-app') && !(await vis('main section.home-only')) && !(await vis('article')) && !(await vis('footer')), '遊ぶ画面：イラスト・説明・下の帯を出さず、ゲームの画面だけ');
+  ok(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize) === '17px', '遊ぶ画面は文字を少し大きく');
+  await page.fill('#ad-title', 'もどるテスト');
+  await page.goBack();
+  ok(!(await vis('#ad-app')) && await vis('#ad-enter'), 'スマホの「戻る」で、はじめの画面に戻る');
+  await page.click('#ad-enter');
+  ok(await page.inputValue('#ad-title') === 'もどるテスト', '戻ってから入り直しても、入力はそのまま');
+  await page.reload(); await page.waitForTimeout(300);
+  ok(await vis('#ad-app') && await page.inputValue('#ad-title') === 'もどるテスト', '設定の途中で読み込み直しても、設定の画面のまま');
+  // 遊び方
+  await page.click('#ad-howto-open');
+  const shown = async () => page.evaluate(() => [...document.querySelectorAll('#ad-howto [data-step]')].map((li, i) => [i, !li.classList.contains('hidden-screen')]).filter(x => x[1]).map(x => x[0]));
+  ok(await page.locator('#ad-howto').evaluate(d => d.open) && JSON.stringify(await shown()) === '[0]', '「遊び方」で、STEP 1 から開く');
+  for (let i = 0; i < 4; i++) await page.click('#ad-howto-next');
+  ok(JSON.stringify(await shown()) === '[4]' && (await page.textContent('#ad-howto-next')) === '閉じる', '「次へ」で STEP 5 まで進む');
+  const imgs = await page.evaluate(() => Promise.all([...document.querySelectorAll('#ad-howto img')].map(i => fetch(i.src).then(r => r.ok))));
+  ok(imgs.length === 5 && imgs.every(Boolean), '遊び方の写真5枚が読める');
+  await page.click('#ad-howto-next');
+  ok(!(await page.locator('#ad-howto').evaluate(d => d.open)), '最後の「閉じる」で閉じる');
+  ok(await noOverflow(page), 'はみ出さない');
+  ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
+  await ctx.close();
+}
+
 section('PC幅');
 {
   const { ctx, page, errs } = await open({ width: 1280, height: 800 });
@@ -484,6 +522,9 @@ section('PC幅');
   await page.click('#ad-start');
   await playThrough(page, { choose: () => null, voteFor: () => 0 });
   ok(/優勝/.test(await text(page)) && await noOverflow(page), 'PC幅：4人の同時指名で最後まで');
+  await clickBtn(page, /1人ずつの画像を作る/);
+  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }).catch(() => null), clickBtn(page, /^B さんの画像を保存$/)]);
+  ok(dl && dl.suggestedFilename() === 'ai_draft_anything_2.png', `共有メニューがない端末（PC）では「◯◯さんの画像を保存」でファイルとして保存（${dl && dl.suggestedFilename()}）`);
   if (OUT) fs.writeFileSync(path.join(OUT, 'e2e_x_4.png'), Buffer.from((await page.locator('#ad-app img.p-preview').first().getAttribute('src')).split(',')[1], 'base64'));
   ok(errs.length === 0, 'エラーなし ' + errs.join('|'));
   await ctx.close();
