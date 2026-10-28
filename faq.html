@@ -27,9 +27,9 @@
   <link rel="canonical" href="https://dreamteam9.com/faq.html">
   <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
   <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
   <style>
-    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
-  
     /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
        空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
     .ad-slot:empty { display: none; }
@@ -95,46 +95,46 @@
   </script>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
-<body class="text-gray-100">
-  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
-      <h1 class="text-sm md:text-base font-black tracking-wider">❓ よくある質問</h1>
+      <h1 class="p-mincho text-base md:text-lg">❓ よくある質問</h1>
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
-        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
-        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
-        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
       </div>
-      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
-            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎲 なんでもドラフト <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
-            <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
-            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
-            <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
-            <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
-            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
-            <a href="players.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧢 選手名鑑</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
-            <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
-            <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
-            <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
-            <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
-            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
           </div>
       </div>
     </div>
@@ -146,54 +146,54 @@
 
     <div class="space-y-4">
 
-      <details class="bg-gray-800 rounded-lg p-4" open>
+      <details class="p-card p-4" open>
         <summary class="font-bold cursor-pointer">このゲームは無料ですか？</summary>
-        <p class="text-sm text-gray-300 mt-2">はい、完全無料で遊べます。会員登録やアプリのインストールも不要で、ブラウザだけですぐに始められます。</p>
+        <p class="text-sm mt-2">はい、完全無料で遊べます。会員登録やアプリのインストールも不要で、ブラウザだけですぐに始められます。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">実際のドラフト会議と何が違いますか？</summary>
-        <p class="text-sm text-gray-300 mt-2">実際のNPBドラフト会議は「来年プロ入りする候補生（アマチュア選手）」を指名するものですが、このシミュレーションでは現役のNPB選手を各球団で奪い合い、最強のチームを作ることが目的です。</p>
+        <p class="text-sm mt-2">実際のNPBドラフト会議は「来年プロ入りする候補生（アマチュア選手）」を指名するものですが、このシミュレーションでは現役のNPB選手を各球団で奪い合い、最強のチームを作ることが目的です。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">スマホでも遊べますか？</summary>
-        <p class="text-sm text-gray-300 mt-2">はい、スマートフォン・タブレットのブラウザに対応しています。スタメン編成画面では、選手をドラッグ＆ドロップするか、選手カード→配置したい枠の順にタップして配置できます。</p>
+        <p class="text-sm mt-2">はい、スマートフォン・タブレットのブラウザに対応しています。スタメン編成画面では、選手をドラッグ＆ドロップするか、選手カード→配置したい枠の順にタップして配置できます。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">選手の能力値はどうやって決めていますか？</summary>
-        <p class="text-sm text-gray-300 mt-2">「プロ野球スピリッツA」の能力値をそのまま採用しています。独自の調整は行っていません。実際の成績データをそのまま使用しているわけではありません。なお、公式成績をもとにした独自の算出方法への切り替えを準備中です。同シリーズの最新作「プロ野球スピリッツ2026」（PS5）は<a href="https://hb.afl.rakuten.co.jp/ichiba/573f1c77.e355f658.573f1c78.50f808b8/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fbook%2F18604386%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="text-blue-400 underline">こちら</a>（PR）。</p>
+        <p class="text-sm mt-2">「プロ野球スピリッツA」の能力値をそのまま採用しています。独自の調整は行っていません。実際の成績データをそのまま使用しているわけではありません。なお、公式成績をもとにした独自の算出方法への切り替えを準備中です。同シリーズの最新作「プロ野球スピリッツ2026」（PS5）は<a href="https://hb.afl.rakuten.co.jp/ichiba/573f1c77.e355f658.573f1c78.50f808b8/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fbook%2F18604386%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="p-link">こちら</a>（PR）。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">本物のNPBの試合も見たいです。中継はどこで見られますか？</summary>
-        <p class="text-sm text-gray-300 mt-2">スカパー！でNPB主催試合の中継を視聴できます。広島東洋カープを含むセ・パ12球団すべての公式戦を中継しているのはスカパー！だけで、一軍だけでなく二軍（ファーム）の試合も見られます。12球団の公式戦をまとめて見るには「スカパー！プロ野球セット」の契約が必要です（料金や中継対象は公式サイトでご確認ください）。ドラフトで気になった選手の実際のプレーを確認したい方にもおすすめです。<a href="https://px.a8.net/svt/ejp?a8mat=4BC5IU+48EZN6+461Y+6CP0Y" target="_blank" rel="noopener noreferrer sponsored" class="text-blue-400 underline">スカパー！公式サイト</a>（PR）。<img border="0" width="1" height="1" src="https://www10.a8.net/0.gif?a8mat=4BC5IU+48EZN6+461Y+6CP0Y" alt=""></p>
+        <p class="text-sm mt-2">スカパー！でNPB主催試合の中継を視聴できます。広島東洋カープを含むセ・パ12球団すべての公式戦を中継しているのはスカパー！だけで、一軍だけでなく二軍（ファーム）の試合も見られます。12球団の公式戦をまとめて見るには「スカパー！プロ野球セット」の契約が必要です（料金や中継対象は公式サイトでご確認ください）。ドラフトで気になった選手の実際のプレーを確認したい方にもおすすめです。<a href="https://px.a8.net/svt/ejp?a8mat=4BC5IU+48EZN6+461Y+6CP0Y" target="_blank" rel="noopener noreferrer sponsored" class="p-link">スカパー！公式サイト</a>（PR）。<img border="0" width="1" height="1" src="https://www10.a8.net/0.gif?a8mat=4BC5IU+48EZN6+461Y+6CP0Y" alt=""></p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">AIはどうやって指名する選手を決めていますか？</summary>
-        <p class="text-sm text-gray-300 mt-2">選手の素の実力に加えて、球団ごとのスカウト傾向（<a href="teams.html" class="text-blue-400 underline">12球団のスカウト傾向はこちら</a>）、守備位置の空き状況、同じポジションの中での傑出度などを総合的に評価して指名しています。詳しい調整の経緯は<a href="devblog.html" class="text-blue-400 underline">開発ブログ</a>で公開しています。</p>
+        <p class="text-sm mt-2">選手の素の実力に加えて、球団ごとのスカウト傾向（<a href="teams.html" class="p-link">12球団のスカウト傾向はこちら</a>）、守備位置の空き状況、同じポジションの中での傑出度などを総合的に評価して指名しています。詳しい調整の経緯は<a href="devblog.html" class="p-link">開発ブログ</a>で公開しています。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">プレイ内容は保存されますか？</summary>
-        <p class="text-sm text-gray-300 mt-2">ドラフトの途中経過と結果は保存されず、ページを閉じたり再読み込みしたりするとリセットされます（途中から再開する機能はありません）。結果はシェア画像として端末に保存できます。一方、実績（称号）の解除状況とプレイ回数、1位指名予想の内容は、お使いのブラウザ内（localStorage）に保存されます。別の端末・別のブラウザには引き継がれず、ブラウザのサイトデータを削除すると消えます。野球くじ(β)（現在休止中）のポイントはサーバーに保存されますが、ログイン情報（匿名ログイン）はブラウザに保存されるため、サイトデータを削除したり別の端末で開いたりすると元のポイントには戻れません。</p>
+        <p class="text-sm mt-2">ドラフトの途中経過と結果は保存されず、ページを閉じたり再読み込みしたりするとリセットされます（途中から再開する機能はありません）。結果はシェア画像として端末に保存できます。一方、実績（称号）の解除状況とプレイ回数、1位指名予想の内容は、お使いのブラウザ内（localStorage）に保存されます。別の端末・別のブラウザには引き継がれず、ブラウザのサイトデータを削除すると消えます。野球くじ(β)（現在休止中）のポイントはサーバーに保存されますが、ログイン情報（匿名ログイン）はブラウザに保存されるため、サイトデータを削除したり別の端末で開いたりすると元のポイントには戻れません。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">不具合を見つけたらどうすればいいですか？</summary>
-        <p class="text-sm text-gray-300 mt-2">X（旧Twitter）の<a href="https://x.com/dreamteam9_jp" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline">公式アカウント（@dreamteam9_jp）</a>までご連絡ください。可能な範囲で修正し、<a href="changelog.html" class="text-blue-400 underline">更新履歴</a>でお知らせします。</p>
+        <p class="text-sm mt-2">X（旧Twitter）の<a href="https://x.com/dreamteam9_jp" target="_blank" rel="noopener noreferrer" class="p-link">公式アカウント（@dreamteam9_jp）</a>までご連絡ください。可能な範囲で修正し、<a href="changelog.html" class="p-link">更新履歴</a>でお知らせします。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">対応しているブラウザは？</summary>
-        <p class="text-sm text-gray-300 mt-2">Google Chrome、Safari、Microsoft Edgeなど主要なブラウザの最新版に対応しています。</p>
+        <p class="text-sm mt-2">Google Chrome、Safari、Microsoft Edgeなど主要なブラウザの最新版に対応しています。</p>
       </details>
 
-      <details class="bg-gray-800 rounded-lg p-4">
+      <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">NPBやプロ野球12球団の公式サイトですか？</summary>
-        <p class="text-sm text-gray-300 mt-2">いいえ、公式サイトではありません。個人が趣味で開発した非公式のファンコンテンツです。NPBおよび各球団とは一切関係ありません。</p>
+        <p class="text-sm mt-2">いいえ、公式サイトではありません。個人が趣味で開発した非公式のファンコンテンツです。NPBおよび各球団とは一切関係ありません。</p>
       </details>
 
     </div>
@@ -201,16 +201,16 @@
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
   
-    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
-      <p class="text-xs text-gray-400 mb-3">こちらのページもどうぞ</p>
+    <section class="p-rule-top pt-6 mt-8 text-center">
+      <p class="text-xs p-sub mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
-        <a href="glossary.html" class="text-sm text-blue-400 hover:underline font-bold">📚 用語集</a>
-        <a href="howto.html" class="text-sm text-blue-400 hover:underline font-bold">📖 遊び方</a>
-        <a href="teams.html" class="text-sm text-blue-400 hover:underline font-bold">🏟️ 球団紹介</a>
+        <a href="glossary.html" class="text-sm p-link font-bold">📚 用語集</a>
+        <a href="howto.html" class="text-sm p-link font-bold">📖 遊び方</a>
+        <a href="teams.html" class="text-sm p-link font-bold">🏟️ 球団紹介</a>
       </div>
     </section>
 </main>
-  <footer class="text-center text-gray-400 text-xs py-6">
+  <footer class="text-center p-sub text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 </body>
