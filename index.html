@@ -171,16 +171,19 @@
     }
 
     // ★ ゲストが自分の指名を「郵便受け」に投函する。確定はホスト側が行う（commitPick参照）。
-    async function submitPendingPick(roomId, slotIndex, playerId) {
+    // ★ 2026-10-31 通信を減らす：投函ごとに一意の key を付ける。ホストは処理済みの key を覚えて無視するので、
+    //   「読んだら空にする」ための書き込み（1試合12回ほど）が要らなくなった（key のない古い版の投函は従来どおり空にする）
+    async function submitPendingPick(roomId, slotIndex, playerId, key) {
       await updateDoc(doc(db, 'rooms', roomId), {
-        pendingPick: { slotIndex, playerId }, updatedAt: serverTimestamp()
+        pendingPick: key ? { slotIndex, playerId, key } : { slotIndex, playerId }, updatedAt: serverTimestamp()
       });
     }
 
     // ★ ホストのみが呼ぶ：指名を指名ログ(picks)に確定して追記し、郵便受けを空にする。
-    async function commitPick(roomId, entry) {
+    // ★ 2026-10-31 通信を減らす：extra（手番 turn など）を同じ1回の書き込みに入れられるようにした
+    async function commitPick(roomId, entry, extra) {
       await updateDoc(doc(db, 'rooms', roomId), {
-        picks: arrayUnion(entry), pendingPick: null, updatedAt: serverTimestamp()
+        ...(extra || {}), picks: arrayUnion(entry), pendingPick: null, updatedAt: serverTimestamp()
       });
     }
 
@@ -3168,6 +3171,8 @@
     let mpAwaitingSlot = null;        // ホスト側：この枠のリモート指名を待っている
     let mpAwaitingCallback = null;    // ホスト側：届いたら呼ぶコールバック
     let mpPendingRemotePick = null;   // { slotIndex, playerId, player } ゲストから届いたがまだ消費していない指名
+    let mpHandledPendingKeys = new Set(); // ホスト側：処理済みの投函の key（同じ投函を二度使わない）
+    let mpLastSentTurnJson = null;    // ホスト側：最後に送った手番（同じ中身なら送らない）
     let mpAppliedPickCount = 0;       // ゲスト側：picksログのうち何件まで反映済みか
     let mpSubmittedThisCycle = false; // ゲスト側：今の自分の手番ですでに送信済みか
 
@@ -4919,6 +4924,7 @@
       mpRoomId = null; mpIsHost = false; mpMySlotIndex = null;
       mpGameStarted = false; mpLineupStarted = false;
       mpAwaitingSlot = null; mpAwaitingCallback = null; mpPendingRemotePick = null;
+      mpHandledPendingKeys = new Set(); mpLastSentTurnJson = null;
       mpAppliedPickCount = 0; mpSubmittedThisCycle = false;
       mpCurrentLotteryKey = null; mpMyLotteryChoice = null; mpLotteryOpponentChoice = null; mpLotteryRevealTriggered = false;
       mpLastAnnouncedViaLottery = null;
@@ -5169,6 +5175,7 @@
       currentRound = 1;
       mpAppliedPickCount = 0;
       mpSubmittedThisCycle = false;
+      mpHandledPendingKeys = new Set(); mpLastSentTurnJson = null;
       mpGuestPickQueue = []; mpGuestDraining = false; mpLastTurnData = null;
       mpLastRevealKey = null; mpRevealedPickIds = new Set();
 
@@ -5210,14 +5217,21 @@
       const player = availablePlayers.find(p => p.id === pp.playerId) || initialDatabase.find(p => p.id === pp.playerId);
       if (!player) return;
 
-      mpPendingRemotePick = { slotIndex: pp.slotIndex, playerId: pp.playerId, player };
       // ★ Firestore側の郵便受け（pendingPick）は、指名が競合してすぐには確定しない場合
-      //   （抽選待ちなど）そのまま残ってしまう。空にしないまま次の指名サイクルに進むと、
-      //   この古い投函内容を新しい指名だと誤認してすぐに確定させてしまう不具合があったため、
-      //   読み取った時点でこちらから空にしておく。
-      window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
-        pendingPick: null, updatedAt: window.MP.serverTimestamp()
-      }).catch(() => {});
+      //   （抽選待ちなど）そのまま残ってしまう。古い投函内容を新しい指名だと誤認してすぐに
+      //   確定させてしまう不具合があったため、以前は読み取った時点でこちらから空にしていた。
+      //   2026-10-31 からは投函ごとの key で処理済みかを見分け、空にする書き込みをやめた（通信を減らすため）。
+      //   key のない投函（古い版のページのゲスト）だけは、従来どおり空にする。
+      if (pp.key) {
+        if (mpHandledPendingKeys.has(pp.key)) return;
+        mpHandledPendingKeys.add(pp.key);
+      }
+      mpPendingRemotePick = { slotIndex: pp.slotIndex, playerId: pp.playerId, player };
+      if (!pp.key) {
+        window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
+          pendingPick: null, updatedAt: window.MP.serverTimestamp()
+        }).catch(() => {});
+      }
       if (mpAwaitingSlot !== null && mpAwaitingSlot === pp.slotIndex && mpAwaitingCallback) {
         const cb = mpAwaitingCallback;
         const arrivedPlayer = mpPendingRemotePick.player;
@@ -5246,22 +5260,35 @@
     // ★ ホスト側：指名が確定した瞬間に必ず呼ばれる（commitPick/resolveDraftPicks/
     //   抽選の当選判定の4箇所すべてから）。picksログに1件追記し、続けて現在の
     //   手番状況をゲストへ配信する。ゲスト・シングルプレイ時は何もしない。
+    // ★ 2026-10-31 通信を減らす：以前は指名ログへの追記のあと、もう1回別に手番を書き込んでいた。
+    //   今の手番を同じ1回の書き込みに入れる（ゲスト側は従来どおり、指名を反映してから手番を当て直す）
     function mpHostRecordPick(team, player) {
       if (!mpRoomId || !mpIsHost || !window.MP) return;
       const slotIndex = mpSlotIndexForTeam(team);
-      window.MP.commitPick(mpRoomId, { round: currentRound, slotIndex, playerId: player.id })
-        .then(() => mpBroadcastTurn())
-        .catch(() => {});
+      const turn = mpCurrentTurn();
+      const turnJson = JSON.stringify(turn);
+      mpLastSentTurnJson = turnJson;
+      window.MP.commitPick(mpRoomId, { round: currentRound, slotIndex, playerId: player.id }, { turn })
+        .catch(() => { if (mpLastSentTurnJson === turnJson) mpLastSentTurnJson = null; });
+    }
+
+    function mpCurrentTurn() {
+      return { round: currentRound, needsPick: teams.map(t => !!t.needsPick), waiver: isWaiverRound(currentRound) };
     }
 
     // ★ ホスト側：現在どの枠が指名待ちか／何巡目か／ウェーバー中かをFirestoreへ
     //   書き込み、ゲスト画面の「指名」「待機中」表示や巡目表示に反映させる。
+    // ★ 2026-10-31 通信を減らす：直前に送った手番と中身が同じなら送らない（1試合で12回ほど同じ内容を送っていた）。
+    //   送るのに失敗したときは覚えた中身を消し、次は必ず送る
     function mpBroadcastTurn() {
       if (!mpRoomId || !mpIsHost || !window.MP) return;
+      const turn = mpCurrentTurn();
+      const turnJson = JSON.stringify(turn);
+      if (turnJson === mpLastSentTurnJson) return;
+      mpLastSentTurnJson = turnJson;
       window.MP.updateDoc(window.MP.doc(window.MP.db, 'rooms', mpRoomId), {
-        turn: { round: currentRound, needsPick: teams.map(t => !!t.needsPick), waiver: isWaiverRound(currentRound) },
-        updatedAt: window.MP.serverTimestamp()
-      }).catch(() => {});
+        turn, updatedAt: window.MP.serverTimestamp()
+      }).catch(() => { if (mpLastSentTurnJson === turnJson) mpLastSentTurnJson = null; });
     }
 
     // ★ 対人戦の封筒くじ：自分が封筒をクリックした瞬間に呼ばれる（ホスト・ゲスト共通）。
@@ -5399,7 +5426,8 @@
 
       mpSubmittedThisCycle = true;
       renderSearchList();
-      window.MP.submitPendingPick(mpRoomId, mpMySlotIndex, selected.id).catch(() => {
+      const pickKey = 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      window.MP.submitPendingPick(mpRoomId, mpMySlotIndex, selected.id, pickKey).catch(() => {
         mpSubmittedThisCycle = false;
         renderSearchList();
         showAppAlert('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
