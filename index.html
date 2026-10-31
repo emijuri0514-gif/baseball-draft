@@ -4854,8 +4854,17 @@
       return 'other';
     }
     window.mpReportError = function(e, where) {
-      // 合言葉の間違い・満員など、利用者の操作で起きる想定内の失敗は数えない
-      if (e && /^ROOM_(NOT_FOUND|ALREADY_STARTED|FULL)$/.test(e.message || '')) return;
+      // 合言葉の間違い・満員など、利用者の操作で起きる想定内の失敗はエラーとして数えない
+      // ★ 2026-10-31 満員だけは「3人目として参加したかった人」の数を知るため、error_type=room_full で送る
+      //   （新しい項目は作らず、登録済みの error_type に値を足すだけ。上限超えの集計では room_full を除いて見る）
+      if (e && e.message === 'ROOM_FULL') {
+        if (!MP_TEST_ERROR_MODE && !mpErrorSent.has('room_full') && typeof gtag === 'function') {
+          mpErrorSent.add('room_full');
+          gtag('event', 'mp_error', { error_type: 'room_full', error_where: where, in_game: 0 });
+        }
+        return;
+      }
+      if (e && /^ROOM_(NOT_FOUND|ALREADY_STARTED)$/.test(e.message || '')) return;
       const type = mpErrorType(e);
       const key = type + ':' + where;
       if (!MP_TEST_ERROR_MODE && !mpErrorSent.has(key) && typeof gtag === 'function') {
@@ -5009,6 +5018,10 @@
           ROOM_FULL: 'そのルームはすでに満員です。'
         };
         errEl.textContent = msgMap[e.message] || '参加に失敗しました。通信環境をご確認のうえ、もう一度お試しください。';
+        // ★ 友達対戦は2人まで。3人目として来た人には、1台で2〜8人で遊べる「なんでもドラフト」を案内する
+        if (e.message === 'ROOM_FULL') {
+          errEl.insertAdjacentHTML('beforeend', '<span class="block mt-1 font-normal text-gray-700">友達対戦は2人までです。3人以上で遊ぶなら、1台のスマホを回して2〜8人で指名できる <a href="anything-draft.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag===\'function\')gtag(\'event\',\'cta_click\',{month:new Date().getMonth()+1,target:\'anything_room_full\'})" class="text-blue-700 underline font-bold">なんでもドラフト</a> がおすすめです。</span>');
+        }
         errEl.classList.remove('hidden');
       }
     };
