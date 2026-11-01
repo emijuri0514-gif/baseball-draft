@@ -149,7 +149,8 @@
 
     let allPlayers = [];
 
-    const POS_SLUG = { "捕":"catcher","一":"1b","二":"2b","三":"3b","遊":"ss","左":"lf","中":"cf","右":"rf","DH":"dh","先発":"sp","中継":"mid","抑え":"cl" };
+    // ★ 「外」（外野。左・中・右どこでも同じ）は中堅のランキングへ
+    const POS_SLUG = { "捕":"catcher","一":"1b","二":"2b","三":"3b","遊":"ss","左":"lf","中":"cf","右":"rf","外":"cf","DH":"dh","先発":"sp","中継":"mid","抑え":"cl" };
 
     function rankingLink(p) {
       const slugPos = (p.bestPos || []).find(pos => POS_SLUG[pos]);
