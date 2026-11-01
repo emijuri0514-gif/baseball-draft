@@ -926,7 +926,7 @@
 
     // 総合ptは6項目の合計そのもの（平均だと「長打力88なのに総合90」のように基準が分からなくなるため、
     // シェア画像では素直に足し算した数字だけを見せる）。ランク文字は既存のfinalScore（平均）基準のまま。
-    // 色・文字色はプロスピのランク配色に合わせ、基準点も一目で分かるようmin〜maxを持たせる。
+    // 色・文字色はランクごとに見分けやすい配色にし、基準点も一目で分かるようmin〜maxを持たせる。
     const GRADE_TABLE = [
       { grade: 'S', min: 90, max: 100, color: '#eab308', textColor: '#422006', tagline: '伝説級のドラフト采配！' },
       { grade: 'A', min: 80, max: 89,  color: '#ec4899', textColor: '#ffffff', tagline: '素晴らしい編成！' },
@@ -1437,7 +1437,7 @@
         ctx.fillText(opts.subtitle, L.badgeCx, L.subtitleY, badgeColW);
       }
 
-      // ランクバッジ（一番の見せ場：色はプロスピのランク配色に統一し、チームカラーは背景のグローと
+      // ランクバッジ（一番の見せ場：色はランクごとの配色に統一し、チームカラーは背景のグローと
       // 内訳バーだけで表現する）
       ctx.beginPath();
       ctx.arc(L.badgeCx, L.badgeCy, L.badgeR, 0, Math.PI * 2);
@@ -2371,7 +2371,7 @@
           <li>友達と「誰のチームが一番強いか」で盛り上がりたい人</li>
           <li>10月22日の本物のドラフト会議に向けて、気分を盛り上げたい人（<a href="draft-predict.html" class="text-yellow-300 hover:underline font-bold">12球団1位指名予想</a>や<a href="draft-2026.html" class="text-yellow-300 hover:underline font-bold">放送予定・注目選手</a>もあわせてどうぞ）</li>
         </ul>
-        <p class="text-blue-200 text-xs md:text-sm">※選手の能力値はゲーム用の数値で、実際の成績や評価とは異なります。詳しくは<a href="faq.html" class="text-yellow-300 hover:underline font-bold">よくある質問</a>をご覧ください。</p>
+        <p class="text-blue-200 text-xs md:text-sm">※選手の能力値は、プロ野球の成績をもとに当サイトが独自に計算したゲーム用の数値です。実際の実力や評価を正確に表すものではありません。詳しくは<a href="faq.html" class="text-yellow-300 hover:underline font-bold">よくある質問</a>をご覧ください。</p>
       </div>
     </section>
     <div class="w-full max-w-md text-center mt-8 mb-2 space-y-1">
