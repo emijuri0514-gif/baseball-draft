@@ -4221,8 +4221,10 @@
 
       let pow75Count = team.roster.filter(p => p && p.fStats && p.fStats.pow >= 75).length;
       let run75Count = team.roster.filter(p => p && p.fStats && p.fStats.run >= 75).length;
-      let def70Count = team.roster.filter(p => p && p.fStats && p.fStats.def >= 70).length;
-      let meet75Count = team.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length;
+      // ★ コンボの条件（localFinishLineup の「鉄壁の守備陣」「安打製造機」）と同じしきい値にそろえる。
+      //   2026-11-01 能力値の切り替えに合わせて 守備70以上4人→68以上5人・ミート75以上3人→70以上3人（オーナー判断）
+      let def68Count = team.roster.filter(p => p && p.fStats && p.fStats.def >= 68).length;
+      let meet70Count = team.roster.filter(p => p && p.fStats && p.fStats.meet >= 70).length;
       let rel80Count = team.roster.filter(p => p && p.pStats && p.pStats.pow >= 80 && (p.bestPos.includes("中継") || p.bestPos.includes("抑え"))).length;
       let elitePitcherCount = team.roster.filter(p => p && p.pStats && getBaseStat(p) >= 75).length;
 
@@ -4311,8 +4313,8 @@
         if (p.fStats) {
            score += comboApproachBonus(pow75Count,  4, 8) * comboProximity(p.fStats.pow, 75);
            score += comboApproachBonus(run75Count,  3, 6) * comboProximity(p.fStats.run, 75);
-           score += comboApproachBonus(def70Count,  4, 6) * comboProximity(p.fStats.def, 70);
-           score += comboApproachBonus(meet75Count, 3, 6) * comboProximity(p.fStats.meet, 75);
+           score += comboApproachBonus(def68Count,  5, 6) * comboProximity(p.fStats.def, 68);
+           score += comboApproachBonus(meet70Count, 3, 6) * comboProximity(p.fStats.meet, 70);
         }
         if (p.pStats) {
            let pitcherComboBonus = 0;
@@ -6001,7 +6003,10 @@
           comboNames.push('【機動力野球】');
           comboBadges += `<span class="bg-blue-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-blue-800">機動力野球</span>`;
         }
-        if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 70).length >= 4) {
+        // ★ 2026-11-01 能力値を成績からの計算に切り替えるのに合わせて、出る割合が前に近くなるよう条件を変えた（オーナー判断・1万回で確認）：
+        //   鉄壁の守備陣 守備70以上4人→68以上5人、安打製造機 ミート75以上3人→70以上3人、センターライン 守備70以上4人→68以上5人。
+        //   AIの指名（getAIPick の def68Count・meet70Count）も同じしきい値。変えるときは両方そろえる
+        if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 68).length >= 5) {
           comboNames.push('【鉄壁の守備陣】');
           comboBadges += `<span class="bg-green-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-green-800">鉄壁の守備陣</span>`;
         }
@@ -6009,7 +6014,7 @@
           comboNames.push('【黄金の投手陣】');
           comboBadges += `<span class="bg-purple-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-purple-800">黄金の投手陣</span>`;
         }
-        if (t.roster.filter(p => p && p.fStats && p.fStats.meet >= 75).length >= 3) {
+        if (t.roster.filter(p => p && p.fStats && p.fStats.meet >= 70).length >= 3) {
           comboNames.push('【安打製造機】');
           comboBadges += `<span class="bg-pink-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-pink-800">安打製造機</span>`;
         }
@@ -6018,8 +6023,8 @@
           comboBadges += `<span class="bg-orange-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-orange-800">勝利の方程式</span>`;
         }
         // ★ 「外」（外野。左・中・右どこでも同じ）は中堅も守れるので数える
-        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 70 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
-        if (centerLineCount >= 4) {
+        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 68 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
+        if (centerLineCount >= 5) {
           comboNames.push('【センターライン】');
           comboBadges += `<span class="bg-emerald-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-emerald-800">センターライン</span>`;
         }
