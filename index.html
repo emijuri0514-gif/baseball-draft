@@ -6004,7 +6004,7 @@
           comboBadges += `<span class="bg-blue-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-blue-800">機動力野球</span>`;
         }
         // ★ 2026-11-01 能力値を成績からの計算に切り替えるのに合わせて、出る割合が前に近くなるよう条件を変えた（オーナー判断・1万回で確認）：
-        //   鉄壁の守備陣 守備70以上4人→68以上5人、安打製造機 ミート75以上3人→70以上3人、センターライン 守備70以上4人→68以上5人。
+        //   鉄壁の守備陣 守備70以上4人→68以上5人、安打製造機 ミート75以上3人→70以上3人、センターライン 守備70以上4人→69以上5人（11/2 守備の計算を直したあと、68だと2球団で前の2倍になったので69に）。
         //   AIの指名の後押し（getAIPick の def70Count・meet75Count）は前の値のまま（そろえるとAIがコンボを集めすぎる）
         if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 68).length >= 5) {
           comboNames.push('【鉄壁の守備陣】');
@@ -6023,7 +6023,7 @@
           comboBadges += `<span class="bg-orange-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-orange-800">勝利の方程式</span>`;
         }
         // ★ 「外」（外野。左・中・右どこでも同じ）は中堅も守れるので数える
-        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 68 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
+        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 69 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
         if (centerLineCount >= 5) {
           comboNames.push('【センターライン】');
           comboBadges += `<span class="bg-emerald-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-emerald-800">センターライン</span>`;
