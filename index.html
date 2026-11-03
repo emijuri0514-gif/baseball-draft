@@ -636,7 +636,7 @@
       { id: 'foreigners_full', tier: '中級', emoji: '🌎', title: 'フォーリナーズ',    desc: '外国人選手を上限の3人フル指名して編成する' },
       { id: 'few_teams',      tier: '中級', emoji: '🎯', title: '一点集中',           desc: '野手9人を4球団以下の出身選手だけで編成する' },
       { id: 'total_away',     tier: '中級', emoji: '🚪', title: '完全アウェー',       desc: '担当球団の選手を1人も指名せずに編成する' },
-      { id: 'weeds_spirit',   tier: '上級', emoji: '🌾', title: '雑草魂',             desc: '打者・投手ともに能力値の平均が70未満の選手だけで編成し、Cランク以上を取る' },
+      { id: 'weeds_spirit',   tier: '上級', emoji: '🌾', title: '雑草魂',             desc: '6球団以上で遊び、打者・投手ともに能力値の平均がおよそ70以下の選手だけで編成して、Cランク以上を取る（球団数で少しだけ違う）' },
       // ★ 期間限定（2026-10追加）：期間が終わると誰も取れなくなるので、全体の数（25個）とは別枠で数える。
       //   予想屋・名スカウト・千里眼は draft-predict.html 側で判定して、同じlocalStorageに書き込む（IDを変えるときは両方直すこと）。
       { id: 'ltd_draft2026',   tier: '期間限定', emoji: '🎊', title: '2026ドラフト記念', desc: '10/15〜10/31に、ドラフト＆スタメン編成を1回最後まで完了する' },
@@ -703,6 +703,14 @@
       window.__achToastTimer = setTimeout(() => el.classList.remove('show'), 3200);
     }
 
+    // 実績「雑草魂」の条件（遊ぶ球団の数ごと。打者・投手それぞれ「能力値の平均がこの値未満」）。2026-11-03 オーナー判断：
+    //   低い選手だけを狙って集めたときに、Cランク以上を取れる割合が約1〜5%になる値（AIだけの1万回で確かめた）。
+    //   能力値の平均は打者が0.25刻み・投手が1/3刻みで、70前後にちょうどの選手が数人いるため、数字を少し動かすだけで
+    //   取れやすさが大きく変わる（2〜5球団は 0.4% の次が3割以上になり、1〜5%に入らないので取れないようにした）
+    const WEEDS_LIMITS = {
+      6: { bat: 70.25, pit: 70.25 }, 7: { bat: 70.25, pit: 70.25 }, 8: { bat: 70, pit: 70.34 }, 9: { bat: 70.25, pit: 70.25 },
+      10: { bat: 70.25, pit: 70.25 }, 11: { bat: 70.25, pit: 70.5 }, 12: { bat: 70.25, pit: 70.5 },
+    };
     function unlockAchievement(id) {
       if (achState.unlocked[id]) return;
       achState.unlocked[id] = true;
@@ -6195,14 +6203,15 @@
 
           if (t.roster.every(p => p && p.team !== t.baseName)) unlockAchievement('total_away');
 
-          const allUnderThreshold = t.roster.every(p => {
+          // ★ 雑草魂：球団数ごとに条件の数字を分ける（2026-11-03 オーナー判断）。狙って集めたときの取れやすさが、どの球団数でも
+          //   約1〜5%になるように1万回で決めた（WEEDS_LIMITS の説明を参照）。5球団以下では取れない。取った人の記録は消さない
+          const weedsLim = WEEDS_LIMITS[teams.length];
+          const allUnderThreshold = !!weedsLim && t.roster.every(p => {
             if (!p) return false;
             const avg = p.fStats
               ? (p.fStats.meet + p.fStats.pow + p.fStats.run + p.fStats.def) / 4
               : (p.pStats.pow + p.pStats.con + p.pStats.sta) / 3;
-            // ★ 2026-11-01 能力値を成績からの計算に切り替えるのに合わせて68→70（オーナー判断・1万回で確認）。
-            //   68のままだと狙って集めても達成0%（前の能力値でも0%）。70なら狙えば数％で取れる。取った人の記録は消さない
-            return avg < 70;
+            return avg < (p.fStats ? weedsLim.bat : weedsLim.pit);
           });
           if (allUnderThreshold && (grade === 'C' || grade === 'B' || grade === 'A' || grade === 'S')) {
             unlockAchievement('weeds_spirit');
