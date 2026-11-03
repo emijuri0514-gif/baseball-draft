@@ -1084,20 +1084,21 @@
 
     // ★ 2026-10-09 上位2項目は「点数そのもの」ではなく「平均との差」が大きい順で選ぶ。点数そのものだと長打力が
     // 高く出やすい点数の付き方のせいで、12球団の対戦では半分のチームが「大砲とエース」になっていたため。
+    // ★ 2026-11-03 能力値を成績からの計算に切り替えたので、新しい能力値で作り直した（2・4・12球団は1万回、ほかは2千回。オーナー判断）。
     // 平均はAI同士の1万回シミュレーション（シード20261022）で、遊ぶ球団の数ごとに固定（人数で平均が大きく変わり、
     // 12球団の平均を4球団の対戦に使うと1つの文言に4割以上が集まった）。並びはSTAT_LABELSの順
     const SHARE_STAT_MEANS = {
-      2: [93.9, 87.9, 75.3, 73.3, 86.4, 74.1],
-      3: [93.2, 86.1, 73.5, 67.2, 84.1, 73.0],
-      4: [91.3, 84.4, 71.6, 64.2, 82.3, 70.2],
-      5: [89.0, 82.8, 69.7, 62.4, 81.2, 68.3],
-      6: [87.7, 81.2, 68.2, 61.0, 80.4, 67.1],
-      7: [87.1, 79.4, 66.8, 59.8, 79.6, 65.6],
-      8: [86.2, 77.5, 65.9, 58.9, 78.8, 63.0],
-      9: [84.5, 75.6, 65.6, 58.3, 77.9, 59.9],
-      10: [82.5, 73.2, 65.9, 58.1, 77.0, 57.8],
-      11: [80.4, 71.0, 65.8, 57.7, 76.2, 56.5],
-      12: [78.3, 68.5, 65.4, 57.5, 75.4, 55.7]
+      2: [94, 85.9, 70.7, 79.1, 84.2, 74.6],
+      3: [94, 81.6, 68.1, 74.2, 83.3, 77.1],
+      4: [93.6, 78.4, 65.3, 71.8, 81.9, 77.8],
+      5: [93.1, 76.1, 63.4, 70.1, 80.1, 76.5],
+      6: [92.6, 73.1, 62.5, 68.2, 78.1, 74.3],
+      7: [92, 70.2, 62.2, 66.4, 76.3, 72.1],
+      8: [91.3, 67.1, 61.8, 64.8, 74.4, 70.7],
+      9: [90.3, 64.3, 61.5, 63.2, 72.2, 69.7],
+      10: [89, 61.8, 60.9, 61.5, 70.4, 69],
+      11: [87.1, 59.8, 60.3, 60.4, 69.8, 68.8],
+      12: [85, 57.3, 60.5, 59.4, 69.3, 68.5]
     };
     function shareStatMeans(teamCount) {
       const keys = Object.keys(SHARE_STAT_MEANS).map(Number);
@@ -2984,13 +2985,13 @@
       { id: 19940165, name: "テイラー・ハーン", team: "広島", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 79, con: 71, sta: 65} },
       { id: 19920042, name: "中﨑翔太", team: "広島", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 76, sta: 63} },
       { id: 20010147, name: "高太一", team: "広島", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 76, sta: 65} },
-      { id: 20010088, name: "持丸泰輝", team: "広島", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 57, pow: 70, run: 65, def: 58} },
+      { id: 20010088, name: "持丸泰輝", team: "広島", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 57, pow: 70, run: 65, def: 62} },
       { id: 20020190, name: "岡本駿", team: "広島", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 79, con: 78, sta: 67} },
       { id: 19930057, name: "野間峻祥", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 74, pow: 63, run: 73, def: 62} },
       { id: 20020154, name: "佐々木泰", team: "広島", pos: "内野手", bestPos: ["三", "外"], eval: "内野手", fStats: {meet: 68, pow: 65, run: 73, def: 62} },
       { id: 20040126, name: "平川蓮", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 57, pow: 67, run: 71, def: 71} },
       { id: 19980125, name: "森浦大輔", team: "広島", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 80, con: 61, sta: 64} },
-      { id: 20000192, name: "名原典彦", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 66, pow: 70, run: 78, def: 66} },
+      { id: 20000192, name: "名原典彦", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 66, pow: 70, run: 78, def: 62} },
 
       // オリックス
       { id: 20010023, name: "宮城大弥", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 82, sta: 77} },
@@ -6004,9 +6005,10 @@
           comboBadges += `<span class="bg-blue-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-blue-800">機動力野球</span>`;
         }
         // ★ 2026-11-01 能力値を成績からの計算に切り替えるのに合わせて、出る割合が前に近くなるよう条件を変えた（オーナー判断・1万回で確認）：
-        //   鉄壁の守備陣 守備70以上4人→68以上5人、安打製造機 ミート75以上3人→70以上3人、センターライン 守備70以上4人→69以上5人（11/2 守備の計算を直したあと、68だと2球団で前の2倍になったので69に）。
+        //   鉄壁の守備陣 守備70以上4人→64以上5人、安打製造機 ミート75以上3人→70以上3人、センターライン 守備70以上4人→64以上5人
+        //   （11/3 守備力の基準点を全ポジション同じにした（案D）あと、真ん中の選手が62前後に集まるので64に。1万回で前の半分〜2倍を確認）。
         //   AIの指名の後押し（getAIPick の def70Count・meet75Count）は前の値のまま（そろえるとAIがコンボを集めすぎる）
-        if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 68).length >= 5) {
+        if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 64).length >= 5) {
           comboNames.push('【鉄壁の守備陣】');
           comboBadges += `<span class="bg-green-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-green-800">鉄壁の守備陣</span>`;
         }
@@ -6023,7 +6025,7 @@
           comboBadges += `<span class="bg-orange-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-orange-800">勝利の方程式</span>`;
         }
         // ★ 「外」（外野。左・中・右どこでも同じ）は中堅も守れるので数える
-        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 69 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
+        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 64 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
         if (centerLineCount >= 5) {
           comboNames.push('【センターライン】');
           comboBadges += `<span class="bg-emerald-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-emerald-800">センターライン</span>`;
