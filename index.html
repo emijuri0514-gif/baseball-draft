@@ -2119,7 +2119,13 @@
     <!-- ★ 指名カードメーカーへの入口（2026-10-18）。開始ボタンより目立たないよう、塗りのない細い枠だけにする。
          初めての人の開始ボタンがスクロールなしで見える位置から大きく下がらないよう、この行の分だけ
          上のお知らせ帯と下のヒーローのスマホ時の余白を詰めている（md以上は従来どおり） -->
-    <a id="top-pickcard" href="pick-card.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_top'})" class="block w-full max-w-md mb-1 md:mb-3 border border-yellow-400/50 hover:bg-yellow-400/10 text-yellow-300 rounded-md px-2 py-px md:py-0.5 text-[11px] md:text-xs font-bold text-center leading-tight md:leading-snug whitespace-nowrap">🃏 自分の名前で『指名カード』を作る ›</a>
+    <!-- ★ 2026-11-06 なんでもドラフトへの入口を、指名カードメーカーの帯と同じ形で横に並べた（オーナー判断）。
+         縦に1行足すと、スマホで開始ボタンが22px下がる（360×640で画面からはみ出す）ので、同じ行に半分ずつ置く。
+         この帯はゲームの中身にもトップのデザインにも関係しないので、能力値の切り替えから14日あける決まりの対象外 -->
+    <div class="flex gap-1 w-full max-w-md mb-1 md:mb-3">
+    <a id="top-pickcard" href="pick-card.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_top'})" class="block flex-1 min-w-0 truncate border border-yellow-400/50 hover:bg-yellow-400/10 text-yellow-300 rounded-md px-2 py-px md:py-0.5 text-[11px] md:text-xs font-bold text-center leading-tight md:leading-snug whitespace-nowrap">🃏 指名カードを作る ›</a>
+    <a id="top-anything" href="anything-draft.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_top'})" class="block flex-1 min-w-0 truncate border border-yellow-400/50 hover:bg-yellow-400/10 text-yellow-300 rounded-md px-2 py-px md:py-0.5 text-[11px] md:text-xs font-bold text-center leading-tight md:leading-snug whitespace-nowrap">🎲 なんでもドラフト ›</a>
+    </div>
     <div class="stadium-bg w-full min-h-[128px] md:min-h-[220px] rounded-lg px-4 flex flex-col items-center justify-center mb-2 md:mb-4" style="position: relative;">
     <div style="position: relative; z-index: 1;">
     <p class="font-sport text-red-400 text-[10px] md:text-xs tracking-[0.35em] text-center font-bold mb-1">NPB DRAFT GAME</p>
