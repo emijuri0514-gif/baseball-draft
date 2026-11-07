@@ -108,3 +108,9 @@ a.p-card { display: block; color: var(--ink); }
 .p-tl { border-color: var(--hair); }
 .p-dot { background: var(--sheet); border: 2px solid var(--ink); }
 .p-dot.is-new { background: var(--ink); }
+
+/* ---------- 中継ページ（第5弾 2026-11-08） ---------- */
+/* 左に墨の太い線を引いた面（「あわせて読みたい」・料金の強調など。前の黄色い左線の置き換え） */
+.p-accent { border-left: 4px solid var(--ink); }
+/* 運営者のアイコンの丸（朱赤は使わない） */
+.p-avatar { background: var(--muted-bg); border: 1px solid var(--hair); }

@@ -26,8 +26,9 @@
   <meta property="og:url" content="https://dreamteam9.com/hiroshima-broadcast.html">
   <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
   <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-11-08 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第5弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
   <style>
-    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
 
     /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
        空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
@@ -48,47 +49,47 @@
   </script>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
-<body class="text-gray-100">
-  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
-      <h1 class="text-sm md:text-base font-black tracking-wider">🔴 カープファンの中継事情</h1>
+      <h1 class="p-mincho text-base md:text-lg">🔴 カープファンの中継事情</h1>
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
-        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
-        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
-        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
       </div>
-      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
-            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎲 なんでもドラフト <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
-            <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
-            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
-            <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ FAQ</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
-            <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
-            <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
-            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
-            <a href="players.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧢 選手名鑑</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
-            <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
-            <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
-            <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
-            <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
-            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
           </div>
       </div>
     </div>
@@ -99,21 +100,21 @@
     <div id="ad-slot-top" class="ad-slot"></div>
 
     <section class="text-center">
-      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">「広島だけDAZNに入ってない」問題</h2>
-      <p class="text-sm md:text-base text-gray-300 leading-relaxed">
-        プロ野球の主催試合中継をDAZNで契約しようとしたら、<span class="font-bold text-white">広島東洋カープだけホーム主催試合が配信されていない</span>ことに気づいたカープファンは多いはず。他球団のファンには当たり前にある選択肢が、なぜか広島ファンにはない。この記事では、その理由と、カープファンが全試合（二軍戦含む）を見るための選択肢をまとめました。
+      <h2 class="p-mincho text-xl md:text-2xl mb-2">「広島だけDAZNに入ってない」問題</h2>
+      <p class="text-sm md:text-base p-sub leading-relaxed">
+        プロ野球の主催試合中継をDAZNで契約しようとしたら、<span class="p-em">広島東洋カープだけホーム主催試合が配信されていない</span>ことに気づいたカープファンは多いはず。他球団のファンには当たり前にある選択肢が、なぜか広島ファンにはない。この記事では、その理由と、カープファンが全試合（二軍戦含む）を見るための選択肢をまとめました。
       </p>
-      <p class="text-[11px] text-gray-400 mt-3">この記事にはPR広告が含まれています。</p>
+      <p class="text-[11px] p-sub mt-3">この記事にはPR広告が含まれています。</p>
     </section>
 
     <picture>
       <source srcset="images/hiroshima-hero-excluded.webp" type="image/webp">
-      <img src="images/hiroshima-hero-excluded.jpg" alt="12球団のキャップが並ぶ中、1つだけグレーになっていて「？」の吹き出しがついているイラスト。広島だけが蚊帳の外になっているイメージ" class="w-full rounded-lg shadow-lg" loading="lazy" width="1000" height="562">
+      <img src="images/hiroshima-hero-excluded.jpg" alt="12球団のキャップが並ぶ中、1つだけグレーになっていて「？」の吹き出しがついているイラスト。広島だけが蚊帳の外になっているイメージ" class="w-full rounded-sm" loading="lazy" width="1000" height="562">
     </picture>
 
-    <div class="bg-gray-800 rounded-lg p-4">
-      <p class="text-xs font-bold text-gray-400 mb-2">こんなことで悩んでいませんか？</p>
-      <ul class="space-y-1.5 text-sm text-gray-200">
+    <div class="p-card p-4">
+      <p class="text-xs font-bold p-sub mb-2">こんなことで悩んでいませんか？</p>
+      <ul class="space-y-1.5 text-sm">
         <li>・DAZN契約しようとしたら、広島だけ主催試合が見つからない</li>
         <li>・スカパーって結局いくらかかるの？高くない？</li>
         <li>・一軍だけじゃなく二軍（ファーム）の試合も見たい</li>
@@ -121,17 +122,17 @@
       </ul>
     </div>
 
-    <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 flex gap-3 items-start">
-      <div class="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-2xl shrink-0">🔴</div>
+    <div class="p-card p-4 flex gap-3 items-start">
+      <div class="w-12 h-12 rounded-full p-avatar flex items-center justify-center text-2xl shrink-0">🔴</div>
       <div>
-        <p class="text-sm font-black text-white mb-1">運営者｜AIドラフト管理人</p>
-        <p class="text-xs text-gray-300 leading-relaxed">広島東洋カープファン歴が長く、2024年シーズンは実際にスカパー！プロ野球セットを1年間契約して、一軍・二軍問わずカープの試合を追いかけていました。今はJ SPORTSやHulu・FODを組み合わせる形に切り替えていて、その理由も含めて正直に書いています。</p>
+        <p class="text-sm font-black mb-1">運営者｜AIドラフト管理人</p>
+        <p class="text-xs leading-relaxed">広島東洋カープファン歴が長く、2024年シーズンは実際にスカパー！プロ野球セットを1年間契約して、一軍・二軍問わずカープの試合を追いかけていました。今はJ SPORTSやHulu・FODを組み合わせる形に切り替えていて、その理由も含めて正直に書いています。</p>
       </div>
     </div>
 
-    <nav class="bg-gray-800 border border-gray-700 rounded-lg p-4">
-      <p class="text-xs font-bold text-gray-400 mb-2">📋 この記事でわかること</p>
-      <ol class="space-y-1 text-sm text-blue-300 list-decimal list-inside">
+    <nav class="p-card p-4">
+      <p class="text-xs font-bold p-sub mb-2">📋 この記事でわかること</p>
+      <ol class="space-y-1 text-sm list-decimal list-inside">
         <li><a href="#why" class="hover:underline">なぜDAZNで広島戦（主催試合）が見れないのか</a></li>
         <li><a href="#options" class="hover:underline">カープの試合を見るための選択肢</a></li>
         <li><a href="#experience" class="hover:underline">運営者が実際にスカパーを契約していた体験談</a></li>
@@ -142,46 +143,46 @@
     </nav>
 
     <section id="why">
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">❓ なぜDAZNで広島戦（主催試合）が見れないのか</h3>
-      <div class="bg-gray-800 rounded-lg p-4 text-sm md:text-base text-gray-200 space-y-3">
+      <h3 class="p-h2 text-lg mb-3">❓ なぜDAZNで広島戦（主催試合）が見れないのか</h3>
+      <div class="p-card p-4 text-sm md:text-base space-y-3">
         <p>プロ野球の放映権は球団ごとに個別で管理されており、広島東洋カープは12球団の中で唯一、主催試合（ホームゲーム）をDAZNで配信していません。理由としては、球団が低迷していた時期も変わらず地元でテレビ中継を続けてきた地元局（広島テレビ等）への配慮や、球団独自のブランド戦略が挙げられています。</p>
-        <p class="text-xs text-gray-400">※ビジター試合（他球団主催で広島が客として戦う試合）はDAZNで配信されることもあります。見れないのはあくまで広島主催試合です。</p>
+        <p class="text-xs p-sub">※ビジター試合（他球団主催で広島が客として戦う試合）はDAZNで配信されることもあります。見れないのはあくまで広島主催試合です。</p>
       </div>
     </section>
 
     <section id="options">
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">📺 カープの試合を見るための選択肢</h3>
+      <h3 class="p-h2 text-lg mb-3">📺 カープの試合を見るための選択肢</h3>
       <div class="space-y-3">
-        <div class="bg-gray-800 rounded-lg p-4">
-          <p class="font-black text-yellow-300 mb-1">J SPORTS</p>
-          <p class="text-sm text-gray-300">広島の主催試合を配信しているサービスのひとつ。ただし広島以外の球団もまとめて追いたい場合は、別途他のサービスとの契約が必要になる。</p>
+        <div class="p-card p-4">
+          <p class="font-black mb-1">J SPORTS</p>
+          <p class="text-sm">広島の主催試合を配信しているサービスのひとつ。ただし広島以外の球団もまとめて追いたい場合は、別途他のサービスとの契約が必要になる。</p>
         </div>
-        <div class="bg-gray-800 rounded-lg border-l-4 border-yellow-400 p-4">
-          <p class="font-black text-yellow-300 mb-1">スカパー！プロ野球セット</p>
-          <p class="text-sm text-gray-300">セ・パ12球団すべての公式戦（広島の主催試合も含む）を中継している唯一のサービス。<span class="font-bold text-white">「広島も、他の球団も、まとめて1つで見たい」という人にとっては実質これしか選択肢がない。</span></p>
+        <div class="p-card p-accent p-4">
+          <p class="font-black mb-1">スカパー！プロ野球セット</p>
+          <p class="text-sm">セ・パ12球団すべての公式戦（広島の主催試合も含む）を中継している唯一のサービス。<span class="p-em">「広島も、他の球団も、まとめて1つで見たい」という人にとっては実質これしか選択肢がない。</span></p>
         </div>
       </div>
     </section>
 
     <section id="experience">
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">🔴 運営者も実際に契約していました</h3>
-      <div class="bg-gray-800 rounded-lg p-4 text-sm md:text-base text-gray-200 space-y-3">
+      <h3 class="p-h2 text-lg mb-3">🔴 運営者も実際に契約していました</h3>
+      <div class="p-card p-4 text-sm md:text-base space-y-3">
         <p>このサイトの運営者も広島ファンで、2024年シーズンはスカパー！プロ野球セットを契約して、カープの試合を追いかけていました。きっかけは単純で、全球団の試合を見ようと色々な配信サービスに別々に契約していたら、オフシーズンごとに個別に解約する手間が面倒だった上に、それでも全球団はカバーしきれなかったこと。スカパーなら1つにまとめられて、広島を含めた全球団の試合が見られます。</p>
-        <p>個人的に一番よかったのは、<span class="font-bold text-white">一軍の試合も、二軍の試合も、両方の願望を同時に叶えてくれた</span>ところでした。一軍の試合そのものを見るのも好きだし、二軍の選手が一軍に上がって活躍するまでの成長を追いかけるのも好き。どちらか一方だけ見られるサービスは他にもありますが、両方をまとめて見られる環境があるのはかなり大きかったです。正直に言うと、<span class="font-bold text-white">料金は月4,483円（視聴料4,054円＋基本料429円）</span>とそこまで安くはなく、値段だけ見ると少し高いと感じる人もいると思います。それでも「バラバラに何個も契約するより、これ1つで全部見られる」という納得感の方が上回っていました。2024年シーズンのみの契約で、今は契約していませんが、「全球団まとめて、二軍まで見たい」というカープファンには今でもおすすめできます。</p>
+        <p>個人的に一番よかったのは、<span class="p-em">一軍の試合も、二軍の試合も、両方の願望を同時に叶えてくれた</span>ところでした。一軍の試合そのものを見るのも好きだし、二軍の選手が一軍に上がって活躍するまでの成長を追いかけるのも好き。どちらか一方だけ見られるサービスは他にもありますが、両方をまとめて見られる環境があるのはかなり大きかったです。正直に言うと、<span class="p-em">料金は月4,483円（視聴料4,054円＋基本料429円）</span>とそこまで安くはなく、値段だけ見ると少し高いと感じる人もいると思います。それでも「バラバラに何個も契約するより、これ1つで全部見られる」という納得感の方が上回っていました。2024年シーズンのみの契約で、今は契約していませんが、「全球団まとめて、二軍まで見たい」というカープファンには今でもおすすめできます。</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mt-3">
-        <div class="bg-gray-800 border border-red-500 rounded-lg p-3">
-          <p class="text-xs font-black text-red-300 mb-2">😊 スカパーが<br class="sm:hidden">向いている人</p>
-          <ul class="space-y-1.5 text-xs text-gray-200">
+        <div class="p-notice p-3">
+          <p class="text-xs font-black mb-2">😊 スカパーが<br class="sm:hidden">向いている人</p>
+          <ul class="space-y-1.5 text-xs">
             <li>✓ 広島も含めて全球団まとめたい</li>
             <li>✓ 一軍も二軍も両方見たい</li>
             <li>✓ 契約を1つにまとめて手間を減らしたい</li>
           </ul>
         </div>
-        <div class="bg-gray-800 border border-gray-600 rounded-lg p-3">
-          <p class="text-xs font-black text-gray-400 mb-2">🙅 向いていない人</p>
-          <ul class="space-y-1.5 text-xs text-gray-400">
+        <div class="p-card p-3">
+          <p class="text-xs font-black p-sub mb-2">🙅 向いていない人</p>
+          <ul class="space-y-1.5 text-xs p-sub">
             <li>・応援している球団が1つだけ</li>
             <li>・とにかく安さを重視したい</li>
             <li>・二軍戦にはあまり興味がない</li>
@@ -189,56 +190,56 @@
         </div>
       </div>
 
-      <div class="bg-gray-800 rounded-lg p-4 mt-3">
-        <p class="text-xs text-gray-400 mb-2 text-center">＼　広島も含めて12球団まとめたい方は　／</p>
+      <div class="p-card p-4 mt-3">
+        <p class="text-xs p-sub mb-2 text-center">＼　広島も含めて12球団まとめたい方は　／</p>
         <div class="text-center">
-          <a href="https://px.a8.net/svt/ejp?a8mat=4BC5IU+48EZN6+461Y+6CP0Y" target="_blank" rel="noopener noreferrer sponsored" class="inline-block w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-2.5 px-6 rounded-full shadow-lg transition-colors mt-1">📺 スカパー！を見る（PR）</a>
+          <a href="https://px.a8.net/svt/ejp?a8mat=4BC5IU+48EZN6+461Y+6CP0Y" target="_blank" rel="noopener noreferrer sponsored" class="inline-flex items-center justify-center w-full sm:w-auto p-btn b-ink text-sm font-black px-6 mt-1">📺 スカパー！を見る（PR）</a>
           <img border="0" width="1" height="1" src="https://www10.a8.net/0.gif?a8mat=4BC5IU+48EZN6+461Y+6CP0Y" alt="">
         </div>
       </div>
     </section>
 
-    <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 flex gap-3 items-start">
-      <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-xl shrink-0">🔴</div>
-      <p class="text-sm text-gray-200 leading-relaxed">「じゃあ今も契約してるの？」というと、実はそうではありません。ここからは、今どうしているかを正直に書きます。</p>
+    <div class="p-card p-4 flex gap-3 items-start">
+      <div class="w-10 h-10 rounded-full p-avatar flex items-center justify-center text-xl shrink-0">🔴</div>
+      <p class="text-sm leading-relaxed">「じゃあ今も契約してるの？」というと、実はそうではありません。ここからは、今どうしているかを正直に書きます。</p>
     </div>
 
     <section id="now">
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">🆚 今はサービスを分けて見ています</h3>
-      <div class="bg-gray-800 rounded-lg p-4 text-sm md:text-base text-gray-200 space-y-3">
-        <p>スカパーを解約した今は、<span class="font-bold text-white">J SPORTSで広島・DeNA・中日、Huluで巨人、FODでヤクルト</span>を見る形に落ち着いています。1つのサービスにまとめる代わりに、見たい球団ごとにサービスを分けるやり方です。HuluとFODは野球専用ではなく、ドラマや映画も見られるサブスクなので、野球以外にも使い道があるぶん契約を続けやすい、というのも理由のひとつです。</p>
-        <p>この形だと<span class="font-bold text-white">阪神の主催試合だけが見れていません</span>。実は阪神には公式配信の「虎テレ」（月額660円）があって存在は知っているのですが、阪神戦を見る頻度を考えると、そのためだけに月額を払うのはコスパ的に見合わないと感じて契約していません。</p>
-        <p class="text-xs text-gray-400">※このように球団ごとにサービスを分ける場合、見たい球団が多いほど合計の月額が膨らみやすく、どこかの球団だけ見れない状態も起こりやすくなります。「全球団まとめて1つで見たい」という人には、やはりスカパーの方がシンプルです。</p>
+      <h3 class="p-h2 text-lg mb-3">🆚 今はサービスを分けて見ています</h3>
+      <div class="p-card p-4 text-sm md:text-base space-y-3">
+        <p>スカパーを解約した今は、<span class="p-em">J SPORTSで広島・DeNA・中日、Huluで巨人、FODでヤクルト</span>を見る形に落ち着いています。1つのサービスにまとめる代わりに、見たい球団ごとにサービスを分けるやり方です。HuluとFODは野球専用ではなく、ドラマや映画も見られるサブスクなので、野球以外にも使い道があるぶん契約を続けやすい、というのも理由のひとつです。</p>
+        <p>この形だと<span class="p-em">阪神の主催試合だけが見れていません</span>。実は阪神には公式配信の「虎テレ」（月額660円）があって存在は知っているのですが、阪神戦を見る頻度を考えると、そのためだけに月額を払うのはコスパ的に見合わないと感じて契約していません。</p>
+        <p class="text-xs p-sub">※このように球団ごとにサービスを分ける場合、見たい球団が多いほど合計の月額が膨らみやすく、どこかの球団だけ見れない状態も起こりやすくなります。「全球団まとめて1つで見たい」という人には、やはりスカパーの方がシンプルです。</p>
       </div>
     </section>
 
-    <div class="bg-gray-800 border-l-4 border-yellow-500 rounded-lg p-4">
-      <p class="text-xs font-bold text-gray-400 mb-2">📖 あわせて読みたい</p>
-      <a href="npb-broadcast-guide.html" class="text-blue-300 font-bold hover:underline block mb-1">プロ野球を二軍まで全部見る方法｜12球団対応の中継サブスク比較</a>
-      <p class="text-xs text-gray-400">広島以外のファン向けに、DAZNの2プランとスカパー！を料金・契約形態まで含めて比較しています。</p>
+    <div class="p-card p-accent p-4">
+      <p class="text-xs font-bold p-sub mb-2">📖 あわせて読みたい</p>
+      <a href="npb-broadcast-guide.html" class="p-link font-bold block mb-1">プロ野球を二軍まで全部見る方法｜12球団対応の中継サブスク比較</a>
+      <p class="text-xs p-sub">広島以外のファン向けに、DAZNの2プランとスカパー！を料金・契約形態まで含めて比較しています。</p>
     </div>
 
     <section id="faq">
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">❓ よくある疑問</h3>
+      <h3 class="p-h2 text-lg mb-3">❓ よくある疑問</h3>
       <div class="space-y-2">
-        <details class="bg-gray-800 rounded-lg p-3">
+        <details class="p-card p-3">
           <summary class="font-bold text-sm cursor-pointer">Q. ビジター試合（広島が客として戦う試合）は見れるの？</summary>
-          <p class="text-sm text-gray-300 mt-2">見れないのは広島の「主催試合（ホームゲーム）」だけです。他球団主催の試合に広島が客として出場する、いわゆるビジター試合はDAZNで配信されることもあります。</p>
+          <p class="text-sm mt-2">見れないのは広島の「主催試合（ホームゲーム）」だけです。他球団主催の試合に広島が客として出場する、いわゆるビジター試合はDAZNで配信されることもあります。</p>
         </details>
-        <details class="bg-gray-800 rounded-lg p-3">
+        <details class="p-card p-3">
           <summary class="font-bold text-sm cursor-pointer">Q. J SPORTSだけで広島の試合は全部見れる？</summary>
-          <p class="text-sm text-gray-300 mt-2">広島の主催試合の配信はありますが、他球団もまとめて見たい場合は別のサービスとの併用が必要になります。「広島以外の球団はいらない」という人向けの選択肢です。</p>
+          <p class="text-sm mt-2">広島の主催試合の配信はありますが、他球団もまとめて見たい場合は別のサービスとの併用が必要になります。「広島以外の球団はいらない」という人向けの選択肢です。</p>
         </details>
-        <details class="bg-gray-800 rounded-lg p-3">
+        <details class="p-card p-3">
           <summary class="font-bold text-sm cursor-pointer">Q. スカパーは今すぐ解約しても見れなくなるだけ？</summary>
-          <p class="text-sm text-gray-300 mt-2">月契約なので、いつでも解約できます。ただしシーズン中に解約・再加入を繰り返すと、その都度の手続きが手間になる点は考慮しておくとよいです。</p>
+          <p class="text-sm mt-2">月契約なので、いつでも解約できます。ただしシーズン中に解約・再加入を繰り返すと、その都度の手続きが手間になる点は考慮しておくとよいです。</p>
         </details>
       </div>
     </section>
 
     <section id="summary">
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">📝 まとめ｜「広島も含めて全部まとめたい」ならスカパーが一番シンプル</h3>
-      <div class="bg-gray-800 rounded-lg p-4 text-sm md:text-base text-gray-200 space-y-2">
+      <h3 class="p-h2 text-lg mb-3">📝 まとめ｜「広島も含めて全部まとめたい」ならスカパーが一番シンプル</h3>
+      <div class="p-card p-4 text-sm md:text-base space-y-2">
         <p>広島の主催試合はDAZNでは見られず、12球団すべてを1つのサービスでカバーできるのはスカパー！だけというのが現状です。球団ごとにサービスを分ける方法（今の運営者のやり方）もありますが、見たい球団が多いほど合計の月額が膨らみやすく、どこかの球団だけ見れない状態も起こりやすくなります。「広島も含めて、一軍も二軍もまとめて1つで見たい」という人には、迷わずスカパーをおすすめします。</p>
       </div>
     </section>
@@ -246,31 +247,31 @@
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
 
-    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
-      <p class="text-xs text-gray-400 mb-3">他球団版の中継ガイドもどうぞ</p>
+    <section class="p-rule-top pt-6 mt-8 text-center">
+      <p class="text-xs p-sub mb-3">他球団版の中継ガイドもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
-        <a href="giants-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🟠 巨人</a>
-        <a href="tigers-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🟡 阪神</a>
-        <a href="baystars-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🔵 DeNA</a>
-        <a href="swallows-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🟢 ヤクルト</a>
-        <a href="dragons-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🔷 中日</a>
-        <a href="hawks-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🟡 ソフトバンク</a>
-        <a href="fighters-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🔵 日本ハム</a>
-        <a href="buffaloes-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">⚫ オリックス</a>
-        <a href="marines-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">⚪ ロッテ</a>
-        <a href="lions-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🔷 西武</a>
-        <a href="eagles-broadcast.html" class="text-sm text-blue-400 hover:underline font-bold">🔴 楽天</a>
+        <a href="giants-broadcast.html" class="text-sm p-link font-bold">🟠 巨人</a>
+        <a href="tigers-broadcast.html" class="text-sm p-link font-bold">🟡 阪神</a>
+        <a href="baystars-broadcast.html" class="text-sm p-link font-bold">🔵 DeNA</a>
+        <a href="swallows-broadcast.html" class="text-sm p-link font-bold">🟢 ヤクルト</a>
+        <a href="dragons-broadcast.html" class="text-sm p-link font-bold">🔷 中日</a>
+        <a href="hawks-broadcast.html" class="text-sm p-link font-bold">🟡 ソフトバンク</a>
+        <a href="fighters-broadcast.html" class="text-sm p-link font-bold">🔵 日本ハム</a>
+        <a href="buffaloes-broadcast.html" class="text-sm p-link font-bold">⚫ オリックス</a>
+        <a href="marines-broadcast.html" class="text-sm p-link font-bold">⚪ ロッテ</a>
+        <a href="lions-broadcast.html" class="text-sm p-link font-bold">🔷 西武</a>
+        <a href="eagles-broadcast.html" class="text-sm p-link font-bold">🔴 楽天</a>
       </div>
-      <p class="text-xs text-gray-400 mb-3 mt-5">こちらのページもどうぞ</p>
+      <p class="text-xs p-sub mb-3 mt-5">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
-        <a href="npb-broadcast-guide.html" class="text-sm text-blue-400 hover:underline font-bold">📡 中継サブスク比較</a>
-        <a href="recommend.html" class="text-sm text-blue-400 hover:underline font-bold">🛍️ おすすめグッズ・コンテンツ</a>
-        <a href="teams.html" class="text-sm text-blue-400 hover:underline font-bold">🏟️ 球団紹介</a>
-        <a href="faq.html" class="text-sm text-blue-400 hover:underline font-bold">❓ FAQ</a>
+        <a href="npb-broadcast-guide.html" class="text-sm p-link font-bold">📡 中継サブスク比較</a>
+        <a href="recommend.html" class="text-sm p-link font-bold">🛍️ おすすめグッズ・コンテンツ</a>
+        <a href="teams.html" class="text-sm p-link font-bold">🏟️ 球団紹介</a>
+        <a href="faq.html" class="text-sm p-link font-bold">❓ FAQ</a>
       </div>
     </section>
   </main>
-  <footer class="text-center text-gray-400 text-xs py-6">
+  <footer class="text-center p-sub text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 </body>
