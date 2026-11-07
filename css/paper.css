@@ -102,3 +102,9 @@ body.paper { font-family: var(--gothic); background-color: var(--paper); color: 
 /* 押せるカード（404 の行き先など）。マウスを乗せたときだけ枠を墨に */
 a.p-card { display: block; color: var(--ink); }
 @media (hover: hover) { a.p-card:hover { border-color: var(--ink); } }
+
+/* ---------- 更新履歴のタイムライン（第3弾 2026-11-08） ---------- */
+/* 縦の線は細い罫線、点は白地に墨の輪。新しい数件だけ墨で塗る（前の青い点の置き換え） */
+.p-tl { border-color: var(--hair); }
+.p-dot { background: var(--sheet); border: 2px solid var(--ink); }
+.p-dot.is-new { background: var(--ink); }
