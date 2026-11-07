@@ -26,8 +26,9 @@
   <link rel="canonical" href="https://dreamteam9.com/changelog.html">
   <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
   <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-11-08 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第3弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
   <style>
-    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
   
     /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
        空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
@@ -36,43 +37,43 @@
 </style>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
-<body class="text-gray-100">
-  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
-      <h1 class="text-sm md:text-base font-black tracking-wider">🛠️ 更新履歴</h1>
+      <h1 class="p-mincho text-base md:text-lg">🛠️ 更新履歴</h1>
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
-        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
-        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
-        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
       </div>
-      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
-            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎲 なんでもドラフト <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
-            <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
-            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
-            <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ FAQ</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
-            <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
-            <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
-            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
-            <a href="players.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧢 選手名鑑</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
-            <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
-            <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
-            <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
-            <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
       </div>
     </div>
@@ -82,1034 +83,1040 @@
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-top" class="ad-slot"></div>
 
-    <p class="text-sm text-gray-400 mb-6">思いついた順に直しているので番号やバージョンはありません。新しいものが上です。</p>
+    <p class="text-sm p-sub mb-6">思いついた順に直しているので番号やバージョンはありません。新しいものが上です。</p>
 
-    <ol class="relative border-l border-gray-700 space-y-8 ml-2">
+    <ol class="relative border-l p-tl space-y-8 ml-2">
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">選手の能力値を、プロ野球の成績から計算する方法に切り替え</h2>
-        <p class="text-sm text-gray-300">選手の能力値を、一軍の個人成績（2023〜2025年。Wikipedia日本語版の各選手のページを参考）をもとに、両リーグの選手の中での順位から計算する独自の方法に切り替えた。守れるポジションや投手の役割も、守った試合数や先発・救援の登板から決めている。ほかの野球ゲームの能力値は使っていない。あわせて、今年で日本球界を離れる2人を選手一覧から外した（235人）。能力値の付き方が変わったので、実績「雑草魂」の条件を「能力値の平均が68未満」から「6球団以上で遊び、能力値の平均がおよそ70以下（球団数で少し違う）」に、コンボの「鉄壁の守備陣」と「センターライン」を「守備力64以上が5人以上」に、「安打製造機」を「確実性70以上が3人以上」に変えた（すでに取った記録はそのまま）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot is-new"></span>
+        <h2 class="p-mincho text-base mb-1">読み物のページを新しいデザインに（第3弾：更新履歴・開発ブログ）</h2>
+        <p class="text-sm">更新履歴と開発ブログの2ページを、紙白の背景・墨色の文字・明朝体の見出しの新しいデザインにした。更新履歴の点は、新しいものを墨で塗りつぶした丸、それより前を白抜きの丸にしている。文章の中身やリンク先は変えていない。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">読み物のページを新しいデザインに（第2弾：FAQ・用語集・ドラフト会議とは・遊び方）</h2>
-        <p class="text-sm text-gray-300">よくある質問・用語集・ドラフト会議とは・遊び方の4ページを、紙白の背景・墨色の文字・明朝体の見出しの新しいデザインにした。文章の中身やリンク先は変えていない。遊び方のランク表は、暗い背景用の明るい色だと紙の上で読みにくいので、墨色の文字にした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot is-new"></span>
+        <h2 class="p-mincho text-base mb-1">選手の能力値を、プロ野球の成績から計算する方法に切り替え</h2>
+        <p class="text-sm">選手の能力値を、一軍の個人成績（2023〜2025年。Wikipedia日本語版の各選手のページを参考）をもとに、両リーグの選手の中での順位から計算する独自の方法に切り替えた。守れるポジションや投手の役割も、守った試合数や先発・救援の登板から決めている。ほかの野球ゲームの能力値は使っていない。あわせて、今年で日本球界を離れる2人を選手一覧から外した（235人）。能力値の付き方が変わったので、実績「雑草魂」の条件を「能力値の平均が68未満」から「6球団以上で遊び、能力値の平均がおよそ70以下（球団数で少し違う）」に、コンボの「鉄壁の守備陣」と「センターライン」を「守備力64以上が5人以上」に、「安打製造機」を「確実性70以上が3人以上」に変えた（すでに取った記録はそのまま）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップに「なんでもドラフト」への入口を追加</h2>
-        <p class="text-sm text-gray-300">トップの「指名カードを作る」の帯の横に、1台のスマホを回して2〜8人で遊べる「なんでもドラフト」への入口を並べた。開始ボタンの位置は変わらない。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot is-new"></span>
+        <h2 class="p-mincho text-base mb-1">読み物のページを新しいデザインに（第2弾：FAQ・用語集・ドラフト会議とは・遊び方）</h2>
+        <p class="text-sm">よくある質問・用語集・ドラフト会議とは・遊び方の4ページを、紙白の背景・墨色の文字・明朝体の見出しの新しいデザインにした。文章の中身やリンク先は変えていない。遊び方のランク表は、暗い背景用の明るい色だと紙の上で読みにくいので、墨色の文字にした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">友達対戦の部屋が満員のとき、「なんでもドラフト」を案内するように</h2>
-        <p class="text-sm text-gray-300">友達対戦は2人までなので、3人目が合言葉を入れると「満員です」とだけ出ていた。そのときに、1台を回して2〜8人で遊べる「なんでもドラフト」へのリンクも出すようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot is-new"></span>
+        <h2 class="p-mincho text-base mb-1">トップに「なんでもドラフト」への入口を追加</h2>
+        <p class="text-sm">トップの「指名カードを作る」の帯の横に、1台のスマホを回して2〜8人で遊べる「なんでもドラフト」への入口を並べた。開始ボタンの位置は変わらない。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「なんでもドラフト」を公開（1台を回して2〜8人で遊べる）</h2>
-        <p class="text-sm text-gray-300">好きなお題を決めて、スマホやパソコン1台を回しながら2〜8人で選択肢を取り合う「なんでもドラフト」を公開した。同時指名で重なったら封筒を選んで抽選、ウェーバー方式も選べ、3人以上なら最後に投票で優勝を決めて、結果を画像や文章で残せる。12球団の推し選手・応援歌のテンプレートと、寿司ネタなどの候補の例もある。入力した文字は端末の中だけで使い、どこにも送らない。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot is-new"></span>
+        <h2 class="p-mincho text-base mb-1">友達対戦の部屋が満員のとき、「なんでもドラフト」を案内するように</h2>
+        <p class="text-sm">友達対戦は2人までなので、3人目が合言葉を入れると「満員です」とだけ出ていた。そのときに、1台を回して2〜8人で遊べる「なんでもドラフト」へのリンクも出すようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">読み物のページを新しいデザインに（第1弾：運営者情報・お問い合わせなど）</h2>
-        <p class="text-sm text-gray-300">サイト全体の見た目を、紙白の背景・墨色の文字・明朝体の見出し・罫線の新しいデザインにそろえていくことにした。まずは運営者情報・お問い合わせ・プライバシーポリシー・ページが見つからないときのページの4つを変えた。文章の中身やリンク先は変えていない。ほかの読み物のページも、数ページずつ順に変えていく。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot is-new"></span>
+        <h2 class="p-mincho text-base mb-1">「なんでもドラフト」を公開（1台を回して2〜8人で遊べる）</h2>
+        <p class="text-sm">好きなお題を決めて、スマホやパソコン1台を回しながら2〜8人で選択肢を取り合う「なんでもドラフト」を公開した。同時指名で重なったら封筒を選んで抽選、ウェーバー方式も選べ、3人以上なら最後に投票で優勝を決めて、結果を画像や文章で残せる。12球団の推し選手・応援歌のテンプレートと、寿司ネタなどの候補の例もある。入力した文字は端末の中だけで使い、どこにも送らない。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">ドラフト特集を「結果と振り返り」に、サイト名を「AIドラフト」に統一</h2>
-        <p class="text-sm text-gray-300">ドラフト特集を、12球団の1位指名・競合と抽選・事前に注目していた選手の結果をまとめた「2026ドラフトの結果と振り返り」に書き直した。トップのボタンと予想ページの来年までのカウントダウンも、ドラフト後は出さないようにした。ほかに、各ページのサイト名を「AIドラフト」にそろえ、プライバシーポリシーの広告とCookie・端末に保存する情報の説明を詳しくし、CS・日本シリーズのページに11/2から「終了」の案内を出すようにし、ページが見つからないときの専用のページを作った。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">読み物のページを新しいデザインに（第1弾：運営者情報・お問い合わせなど）</h2>
+        <p class="text-sm">サイト全体の見た目を、紙白の背景・墨色の文字・明朝体の見出し・罫線の新しいデザインにそろえていくことにした。まずは運営者情報・お問い合わせ・プライバシーポリシー・ページが見つからないときのページの4つを変えた。文章の中身やリンク先は変えていない。ほかの読み物のページも、数ページずつ順に変えていく。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">友達対戦の再開時刻の案内を、夏時間の切り替えに合わせて正しく</h2>
-        <p class="text-sm text-gray-300">友達対戦が混み合ったときに出す「◯時ごろに再開」の案内が、アメリカの夏時間が終わる日（11/1）の夕方だけ1時間早く出ていたのを直した。トップの遊び方デモの札からは「ドラフトは約3分」を外した（実際に遊んだ時間を測った数字ではないため）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">ドラフト特集を「結果と振り返り」に、サイト名を「AIドラフト」に統一</h2>
+        <p class="text-sm">ドラフト特集を、12球団の1位指名・競合と抽選・事前に注目していた選手の結果をまとめた「2026ドラフトの結果と振り返り」に書き直した。トップのボタンと予想ページの来年までのカウントダウンも、ドラフト後は出さないようにした。ほかに、各ページのサイト名を「AIドラフト」にそろえ、プライバシーポリシーの広告とCookie・端末に保存する情報の説明を詳しくし、CS・日本シリーズのページに11/2から「終了」の案内を出すようにし、ページが見つからないときの専用のページを作った。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">注目候補に菰田陽生選手を追加、織田翔希選手に注記</h2>
-        <p class="text-sm text-gray-300">ドラフト特集の注目候補に菰田陽生選手（山梨学院高）を加えて7人にした。織田翔希選手（横浜高）には「10月15日の会見で米球界への挑戦を表明」と書き足し、1位指名予想でも選べるまま同じ注記を出すようにした（保存済みの予想はそのまま）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">友達対戦の再開時刻の案内を、夏時間の切り替えに合わせて正しく</h2>
+        <p class="text-sm">友達対戦が混み合ったときに出す「◯時ごろに再開」の案内が、アメリカの夏時間が終わる日（11/1）の夕方だけ1時間早く出ていたのを直した。トップの遊び方デモの札からは「ドラフトは約3分」を外した（実際に遊んだ時間を測った数字ではないため）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名カードの「フィクション」の札を外した</h2>
-        <p class="text-sm text-gray-300">指名カードメーカーで作るカードから「フィクション」の札を外し、下の帯を「AIドラフトで作成｜dreamteam9.com」にした。実在の選手名や使えない言葉のチェックは、これまでどおり。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">注目候補に菰田陽生選手を追加、織田翔希選手に注記</h2>
+        <p class="text-sm">ドラフト特集の注目候補に菰田陽生選手（山梨学院高）を加えて7人にした。織田翔希選手（横浜高）には「10月15日の会見で米球界への挑戦を表明」と書き足し、1位指名予想でも選べるまま同じ注記を出すようにした（保存済みの予想はそのまま）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名カードメーカーの入口を増やした</h2>
-        <p class="text-sm text-gray-300">トップのお知らせ帯の下、予想を保存した直後、答え合わせの下に、指名カードメーカーへの入口を置いた。メニューでは「NEW」の印を付けて一番上に移し、カードを作ったあとにはゲームと1位指名予想へのリンクを出すようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名カードの「フィクション」の札を外した</h2>
+        <p class="text-sm">指名カードメーカーで作るカードから「フィクション」の札を外し、下の帯を「AIドラフトで作成｜dreamteam9.com」にした。実在の選手名や使えない言葉のチェックは、これまでどおり。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">答え合わせのシェア画像を文字だけに</h2>
-        <p class="text-sm text-gray-300">1位指名予想の答え合わせで作るシェア画像から、的中数や称号の前に付いていた絵文字を外し、文字だけで描くようにした。ページ上の答え合わせの表示はこれまでどおり。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名カードメーカーの入口を増やした</h2>
+        <p class="text-sm">トップのお知らせ帯の下、予想を保存した直後、答え合わせの下に、指名カードメーカーへの入口を置いた。メニューでは「NEW」の印を付けて一番上に移し、カードを作ったあとにはゲームと1位指名予想へのリンクを出すようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名カードメーカーを追加</h2>
-        <p class="text-sm text-gray-300">好きな名前で、ゲーム内の1位指名カードと同じデザインの架空の指名カードを作れるページを追加した。球団・巡目・ポジション・抽選の結果を選んで、横長・縦長の画像にできる。実在の選手名や人を傷つける言葉は使えず、カードには「フィクション」の札が入る。予想ページと各ページのメニューから開ける。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">答え合わせのシェア画像を文字だけに</h2>
+        <p class="text-sm">1位指名予想の答え合わせで作るシェア画像から、的中数や称号の前に付いていた絵文字を外し、文字だけで描くようにした。ページ上の答え合わせの表示はこれまでどおり。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">海外の時間帯の端末でもカウントダウンがずれないように</h2>
-        <p class="text-sm text-gray-300">ドラフト会議までのカウントダウンとトップのお知らせを、端末の時間帯に関係なく日本時間で数えるようにした（海外の設定だと、当日に「あと371日」と出ていた）。CS・日本シリーズのページは、確認できていないテレビ・配信の予定を「このサイトでは未確認」と書き分け、公式の案内ページと、終わったステージの結果へのリンクを置いた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名カードメーカーを追加</h2>
+        <p class="text-sm">好きな名前で、ゲーム内の1位指名カードと同じデザインの架空の指名カードを作れるページを追加した。球団・巡目・ポジション・抽選の結果を選んで、横長・縦長の画像にできる。実在の選手名や人を傷つける言葉は使えず、カードには「フィクション」の札が入る。予想ページと各ページのメニューから開ける。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">2回目からは「すぐに始める」で始められるように</h2>
-        <p class="text-sm text-gray-300">前回遊んだときの設定（担当球団・球団の数・ドラフト方式）を端末に覚えておき、2回目以降はトップに「前回の設定」とまとめて表示して、ボタン1つで始められるようにした。設定を変えたいときは「設定を変える」で選択欄を開ける。初めての人の画面はこれまでと同じ。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">海外の時間帯の端末でもカウントダウンがずれないように</h2>
+        <p class="text-sm">ドラフト会議までのカウントダウンとトップのお知らせを、端末の時間帯に関係なく日本時間で数えるようにした（海外の設定だと、当日に「あと371日」と出ていた）。CS・日本シリーズのページは、確認できていないテレビ・配信の予定を「このサイトでは未確認」と書き分け、公式の案内ページと、終わったステージの結果へのリンクを置いた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">友達対戦が混み合ったときの案内を追加</h2>
-        <p class="text-sm text-gray-300">友達対戦の通信が上限に達したときに、画面が止まらず「一時的に使えません」と案内し、再開の目安の時刻（日本時間の16時ごろ、冬は17時ごろ）とAI対戦への入り口を出すようにした（対戦の途中でも出る）。あわせて、通知が届いている間は確認の通信をしないようにして、通信の回数を減らした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">2回目からは「すぐに始める」で始められるように</h2>
+        <p class="text-sm">前回遊んだときの設定（担当球団・球団の数・ドラフト方式）を端末に覚えておき、2回目以降はトップに「前回の設定」とまとめて表示して、ボタン1つで始められるようにした。設定を変えたいときは「設定を変える」で選択欄を開ける。初めての人の画面はこれまでと同じ。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">球団カラーの帯の文字を読みやすく</h2>
-        <p class="text-sm text-gray-300">選手名鑑・球団紹介・おすすめ・1位指名予想で、巨人・DeNA・ヤクルト・西武の球団カラーの上の文字を黒にした。球団の色はそのまま。帯の中の小さな補足の文字も、薄くせずに表示するようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">友達対戦が混み合ったときの案内を追加</h2>
+        <p class="text-sm">友達対戦の通信が上限に達したときに、画面が止まらず「一時的に使えません」と案内し、再開の目安の時刻（日本時間の16時ごろ、冬は17時ごろ）とAI対戦への入り口を出すようにした（対戦の途中でも出る）。あわせて、通知が届いている間は確認の通信をしないようにして、通信の回数を減らした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">文字を読みやすく、読み上げにも対応</h2>
-        <p class="text-sm text-gray-300">全ページで、紺の背景の上の補足の文字（フッターなど）を明るくし、文章の中のリンクに下線を付けた。トップのドラフト設定の選択欄や、予想ページ・選手名鑑の選択欄に、読み上げ用の名前を付けた。比較表の行の見出しも、読み上げで分かるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">球団カラーの帯の文字を読みやすく</h2>
+        <p class="text-sm">選手名鑑・球団紹介・おすすめ・1位指名予想で、巨人・DeNA・ヤクルト・西武の球団カラーの上の文字を黒にした。球団の色はそのまま。帯の中の小さな補足の文字も、薄くせずに表示するようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">シェア画像のひと言がチームごとにばらけるように</h2>
-        <p class="text-sm text-gray-300">「このチームの特徴」のひと言を、点数の上位3項目のうち、平均より特に高い2つから選ぶようにした。これまでは12球団の対戦で半分以上のチームが同じ文言になっていた。黄色のタイルもひと言の項目にそろえた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">文字を読みやすく、読み上げにも対応</h2>
+        <p class="text-sm">全ページで、紺の背景の上の補足の文字（フッターなど）を明るくし、文章の中のリンクに下線を付けた。トップのドラフト設定の選択欄や、予想ページ・選手名鑑の選択欄に、読み上げ用の名前を付けた。比較表の行の見出しも、読み上げで分かるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">結果シェア画像を新しいデザインに</h2>
-        <p class="text-sm text-gray-300">𝕏用の採点結果の画像を作り直した。球団カラーの帯に大きなランク文字と合計pt・順位を置き、6項目の上位2つから「このチームの特徴」のひと言を出す。スタメン9人と投手も一緒に載る。プレーオフ優勝の画像は、シーズン2位以下から勝ち上がると「下剋上」と入る。ストーリー用の縦長は今までのデザインのまま。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">シェア画像のひと言がチームごとにばらけるように</h2>
+        <p class="text-sm">「このチームの特徴」のひと言を、点数の上位3項目のうち、平均より特に高い2つから選ぶようにした。これまでは12球団の対戦で半分以上のチームが同じ文言になっていた。黄色のタイルもひと言の項目にそろえた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">選手を7人追加、5人の能力を更新</h2>
-        <p class="text-sm text-gray-300">正木智也・佐藤直樹・カナリオ・度会隆輝・板山祐太郎・名原典彦・増田珠の7人を追加し、選手は237人になった。万波中正・中川圭太・西川史礁・森下翔太・中山礼都の能力を更新した。追加した選手もサブポジションまで登録していて、選手名鑑にもそのまま反映される。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">結果シェア画像を新しいデザインに</h2>
+        <p class="text-sm">𝕏用の採点結果の画像を作り直した。球団カラーの帯に大きなランク文字と合計pt・順位を置き、6項目の上位2つから「このチームの特徴」のひと言を出す。スタメン9人と投手も一緒に載る。プレーオフ優勝の画像は、シーズン2位以下から勝ち上がると「下剋上」と入る。ストーリー用の縦長は今までのデザインのまま。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">1位指名予想を、選ぶたびに自動で保存</h2>
-        <p class="text-sm text-gray-300">12球団1位指名予想は、選手を選ぶたびに自動で保存されるようにした（指名開始の10/22 16:50まで）。保存の状態と、まだ選んでいない球団の数・名前も表示する。保存の時刻は日本時間で表示する。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">選手を7人追加、5人の能力を更新</h2>
+        <p class="text-sm">正木智也・佐藤直樹・カナリオ・度会隆輝・板山祐太郎・名原典彦・増田珠の7人を追加し、選手は237人になった。万波中正・中川圭太・西川史礁・森下翔太・中山礼都の能力を更新した。追加した選手もサブポジションまで登録していて、選手名鑑にもそのまま反映される。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">中継・お問い合わせの案内を正確に</h2>
-        <p class="text-sm text-gray-300">おすすめページのスカパー！の見出しを、12球団の中継が見られる「プロ野球セット」に直した。CS・日本シリーズのページで、ランキングページを球団の順位のように紹介していたのを直し、順位はNPB公式サイトへ案内するようにした。ドラフト会議のページに情報の確認日を入れ、会議の開始時刻と番組の開始時刻を分けて書いた。お問い合わせページは、まだ使えないフォームのボタンをなくし、Xでの連絡方法と、問い合わせの種類ごとに書いてほしいことをまとめた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">1位指名予想を、選ぶたびに自動で保存</h2>
+        <p class="text-sm">12球団1位指名予想は、選手を選ぶたびに自動で保存されるようにした（指名開始の10/22 16:50まで）。保存の状態と、まだ選んでいない球団の数・名前も表示する。保存の時刻は日本時間で表示する。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">期間限定の実績を4つ追加</h2>
-        <p class="text-sm text-gray-300">「2026ドラフト記念」（10/15〜10/31に1回遊ぶ）、「予想屋」（12球団すべての1位を予想して保存）、「名スカウト」「千里眼」（答え合わせで1位入札を3球団・6球団以上的中）を追加した。期間限定の実績は、全体の数とは別枠で表示する。「強豪ひしめく頂点」の説明文を、実際の条件（4球団以上の対戦で優勝）に合わせた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">中継・お問い合わせの案内を正確に</h2>
+        <p class="text-sm">おすすめページのスカパー！の見出しを、12球団の中継が見られる「プロ野球セット」に直した。CS・日本シリーズのページで、ランキングページを球団の順位のように紹介していたのを直し、順位はNPB公式サイトへ案内するようにした。ドラフト会議のページに情報の確認日を入れ、会議の開始時刻と番組の開始時刻を分けて書いた。お問い合わせページは、まだ使えないフォームのボタンをなくし、Xでの連絡方法と、問い合わせの種類ごとに書いてほしいことをまとめた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップの説明を充実させ、2026ドラフトの放送予定を更新</h2>
-        <p class="text-sm text-gray-300">トップページに、遊び方・特徴・おすすめの人をまとめた説明を追加した。2026年ドラフト会議のページは、NPBの開催要項（9/30発表）をもとに開始時刻・会場・テレビ・ラジオ・ネット配信を更新し、注目選手のページをここにまとめた。メニューも整理し、1位指名予想は「みんなの予想」として集計できるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">期間限定の実績を4つ追加</h2>
+        <p class="text-sm">「2026ドラフト記念」（10/15〜10/31に1回遊ぶ）、「予想屋」（12球団すべての1位を予想して保存）、「名スカウト」「千里眼」（答え合わせで1位入札を3球団・6球団以上的中）を追加した。期間限定の実績は、全体の数とは別枠で表示する。「強豪ひしめく頂点」の説明文を、実際の条件（4球団以上の対戦で優勝）に合わせた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">友達対戦（β版）が途中で止まる不具合を修正</h2>
-        <p class="text-sm text-gray-300">参加者側で、自分の番なのに「待機中」のまま止まる、抽選の画面に入れない、といった不具合を直した。ホストが開始しても画面が変わらないときは、通信の通知が届いていなかったため、数秒ごとに部屋の状態を確かめ直して追いつくようにした。参加者にも1位指名の読み上げが表示されるようにし、同じブラウザの2つのタブでも対戦できるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">トップの説明を充実させ、2026ドラフトの放送予定を更新</h2>
+        <p class="text-sm">トップページに、遊び方・特徴・おすすめの人をまとめた説明を追加した。2026年ドラフト会議のページは、NPBの開催要項（9/30発表）をもとに開始時刻・会場・テレビ・ラジオ・ネット配信を更新し、注目選手のページをここにまとめた。メニューも整理し、1位指名予想は「みんなの予想」として集計できるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">抽選をテレビ中継風の演出にし、1位指名カードを追加</h2>
-        <p class="text-sm text-gray-300">競合の抽選は、封筒から紙を引き抜き、当たりの紙にだけ「交渉権確定」の判が押されて、結果のテロップが出る流れにした（スキップも可）。自分の1位指名は、テレビ中継風の「1位指名カード」として画像で保存・シェアできる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">友達対戦（β版）が途中で止まる不具合を修正</h2>
+        <p class="text-sm">参加者側で、自分の番なのに「待機中」のまま止まる、抽選の画面に入れない、といった不具合を直した。ホストが開始しても画面が変わらないときは、通信の通知が届いていなかったため、数秒ごとに部屋の状態を確かめ直して追いつくようにした。参加者にも1位指名の読み上げが表示されるようにし、同じブラウザの2つのタブでも対戦できるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「野球くじ(β)」を休止</h2>
-        <p class="text-sm text-gray-300">予想くじ・ロトくじ・交換ショップを、しばらくお休みすることにした。ページを開くと休止中の案内が出て、メニューからも外している。再開するときはここでお知らせする。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">抽選をテレビ中継風の演出にし、1位指名カードを追加</h2>
+        <p class="text-sm">競合の抽選は、封筒から紙を引き抜き、当たりの紙にだけ「交渉権確定」の判が押されて、結果のテロップが出る流れにした（スキップも可）。自分の1位指名は、テレビ中継風の「1位指名カード」として画像で保存・シェアできる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">延長規定を追加、答え合わせ画像を新しいデザインに</h2>
-        <p class="text-sm text-gray-300">21回を終えても同点の試合は、総合ptが高い球団の勝ち（「延長規定により総合力で勝利」と表示）にした。これまでは先攻に1点が入って決着していた。ドラフト当日の答え合わせ画像も、1位予想の画像と同じ大きな文字のデザインにそろえた。CS・日本シリーズのページには、ラジオ中継と日本シリーズの日程、今年のCSの新ルールを追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「野球くじ(β)」を休止</h2>
+        <p class="text-sm">予想くじ・ロトくじ・交換ショップを、しばらくお休みすることにした。ページを開くと休止中の案内が出て、メニューからも外している。再開するときはここでお知らせする。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">ゲームの名前を「AIドラフト」に統一</h2>
-        <p class="text-sm text-gray-300">ゲーム画面や遊び方ページの見出しに残っていた「DRAFT SIM」を「AIドラフト」に直した。シェア画像の下に入るサイト名と、SNSでリンクを貼ったときに出る画像も「AIドラフト」の表記にそろえた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">延長規定を追加、答え合わせ画像を新しいデザインに</h2>
+        <p class="text-sm">21回を終えても同点の試合は、総合ptが高い球団の勝ち（「延長規定により総合力で勝利」と表示）にした。これまでは先攻に1点が入って決着していた。ドラフト当日の答え合わせ画像も、1位予想の画像と同じ大きな文字のデザインにそろえた。CS・日本シリーズのページには、ラジオ中継と日本シリーズの日程、今年のCSの新ルールを追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">サイトのアイコンを新しくした</h2>
-        <p class="text-sm text-gray-300">ブラウザのタブや検索結果に出るアイコンを、⚾の絵文字から「AI」入りの野球ボールのアイコンに変えた。スマホのホーム画面に追加したときも同じアイコンになる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">ゲームの名前を「AIドラフト」に統一</h2>
+        <p class="text-sm">ゲーム画面や遊び方ページの見出しに残っていた「DRAFT SIM」を「AIドラフト」に直した。シェア画像の下に入るサイト名と、SNSでリンクを貼ったときに出る画像も「AIドラフト」の表記にそろえた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">1位指名予想のシェア画像を見やすく作り直した</h2>
-        <p class="text-sm text-gray-300">余白を詰めて、球団名と選手名を大きく表示するようにした。同じ選手を複数の球団で予想したときは「3球団競合」のように表示する。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">サイトのアイコンを新しくした</h2>
+        <p class="text-sm">ブラウザのタブや検索結果に出るアイコンを、⚾の絵文字から「AI」入りの野球ボールのアイコンに変えた。スマホのホーム画面に追加したときも同じアイコンになる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">遊び方・FAQの説明を実際の動きに合わせて修正</h2>
-        <p class="text-sm text-gray-300">プレーオフは上位8球団まで進出できること（同点時の扱いも）、スタメンはタップでも配置できること、保存される内容とされない内容を正しく書き直した。選手名鑑・ランキングは読み込みに失敗したときに「もう一度読み込む」ボタンを出すようにし、試合画面の「オウト」表記も直した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">1位指名予想のシェア画像を見やすく作り直した</h2>
+        <p class="text-sm">余白を詰めて、球団名と選手名を大きく表示するようにした。同じ選手を複数の球団で予想したときは「3球団競合」のように表示する。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">ドラフト画面に「ポジション残数ボード」を追加</h2>
-        <p class="text-sm text-gray-300">各ポジションを守れる選手があと何人残っているかを、ドラフト画面の上で確認できるようにした。まだ確保していないポジションは、次の自分の番までに他球団が指名する人数から「危険」「注意」を表示し、タップするとそのポジションを守れる選手に絞り込める。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">遊び方・FAQの説明を実際の動きに合わせて修正</h2>
+        <p class="text-sm">プレーオフは上位8球団まで進出できること（同点時の扱いも）、スタメンはタップでも配置できること、保存される内容とされない内容を正しく書き直した。選手名鑑・ランキングは読み込みに失敗したときに「もう一度読み込む」ボタンを出すようにし、試合画面の「オウト」表記も直した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップページの表示をさらに速くした</h2>
-        <p class="text-sm text-gray-300">スマホではタイトル画像を小さいサイズで読み込むようにし、友達対戦用の通信の準備はロビーを開いたときだけ行うようにした。初めて来た人向けの遊び方デモは、ページを開いて約2.5秒後に流れるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">ドラフト画面に「ポジション残数ボード」を追加</h2>
+        <p class="text-sm">各ポジションを守れる選手があと何人残っているかを、ドラフト画面の上で確認できるようにした。まだ確保していないポジションは、次の自分の番までに他球団が指名する人数から「危険」「注意」を表示し、タップするとそのポジションを守れる選手に絞り込める。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AIが守備位置の適性を優先して指名・スタメンを組むように</h2>
-        <p class="text-sm text-gray-300">AIは空いている守備位置を守れる選手を優先して指名し、スタメンもチーム全体で適性が合うように並べるようにした。適性のない位置に就いた選手は、試合でエラーしやすく、採点でも大きく下がるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">トップページの表示をさらに速くした</h2>
+        <p class="text-sm">スマホではタイトル画像を小さいサイズで読み込むようにし、友達対戦用の通信の準備はロビーを開いたときだけ行うようにした。初めて来た人向けの遊び方デモは、ページを開いて約2.5秒後に流れるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">全ページの表示を速くした</h2>
-        <p class="text-sm text-gray-300">見た目を整える仕組み（Tailwind CSS）を、ページを開くたびにブラウザの中で組み立てる方式から、あらかじめ作っておいた1つのファイルを読むだけの方式に切り替えた。見た目は変えずに、最初の表示までの時間を短くしている。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AIが守備位置の適性を優先して指名・スタメンを組むように</h2>
+        <p class="text-sm">AIは空いている守備位置を守れる選手を優先して指名し、スタメンもチーム全体で適性が合うように並べるようにした。適性のない位置に就いた選手は、試合でエラーしやすく、採点でも大きく下がるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">遊び方デモの始まりを少し遅らせた</h2>
-        <p class="text-sm text-gray-300">初めて来た人向けの遊び方デモが、ページを開いてすぐではなく5秒ほどたってから流れるようにした。デモの下の丸いボタンも、指で押しやすい大きさに広げた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">全ページの表示を速くした</h2>
+        <p class="text-sm">見た目を整える仕組み（Tailwind CSS）を、ページを開くたびにブラウザの中で組み立てる方式から、あらかじめ作っておいた1つのファイルを読むだけの方式に切り替えた。見た目は変えずに、最初の表示までの時間を短くしている。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">野手の守備力を「守れる位置の中で一番高い数値」に統一</h2>
-        <p class="text-sm text-gray-300">守備力を本職の数値ではなく、守れるポジションの中で一番高い数値にした。本職より他の位置の数値が高かった12人（丸佳浩が52→59、三森大貴が51→67など）の守備力が上がった。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">遊び方デモの始まりを少し遅らせた</h2>
+        <p class="text-sm">初めて来た人向けの遊び方デモが、ページを開いてすぐではなく5秒ほどたってから流れるようにした。デモの下の丸いボタンも、指で押しやすい大きさに広げた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">野手58人の守備力とサブポジションを修正</h2>
-        <p class="text-sm text-gray-300">守備力に本職以外のポジションの値が入っていた選手（福永裕基が48→64など）を、本職の値に直した。あわせて、抜けていたサブポジションを追加し、実際には守れないポジションを外した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">野手の守備力を「守れる位置の中で一番高い数値」に統一</h2>
+        <p class="text-sm">守備力を本職の数値ではなく、守れるポジションの中で一番高い数値にした。本職より他の位置の数値が高かった12人（丸佳浩が52→59、三森大貴が51→67など）の守備力が上がった。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップページに遊び方デモを追加</h2>
-        <p class="text-sm text-gray-300">初めて来た人向けに、トップのタイトル画像の枠の中で「指名→抽選→スタメン→採点」の流れを4枚のスライドで見せるようにした。2回目以降は右下の「▶ 遊び方デモ」ボタンから見られる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">野手58人の守備力とサブポジションを修正</h2>
+        <p class="text-sm">守備力に本職以外のポジションの値が入っていた選手（福永裕基が48→64など）を、本職の値に直した。あわせて、抜けていたサブポジションを追加し、実際には守れないポジションを外した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スマホでの表示崩れ・スクロールの不具合を修正</h2>
-        <p class="text-sm text-gray-300">12球団1位指名予想ページで、選手の選択欄が画面の外にはみ出して横にずれていたのを修正した。あわせて、トップページの「その他のページ」でリンクを長押ししたまま指を動かすと、リンクがドラッグされてスクロールできなかったのを修正した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">トップページに遊び方デモを追加</h2>
+        <p class="text-sm">初めて来た人向けに、トップのタイトル画像の枠の中で「指名→抽選→スタメン→採点」の流れを4枚のスライドで見せるようにした。2回目以降は右下の「▶ 遊び方デモ」ボタンから見られる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">表示速度を改善（日本語フォントを端末標準に変更）</h2>
-        <p class="text-sm text-gray-300">スマホで最初の表示まで8秒以上かかっていたため、読み込みを見直した。一番の原因だった日本語Webフォント（Noto Sans JP）の読み込みをやめ、iPhoneはヒラギノ、AndroidはNoto系、Windowsは游ゴシックなど、端末に最初から入っているフォントで表示するようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スマホでの表示崩れ・スクロールの不具合を修正</h2>
+        <p class="text-sm">12球団1位指名予想ページで、選手の選択欄が画面の外にはみ出して横にずれていたのを修正した。あわせて、トップページの「その他のページ」でリンクを長押ししたまま指を動かすと、リンクがドラッグされてスクロールできなかったのを修正した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">外野手18人の守備位置を個別に設定</h2>
-        <p class="text-sm text-gray-300">これまで「外野ならどこでも」扱いだった18人（丸佳浩・近藤健介・万波中正など）について、実際に守れる左翼・中堅・右翼を個別に設定した。あわせて森友哉とレイエスの守備位置からDHを外した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">表示速度を改善（日本語フォントを端末標準に変更）</h2>
+        <p class="text-sm">スマホで最初の表示まで8秒以上かかっていたため、読み込みを見直した。一番の原因だった日本語Webフォント（Noto Sans JP）の読み込みをやめ、iPhoneはヒラギノ、AndroidはNoto系、Windowsは游ゴシックなど、端末に最初から入っているフォントで表示するようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップページにドラフト会議のお知らせ帯を追加・CS日程を掲載</h2>
-        <p class="text-sm text-gray-300">トップページ上部に「ドラフト会議まであと◯日」のお知らせ帯を追加し、10/23以降は答え合わせへの案内に自動で切り替わるようにした。あわせてスマホで「ドラフト会議を開始する」ボタンがスクロールなしで見えるよう余白を詰め、CS・日本シリーズのページにクライマックスシリーズの日程を掲載した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">外野手18人の守備位置を個別に設定</h2>
+        <p class="text-sm">これまで「外野ならどこでも」扱いだった18人（丸佳浩・近藤健介・万波中正など）について、実際に守れる左翼・中堅・右翼を個別に設定した。あわせて森友哉とレイエスの守備位置からDHを外した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">1位指名予想の答え合わせ判定を改善</h2>
-        <p class="text-sm text-gray-300">答え合わせの的中判定が、選手名の完全一致だけだと入力時のスペースや旧字体・新字体の違いで「本当は当たっているのに外れ扱い」になる恐れがあったため、比較前に表記ゆれを吸収するようにした。あわせて「1位で入札したかどうか（抽選で外れても的中）」と「実際に交渉権を獲得したかどうか」の2種類の的中数を分けて表示するようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">トップページにドラフト会議のお知らせ帯を追加・CS日程を掲載</h2>
+        <p class="text-sm">トップページ上部に「ドラフト会議まであと◯日」のお知らせ帯を追加し、10/23以降は答え合わせへの案内に自動で切り替わるようにした。あわせてスマホで「ドラフト会議を開始する」ボタンがスクロールなしで見えるよう余白を詰め、CS・日本シリーズのページにクライマックスシリーズの日程を掲載した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">遊撃手3名（庄子雄大・友杉篤輝・熊谷敬宥）を新規追加</h2>
-        <p class="text-sm text-gray-300">ソフトバンク・庄子雄大、ロッテ・友杉篤輝、阪神・熊谷敬宥を新規選手として追加した。これで12球団の遊撃手データが一通り最新化された。熊谷は遊撃だけでなく二塁・三塁・左翼・捕手にも守備適性がある万能型として登録している。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">1位指名予想の答え合わせ判定を改善</h2>
+        <p class="text-sm">答え合わせの的中判定が、選手名の完全一致だけだと入力時のスペースや旧字体・新字体の違いで「本当は当たっているのに外れ扱い」になる恐れがあったため、比較前に表記ゆれを吸収するようにした。あわせて「1位で入札したかどうか（抽選で外れても的中）」と「実際に交渉権を獲得したかどうか」の2種類の的中数を分けて表示するようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">12球団の遊撃手9名の能力値を最新データに更新</h2>
-        <p class="text-sm text-gray-300">泉口友汰・石上泰輝・村松開人・長岡秀樹・小園海斗・紅林弘太郎・村林一輝・水野達稀・源田壮亮の能力値を最新のデータに合わせて更新した。守備適性は捕球の数値ではなく、各選手の主守備位置の欄の値を参照している。村松開人・村林一輝・長岡秀樹は新たに二塁の適性が加わった。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">遊撃手3名（庄子雄大・友杉篤輝・熊谷敬宥）を新規追加</h2>
+        <p class="text-sm">ソフトバンク・庄子雄大、ロッテ・友杉篤輝、阪神・熊谷敬宥を新規選手として追加した。これで12球団の遊撃手データが一通り最新化された。熊谷は遊撃だけでなく二塁・三塁・左翼・捕手にも守備適性がある万能型として登録している。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">1位指名予想の候補選手を109人に拡充、絞り込み機能を追加</h2>
-        <p class="text-sm text-gray-300">「12球団1位指名予想」ページの候補選手を6人から109人（高校・大学・社会人・独立リーグ）に大幅に増やした。最初は注目選手45人だけを表示し、「全候補を表示」ボタンで全選手に広げられるようにしたほか、区分・ポジションでの絞り込みにも対応した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">12球団の遊撃手9名の能力値を最新データに更新</h2>
+        <p class="text-sm">泉口友汰・石上泰輝・村松開人・長岡秀樹・小園海斗・紅林弘太郎・村林一輝・水野達稀・源田壮亮の能力値を最新のデータに合わせて更新した。守備適性は捕球の数値ではなく、各選手の主守備位置の欄の値を参照している。村松開人・村林一輝・長岡秀樹は新たに二塁の適性が加わった。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">1位指名予想の「答え合わせ」機能を準備</h2>
-        <p class="text-sm text-gray-300">「12球団1位指名予想」ページに、実際の指名結果と保存済みの予想を突き合わせて的中数を表示する答え合わせ機能を追加した。結果データはドラフト会議当日に用意する予定で、それまではこの機能自体が表示されない。的中数に応じた称号（見習いスカウト〜パーフェクトスカウト）や、答え合わせ結果のシェア画像も用意している。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">1位指名予想の候補選手を109人に拡充、絞り込み機能を追加</h2>
+        <p class="text-sm">「12球団1位指名予想」ページの候補選手を6人から109人（高校・大学・社会人・独立リーグ）に大幅に増やした。最初は注目選手45人だけを表示し、「全候補を表示」ボタンで全選手に広げられるようにしたほか、区分・ポジションでの絞り込みにも対応した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">ドラフト結果画面に、月ごとに内容が変わる案内欄を追加</h2>
-        <p class="text-sm text-gray-300">AI採点の結果画面に、時期に応じて内容が切り替わる案内欄を1つ追加した。10月は「ドラフト会議の配信」「CS・日本シリーズの見る方法」への案内、3〜9月は担当球団の中継ガイドへの案内になる。表示内容は設定ファイルにまとめてあるので、コードを直さなくても差し替えられるようにしてある。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">1位指名予想の「答え合わせ」機能を準備</h2>
+        <p class="text-sm">「12球団1位指名予想」ページに、実際の指名結果と保存済みの予想を突き合わせて的中数を表示する答え合わせ機能を追加した。結果データはドラフト会議当日に用意する予定で、それまではこの機能自体が表示されない。的中数に応じた称号（見習いスカウト〜パーフェクトスカウト）や、答え合わせ結果のシェア画像も用意している。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「CS・日本シリーズの見る方法」ページを新設</h2>
-        <p class="text-sm text-gray-300">クライマックスシリーズ・日本シリーズをテレビ・配信でどう見られるかをまとめる新ページ「postseason-broadcast.html」を追加した。日程・放送局・配信サービスはまだ正式発表されていないため、現時点では【要確認】枠として用意し、発表され次第内容を更新していく。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">ドラフト結果画面に、月ごとに内容が変わる案内欄を追加</h2>
+        <p class="text-sm">AI採点の結果画面に、時期に応じて内容が切り替わる案内欄を1つ追加した。10月は「ドラフト会議の配信」「CS・日本シリーズの見る方法」への案内、3〜9月は担当球団の中継ガイドへの案内になる。表示内容は設定ファイルにまとめてあるので、コードを直さなくても差し替えられるようにしてある。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">1位指名予想ページにカウントダウンと再訪促しを追加</h2>
-        <p class="text-sm text-gray-300">「12球団1位指名予想」ページに、ドラフト会議当日までのカウントダウン表示を追加した。予想を保存すると「答え合わせは指名発表後に公開します」という案内が出るようにして、ドラフト当日にまた見に来てもらえるようにした。シェア画像にも「#ドラフト予想」のハッシュタグを追加している。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「CS・日本シリーズの見る方法」ページを新設</h2>
+        <p class="text-sm">クライマックスシリーズ・日本シリーズをテレビ・配信でどう見られるかをまとめる新ページ「postseason-broadcast.html」を追加した。日程・放送局・配信サービスはまだ正式発表されていないため、現時点では【要確認】枠として用意し、発表され次第内容を更新していく。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「12球団1位指名予想」機能を追加</h2>
-        <p class="text-sm text-gray-300">2026年ドラフト会議の12球団それぞれの1位指名を、候補選手の中から予想して保存できる新ページ「draft-predict.html」を追加した。予想はこの端末のブラウザだけに保存され、ドラフト当日以降に追加予定の答え合わせ機能でも使う。予想結果は既存のシェアカードと同じトーンの専用カードとして、𝕏用・ストーリー用の2サイズで画像化できる。候補選手には能力値評価は付けていない。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">1位指名予想ページにカウントダウンと再訪促しを追加</h2>
+        <p class="text-sm">「12球団1位指名予想」ページに、ドラフト会議当日までのカウントダウン表示を追加した。予想を保存すると「答え合わせは指名発表後に公開します」という案内が出るようにして、ドラフト当日にまた見に来てもらえるようにした。シェア画像にも「#ドラフト予想」のハッシュタグを追加している。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">シェアカードに「ストーリー用」の縦長サイズを追加</h2>
-        <p class="text-sm text-gray-300">ドラフト採点結果・プレーオフ優勝のシェアカードを、これまでのX投稿向け横長（1200×675）に加えて、Xやインスタのストーリーズに合う縦長（1080×1920）でも作れるようにした。シェア画面に切り替えボタンを追加し、その場でプレビューを見ながらどちらの形式で保存するか選べる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「12球団1位指名予想」機能を追加</h2>
+        <p class="text-sm">2026年ドラフト会議の12球団それぞれの1位指名を、候補選手の中から予想して保存できる新ページ「draft-predict.html」を追加した。予想はこの端末のブラウザだけに保存され、ドラフト当日以降に追加予定の答え合わせ機能でも使う。予想結果は既存のシェアカードと同じトーンの専用カードとして、𝕏用・ストーリー用の2サイズで画像化できる。候補選手には能力値評価は付けていない。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">2026年ドラフト会議ページを「配信・見る方法」向けに整理</h2>
-        <p class="text-sm text-gray-300">draft-2026.htmlのタイトルや見出しを「配信」「見る方法」で検索したときに見つけてもらいやすい表現に調整した。あわせて、正式発表前のテレビ・ラジオ・配信の情報を、確定した内容と未確定の内容が混ざらないよう「発表待ち」表示に整理し、配信サービスの案内欄も新設。今後、正式な放送・配信情報が発表され次第この欄を更新していく。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">シェアカードに「ストーリー用」の縦長サイズを追加</h2>
+        <p class="text-sm">ドラフト採点結果・プレーオフ優勝のシェアカードを、これまでのX投稿向け横長（1200×675）に加えて、Xやインスタのストーリーズに合う縦長（1080×1920）でも作れるようにした。シェア画面に切り替えボタンを追加し、その場でプレビューを見ながらどちらの形式で保存するか選べる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">運営者情報・お問い合わせページを新設、サイト全体の計測とAdSense審査対策を強化</h2>
-        <p class="text-sm text-gray-300">「運営者情報」（about.html）と「お問い合わせ」（contact.html）を新設し、全ページのメニューからリンクできるようにした。あわせてプライバシーポリシーの記載を補強し、トップページに説明テキストを追加、野球くじページに「現金・景品との交換不可」を明記した。裏側では、ドラフト完了やAI採点結果表示・シェア・アフィリエイトリンククリック・試合シミュレーション終了などのアクセス解析イベントを追加し、6枚の画像をWebP化して表示速度を改善した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">2026年ドラフト会議ページを「配信・見る方法」向けに整理</h2>
+        <p class="text-sm">draft-2026.htmlのタイトルや見出しを「配信」「見る方法」で検索したときに見つけてもらいやすい表現に調整した。あわせて、正式発表前のテレビ・ラジオ・配信の情報を、確定した内容と未確定の内容が混ざらないよう「発表待ち」表示に整理し、配信サービスの案内欄も新設。今後、正式な放送・配信情報が発表され次第この欄を更新していく。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">9〜12球団で対戦した場合、プレーオフ進出ライン（上位8球団まで）を明示</h2>
-        <p class="text-sm text-gray-300">対戦AI球団数を増やせるようにした結果、9〜12球団で対戦するとプレーオフ（トーナメント）には上位8球団しか出場できず、9位以下は静かに除外されていた。何の説明もなく自分のチームが表示されないと分かりにくいため、プレーオフ画面の冒頭にAI採点の全球団順位と「上位8球団まで進出、9位以下は予選落ち」という説明を表示するようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">運営者情報・お問い合わせページを新設、サイト全体の計測とAdSense審査対策を強化</h2>
+        <p class="text-sm">「運営者情報」（about.html）と「お問い合わせ」（contact.html）を新設し、全ページのメニューからリンクできるようにした。あわせてプライバシーポリシーの記載を補強し、トップページに説明テキストを追加、野球くじページに「現金・景品との交換不可」を明記した。裏側では、ドラフト完了やAI採点結果表示・シェア・アフィリエイトリンククリック・試合シミュレーション終了などのアクセス解析イベントを追加し、6枚の画像をWebP化して表示速度を改善した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">DHに守備適性バッジが表示される不具合を修正、打順適性の判定基準を見直し</h2>
-        <p class="text-sm text-gray-300">DH（指名打者）は守備に就かないのに守備適性のバッジが表示されていたのを非表示にした。また打順適性の判定が、守備力の高い選手（堅守の二塁手など）を不当に低く評価してしまっていたのを修正。守備力が実際に重視されるのは打順によって差が大きいのに、比較基準の計算では常に4項目均等（25%）で見ていたため、守備型の選手は基準点自体が底上げされ、守備をほぼ見ない打順で「不向き」と誤判定されていた。比較基準を9打順の重み平均に揃え、吉川尚輝や田中幹也のような実際に上位打線でも起用される堅守の内野手が、それに応じた打順評価になるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">9〜12球団で対戦した場合、プレーオフ進出ライン（上位8球団まで）を明示</h2>
+        <p class="text-sm">対戦AI球団数を増やせるようにした結果、9〜12球団で対戦するとプレーオフ（トーナメント）には上位8球団しか出場できず、9位以下は静かに除外されていた。何の説明もなく自分のチームが表示されないと分かりにくいため、プレーオフ画面の冒頭にAI採点の全球団順位と「上位8球団まで進出、9位以下は予選落ち」という説明を表示するようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">対戦AI球団数を最大11球団（NPB全12球団）まで選べるように</h2>
-        <p class="text-sm text-gray-300">これまで最大7球団（計8球団）までだったが、選手層が厚くなったことに合わせて最大11球団（計12球団・NPB全球団）まで選択できるようにした。12球団フルのドラフトを複数回シミュレーションし、どの球団も捕手を確保できスタメンが破綻しないことを確認済み。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">DHに守備適性バッジが表示される不具合を修正、打順適性の判定基準を見直し</h2>
+        <p class="text-sm">DH（指名打者）は守備に就かないのに守備適性のバッジが表示されていたのを非表示にした。また打順適性の判定が、守備力の高い選手（堅守の二塁手など）を不当に低く評価してしまっていたのを修正。守備力が実際に重視されるのは打順によって差が大きいのに、比較基準の計算では常に4項目均等（25%）で見ていたため、守備型の選手は基準点自体が底上げされ、守備をほぼ見ない打順で「不向き」と誤判定されていた。比較基準を9打順の重み平均に揃え、吉川尚輝や田中幹也のような実際に上位打線でも起用される堅守の内野手が、それに応じた打順評価になるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">抑え投手を7人追加</h2>
-        <p class="text-sm text-gray-300">これまで登場していなかった抑え投手7人をデータベースに追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">対戦AI球団数を最大11球団（NPB全12球団）まで選べるように</h2>
+        <p class="text-sm">これまで最大7球団（計8球団）までだったが、選手層が厚くなったことに合わせて最大11球団（計12球団・NPB全球団）まで選択できるようにした。12球団フルのドラフトを複数回シミュレーションし、どの球団も捕手を確保できスタメンが破綻しないことを確認済み。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スタメン自動編成で、DHに守備適性のない強打者が入らない不具合を修正</h2>
-        <p class="text-sm text-gray-300">守備位置を先に貪欲に埋めてから最後にDHを決めていたため、本来DHに置くべき最強打者が別の守備位置に(適性の有無を問わず)先に消費され、DHには守備・走塁型の選手が余り物として入ってしまっていた。DHを最初に決めるよう処理順を修正した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">抑え投手を7人追加</h2>
+        <p class="text-sm">これまで登場していなかった抑え投手7人をデータベースに追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">野手を21人追加</h2>
-        <p class="text-sm text-gray-300">外野手・内野手・捕手を中心に、これまで登場していなかった選手21人をデータベースに追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スタメン自動編成で、DHに守備適性のない強打者が入らない不具合を修正</h2>
+        <p class="text-sm">守備位置を先に貪欲に埋めてから最後にDHを決めていたため、本来DHに置くべき最強打者が別の守備位置に(適性の有無を問わず)先に消費され、DHには守備・走塁型の選手が余り物として入ってしまっていた。DHを最初に決めるよう処理順を修正した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">先発投手を7人追加、先発投手5人分の能力値も更新</h2>
-        <p class="text-sm text-gray-300">これまで登場していなかった先発投手7人をデータベースに追加し、既存の先発投手5人の能力値も最新の起用実績に合わせて調整した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">野手を21人追加</h2>
+        <p class="text-sm">外野手・内野手・捕手を中心に、これまで登場していなかった選手21人をデータベースに追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">選手を13人追加</h2>
-        <p class="text-sm text-gray-300">中継ぎ投手・二塁手・捕手を中心に、これまで登場していなかった選手13人をデータベースに追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">先発投手を7人追加、先発投手5人分の能力値も更新</h2>
+        <p class="text-sm">これまで登場していなかった先発投手7人をデータベースに追加し、既存の先発投手5人の能力値も最新の起用実績に合わせて調整した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">選手データを最新の起用状況に合わせて更新</h2>
-        <p class="text-sm text-gray-300">捕手・二塁手・中継ぎ投手を中心に20人分の能力値を最新の起用実績に合わせて調整した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">選手を13人追加</h2>
+        <p class="text-sm">中継ぎ投手・二塁手・捕手を中心に、これまで登場していなかった選手13人をデータベースに追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「野球くじ（β版）」ロトくじ購入時に勝手にXへ飛ばされる不具合を修正、予想くじにオーバー/アンダーの説明を追加</h2>
-        <p class="text-sm text-gray-300">ロトくじの購入直後にX投稿画面が自動で開いてしまっていたのを、画面内の通知表示だけに変更した(結果シェアは従来通りボタンを押したときだけ)。また予想くじの「オーバー/アンダー」が何を予想するものか分かりづらかったため、合計得点のラインを上回るか下回るかを予想するものだと説明文を添えた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">選手データを最新の起用状況に合わせて更新</h2>
+        <p class="text-sm">捕手・二塁手・中継ぎ投手を中心に20人分の能力値を最新の起用実績に合わせて調整した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「野球くじ（β版）」の予想くじに、今日の実際の対戦カードと予告先発投手を反映</h2>
-        <p class="text-sm text-gray-300">これまでの架空の対戦データに代えて、実際の今日の試合カードを表示するようにした。各試合カードに予告先発投手名も表示し、裏取りできた投手には今季の勝敗成績も添えている。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「野球くじ（β版）」ロトくじ購入時に勝手にXへ飛ばされる不具合を修正、予想くじにオーバー/アンダーの説明を追加</h2>
+        <p class="text-sm">ロトくじの購入直後にX投稿画面が自動で開いてしまっていたのを、画面内の通知表示だけに変更した(結果シェアは従来通りボタンを押したときだけ)。また予想くじの「オーバー/アンダー」が何を予想するものか分かりづらかったため、合計得点のラインを上回るか下回るかを予想するものだと説明文を添えた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「野球くじ（β版）」を追加</h2>
-        <p class="text-sm text-gray-300">架空ポイントで遊べる予想くじ・ロトくじ・交換ショップの3ページを新設した。ドラフトのポイントとは別に、Firebase匿名認証でポイントを持ち回れるようにしている。タイトル画面の「☰ その他のページ」から遊べる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「野球くじ（β版）」の予想くじに、今日の実際の対戦カードと予告先発投手を反映</h2>
+        <p class="text-sm">これまでの架空の対戦データに代えて、実際の今日の試合カードを表示するようにした。各試合カードに予告先発投手名も表示し、裏取りできた投手には今季の勝敗成績も添えている。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">友達と1対1で対戦できる「友達と対戦（β版）」を追加</h2>
-        <p class="text-sm text-gray-300">タイトル画面から合言葉つきのルームを作って友達を招待し、同じドラフト会議をリアルタイムで進行できるようにした。まずは1対1のみの対応で、対戦相手のブラウザ画面はこれまでのAI対戦と同じ操作感になるようにしている。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「野球くじ（β版）」を追加</h2>
+        <p class="text-sm">架空ポイントで遊べる予想くじ・ロトくじ・交換ショップの3ページを新設した。ドラフトのポイントとは別に、Firebase匿名認証でポイントを持ち回れるようにしている。タイトル画面の「☰ その他のページ」から遊べる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">先発投手が130球を超えても続投してしまう問題を修正、球数の目安を追加</h2>
-        <p class="text-sm text-gray-300">投手のスタミナが高いと130球を超えても「万全」扱いのまま投げ続けてしまっていたため、スタミナに関係なく110球で降板対象に、失点が3以上または負けている試合では100球から降板対象になるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">友達と1対1で対戦できる「友達と対戦（β版）」を追加</h2>
+        <p class="text-sm">タイトル画面から合言葉つきのルームを作って友達を招待し、同じドラフト会議をリアルタイムで進行できるようにした。まずは1対1のみの対応で、対戦相手のブラウザ画面はこれまでのAI対戦と同じ操作感になるようにしている。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">負けている試合で、スタミナに余裕がある先発投手が引っ張られ続ける問題を修正</h2>
-        <p class="text-sm text-gray-300">大量失点による緊急降板の判定が序盤3回限定になっていたため、中盤以降にじわじわ5失点しても球数に余裕があるとそのまま投げ続けてしまっていた。負けている試合では、この回数制限を外して中継ぎに早めに継投できるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">先発投手が130球を超えても続投してしまう問題を修正、球数の目安を追加</h2>
+        <p class="text-sm">投手のスタミナが高いと130球を超えても「万全」扱いのまま投げ続けてしまっていたため、スタミナに関係なく110球で降板対象に、失点が3以上または負けている試合では100球から降板対象になるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">ヘッダー・ドラフト検索画面・ランキング画面を、setup/くじ引き/スタメン編成と同じ「革・スタジアム」テイストに統一</h2>
-        <p class="text-sm text-gray-300">紺のグラデーションヘッダー、金色アクセントの検索・絞り込みフォーム、指名ボタンの立体感、Sランクカードの光彩など、見劣りしていた画面の見た目だけを揃えた（ロジックの変更なし）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">負けている試合で、スタミナに余裕がある先発投手が引っ張られ続ける問題を修正</h2>
+        <p class="text-sm">大量失点による緊急降板の判定が序盤3回限定になっていたため、中盤以降にじわじわ5失点しても球数に余裕があるとそのまま投げ続けてしまっていた。負けている試合では、この回数制限を外して中継ぎに早めに継投できるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">追加選手82人の「選手詳細を見る」リンクが正しいページに飛ばない不具合を修正、打順適性の判定基準も見直し</h2>
-        <p class="text-sm text-gray-300">後から追加した選手のIDが仮の番号のままで詳細ページに繋がっていなかったため、実際の選手IDに差し替えた。また打順適性の◎○が付きにくすぎたため、しきい値を少し緩めてバランス型の選手にも得意な打順が見えるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">ヘッダー・ドラフト検索画面・ランキング画面を、setup/くじ引き/スタメン編成と同じ「革・スタジアム」テイストに統一</h2>
+        <p class="text-sm">紺のグラデーションヘッダー、金色アクセントの検索・絞り込みフォーム、指名ボタンの立体感、Sランクカードの光彩など、見劣りしていた画面の見た目だけを揃えた（ロジックの変更なし）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">試合結果の投球回が、盗塁失敗でアウトを取った投手の分だけ実際より少なく表示される不具合を修正</h2>
-        <p class="text-sm text-gray-300">盗塁死は攻守交代のアウトカウントには正しく反映されていたが、投手個人の成績にはカウントされておらず、9回を投げきっても「8.2」のように表示がずれることがあった。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">追加選手82人の「選手詳細を見る」リンクが正しいページに飛ばない不具合を修正、打順適性の判定基準も見直し</h2>
+        <p class="text-sm">後から追加した選手のIDが仮の番号のままで詳細ページに繋がっていなかったため、実際の選手IDに差し替えた。また打順適性の◎○が付きにくすぎたため、しきい値を少し緩めてバランス型の選手にも得意な打順が見えるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名発表画面は写真をやめてほぼ黒一色の背景に確定、写真は抽選・スタメン編成側に集約</h2>
-        <p class="text-sm text-gray-300">指名発表画面は主役の12球団カラーを一番鮮やかに見せることを優先し、写真背景をやめてほぼ黒一色に戻した。写真の雰囲気は抽選画面・スタメン編成画面で楽しめる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">試合結果の投球回が、盗塁失敗でアウトを取った投手の分だけ実際より少なく表示される不具合を修正</h2>
+        <p class="text-sm">盗塁死は攻守交代のアウトカウントには正しく反映されていたが、投手個人の成績にはカウントされておらず、9回を投げきっても「8.2」のように表示がずれることがあった。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名発表画面、カード背後のパネルが半透明すぎて球団カラーがまだ暗く見える問題を再修正</h2>
-        <p class="text-sm text-gray-300">指名カードの背後パネルが50%透明で写真が透けてしまい、球団カラーが濁って見える問題が残っていた。パネルをほぼ不透明にし、見出し文字にも背景を追加して読みやすくした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名発表画面は写真をやめてほぼ黒一色の背景に確定、写真は抽選・スタメン編成側に集約</h2>
+        <p class="text-sm">指名発表画面は主役の12球団カラーを一番鮮やかに見せることを優先し、写真背景をやめてほぼ黒一色に戻した。写真の雰囲気は抽選画面・スタメン編成画面で楽しめる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名発表画面に写真を復活させつつ、球団カラーは鮮やかなまま保てるように改良</h2>
-        <p class="text-sm text-gray-300">指名カードの並ぶエリアだけ黒に近い半透明パネルを敷くことで、球団カラーの鮮やかさを保ちながら、画面全体としては写真の雰囲気も楽しめるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名発表画面、カード背後のパネルが半透明すぎて球団カラーがまだ暗く見える問題を再修正</h2>
+        <p class="text-sm">指名カードの背後パネルが50%透明で写真が透けてしまい、球団カラーが濁って見える問題が残っていた。パネルをほぼ不透明にし、見出し文字にも背景を追加して読みやすくした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名発表画面の背景を写真からほぼ黒一色に戻し、球団カラーが鮮やかに見えるように</h2>
-        <p class="text-sm text-gray-300">写真背景そのものが、鮮やかな球団カラーを地味に見せてしまう原因だった。指名発表画面は元のほぼ黒一色の背景に戻し、球団カラーがくっきり映えるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名発表画面に写真を復活させつつ、球団カラーは鮮やかなまま保てるように改良</h2>
+        <p class="text-sm">指名カードの並ぶエリアだけ黒に近い半透明パネルを敷くことで、球団カラーの鮮やかさを保ちながら、画面全体としては写真の雰囲気も楽しめるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名発表カードの白いリングが球団カラーをくすませていたのをやめ、影で背景から浮かせる方式に変更</h2>
-        <p class="text-sm text-gray-300">直前に追加した白いリングの縁取りが、逆に球団カラーを濁って見せてしまっていた。リングをやめて、代わりに濃い影を強めることでカードを背景から浮かせるようにした。指名発表の見出し文字の影も強めて読みやすくした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名発表画面の背景を写真からほぼ黒一色に戻し、球団カラーが鮮やかに見えるように</h2>
+        <p class="text-sm">写真背景そのものが、鮮やかな球団カラーを地味に見せてしまう原因だった。指名発表画面は元のほぼ黒一色の背景に戻し、球団カラーがくっきり映えるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">抽選・指名発表画面で球団名や球団カラーが写真の背景に埋もれて見づらいのを改善</h2>
-        <p class="text-sm text-gray-300">抽選画面の球団名ラベルに黒背景のバッジを追加し、指名カードには白いリングの縁取りを追加。オリックスやロッテのような暗めの球団カラーでも、写真の暗い部分と重ならずはっきり見えるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名発表カードの白いリングが球団カラーをくすませていたのをやめ、影で背景から浮かせる方式に変更</h2>
+        <p class="text-sm">直前に追加した白いリングの縁取りが、逆に球団カラーを濁って見せてしまっていた。リングをやめて、代わりに濃い影を強めることでカードを背景から浮かせるようにした。指名発表の見出し文字の影も強めて読みやすくした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スタート画面のバナー写真をもっと見せるように調整</h2>
-        <p class="text-sm text-gray-300">見出し部分の背景バナーを高くし、暗くしすぎていたオーバーレイも薄めにして、抽選箱の写真がしっかり見えるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">抽選・指名発表画面で球団名や球団カラーが写真の背景に埋もれて見づらいのを改善</h2>
+        <p class="text-sm">抽選画面の球団名ラベルに黒背景のバッジを追加し、指名カードには白いリングの縁取りを追加。オリックスやロッテのような暗めの球団カラーでも、写真の暗い部分と重ならずはっきり見えるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名発表画面の「開票中」の表示が暗い背景に埋もれて読みにくいのを改善</h2>
-        <p class="text-sm text-gray-300">AI球団の指名を隠す「開票中」カバーが暗いグレーで、新しく採用した写真背景と重なって見えづらくなっていた。カバーを明るい色に変え、文字も少し大きく太くした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スタート画面のバナー写真をもっと見せるように調整</h2>
+        <p class="text-sm">見出し部分の背景バナーを高くし、暗くしすぎていたオーバーレイも薄めにして、抽選箱の写真がしっかり見えるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スマホでスクロールすると背景の暗いグラデーションがボタンに被って見える不具合を修正</h2>
-        <p class="text-sm text-gray-300">スタート画面などで、背景の写真とグラデーションが画面自体に固定されてしまい、スマホで縦に長い内容をスクロールすると下の方のボタンやフッターに暗い帯が被って見える不具合があった。背景を中身と一緒にスクロールする作りに直した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名発表画面の「開票中」の表示が暗い背景に埋もれて読みにくいのを改善</h2>
+        <p class="text-sm">AI球団の指名を隠す「開票中」カバーが暗いグレーで、新しく採用した写真背景と重なって見えづらくなっていた。カバーを明るい色に変え、文字も少し大きく太くした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スタート画面・抽選画面・指名発表・スタメン編成の見た目を野球らしく刷新</h2>
-        <p class="text-sm text-gray-300">濃紺×赤を基調にしたスタジアム風のデザインに変更し、AI生成の写真（抽選箱、革の縫い目）を背景に採用。ボタンや見出しのフォントも合わせて統一した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スマホでスクロールすると背景の暗いグラデーションがボタンに被って見える不具合を修正</h2>
+        <p class="text-sm">スタート画面などで、背景の写真とグラデーションが画面自体に固定されてしまい、スマホで縦に長い内容をスクロールすると下の方のボタンやフッターに暗い帯が被って見える不具合があった。背景を中身と一緒にスクロールする作りに直した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップページの見出し・説明文をSEO向けに調整</h2>
-        <p class="text-sm text-gray-300">検索データを見て「AIドラフト」というキーワードの検索表示回数が多い割にクリック率が低いことが分かったため、トップ画面の見出しを「DRAFT SIMULATOR」から「AIドラフト」に、説明文もこのキーワードを前面に出す内容に書き直した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スタート画面・抽選画面・指名発表・スタメン編成の見た目を野球らしく刷新</h2>
+        <p class="text-sm">濃紺×赤を基調にしたスタジアム風のデザインに変更し、AI生成の写真（抽選箱、革の縫い目）を背景に採用。ボタンや見出しのフォントも合わせて統一した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AIのドラフト指名評価が5ツール型の選手に偏りすぎていたのを調整</h2>
-        <p class="text-sm text-gray-300">走力・守備力に優れる選手が長打力に優れる選手より軒並み高く評価されてしまい、近本光司のような選手に指名が集中しすぎる不具合があった。打力（長打力・確実性）の重みを高め、走力・守備力の重みを下げることで、球団ごとのスカウト傾向がちゃんと指名結果に表れるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">トップページの見出し・説明文をSEO向けに調整</h2>
+        <p class="text-sm">検索データを見て「AIドラフト」というキーワードの検索表示回数が多い割にクリック率が低いことが分かったため、トップ画面の見出しを「DRAFT SIMULATOR」から「AIドラフト」に、説明文もこのキーワードを前面に出す内容に書き直した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">先発が9回まで無交代だと中継ぎを飛ばして抑えに直行してしまう不具合を修正</h2>
-        <p class="text-sm text-gray-300">先発が疲労も大量失点もせずに9回まで投げ続けた場合、中継ぎが一度も登板しないまま抑えにいきなり交代する不具合があった。中継ぎを経由してからでないと抑えには進めないようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AIのドラフト指名評価が5ツール型の選手に偏りすぎていたのを調整</h2>
+        <p class="text-sm">走力・守備力に優れる選手が長打力に優れる選手より軒並み高く評価されてしまい、近本光司のような選手に指名が集中しすぎる不具合があった。打力（長打力・確実性）の重みを高め、走力・守備力の重みを下げることで、球団ごとのスカウト傾向がちゃんと指名結果に表れるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">試合速報の打者表記を「第1打者」から「1番」に修正</h2>
-        <p class="text-sm text-gray-300">試合シミュレーションのログで「第1打者」「第4打者」のような不自然な表記になっていたのを、実況でよく使われる「1番」「4番」の言い方に直した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">先発が9回まで無交代だと中継ぎを飛ばして抑えに直行してしまう不具合を修正</h2>
+        <p class="text-sm">先発が疲労も大量失点もせずに9回まで投げ続けた場合、中継ぎが一度も登板しないまま抑えにいきなり交代する不具合があった。中継ぎを経由してからでないと抑えには進めないようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">対戦AI球団数を最大7球団（計8球団）まで拡大</h2>
-        <p class="text-sm text-gray-300">これまで最大5球団までだったAI対戦相手を最大7球団まで選べるようにした。プレーオフのトーナメント表も7球団・8球団に対応させ、8球団の場合は不戦勝なしのフラットな準々決勝→準決勝→決勝になる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">試合速報の打者表記を「第1打者」から「1番」に修正</h2>
+        <p class="text-sm">試合シミュレーションのログで「第1打者」「第4打者」のような不自然な表記になっていたのを、実況でよく使われる「1番」「4番」の言い方に直した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">プレーオフで自分の試合も観戦せずスキップできるように</h2>
-        <p class="text-sm text-gray-300">これまで自分のチームが出場する試合は必ずライブ観戦になっていたが、「結果だけ見る（観戦をスキップ）」ボタンを追加し、試合数が多くなってもテンポよく進められるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">対戦AI球団数を最大7球団（計8球団）まで拡大</h2>
+        <p class="text-sm">これまで最大5球団までだったAI対戦相手を最大7球団まで選べるようにした。プレーオフのトーナメント表も7球団・8球団に対応させ、8球団の場合は不戦勝なしのフラットな準々決勝→準決勝→決勝になる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">対戦AI球団数を最大5球団（計6球団）まで拡大</h2>
-        <p class="text-sm text-gray-300">これまで最大3球団（計4球団）までだったAI対戦相手を、選手層が厚くなったことに合わせて最大5球団まで選べるようにした。プレーオフのトーナメント表も5〜6球団に対応させた（上位シードほど準々決勝が不戦勝になる方式）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">プレーオフで自分の試合も観戦せずスキップできるように</h2>
+        <p class="text-sm">これまで自分のチームが出場する試合は必ずライブ観戦になっていたが、「結果だけ見る（観戦をスキップ）」ボタンを追加し、試合数が多くなってもテンポよく進められるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">新しい実績を4つ追加</h2>
-        <p class="text-sm text-gray-300">「フォーリナーズ」（外国人選手を3人フル指名）、「一点集中」（4球団以下の選手だけで編成）、「完全アウェー」（担当球団の選手なしで編成）、「雑草魂」（能力値の低い選手だけでCランク以上）を追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">対戦AI球団数を最大5球団（計6球団）まで拡大</h2>
+        <p class="text-sm">これまで最大3球団（計4球団）までだったAI対戦相手を、選手層が厚くなったことに合わせて最大5球団まで選べるようにした。プレーオフのトーナメント表も5〜6球団に対応させた（上位シードほど準々決勝が不戦勝になる方式）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">先発が大量失点しても継投しない問題を修正</h2>
-        <p class="text-sm text-gray-300">これまで継投は球数とイニング経過だけで判断していて、失点数を見ていなかった。3回を投げ切らないうちに5失点以上した場合は、球数に余裕があっても次の投手に交代するようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">新しい実績を4つ追加</h2>
+        <p class="text-sm">「フォーリナーズ」（外国人選手を3人フル指名）、「一点集中」（4球団以下の選手だけで編成）、「完全アウェー」（担当球団の選手なしで編成）、「雑草魂」（能力値の低い選手だけでCランク以上）を追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AIチームで先発適性しかない投手が抑えに回される不自然な起用を修正</h2>
-        <p class="text-sm text-gray-300">中継ぎ・抑え適性を持つ投手が誰もいない時、これまではロースター内で単に余っている投手を機械的に割り当てていたため、先発しかできない投手が抑えに回るようなミスマッチが起きていた。役割適性込みのスコアで一番マシな投手を選ぶように直した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">先発が大量失点しても継投しない問題を修正</h2>
+        <p class="text-sm">これまで継投は球数とイニング経過だけで判断していて、失点数を見ていなかった。3回を投げ切らないうちに5失点以上した場合は、球数に余裕があっても次の投手に交代するようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">既存選手7人の守れるポジションを追加</h2>
-        <p class="text-sm text-gray-300">牧秀悟・田中幹也・泉口友汰など、実際は複数ポジションを守れる選手のサブポジションが登録されていなかったのを追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AIチームで先発適性しかない投手が抑えに回される不自然な起用を修正</h2>
+        <p class="text-sm">中継ぎ・抑え適性を持つ投手が誰もいない時、これまではロースター内で単に余っている投手を機械的に割り当てていたため、先発しかできない投手が抑えに回るようなミスマッチが起きていた。役割適性込みのスコアで一番マシな投手を選ぶように直した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">選手データを82人追加、12球団の在籍選手数を増やしました</h2>
-        <p class="text-sm text-gray-300">全96選手から178選手に増量。各球団の野手・投手の層を厚くして、ドラフトの選択肢を広げた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">既存選手7人の守れるポジションを追加</h2>
+        <p class="text-sm">牧秀悟・田中幹也・泉口友汰など、実際は複数ポジションを守れる選手のサブポジションが登録されていなかったのを追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AIチームの編成で野手が9人に届かないことがあるバグを修正、投手交代のタイミングも改善</h2>
-        <p class="text-sm text-gray-300">AIが投手を取りすぎて野手が9人に届かず、実在しない「代打」で穴埋めされてしまうケースがあったのを修正。また、先発投手の交代がイニング経過だけで決まっていたのを、球数（スタミナ消耗）も考慮して、好調な投手は長めに続投できるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">選手データを82人追加、12球団の在籍選手数を増やしました</h2>
+        <p class="text-sm">全96選手から178選手に増量。各球団の野手・投手の層を厚くして、ドラフトの選択肢を広げた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページの「キャップ」「レプリカユニフォーム」見出しを見やすく修正</h2>
-        <p class="text-sm text-gray-300">カラフルなリンクに目を奪われて見出しに気づきにくいという指摘を受け、小さく地味だった見出しを他の商品名と同じ太字・黄色の目立つスタイルに変更した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AIチームの編成で野手が9人に届かないことがあるバグを修正、投手交代のタイミングも改善</h2>
+        <p class="text-sm">AIが投手を取りすぎて野手が9人に届かず、実在しない「代打」で穴埋めされてしまうケースがあったのを修正。また、先発投手の交代がイニング経過だけで決まっていたのを、球数（スタミナ消耗）も考慮して、好調な投手は長めに続投できるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページのパワフルプロ野球2026-2027に楽天リンクを追加</h2>
-        <p class="text-sm text-gray-300">Amazonリンクのみだったパワプロの紹介に、楽天リンクも並べて選べるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページの「キャップ」「レプリカユニフォーム」見出しを見やすく修正</h2>
+        <p class="text-sm">カラフルなリンクに目を奪われて見出しに気づきにくいという指摘を受け、小さく地味だった見出しを他の商品名と同じ太字・黄色の目立つスタイルに変更した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページに「パワフルプロ野球2026-2027」を追加</h2>
-        <p class="text-sm text-gray-300">「ゲーム」セクションに、サクセスモード30周年記念作品のパワプロ最新作を追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページのパワフルプロ野球2026-2027に楽天リンクを追加</h2>
+        <p class="text-sm">Amazonリンクのみだったパワプロの紹介に、楽天リンクも並べて選べるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページのプロ野球スピリッツ2026にAmazonリンクを追加</h2>
-        <p class="text-sm text-gray-300">今まで楽天リンクのみだったプロ野球スピリッツ2026の紹介に、Amazonリンクも並べて選べるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページに「パワフルプロ野球2026-2027」を追加</h2>
+        <p class="text-sm">「ゲーム」セクションに、サクセスモード30周年記念作品のパワプロ最新作を追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページのキャップにAmazonリンクを追加、楽天以外の11球団が完了</h2>
-        <p class="text-sm text-gray-300">ソフトバンク・西武・日本ハム・オリックス・ロッテのAmazonリンクを追加。楽天とAmazon両方選べる球団が11球団になった（楽天イーグルスのみ現時点でAmazon商品なし）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページのプロ野球スピリッツ2026にAmazonリンクを追加</h2>
+        <p class="text-sm">今まで楽天リンクのみだったプロ野球スピリッツ2026の紹介に、Amazonリンクも並べて選べるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページのキャップにAmazonリンクを5球団追加（阪神・DeNA・ヤクルト・中日・広島）</h2>
-        <p class="text-sm text-gray-300">巨人に続いて5球団分のAmazonリンクを追加。楽天とAmazon両方選べる球団が計6球団になった。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページのキャップにAmazonリンクを追加、楽天以外の11球団が完了</h2>
+        <p class="text-sm">ソフトバンク・西武・日本ハム・オリックス・ロッテのAmazonリンクを追加。楽天とAmazon両方選べる球団が11球団になった（楽天イーグルスのみ現時点でAmazon商品なし）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページのキャップに巨人のAmazonリンクを追加</h2>
-        <p class="text-sm text-gray-300">球団公認キャップのカードに、楽天リンクと並べてAmazonリンクも選べるように（まずは巨人分から試験的に導入）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページのキャップにAmazonリンクを5球団追加（阪神・DeNA・ヤクルト・中日・広島）</h2>
+        <p class="text-sm">巨人に続いて5球団分のAmazonリンクを追加。楽天とAmazon両方選べる球団が計6球団になった。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">中継サブスク比較ページに中日戦の一部配信対象外について脚注を追加</h2>
-        <p class="text-sm text-gray-300">DAZNの対応球団に含まれる中日でも、対巨人戦かつ東海テレビ・CBC制作の一部試合は放映権の都合で配信対象外になることがある旨を脚注に追記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページのキャップに巨人のAmazonリンクを追加</h2>
+        <p class="text-sm">球団公認キャップのカードに、楽天リンクと並べてAmazonリンクも選べるように（まずは巨人分から試験的に導入）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">中継サブスク比較ページの二軍対応表記を修正（DAZNは広島の二軍も非対応）</h2>
-        <p class="text-sm text-gray-300">DAZNの二軍（ファーム）配信は12球団すべてではなく11球団までで、広島は一軍だけでなく二軍もDAZN非対応だった。比較表を修正し、広島ファンには一軍・二軍とも事情が異なる旨を明記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">中継サブスク比較ページに中日戦の一部配信対象外について脚注を追加</h2>
+        <p class="text-sm">DAZNの対応球団に含まれる中日でも、対巨人戦かつ東海テレビ・CBC制作の一部試合は放映権の都合で配信対象外になることがある旨を脚注に追記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">中継サブスク比較ページにDAZN STANDARDも追加、3社比較に</h2>
-        <p class="text-sm text-gray-300">「DAZNも月契約できる」という指摘を受けて、年間契約のみのDAZN BASEBALLに加えてDAZN STANDARD（月契約可）も比較表に追加。契約形態まで含めた3社比較に整理した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">中継サブスク比較ページの二軍対応表記を修正（DAZNは広島の二軍も非対応）</h2>
+        <p class="text-sm">DAZNの二軍（ファーム）配信は12球団すべてではなく11球団までで、広島は一軍だけでなく二軍もDAZN非対応だった。比較表を修正し、広島ファンには一軍・二軍とも事情が異なる旨を明記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">中継サブスク比較ページを最新情報に更新（DAZN BASEBALLの二軍対応）</h2>
-        <p class="text-sm text-gray-300">2026年からDAZNの野球専用プラン「DAZN BASEBALL」が二軍戦にも対応したため、比較表とFAQの内容を最新情報に修正。スカパー！との違いは「広島の一軍を含む12球団完全対応」と「月契約できる点」に整理した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">中継サブスク比較ページにDAZN STANDARDも追加、3社比較に</h2>
+        <p class="text-sm">「DAZNも月契約できる」という指摘を受けて、年間契約のみのDAZN BASEBALLに加えてDAZN STANDARD（月契約可）も比較表に追加。契約形態まで含めた3社比較に整理した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">新ページ「プロ野球を二軍まで全部見る方法」を追加</h2>
-        <p class="text-sm text-gray-300">特定の球団に限らず、DAZNとスカパー！の対応範囲（一軍・二軍・料金）を比較表でまとめた新ページを公開。よくある疑問へのミニFAQ付き。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">中継サブスク比較ページを最新情報に更新（DAZN BASEBALLの二軍対応）</h2>
+        <p class="text-sm">2026年からDAZNの野球専用プラン「DAZN BASEBALL」が二軍戦にも対応したため、比較表とFAQの内容を最新情報に修正。スカパー！との違いは「広島の一軍を含む12球団完全対応」と「月契約できる点」に整理した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">広島カープ記事に「今はサービスを分けて見ています」を追加</h2>
-        <p class="text-sm text-gray-300">スカパー解約後、J SPORTS・Hulu・FODを球団ごとに使い分けている現状と、阪神公式配信「虎テレ」を契約していない理由を追記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">新ページ「プロ野球を二軍まで全部見る方法」を追加</h2>
+        <p class="text-sm">特定の球団に限らず、DAZNとスカパー！の対応範囲（一軍・二軍・料金）を比較表でまとめた新ページを公開。よくある疑問へのミニFAQ付き。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">新ページ「広島カープがDAZNで見れない理由と、全試合見る方法」を追加</h2>
-        <p class="text-sm text-gray-300">広島の主催試合がDAZNで配信されない理由と、運営者が実際にスカパーで全試合・二軍戦を見ていた体験談をまとめた新ページを公開。おすすめページのスカパー紹介にもリンクを追加。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">広島カープ記事に「今はサービスを分けて見ています」を追加</h2>
+        <p class="text-sm">スカパー解約後、J SPORTS・Hulu・FODを球団ごとに使い分けている現状と、阪神公式配信「虎テレ」を契約していない理由を追記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページにレプリカユニフォームを追加（12球団すべて）</h2>
-        <p class="text-sm text-gray-300">「球団公認グッズ」に、キャップに続いて各球団のレプリカユニフォームを追加。12球団すべてのリンクが揃った。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">新ページ「広島カープがDAZNで見れない理由と、全試合見る方法」を追加</h2>
+        <p class="text-sm">広島の主催試合がDAZNで配信されない理由と、運営者が実際にスカパーで全試合・二軍戦を見ていた体験談をまとめた新ページを公開。おすすめページのスカパー紹介にもリンクを追加。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページの紹介文を読みやすくリニューアル</h2>
-        <p class="text-sm text-gray-300">文章が詰まって読みにくかったため、各商品の紹介を「一言フック＋チェックリスト形式のポイント」に整理し、リンクも目立つボタンデザインに変更した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページにレプリカユニフォームを追加（12球団すべて）</h2>
+        <p class="text-sm">「球団公認グッズ」に、キャップに続いて各球団のレプリカユニフォームを追加。12球団すべてのリンクが揃った。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「2026年ドラフト放送予定」ページに開催日までのカウントダウンを追加</h2>
-        <p class="text-sm text-gray-300">今まではリンクで「注目選手」ページに飛ばないとカウントダウンが見られなかったため、このページ単体でも「あと◯日」が分かるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページの紹介文を読みやすくリニューアル</h2>
+        <p class="text-sm">文章が詰まって読みにくかったため、各商品の紹介を「一言フック＋チェックリスト形式のポイント」に整理し、リンクも目立つボタンデザインに変更した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">おすすめページのニューエラキャップ紹介文を強化</h2>
-        <p class="text-sm text-gray-300">派手な球団カラーではなく黒ベースのさりげないデザインを選んでいることや、普段のコーディネートにも合わせやすい点を紹介文に追記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「2026年ドラフト放送予定」ページに開催日までのカウントダウンを追加</h2>
+        <p class="text-sm">今まではリンクで「注目選手」ページに飛ばないとカウントダウンが見られなかったため、このページ単体でも「あと◯日」が分かるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スカパー！の紹介文を強化（12球団完全中継・二軍戦も対応）</h2>
-        <p class="text-sm text-gray-300">FAQとおすすめページのスカパー！紹介文を更新。セ・パ12球団すべての公式戦を中継しているのはスカパー！だけで、一軍だけでなく二軍（ファーム）戦も見られるという特長を追記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">おすすめページのニューエラキャップ紹介文を強化</h2>
+        <p class="text-sm">派手な球団カラーではなく黒ベースのさりげないデザインを選んでいることや、普段のコーディネートにも合わせやすい点を紹介文に追記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「おすすめグッズ・コンテンツ」ページを新設</h2>
-        <p class="text-sm text-gray-300">球団公認ニューエラキャップ、プロ野球スピリッツ2026、スカパー！をまとめて紹介する新ページを追加した。メニューの「グッズ・関連情報」から見られる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スカパー！の紹介文を強化（12球団完全中継・二軍戦も対応）</h2>
+        <p class="text-sm">FAQとおすすめページのスカパー！紹介文を更新。セ・パ12球団すべての公式戦を中継しているのはスカパー！だけで、一軍だけでなく二軍（ファーム）戦も見られるという特長を追記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">FAQにNPB中継について追加、A8.netでのアフィリエイト提携を開始</h2>
-        <p class="text-sm text-gray-300">「本物のNPBの試合も見たい」という声に応えて、FAQに中継の見方に関する項目とスカパー！のリンクを追加した。あわせてプライバシーポリシーのアフィリエイトプログラムに関する記載にA8.netを追記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「おすすめグッズ・コンテンツ」ページを新設</h2>
+        <p class="text-sm">球団公認ニューエラキャップ、プロ野球スピリッツ2026、スカパー！をまとめて紹介する新ページを追加した。メニューの「グッズ・関連情報」から見られる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">プレーオフ前の相手スタメン発表が中途半端な位置から始まる不具合を修正</h2>
-        <p class="text-sm text-gray-300">スタメン発表の画面を自チーム発表とプレーオフ前の相手チーム発表で使い回していたため、自チーム発表時にスクロールした位置が残ったまま次に開いてしまい、相手チームの発表だけ1番上からではなく途中から始まっていた。毎回必ず先頭から表示されるよう修正した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">FAQにNPB中継について追加、A8.netでのアフィリエイト提携を開始</h2>
+        <p class="text-sm">「本物のNPBの試合も見たい」という声に応えて、FAQに中継の見方に関する項目とスカパー！のリンクを追加した。あわせてプライバシーポリシーのアフィリエイトプログラムに関する記載にA8.netを追記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">パソコンの広い画面でポップアップが左端に寄る不具合を修正</h2>
-        <p class="text-sm text-gray-300">抽選結果などを知らせるポップアップに横方向の中央寄せ指定が抜けており、パソコンの広い画面だと左端に寄って表示されてしまっていた。中央に表示されるよう修正した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">プレーオフ前の相手スタメン発表が中途半端な位置から始まる不具合を修正</h2>
+        <p class="text-sm">スタメン発表の画面を自チーム発表とプレーオフ前の相手チーム発表で使い回していたため、自チーム発表時にスクロールした位置が残ったまま次に開いてしまい、相手チームの発表だけ1番上からではなく途中から始まっていた。毎回必ず先頭から表示されるよう修正した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「指名アナウンス」ボタンの位置を再調整</h2>
-        <p class="text-sm text-gray-300">スマホ用ボトムナビゲーション（選手検索・指名ボード）に置いていた指名アナウンスの切り替えボタンが窮屈だったため、「全選手／★リスト」タブの並びに移動した。パソコン・スマホ共通でここから操作できる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">パソコンの広い画面でポップアップが左端に寄る不具合を修正</h2>
+        <p class="text-sm">抽選結果などを知らせるポップアップに横方向の中央寄せ指定が抜けており、パソコンの広い画面だと左端に寄って表示されてしまっていた。中央に表示されるよう修正した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">外国人枠を導入：1球団が指名できる外国人選手は最大3人まで</h2>
-        <p class="text-sm text-gray-300">実際のNPBの試合出場枠を意識して、ドラフトで指名できる外国人選手を1球団あたり最大3人までに制限した。上限に達した状態でさらに外国人選手を指名しようとするとブロックされる。AI球団も同じ上限を守って指名するようになり、検索画面の枠バッジにも「外国人: ○/3」を追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「指名アナウンス」ボタンの位置を再調整</h2>
+        <p class="text-sm">スマホ用ボトムナビゲーション（選手検索・指名ボード）に置いていた指名アナウンスの切り替えボタンが窮屈だったため、「全選手／★リスト」タブの並びに移動した。パソコン・スマホ共通でここから操作できる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スタメン発表演出に自動スクロールを追加</h2>
-        <p class="text-sm text-gray-300">スマホだと全選手が1画面に収まらず、下の方の選手が発表されても画面外で見えていなかったため、選手が1人ずつ登場するタイミングに合わせて自動でスクロールするようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">外国人枠を導入：1球団が指名できる外国人選手は最大3人まで</h2>
+        <p class="text-sm">実際のNPBの試合出場枠を意識して、ドラフトで指名できる外国人選手を1球団あたり最大3人までに制限した。上限に達した状態でさらに外国人選手を指名しようとするとブロックされる。AI球団も同じ上限を守って指名するようになり、検索画面の枠バッジにも「外国人: ○/3」を追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スマホで「指名アナウンス」ボタンが押しにくかった問題を修正</h2>
-        <p class="text-sm text-gray-300">画面上部の小さなボタンだとスマホでは指が届きにくかったため、スマホ表示ではボトムナビゲーションにも同じ切り替えボタンを追加した。パソコン表示は従来どおり上部のボタンから操作できる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スタメン発表演出に自動スクロールを追加</h2>
+        <p class="text-sm">スマホだと全選手が1画面に収まらず、下の方の選手が発表されても画面外で見えていなかったため、選手が1人ずつ登場するタイミングに合わせて自動でスクロールするようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「スタメン発表」演出を、打順が一目でわかる縦並びリストのデザインに変更</h2>
-        <p class="text-sm text-gray-300">横並びのカードだと打順が分かりにくかったため、大きな打順バッジ付きの縦並びリスト形式に作り直した。1番から9番までの打者と、先発・中継ぎ・抑えの投手陣が、上から順に1行ずつスライドして発表されるようになった。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スマホで「指名アナウンス」ボタンが押しにくかった問題を修正</h2>
+        <p class="text-sm">画面上部の小さなボタンだとスマホでは指が届きにくかったため、スマホ表示ではボトムナビゲーションにも同じ切り替えボタンを追加した。パソコン表示は従来どおり上部のボタンから操作できる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">サイトタイトルを「AIドラフトシミュレーション｜NPBドラフト会議×スタメン編成ゲーム」に変更</h2>
-        <p class="text-sm text-gray-300">検索パフォーマンスを見ると「AI」を含む検索クエリからの表示回数が多かったため、タイトルの前方に「AI」を配置する形に変更した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「スタメン発表」演出を、打順が一目でわかる縦並びリストのデザインに変更</h2>
+        <p class="text-sm">横並びのカードだと打順が分かりにくかったため、大きな打順バッジ付きの縦並びリスト形式に作り直した。1番から9番までの打者と、先発・中継ぎ・抑えの投手陣が、上から順に1行ずつスライドして発表されるようになった。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「スタメン発表」演出を追加：編成完了後・プレーオフ試合前に対戦相手のスタメンも公開</h2>
-        <p class="text-sm text-gray-300">スタメン編成を完了すると、AI採点結果を見る前に自分のスターティングメンバーが1人ずつカードでめくれて発表されるようにした。あわせてプレーオフでも、自分が絡む試合の前に相手チームのスタメンが同じ演出で発表されるようにし、対戦相手の顔ぶれを事前に確認できるようにした。また試合結果画面のレーダーチャートの項目名表記ゆれ（長打力/確実性→パワー/ミート）も修正した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">サイトタイトルを「AIドラフトシミュレーション｜NPBドラフト会議×スタメン編成ゲーム」に変更</h2>
+        <p class="text-sm">検索パフォーマンスを見ると「AI」を含む検索クエリからの表示回数が多かったため、タイトルの前方に「AI」を配置する形に変更した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">試合中の盗塁判定を修正：長距離砲が盗塁を仕掛けなくなるように</h2>
-        <p class="text-sm text-gray-300">「機動力野球」コンボなどのチーム全体バフがかかった走力で盗塁の可否を判定していたため、山川穂高やサンタナのような走力の低い長距離砲まで盗塁を試みてしまう不具合があった。選手本来の素の走力で判定するように修正し、走力が高い選手ほど仕掛けやすく・低い選手ほど自重するようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「スタメン発表」演出を追加：編成完了後・プレーオフ試合前に対戦相手のスタメンも公開</h2>
+        <p class="text-sm">スタメン編成を完了すると、AI採点結果を見る前に自分のスターティングメンバーが1人ずつカードでめくれて発表されるようにした。あわせてプレーオフでも、自分が絡む試合の前に相手チームのスタメンが同じ演出で発表されるようにし、対戦相手の顔ぶれを事前に確認できるようにした。また試合結果画面のレーダーチャートの項目名表記ゆれ（長打力/確実性→パワー/ミート）も修正した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「歴代ドラフト伝説コラム」ページを新設</h2>
-        <p class="text-sm text-gray-300">江川事件、松坂大輔の3球団競合、大谷翔平の単独指名、清宮幸太郎の7球団競合など、NPBドラフト会議の歴史に残る8つのエピソードをまとめた読み物ページを追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">試合中の盗塁判定を修正：長距離砲が盗塁を仕掛けなくなるように</h2>
+        <p class="text-sm">「機動力野球」コンボなどのチーム全体バフがかかった走力で盗塁の可否を判定していたため、山川穂高やサンタナのような走力の低い長距離砲まで盗塁を試みてしまう不具合があった。選手本来の素の走力で判定するように修正し、走力が高い選手ほど仕掛けやすく・低い選手ほど自重するようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">実績を11種類→21種類に追加</h2>
-        <p class="text-sm text-gray-300">これまで実績になっていなかった5種類のコンボ（安打製造機・勝利の方程式・センターライン・ユーティリティ・○○愛）に加え、Gランクを経験する「伸びしろ全開」、3つのドラフト方式をすべて使う「方式マスター」、通算10回プレイする「継続は力なり」、AI球団3つ相手にプレーオフ優勝する「強豪ひしめく頂点」、12球団すべてでAランク以上を獲得する「全球団エース級」を新設した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「歴代ドラフト伝説コラム」ページを新設</h2>
+        <p class="text-sm">江川事件、松坂大輔の3球団競合、大谷翔平の単独指名、清宮幸太郎の7球団競合など、NPBドラフト会議の歴史に残る8つのエピソードをまとめた読み物ページを追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">アフィリエイトプログラムへの参加を開始</h2>
-        <p class="text-sm text-gray-300">FAQに、能力値の出典元シリーズの最新作「プロ野球スピリッツ2026」（PS5）への紹介リンクを追加。球団紹介ページには12球団すべての公式キャップ・ニューエラキャップへのリンクを追加した。あわせてプライバシーポリシーにアフィリエイトプログラムについての説明を追加し、全ページのフッターにその旨を明記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">実績を11種類→21種類に追加</h2>
+        <p class="text-sm">これまで実績になっていなかった5種類のコンボ（安打製造機・勝利の方程式・センターライン・ユーティリティ・○○愛）に加え、Gランクを経験する「伸びしろ全開」、3つのドラフト方式をすべて使う「方式マスター」、通算10回プレイする「継続は力なり」、AI球団3つ相手にプレーオフ優勝する「強豪ひしめく頂点」、12球団すべてでAランク以上を獲得する「全球団エース級」を新設した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップ画面のリンク一覧も「☰ その他のページ」に整理</h2>
-        <p class="text-sm text-gray-300">前回のナビ整理では読み物ページのヘッダーだけを直しており、肝心のトップ画面（ゲーム開始画面）のリンク一覧11個がそのまま残っていた。こちらも「☰ その他のページ」を押した時だけ開く、カテゴリ別のメニューにまとめた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">アフィリエイトプログラムへの参加を開始</h2>
+        <p class="text-sm">FAQに、能力値の出典元シリーズの最新作「プロ野球スピリッツ2026」（PS5）への紹介リンクを追加。球団紹介ページには12球団すべての公式キャップ・ニューエラキャップへのリンクを追加した。あわせてプライバシーポリシーにアフィリエイトプログラムについての説明を追加し、全ページのフッターにその旨を明記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">各ページのナビゲーションを整理し、☰メニューを新設</h2>
-        <p class="text-sm text-gray-300">コンテンツページが増えてヘッダーのボタンが乱立していたため、よく使う「遊び方」「選手名鑑」「開発ブログ」だけを常時表示にし、それ以外は「☰ メニュー」からカテゴリ別（遊ぶ・選手/球団を調べる・2026年ドラフト特集・開発情報）に開けるようにした。スマホでの見やすさを重視した変更。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">トップ画面のリンク一覧も「☰ その他のページ」に整理</h2>
+        <p class="text-sm">前回のナビ整理では読み物ページのヘッダーだけを直しており、肝心のトップ画面（ゲーム開始画面）のリンク一覧11個がそのまま残っていた。こちらも「☰ その他のページ」を押した時だけ開く、カテゴリ別のメニューにまとめた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">トップ画面に「ドラフト注目選手」への専用ボタンを追加</h2>
-        <p class="text-sm text-gray-300">トップ画面に「👀 ドラフト注目選手」ボタンを新設。開催日までの残り日数もボタンに直接表示され、ワンタップで注目選手ページに移動できるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">各ページのナビゲーションを整理し、☰メニューを新設</h2>
+        <p class="text-sm">コンテンツページが増えてヘッダーのボタンが乱立していたため、よく使う「遊び方」「選手名鑑」「開発ブログ」だけを常時表示にし、それ以外は「☰ メニュー」からカテゴリ別（遊ぶ・選手/球団を調べる・2026年ドラフト特集・開発情報）に開けるようにした。スマホでの見やすさを重視した変更。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「ドラフト注目選手」ページを新設し、カウントダウンを移設</h2>
-        <p class="text-sm text-gray-300">開催日までの自動カウントダウンと注目候補選手をまとめた新ページ「ドラフト注目選手」を追加。候補選手は今後も随時更新予定。カウントダウンは日程・放送予定ページから移設し、年をまたいでも自動で翌年分に切り替わる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">トップ画面に「ドラフト注目選手」への専用ボタンを追加</h2>
+        <p class="text-sm">トップ画面に「👀 ドラフト注目選手」ボタンを新設。開催日までの残り日数もボタンに直接表示され、ワンタップで注目選手ページに移動できるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「2026年ドラフト会議」の日程・放送予定まとめページを追加</h2>
-        <p class="text-sm text-gray-300">2026年10月22日開催のNPBドラフト会議の日程・放送予定をまとめた新ページを追加。本物のドラフトと、現役選手で戦う本サイトのシミュレーションとの違いも紹介している。全ページのナビゲーションからアクセスできる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「ドラフト注目選手」ページを新設し、カウントダウンを移設</h2>
+        <p class="text-sm">開催日までの自動カウントダウンと注目候補選手をまとめた新ページ「ドラフト注目選手」を追加。候補選手は今後も随時更新予定。カウントダウンは日程・放送予定ページから移設し、年をまたいでも自動で翌年分に切り替わる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">Googleアナリティクスでゲーム内の各画面の閲覧も計測できるように</h2>
-        <p class="text-sm text-gray-300">ドラフト会議・指名結果発表・くじ引き・スタメン編成・AI採点結果・試合・プレーオフの各画面に遷移するたびに、ページビューとして計測されるようにした。これまではゲーム本体はURLが変わらないため、どこまで進んだユーザーが多いかを見られなかった。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「2026年ドラフト会議」の日程・放送予定まとめページを追加</h2>
+        <p class="text-sm">2026年10月22日開催のNPBドラフト会議の日程・放送予定をまとめた新ページを追加。本物のドラフトと、現役選手で戦う本サイトのシミュレーションとの違いも紹介している。全ページのナビゲーションからアクセスできる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">サイト内の回遊導線を強化</h2>
-        <p class="text-sm text-gray-300">各コンテンツページの末尾に「こちらのページもどうぞ」という関連ページリンクを追加。さらに用語集からドラフト会議とはランキングへの用語別リンク、選手名鑑からランキングへのポジション別リンク、球団紹介から該当球団の選手一覧への絞り込みリンクを追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">Googleアナリティクスでゲーム内の各画面の閲覧も計測できるように</h2>
+        <p class="text-sm">ドラフト会議・指名結果発表・くじ引き・スタメン編成・AI採点結果・試合・プレーオフの各画面に遷移するたびに、ページビューとして計測されるようにした。これまではゲーム本体はURLが変わらないため、どこまで進んだユーザーが多いかを見られなかった。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AI採点結果・プレーオフ結果画面に攻略ガイドへのリンクを追加</h2>
-        <p class="text-sm text-gray-300">AI採点結果画面とプレーオフ終了画面に「攻略ガイド」への案内リンクを追加した。プレーオフでは勝敗に応じて文言が変わる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">サイト内の回遊導線を強化</h2>
+        <p class="text-sm">各コンテンツページの末尾に「こちらのページもどうぞ」という関連ページリンクを追加。さらに用語集からドラフト会議とはランキングへの用語別リンク、選手名鑑からランキングへのポジション別リンク、球団紹介から該当球団の選手一覧への絞り込みリンクを追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">通知モーダル・指名演出・くじ引き画面の表示崩れ対策</h2>
-        <p class="text-sm text-gray-300">トップページで見つかった「画面が低いと上端が見切れる」不具合と同じ原因が、通知ダイアログ・指名演出・くじ引き画面にも潜んでいたため、同じ方法でまとめて対策した。画面の高さが足りない状況でも、必ずスクロールして全部の内容に辿り着けるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AI採点結果・プレーオフ結果画面に攻略ガイドへのリンクを追加</h2>
+        <p class="text-sm">AI採点結果画面とプレーオフ終了画面に「攻略ガイド」への案内リンクを追加した。プレーオフでは勝敗に応じて文言が変わる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">一部の端末でトップページ上部が見切れる不具合を修正</h2>
-        <p class="text-sm text-gray-300">画面の高さによっては、タイトルや「①あなたの担当球団」がスクロールしても表示されない不具合を修正（Google Pixel等で発生）。中央寄せの実装方法を見直し、どんな画面の高さでも必ず上端までスクロールして辿り着けるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">通知モーダル・指名演出・くじ引き画面の表示崩れ対策</h2>
+        <p class="text-sm">トップページで見つかった「画面が低いと上端が見切れる」不具合と同じ原因が、通知ダイアログ・指名演出・くじ引き画面にも潜んでいたため、同じ方法でまとめて対策した。画面の高さが足りない状況でも、必ずスクロールして全部の内容に辿り着けるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">スタメン編成をタップだけで配置できるように改善</h2>
-        <p class="text-sm text-gray-300">これまでドラッグ操作のみだったスタメン編成を、選手をタップして選択→配置したい枠をタップ、で配置できるようにした（ドラッグも引き続き利用可）。配置済みの枠をタップするとプールに戻せる。ドラッグ操作が苦手な方やスマホでの操作性を改善した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">一部の端末でトップページ上部が見切れる不具合を修正</h2>
+        <p class="text-sm">画面の高さによっては、タイトルや「①あなたの担当球団」がスクロールしても表示されない不具合を修正（Google Pixel等で発生）。中央寄せの実装方法を見直し、どんな画面の高さでも必ず上端までスクロールして辿り着けるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">オーダーカードでオリックスの見出し文字が見えない不具合を修正</h2>
-        <p class="text-sm text-gray-300">オリックスの球団カラー(#0f172a)がオーダーカードの背景色とほぼ同色で、「スタメン」「投手陣」の見出しが読めなくなっていた不具合を修正。背景に溶け込む色のときだけ読みやすい金色(#a47b01)に差し替えるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">スタメン編成をタップだけで配置できるように改善</h2>
+        <p class="text-sm">これまでドラッグ操作のみだったスタメン編成を、選手をタップして選択→配置したい枠をタップ、で配置できるようにした（ドラッグも引き続き利用可）。配置済みの枠をタップするとプールに戻せる。ドラッグ操作が苦手な方やスマホでの操作性を改善した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AIの指名ロジックで投手偏重の球団だけ「らしさ」が強く出すぎる偏りを修正</h2>
-        <p class="text-sm text-gray-300">球団のスカウト傾向が最終スコアに与える影響が、野手側（±10%程度）に対して投手側だけ±35%程度と大きく効いてしまい、「投手王国」系の球団が「長距離砲補強型」系の球団よりずっと強く指名に偏っていた不具合を修正。投手側の影響幅を野手側と同程度に揃えた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">オーダーカードでオリックスの見出し文字が見えない不具合を修正</h2>
+        <p class="text-sm">オリックスの球団カラー(#0f172a)がオーダーカードの背景色とほぼ同色で、「スタメン」「投手陣」の見出しが読めなくなっていた不具合を修正。背景に溶け込む色のときだけ読みやすい金色(#a47b01)に差し替えるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名順・対戦相手決定の乱数の偏りを修正</h2>
-        <p class="text-sm text-gray-300">ウェーバーの指名順やAI対戦相手の決定に使っていたシャッフル処理に、特定の順番（1番手・最下位など）に偏りやすいという不具合があったのを修正。均等な確率で決まるようにした。あわせて遊び方ページに、ウェーバーの指名順は毎回ランダムで決まる旨を明記した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AIの指名ロジックで投手偏重の球団だけ「らしさ」が強く出すぎる偏りを修正</h2>
+        <p class="text-sm">球団のスカウト傾向が最終スコアに与える影響が、野手側（±10%程度）に対して投手側だけ±35%程度と大きく効いてしまい、「投手王国」系の球団が「長距離砲補強型」系の球団よりずっと強く指名に偏っていた不具合を修正。投手側の影響幅を野手側と同程度に揃えた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「ドラフト会議とは」ページを追加</h2>
-        <p class="text-sm text-gray-300">実際のNPBドラフト会議の指名方式（1巡目抽選＋2巡目以降ウェーバー）、支配下選手と育成選手の違い、FA制度との違いなどを解説する新ページを追加。本サイトのシミュレーションとの違いも明記した。全ページのナビゲーションからアクセスできる。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名順・対戦相手決定の乱数の偏りを修正</h2>
+        <p class="text-sm">ウェーバーの指名順やAI対戦相手の決定に使っていたシャッフル処理に、特定の順番（1番手・最下位など）に偏りやすいという不具合があったのを修正。均等な確率で決まるようにした。あわせて遊び方ページに、ウェーバーの指名順は毎回ランダムで決まる旨を明記した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">実績（アチーブメント）機能を追加（初級・中級・上級）</h2>
-        <p class="text-sm text-gray-300">Sランク獲得やプレーオフ優勝、各種コンボ発動、全12球団制覇など11種類の実績を、難易度別（初級・中級・上級）に分けて追加。上級には「1回の編成で8つ以上のコンボを同時発動」「Sランク獲得チームで優勝」という特に難しい実績を用意した。トップ画面の「🏅 実績を見る」から達成状況を確認できる。記録はこの端末のブラウザだけに保存され、他の端末には引き継がれない。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「ドラフト会議とは」ページを追加</h2>
+        <p class="text-sm">実際のNPBドラフト会議の指名方式（1巡目抽選＋2巡目以降ウェーバー）、支配下選手と育成選手の違い、FA制度との違いなどを解説する新ページを追加。本サイトのシミュレーションとの違いも明記した。全ページのナビゲーションからアクセスできる。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">結果シェア画面に「𝕏でシェア」ボタンを追加</h2>
-        <p class="text-sm text-gray-300">オーダーカード・結果シェアカードの画面から、文章なし（リンク＋タグのみ）の投稿画面をワンタップで開けるボタンを追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">実績（アチーブメント）機能を追加（初級・中級・上級）</h2>
+        <p class="text-sm">Sランク獲得やプレーオフ優勝、各種コンボ発動、全12球団制覇など11種類の実績を、難易度別（初級・中級・上級）に分けて追加。上級には「1回の編成で8つ以上のコンボを同時発動」「Sランク獲得チームで優勝」という特に難しい実績を用意した。トップ画面の「🏅 実績を見る」から達成状況を確認できる。記録はこの端末のブラウザだけに保存され、他の端末には引き継がれない。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">お問い合わせ先のリンク切れを修正、ファビコンを追加</h2>
-        <p class="text-sm text-gray-300">FAQ・プライバシーポリシーページで案内していたX（旧Twitter）アカウントへのリンクが実際には貼られていなかった不具合を修正。あわせて全ページにファビコンを追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">結果シェア画面に「𝕏でシェア」ボタンを追加</h2>
+        <p class="text-sm">オーダーカード・結果シェアカードの画面から、文章なし（リンク＋タグのみ）の投稿画面をワンタップで開けるボタンを追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">検索結果でのリッチ表示に対応（構造化データを追加）</h2>
-        <p class="text-sm text-gray-300">トップページ・遊び方・用語集・攻略ガイドのページに、Googleなどの検索結果で見出しやFAQ的な表示がされやすくなる構造化データ（JSON-LD）を追加した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">お問い合わせ先のリンク切れを修正、ファビコンを追加</h2>
+        <p class="text-sm">FAQ・プライバシーポリシーページで案内していたX（旧Twitter）アカウントへのリンクが実際には貼られていなかった不具合を修正。あわせて全ページにファビコンを追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">「ドラフト攻略ガイド」ページを追加</h2>
-        <p class="text-sm text-gray-300">序盤の指名戦略、ポジションバランス、スタメン打順・守備配置のコツ、コンボの狙い方、AI球団のスカウト傾向を読んだ立ち回りなどをまとめた攻略ガイドページを新設。全ページのナビゲーションからアクセスできるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">検索結果でのリッチ表示に対応（構造化データを追加）</h2>
+        <p class="text-sm">トップページ・遊び方・用語集・攻略ガイドのページに、Googleなどの検索結果で見出しやFAQ的な表示がされやすくなる構造化データ（JSON-LD）を追加した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">オーダーカードの文字を大きくし、保存できない不具合を修正</h2>
-        <p class="text-sm text-gray-300">タイムラインを流し見しただけでも打順・ポジション・選手名がわかるよう文字サイズを大幅に拡大し、常に同じ値にしかならない「編成12/12」表示は削除。またiPhoneなどで「画像を保存」を押しても保存できない不具合を修正し、共有シートから保存できるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">「ドラフト攻略ガイド」ページを追加</h2>
+        <p class="text-sm">序盤の指名戦略、ポジションバランス、スタメン打順・守備配置のコツ、コンボの狙い方、AI球団のスカウト傾向を読んだ立ち回りなどをまとめた攻略ガイドページを新設。全ページのナビゲーションからアクセスできるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">オーダーカードの余白を詰めて球団カラーを強調</h2>
-        <p class="text-sm text-gray-300">見直し後のオーダーカードが余白過多でグレーが多く地味だったため、行間・余白を詰めてシェア時のインパクトを向上。上部を球団カラーの帯に変更し、一目でどの球団かわかるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">オーダーカードの文字を大きくし、保存できない不具合を修正</h2>
+        <p class="text-sm">タイムラインを流し見しただけでも打順・ポジション・選手名がわかるよう文字サイズを大幅に拡大し、常に同じ値にしかならない「編成12/12」表示は削除。またiPhoneなどで「画像を保存」を押しても保存できない不具合を修正し、共有シートから保存できるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">オーダーカードのデザインを見直し</h2>
-        <p class="text-sm text-gray-300">本サイトには存在しない「何巡目で指名されたか」のバッジを撤去し、他のシェア画像と同じ紺のグラデーション＋球団カラーのグローに統一。誤解を招く表記を削除し、見た目もサイト本来のトーンに合わせた。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">オーダーカードの余白を詰めて球団カラーを強調</h2>
+        <p class="text-sm">見直し後のオーダーカードが余白過多でグレーが多く地味だったため、行間・余白を詰めてシェア時のインパクトを向上。上部を球団カラーの帯に変更し、一目でどの球団かわかるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">守備位置適性の評価をパワー・ミート別からまとめた「打撃力」に統一</h2>
-        <p class="text-sm text-gray-300">ポジションごとにパワーとミートを別々の重みで評価していたのをやめ、両者を平均した「打撃力」一本にまとめた。各ポジションの守備・打力バランスは変えず、内部の計算をシンプルにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">オーダーカードのデザインを見直し</h2>
+        <p class="text-sm">本サイトには存在しない「何巡目で指名されたか」のバッジを撤去し、他のシェア画像と同じ紺のグラデーション＋球団カラーのグローに統一。誤解を招く表記を削除し、見た目もサイト本来のトーンに合わせた。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">二塁・遊撃の評価配分を見直し</h2>
-        <p class="text-sm text-gray-300">守備力・走力で8割を占めていた配分を、打力（パワー・ミート）と5分に近い配分に変更。牧秀悟のような「守備を補ってあまりある打撃力」を持つ選手が、ポジション別ランキングで正当に評価されるようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">守備位置適性の評価をパワー・ミート別からまとめた「打撃力」に統一</h2>
+        <p class="text-sm">ポジションごとにパワーとミートを別々の重みで評価していたのをやめ、両者を平均した「打撃力」一本にまとめた。各ポジションの守備・打力バランスは変えず、内部の計算をシンプルにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">守備位置の適性ボーナス／ペナルティを調整</h2>
-        <p class="text-sm text-gray-300">サブポジションの補正を小さな加点から小さな減点に、適性の無い守備位置への配置ペナルティを大幅に強化。ポジション別ランキングで本職ではない選手が本職の選手を上回ってしまう逆転現象を修正した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">二塁・遊撃の評価配分を見直し</h2>
+        <p class="text-sm">守備力・走力で8割を占めていた配分を、打力（パワー・ミート）と5分に近い配分に変更。牧秀悟のような「守備を補ってあまりある打撃力」を持つ選手が、ポジション別ランキングで正当に評価されるようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">用語集・ポジション別ランキングページを追加</h2>
-        <p class="text-sm text-gray-300">ドラフト会議関連の基本用語をまとめた用語集と、本サイトの実際の適性計算式で各ポジションの上位選手をランキングするページを新設した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">守備位置の適性ボーナス／ペナルティを調整</h2>
+        <p class="text-sm">サブポジションの補正を小さな加点から小さな減点に、適性の無い守備位置への配置ペナルティを大幅に強化。ポジション別ランキングで本職ではない選手が本職の選手を上回ってしまう逆転現象を修正した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">オーダーカード機能を追加</h2>
-        <p class="text-sm text-gray-300">採点結果カードとは別に、組んだスタメン・投手陣をそのまま一覧できる縦長のシェア画像を追加。各選手に出身球団と何巡目で指名したかのバッジが付く。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">用語集・ポジション別ランキングページを追加</h2>
+        <p class="text-sm">ドラフト会議関連の基本用語をまとめた用語集と、本サイトの実際の適性計算式で各ポジションの上位選手をランキングするページを新設した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">独自ドメイン化、球団紹介・FAQページを追加</h2>
-        <p class="text-sm text-gray-300">サイトを dreamteam9.com に移行。12球団それぞれのAIスカウト傾向を紹介する球団紹介ページと、よくある質問をまとめたFAQページを新設した。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">オーダーカード機能を追加</h2>
+        <p class="text-sm">採点結果カードとは別に、組んだスタメン・投手陣をそのまま一覧できる縦長のシェア画像を追加。各選手に出身球団と何巡目で指名したかのバッジが付く。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">選手名鑑ページを追加</h2>
-        <p class="text-sm text-gray-300">全96選手を球団・ポジションで検索、絞り込みできるページを追加。表記は「ミート／パワー／走力／守備力」の順に統一。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">独自ドメイン化、球団紹介・FAQページを追加</h2>
+        <p class="text-sm">サイトを dreamteam9.com に移行。12球団それぞれのAIスカウト傾向を紹介する球団紹介ページと、よくある質問をまとめたFAQページを新設した。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">遊び方・ルール説明ページを追加</h2>
-        <p class="text-sm text-gray-300">ドラフト方式やスタメン編成、コンボ条件などをまとめたページを新設。設定画面からリンクできるように。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">選手名鑑ページを追加</h2>
+        <p class="text-sm">全96選手を球団・ポジションで検索、絞り込みできるページを追加。表記は「ミート／パワー／走力／守備力」の順に統一。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AI採点でS〜G全ランクが出るよう再調整</h2>
-        <p class="text-sm text-gray-300">選手データの下限が高く、実質どのチームを組んでもAランクに張り付いてしまっていた問題を修正。理想的な編成と最低な編成の実測値をもとにスコアを0〜100点へ引き伸ばし、ランクがきちんと分布するようにした。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">遊び方・ルール説明ページを追加</h2>
+        <p class="text-sm">ドラフト方式やスタメン編成、コンボ条件などをまとめたページを新設。設定画面からリンクできるように。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AIの指名ロジックをコンボ優先からチーム力優先へ</h2>
-        <p class="text-sm text-gray-300">「コンボを狙う」ことより「素の実力・枠の必要性・希少性」で勝てるチームを組むことを優先するよう調整。コンボはあくまで結果的に揃えばラッキー、くらいの副次要素に。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AI採点でS〜G全ランクが出るよう再調整</h2>
+        <p class="text-sm">選手データの下限が高く、実質どのチームを組んでもAランクに張り付いてしまっていた問題を修正。理想的な編成と最低な編成の実測値をもとにスコアを0〜100点へ引き伸ばし、ランクがきちんと分布するようにした。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">AI採点コメントをデータドリブンな分析文に変更</h2>
-        <p class="text-sm text-gray-300">「素晴らしい採点です」のような定型文をやめ、実際の打線・投手力の数値を見て一番の武器と課題を具体的に言及するように。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AIの指名ロジックをコンボ優先からチーム力優先へ</h2>
+        <p class="text-sm">「コンボを狙う」ことより「素の実力・枠の必要性・希少性」で勝てるチームを組むことを優先するよう調整。コンボはあくまで結果的に揃えばラッキー、くらいの副次要素に。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">ポジション傑出度に応じた青田買いロジックを追加</h2>
-        <p class="text-sm text-gray-300">同じポジションのライバル選手と比べて頭一つ抜けている選手を、他球団に取られる前に優先指名するように。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">AI採点コメントをデータドリブンな分析文に変更</h2>
+        <p class="text-sm">「素晴らしい採点です」のような定型文をやめ、実際の打線・投手力の数値を見て一番の武器と課題を具体的に言及するように。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">走力・守備型より打力型が評価されやすいよう調整／中継ぎ偏重を修正</h2>
-        <p class="text-sm text-gray-300">AIの上位指名が中継ぎ投手や俊足・堅守タイプに偏っていた問題を修正。打者は長打力・確実性を、投手は先発と中継ぎ・抑えを対等に評価するようスコア式を調整。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">ポジション傑出度に応じた青田買いロジックを追加</h2>
+        <p class="text-sm">同じポジションのライバル選手と比べて頭一つ抜けている選手を、他球団に取られる前に優先指名するように。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">ウェーバー指名にアナウンス演出を追加</h2>
-        <p class="text-sm text-gray-300">ウェーバー方式だと誰が指名されたか分かりにくかったため、AIの指名結果を1件ずつ表示する演出をデフォルトONで追加（ヘッダーからOFFにも切替可）。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">走力・守備型より打力型が評価されやすいよう調整／中継ぎ偏重を修正</h2>
+        <p class="text-sm">AIの上位指名が中継ぎ投手や俊足・堅守タイプに偏っていた問題を修正。打者は長打力・確実性を、投手は先発と中継ぎ・抑えを対等に評価するようスコア式を調整。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">指名カードをNPBドラフト風のデザインに刷新</h2>
-        <p class="text-sm text-gray-300">球団カラーの帯＋白いカード本体という、実際の指名カードに近いデザインに変更。野球アイコンなどの装飾は撤去し、枠のサイズも統一。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">ウェーバー指名にアナウンス演出を追加</h2>
+        <p class="text-sm">ウェーバー方式だと誰が指名されたか分かりにくかったため、AIの指名結果を1件ずつ表示する演出をデフォルトONで追加（ヘッダーからOFFにも切替可）。</p>
       </li>
 
       <li class="ml-6">
-        <span class="absolute -left-[9px] w-4 h-4 bg-gray-600 rounded-full border-2 border-gray-900"></span>
-        <h2 class="font-black text-base mb-1">GitHub Pagesで公開</h2>
-        <p class="text-sm text-gray-300">誰でもブラウザからアクセスできるように公開。</p>
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">指名カードをNPBドラフト風のデザインに刷新</h2>
+        <p class="text-sm">球団カラーの帯＋白いカード本体という、実際の指名カードに近いデザインに変更。野球アイコンなどの装飾は撤去し、枠のサイズも統一。</p>
+      </li>
+
+      <li class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full p-dot"></span>
+        <h2 class="p-mincho text-base mb-1">GitHub Pagesで公開</h2>
+        <p class="text-sm">誰でもブラウザからアクセスできるように公開。</p>
       </li>
 
     </ol>
@@ -1117,15 +1124,15 @@
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
   
-    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
-      <p class="text-xs text-gray-400 mb-3">こちらのページもどうぞ</p>
+    <section class="p-rule-top pt-6 mt-8 text-center">
+      <p class="text-xs p-sub mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
-        <a href="devblog.html" class="text-sm text-blue-400 hover:underline font-bold">📝 開発ブログ</a>
-        <a href="howto.html" class="text-sm text-blue-400 hover:underline font-bold">📖 遊び方</a>
+        <a href="devblog.html" class="text-sm p-link font-bold">📝 開発ブログ</a>
+        <a href="howto.html" class="text-sm p-link font-bold">📖 遊び方</a>
       </div>
     </section>
 </main>
-  <footer class="text-center text-gray-400 text-xs py-6">
+  <footer class="text-center p-sub text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 </body>
