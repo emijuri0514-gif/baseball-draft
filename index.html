@@ -2107,7 +2107,13 @@
     <!-- ★ 指名カードメーカーへの入口（2026-10-18）。開始ボタンより目立たないよう、塗りのない細い枠だけにする。
          初めての人の開始ボタンがスクロールなしで見える位置から大きく下がらないよう、この行の分だけ
          上のお知らせ帯と下のヒーローのスマホ時の余白を詰めている（md以上は従来どおり） -->
-    <a id="top-pickcard" href="pick-card.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_top'})" class="block w-full max-w-md mb-1 md:mb-3 border border-yellow-400/50 hover:bg-yellow-400/10 text-yellow-300 rounded-md px-2 py-px md:py-0.5 text-[11px] md:text-xs font-bold text-center leading-tight md:leading-snug whitespace-nowrap">🃏 自分の名前で『指名カード』を作る ›</a>
+    <!-- ★ 2026-11-06 なんでもドラフトへの入口を、指名カードメーカーの帯と同じ形で横に並べた（オーナー判断）。
+         縦に1行足すと、スマホで開始ボタンが22px下がる（360×640で画面からはみ出す）ので、同じ行に半分ずつ置く。
+         この帯はゲームの中身にもトップのデザインにも関係しないので、能力値の切り替えから14日あける決まりの対象外 -->
+    <div class="flex gap-1 w-full max-w-md mb-1 md:mb-3">
+    <a id="top-pickcard" href="pick-card.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_top'})" class="block flex-1 min-w-0 truncate border border-yellow-400/50 hover:bg-yellow-400/10 text-yellow-300 rounded-md px-2 py-px md:py-0.5 text-[11px] md:text-xs font-bold text-center leading-tight md:leading-snug whitespace-nowrap">🃏 指名カードを作る ›</a>
+    <a id="top-anything" href="anything-draft.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_top'})" class="block flex-1 min-w-0 truncate border border-yellow-400/50 hover:bg-yellow-400/10 text-yellow-300 rounded-md px-2 py-px md:py-0.5 text-[11px] md:text-xs font-bold text-center leading-tight md:leading-snug whitespace-nowrap">🎲 なんでもドラフト ›</a>
+    </div>
     <div class="stadium-bg w-full min-h-[128px] md:min-h-[220px] rounded-lg px-4 flex flex-col items-center justify-center mb-2 md:mb-4" style="position: relative;">
     <div style="position: relative; z-index: 1;">
     <p class="font-sport text-red-400 text-[10px] md:text-xs tracking-[0.35em] text-center font-bold mb-1">NPB DRAFT GAME</p>
@@ -2296,6 +2302,7 @@
         <div class="mb-3 last:mb-0">
           <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
           <a href="pick-card.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-blue-700 hover:underline font-bold py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
+          <a href="anything-draft.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-blue-700 hover:underline font-bold py-1">🎲 なんでもドラフト <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
           <a href="howto.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📖 遊び方・ルール</a>
           <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🎯 攻略ガイド</a>
           <a href="glossary.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📚 用語集</a>
@@ -4853,8 +4860,17 @@
       return 'other';
     }
     window.mpReportError = function(e, where) {
-      // 合言葉の間違い・満員など、利用者の操作で起きる想定内の失敗は数えない
-      if (e && /^ROOM_(NOT_FOUND|ALREADY_STARTED|FULL)$/.test(e.message || '')) return;
+      // 合言葉の間違い・満員など、利用者の操作で起きる想定内の失敗はエラーとして数えない
+      // ★ 2026-10-31 満員だけは「3人目として参加したかった人」の数を知るため、error_type=room_full で送る
+      //   （新しい項目は作らず、登録済みの error_type に値を足すだけ。上限超えの集計では room_full を除いて見る）
+      if (e && e.message === 'ROOM_FULL') {
+        if (!MP_TEST_ERROR_MODE && !mpErrorSent.has('room_full') && typeof gtag === 'function') {
+          mpErrorSent.add('room_full');
+          gtag('event', 'mp_error', { error_type: 'room_full', error_where: where, in_game: 0 });
+        }
+        return;
+      }
+      if (e && /^ROOM_(NOT_FOUND|ALREADY_STARTED)$/.test(e.message || '')) return;
       const type = mpErrorType(e);
       const key = type + ':' + where;
       if (!MP_TEST_ERROR_MODE && !mpErrorSent.has(key) && typeof gtag === 'function') {
@@ -5008,6 +5024,10 @@
           ROOM_FULL: 'そのルームはすでに満員です。'
         };
         errEl.textContent = msgMap[e.message] || '参加に失敗しました。通信環境をご確認のうえ、もう一度お試しください。';
+        // ★ 友達対戦は2人まで。3人目として来た人には、1台で2〜8人で遊べる「なんでもドラフト」を案内する
+        if (e.message === 'ROOM_FULL') {
+          errEl.insertAdjacentHTML('beforeend', '<span class="block mt-1 font-normal text-gray-700">友達対戦は2人までです。3人以上で遊ぶなら、1台のスマホを回して2〜8人で指名できる <a href="anything-draft.html" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag===\'function\')gtag(\'event\',\'cta_click\',{month:new Date().getMonth()+1,target:\'anything_room_full\'})" class="text-blue-700 underline font-bold">なんでもドラフト</a> がおすすめです。</span>');
+        }
         errEl.classList.remove('hidden');
       }
     };
