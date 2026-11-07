@@ -26,9 +26,9 @@
   <link rel="canonical" href="https://dreamteam9.com/draft-system.html">
   <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
   <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
   <style>
-    body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic Medium", "YuGothic", "Meiryo", sans-serif; background-color: #0f172a; }
-
     /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
        空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
     .ad-slot:empty { display: none; }
@@ -48,46 +48,46 @@
   </script>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
-<body class="text-gray-100">
-  <header class="bg-gray-900 border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
-      <h1 class="text-sm md:text-base font-black tracking-wider">🗒️ ドラフト会議とは</h1>
+      <h1 class="p-mincho text-base md:text-lg">🗒️ ドラフト会議とは</h1>
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="howto.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📖 遊び方</a>
-        <a href="devblog.html" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">📝 開発ブログ</a>
-        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
-        <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
       </div>
-      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
-            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎲 なんでもドラフト <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
-            <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
-            <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ FAQ</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
-            <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
-            <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
-            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
-            <a href="players.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧢 選手名鑑</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📅 2026ドラフト放送予定・注目選手</a>
-            <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
-            <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
-            <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
-            <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
-            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
           </div>
       </div>
     </div>
@@ -98,50 +98,50 @@
     <div id="ad-slot-top" class="ad-slot"></div>
 
     <section class="text-center">
-      <h2 class="text-xl md:text-2xl font-black text-yellow-400 mb-2">NPBドラフト会議はどんな仕組み？</h2>
-      <p class="text-sm md:text-base text-gray-300 leading-relaxed">
+      <h2 class="p-mincho text-xl md:text-2xl mb-2">NPBドラフト会議はどんな仕組み？</h2>
+      <p class="text-sm md:text-base p-sub leading-relaxed">
         本サイトは現役のNPB選手を12球団のAIと奪い合う「if」のシミュレーションですが、実際のドラフト会議はまったく違うルールで行われています。<br>
-        ここではNPBドラフト会議の仕組みを解説します。<a href="howto.html" class="text-blue-400 underline">本サイトの遊び方</a>と比べてみるのも面白いはずです。
+        ここではNPBドラフト会議の仕組みを解説します。<a href="howto.html" class="p-link">本サイトの遊び方</a>と比べてみるのも面白いはずです。
       </p>
     </section>
 
     <section>
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">① NPBドラフト会議とは</h3>
-      <p class="text-sm md:text-base text-gray-200">
+      <h3 class="p-h2 text-lg mb-3">① NPBドラフト会議とは</h3>
+      <p class="text-sm md:text-base">
         正式名称は「新人選手選択会議」。プロ野球12球団が、その年にプロ入りを希望する高校生・大学生・社会人・独立リーグの選手など「アマチュア選手」を指名する会議です。毎年秋（例年10月頃）に開催され、プロ野球界の一大イベントとして中継・報道されます。本サイトのように現役のプロ選手を指名し合うものではなく、あくまで「これからプロ入りする新人」を対象にしている点が最大の違いです。
       </p>
     </section>
 
     <section>
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">② 指名方式：1巡目は抽選、2巡目以降はウェーバー</h3>
-      <div class="space-y-3 text-sm md:text-base text-gray-200">
-        <p><span class="font-black text-yellow-300">1巡目：</span>全12球団が同時に「1位指名」の選手名を発表します。同じ選手に複数球団の指名が重複した場合は、くじ引きで交渉権を獲得する球団を決定します。くじを外した球団は「外れ1位」として、改めて別の選手を指名し直します。</p>
-        <p><span class="font-black text-yellow-300">2巡目以降：</span>抽選は行わず、あらかじめ決められた順番で1人ずつ指名していく「ウェーバー方式」が採用されます。指名順は前年度の成績が絡む形で決められます。</p>
-        <p class="text-xs text-gray-400">※本サイトの「NPB方式」は、この方式をベースにしたゲーム内ルールです。</p>
+      <h3 class="p-h2 text-lg mb-3">② 指名方式：1巡目は抽選、2巡目以降はウェーバー</h3>
+      <div class="space-y-3 text-sm md:text-base">
+        <p><span class="font-black">1巡目：</span>全12球団が同時に「1位指名」の選手名を発表します。同じ選手に複数球団の指名が重複した場合は、くじ引きで交渉権を獲得する球団を決定します。くじを外した球団は「外れ1位」として、改めて別の選手を指名し直します。</p>
+        <p><span class="font-black">2巡目以降：</span>抽選は行わず、あらかじめ決められた順番で1人ずつ指名していく「ウェーバー方式」が採用されます。指名順は前年度の成績が絡む形で決められます。</p>
+        <p class="text-xs p-sub">※本サイトの「NPB方式」は、この方式をベースにしたゲーム内ルールです。</p>
       </div>
     </section>
 
     <section>
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">③ 支配下選手と育成選手の違い</h3>
-      <p class="text-sm md:text-base text-gray-200 mb-3">
+      <h3 class="p-h2 text-lg mb-3">③ 支配下選手と育成選手の違い</h3>
+      <p class="text-sm md:text-base mb-3">
         ドラフトで指名される選手には、大きく分けて「支配下選手」と「育成選手」の2種類があります。
       </p>
-      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc list-inside">
-        <li><span class="font-black text-yellow-300">支配下選手：</span>各球団が登録できる人数に上限がある正式契約の選手。一軍の公式戦に出場できます。</li>
-        <li><span class="font-black text-yellow-300">育成選手：</span>支配下枠とは別の契約で、まずは二軍などで育成される選手。一軍公式戦に出場するには、支配下選手への「昇格（支配下登録）」が必要です。背番号に3桁の番号が付くのが特徴で、そこから育成出身選手が一軍で活躍すると大きな話題になります。</li>
+      <ul class="space-y-2 text-sm md:text-base list-disc list-inside">
+        <li><span class="font-black">支配下選手：</span>各球団が登録できる人数に上限がある正式契約の選手。一軍の公式戦に出場できます。</li>
+        <li><span class="font-black">育成選手：</span>支配下枠とは別の契約で、まずは二軍などで育成される選手。一軍公式戦に出場するには、支配下選手への「昇格（支配下登録）」が必要です。背番号に3桁の番号が付くのが特徴で、そこから育成出身選手が一軍で活躍すると大きな話題になります。</li>
       </ul>
     </section>
 
     <section>
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">④ ドラフトとFA制度の違い</h3>
-      <p class="text-sm md:text-base text-gray-200">
-        ドラフトとよく混同される制度に「FA（フリーエージェント）」があります。ドラフトが「新人選手を新たに獲得する」仕組みなのに対し、FAは一定期間の一軍登録日数などの条件を満たした<span class="font-black text-yellow-300">現役選手</span>が、所属球団の枠を離れて他球団と自由に契約交渉できる制度です。ドラフトは10月の会議で一括して行われますが、FAは毎年オフシーズンに権利を取得した選手が個別に権利行使を宣言する、という違いもあります。
+      <h3 class="p-h2 text-lg mb-3">④ ドラフトとFA制度の違い</h3>
+      <p class="text-sm md:text-base">
+        ドラフトとよく混同される制度に「FA（フリーエージェント）」があります。ドラフトが「新人選手を新たに獲得する」仕組みなのに対し、FAは一定期間の一軍登録日数などの条件を満たした<span class="font-black">現役選手</span>が、所属球団の枠を離れて他球団と自由に契約交渉できる制度です。ドラフトは10月の会議で一括して行われますが、FAは毎年オフシーズンに権利を取得した選手が個別に権利行使を宣言する、という違いもあります。
       </p>
     </section>
 
     <section>
-      <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">⑤ 本サイトのシミュレーションとの違い</h3>
-      <p class="text-sm md:text-base text-gray-200">
+      <h3 class="p-h2 text-lg mb-3">⑤ 本サイトのシミュレーションとの違い</h3>
+      <p class="text-sm md:text-base">
         実際のドラフト会議は「まだプロの実績がないアマチュア選手」を、球団のスカウトが実際に見極めて指名する仕組みです。一方、本サイトは「もし現役のNPB選手を12球団で自由に奪い合えたら」という、実在しない設定で楽しむシミュレーションゲームです。指名方式（1巡目抽選＋2巡目以降ウェーバー）はこの制度を参考にしていますが、対象選手・指名の目的はまったくの別物としてお楽しみください。
       </p>
     </section>
@@ -150,20 +150,20 @@
     <div id="ad-slot-bottom" class="ad-slot"></div>
 
     <div class="text-center pt-4 pb-10">
-      <a href="index.html" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-8 rounded-full shadow-lg">ゲームを始める</a>
+      <a href="index.html" class="p-btn b-shu inline-flex items-center justify-center py-3 px-8">ゲームを始める</a>
     </div>
   
-    <section class="border-t border-gray-700 pt-6 mt-8 text-center">
-      <p class="text-xs text-gray-400 mb-3">こちらのページもどうぞ</p>
+    <section class="p-rule-top pt-6 mt-8 text-center">
+      <p class="text-xs p-sub mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
-        <a href="draft-2026.html" class="text-sm text-blue-400 hover:underline font-bold">📅 2026ドラフト放送予定・注目選手</a>
-        <a href="howto.html" class="text-sm text-blue-400 hover:underline font-bold">📖 遊び方</a>
-        <a href="glossary.html" class="text-sm text-blue-400 hover:underline font-bold">📚 用語集</a>
-        <a href="strategy.html" class="text-sm text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a>
+        <a href="draft-2026.html" class="text-sm p-link font-bold">📅 2026ドラフト放送予定・注目選手</a>
+        <a href="howto.html" class="text-sm p-link font-bold">📖 遊び方</a>
+        <a href="glossary.html" class="text-sm p-link font-bold">📚 用語集</a>
+        <a href="strategy.html" class="text-sm p-link font-bold">🎯 攻略ガイド</a>
       </div>
     </section>
 </main>
-  <footer class="text-center text-gray-400 text-xs py-6">
+  <footer class="text-center p-sub text-xs py-6">
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 </body>
