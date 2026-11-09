@@ -704,9 +704,10 @@
     //   低い選手だけを狙って集めたときに、Cランク以上を取れる割合が約1〜5%になる値（AIだけの1万回で確かめた）。
     //   能力値の平均は打者が0.25刻み・投手が1/3刻みで、70前後にちょうどの選手が数人いるため、数字を少し動かすだけで
     //   取れやすさが大きく変わる（2〜5球団は 0.4% の次が3割以上になり、1〜5%に入らないので取れないようにした）
+    // ★ 2026-11-09 段階1（守備力の付け方・AIの指名の重み・採点の物差しの直し）で数え直した（1,000回×球団数ごと。6〜12球団で約2〜5%）
     const WEEDS_LIMITS = {
-      6: { bat: 70.25, pit: 70.25 }, 7: { bat: 70.25, pit: 70.25 }, 8: { bat: 70, pit: 70.34 }, 9: { bat: 70.25, pit: 70.25 },
-      10: { bat: 70.25, pit: 70.25 }, 11: { bat: 70.25, pit: 70.5 }, 12: { bat: 70.25, pit: 70.5 },
+      6: { bat: 69.25, pit: 70 }, 7: { bat: 69.25, pit: 70 }, 8: { bat: 69.25, pit: 70 }, 9: { bat: 69.25, pit: 70 },
+      10: { bat: 69.25, pit: 70 }, 11: { bat: 69.25, pit: 70 }, 12: { bat: 69.25, pit: 70 },
     };
     function unlockAchievement(id) {
       if (achState.unlocked[id]) return;
@@ -1089,21 +1090,22 @@
 
     // ★ 2026-10-09 上位2項目は「点数そのもの」ではなく「平均との差」が大きい順で選ぶ。点数そのものだと長打力が
     // 高く出やすい点数の付き方のせいで、12球団の対戦では半分のチームが「大砲とエース」になっていたため。
+    // ★ 2026-11-09 段階1（守備の新しい形・AIの指名の重みの直し・採点の物差しの合わせ直し）で作り直した（2・4・12球団は1万回、ほかは2千回）
     // ★ 2026-11-03 能力値を成績からの計算に切り替えたので、新しい能力値で作り直した（2・4・12球団は1万回、ほかは2千回。オーナー判断）。
     // 平均はAI同士の1万回シミュレーション（シード20261022）で、遊ぶ球団の数ごとに固定（人数で平均が大きく変わり、
     // 12球団の平均を4球団の対戦に使うと1つの文言に4割以上が集まった）。並びはSTAT_LABELSの順
     const SHARE_STAT_MEANS = {
-      2: [94, 85.9, 70.7, 79.1, 84.2, 74.6],
-      3: [94, 81.6, 68.1, 74.2, 83.3, 77.1],
-      4: [93.6, 78.4, 65.3, 71.8, 81.9, 77.8],
-      5: [93.1, 76.1, 63.4, 70.1, 80.1, 76.5],
-      6: [92.6, 73.1, 62.5, 68.2, 78.1, 74.3],
-      7: [92, 70.2, 62.2, 66.4, 76.3, 72.1],
-      8: [91.3, 67.1, 61.8, 64.8, 74.4, 70.7],
-      9: [90.3, 64.3, 61.5, 63.2, 72.2, 69.7],
-      10: [89, 61.8, 60.9, 61.5, 70.4, 69],
-      11: [87.1, 59.8, 60.3, 60.4, 69.8, 68.8],
-      12: [85, 57.3, 60.5, 59.4, 69.3, 68.5]
+      2: [91.1, 93.9, 51.3, 81.5, 86.5, 79.4],
+      3: [88.9, 93.5, 49.4, 80.2, 84.8, 80.9],
+      4: [86.6, 92.2, 46.2, 77.5, 84.1, 81.1],
+      5: [84.8, 89.6, 45.2, 75.5, 83.3, 79.9],
+      6: [83.0, 86.4, 45.9, 73.9, 80.9, 78.3],
+      7: [81.4, 82.7, 46.1, 72.3, 79.2, 77.1],
+      8: [80.3, 78.8, 46.3, 70.9, 77.7, 76.5],
+      9: [79.5, 75.1, 46.1, 69.5, 76.4, 76.1],
+      10: [77.9, 72.3, 45.8, 68.4, 75.1, 76.2],
+      11: [75.3, 69.8, 45.7, 67.1, 73.8, 76.2],
+      12: [73.0, 66.0, 46.0, 65.7, 72.6, 75.9]
     };
     function shareStatMeans(teamCount) {
       const keys = Object.keys(SHARE_STAT_MEANS).map(Number);
@@ -2882,115 +2884,115 @@
       { id: 19990153, name: "大勢", team: "巨人", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 82, con: 74, sta: 66} },
       { id: 19960048, name: "ライデル・マルティネス", team: "巨人", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 83, con: 80, sta: 68} },
       { id: 19960043, name: "岸田行倫", team: "巨人", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 73, pow: 74, run: 60, def: 65} },
-      { id: 19990197, name: "泉口友汰", team: "巨人", pos: "内野手", bestPos: ["遊", "三", "二"], eval: "内野手", fStats: {meet: 78, pow: 71, run: 64, def: 64} },
-      { id: 19880045, name: "坂本勇人", team: "巨人", pos: "内野手", bestPos: ["三", "遊"], eval: "内野手", fStats: {meet: 66, pow: 76, run: 64, def: 67} },
-      { id: 19970198, name: "トレイ・キャベッジ", team: "巨人", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 66, pow: 78, run: 69, def: 45} },
-      { id: 19890063, name: "丸佳浩", team: "巨人", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 72, pow: 76, run: 70, def: 61} },
-      { id: 19950045, name: "吉川尚輝", team: "巨人", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 77, pow: 70, run: 75, def: 81} },
-      { id: 19930108, name: "大城卓三", team: "巨人", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 67, pow: 75, run: 61, def: 68} },
-      { id: 19990107, name: "リチャード", team: "巨人", pos: "内野手", bestPos: ["一", "三"], eval: "内野手", fStats: {meet: 54, pow: 74, run: 68, def: 62} },
+      { id: 19990197, name: "泉口友汰", team: "巨人", pos: "内野手", bestPos: ["遊", "三", "二"], eval: "内野手", fStats: {meet: 78, pow: 71, run: 64, def: 68} },
+      { id: 19880045, name: "坂本勇人", team: "巨人", pos: "内野手", bestPos: ["三", "遊"], eval: "内野手", fStats: {meet: 66, pow: 76, run: 64, def: 68} },
+      { id: 19970198, name: "トレイ・キャベッジ", team: "巨人", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 66, pow: 78, run: 69, def: 50} },
+      { id: 19890063, name: "丸佳浩", team: "巨人", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 72, pow: 76, run: 70, def: 57} },
+      { id: 19950045, name: "吉川尚輝", team: "巨人", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 77, pow: 70, run: 75, def: 78} },
+      { id: 19930108, name: "大城卓三", team: "巨人", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 67, pow: 75, run: 61, def: 66} },
+      { id: 19990107, name: "リチャード", team: "巨人", pos: "内野手", bestPos: ["一", "三"], eval: "内野手", fStats: {meet: 54, pow: 74, run: 68, def: 59} },
       { id: 19940047, name: "中川皓太", team: "巨人", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 77, con: 77, sta: 63} },
       { id: 20010073, name: "井上温大", team: "巨人", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 76, con: 80, sta: 65} },
       { id: 19990049, name: "田中瑛斗", team: "巨人", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 74, con: 65, sta: 62} },
       { id: 19980107, name: "山﨑伊織", team: "巨人", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 75, con: 77, sta: 73} },
-      { id: 20020179, name: "浦田俊輔", team: "巨人", pos: "内野手", bestPos: ["二", "遊", "三"], eval: "内野手", fStats: {meet: 60, pow: 66, run: 72, def: 61} },
-      { id: 20020071, name: "中山礼都", team: "巨人", pos: "外野手", bestPos: ["外", "三", "遊", "二", "一"], eval: "外野手", fStats: {meet: 71, pow: 73, run: 67, def: 63} },
-      { id: 19930036, name: "松本剛", team: "巨人", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 68, pow: 61, run: 78, def: 62} },
+      { id: 20020179, name: "浦田俊輔", team: "巨人", pos: "内野手", bestPos: ["二", "遊", "三"], eval: "内野手", fStats: {meet: 60, pow: 66, run: 72, def: 57} },
+      { id: 20020071, name: "中山礼都", team: "巨人", pos: "外野手", bestPos: ["外", "三", "二", "遊", "一"], eval: "外野手", fStats: {meet: 71, pow: 73, run: 67, def: 57} },
+      { id: 19930036, name: "松本剛", team: "巨人", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 68, pow: 61, run: 78, def: 60} },
 
       // 阪神
       { id: 19980012, name: "才木浩人", team: "阪神", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 77, con: 77, sta: 75} },
       { id: 19980010, name: "村上頌樹", team: "阪神", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 77, con: 84, sta: 75} },
       { id: 19970128, name: "石井大智", team: "阪神", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 81, con: 77, sta: 65} },
-      { id: 19930015, name: "坂本誠志郎", team: "阪神", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 64, pow: 62, run: 61, def: 64} },
-      { id: 19940089, name: "大山悠輔", team: "阪神", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 72, pow: 77, run: 58, def: 82} },
-      { id: 19990126, name: "佐藤輝明", team: "阪神", pos: "内野手", bestPos: ["三", "外"], eval: "内野手", fStats: {meet: 68, pow: 83, run: 73, def: 64} },
-      { id: 19940132, name: "近本光司", team: "阪神", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 78, pow: 70, run: 83, def: 66} },
-      { id: 20000057, name: "森下翔太", team: "阪神", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 73, pow: 80, run: 65, def: 63} },
-      { id: 20000090, name: "小幡竜平", team: "阪神", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 65, pow: 69, run: 75, def: 62} },
-      { id: 20030046, name: "前川右京", team: "阪神", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 71, pow: 69, run: 59, def: 62} },
-      { id: 19900021, name: "伏見寅威", team: "阪神", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 65, pow: 65, run: 62, def: 62} },
+      { id: 19930015, name: "坂本誠志郎", team: "阪神", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 64, pow: 62, run: 61, def: 70} },
+      { id: 19940089, name: "大山悠輔", team: "阪神", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 72, pow: 77, run: 58, def: 71} },
+      { id: 19990126, name: "佐藤輝明", team: "阪神", pos: "内野手", bestPos: ["三", "外"], eval: "内野手", fStats: {meet: 68, pow: 83, run: 73, def: 74} },
+      { id: 19940132, name: "近本光司", team: "阪神", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 78, pow: 70, run: 83, def: 69} },
+      { id: 20000057, name: "森下翔太", team: "阪神", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 73, pow: 80, run: 65, def: 61} },
+      { id: 20000090, name: "小幡竜平", team: "阪神", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 65, pow: 69, run: 75, def: 64} },
+      { id: 20030046, name: "前川右京", team: "阪神", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 71, pow: 69, run: 59, def: 54} },
+      { id: 19900021, name: "伏見寅威", team: "阪神", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 65, pow: 65, run: 62, def: 58} },
       { id: 19950054, name: "大竹耕太郎", team: "阪神", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 72, con: 84, sta: 72} },
       { id: 20010015, name: "及川雅貴", team: "阪神", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 81, con: 71, sta: 69} },
       { id: 19990118, name: "湯浅京己", team: "阪神", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 77, con: 66, sta: 63} },
-      { id: 19960152, name: "中野拓夢", team: "阪神", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 73, pow: 61, run: 77, def: 75} },
+      { id: 19960152, name: "中野拓夢", team: "阪神", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 73, pow: 61, run: 77, def: 80} },
       { id: 19910048, name: "岩崎優", team: "阪神", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 78, con: 76, sta: 67} },
-      { id: 19950073, name: "熊谷敬宥", team: "阪神", pos: "内野手", bestPos: ["三", "遊", "外", "一", "二"], eval: "内野手", fStats: {meet: 62, pow: 67, run: 80, def: 62} },
+      { id: 19950073, name: "熊谷敬宥", team: "阪神", pos: "内野手", bestPos: ["三", "遊", "外", "一", "二"], eval: "内野手", fStats: {meet: 62, pow: 67, run: 80, def: 60} },
 
       // DeNA
       { id: 19950086, name: "東克樹", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 85, sta: 79} },
       { id: 20020148, name: "石田裕太郎", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 75, con: 81, sta: 64} },
       { id: 19920049, name: "山崎康晃", team: "DeNA", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 75, con: 74, sta: 63} },
-      { id: 20040019, name: "松尾汐恩", team: "DeNA", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 66, pow: 72, run: 69, def: 62} },
-      { id: 19980104, name: "牧秀悟", team: "DeNA", pos: "内野手", bestPos: ["二", "一"], eval: "内野手", fStats: {meet: 79, pow: 83, run: 70, def: 63} },
-      { id: 19880065, name: "宮崎敏郎", team: "DeNA", pos: "内野手", bestPos: ["三"], eval: "内野手", fStats: {meet: 80, pow: 78, run: 60, def: 64} },
-      { id: 19910070, name: "筒香嘉智", team: "DeNA", pos: "外野手", bestPos: ["外", "三"], eval: "外野手", fStats: {meet: 61, pow: 82, run: 67, def: 62} },
-      { id: 19940065, name: "佐野恵太", team: "DeNA", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 76, pow: 75, run: 55, def: 63} },
-      { id: 20010164, name: "石上泰輝", team: "DeNA", pos: "内野手", bestPos: ["遊", "三", "二"], eval: "内野手", fStats: {meet: 61, pow: 68, run: 74, def: 62} },
-      { id: 19970133, name: "蝦名達夫", team: "DeNA", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 71, pow: 74, run: 67, def: 56} },
+      { id: 20040019, name: "松尾汐恩", team: "DeNA", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 66, pow: 72, run: 69, def: 53} },
+      { id: 19980104, name: "牧秀悟", team: "DeNA", pos: "内野手", bestPos: ["二", "一"], eval: "内野手", fStats: {meet: 79, pow: 83, run: 70, def: 72} },
+      { id: 19880065, name: "宮崎敏郎", team: "DeNA", pos: "内野手", bestPos: ["三"], eval: "内野手", fStats: {meet: 80, pow: 78, run: 60, def: 71} },
+      { id: 19910070, name: "筒香嘉智", team: "DeNA", pos: "外野手", bestPos: ["外", "三"], eval: "外野手", fStats: {meet: 61, pow: 82, run: 67, def: 57} },
+      { id: 19940065, name: "佐野恵太", team: "DeNA", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 76, pow: 75, run: 55, def: 60} },
+      { id: 20010164, name: "石上泰輝", team: "DeNA", pos: "内野手", bestPos: ["遊", "三", "二"], eval: "内野手", fStats: {meet: 61, pow: 68, run: 74, def: 58} },
+      { id: 19970133, name: "蝦名達夫", team: "DeNA", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 71, pow: 74, run: 67, def: 48} },
       { id: 19970104, name: "坂本裕哉", team: "DeNA", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 71, sta: 69} },
       { id: 19990033, name: "竹田祐", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 76, sta: 67} },
       { id: 19940184, name: "ホセ・ルイーズ", team: "DeNA", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 73, sta: 65} },
       { id: 20000130, name: "宮城滝太", team: "DeNA", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 79, con: 67, sta: 68} },
       { id: 19990063, name: "中川虎大", team: "DeNA", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 77, con: 73, sta: 63} },
       { id: 19950021, name: "平良拳太郎", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 76, con: 83, sta: 66} },
-      { id: 19990172, name: "渡部遼人", team: "DeNA", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 60, pow: 64, run: 78, def: 53} },
-      { id: 19990010, name: "三森大貴", team: "DeNA", pos: "内野手", bestPos: ["二", "三", "一", "外"], eval: "内野手", fStats: {meet: 67, pow: 68, run: 86, def: 62} },
+      { id: 19990172, name: "渡部遼人", team: "DeNA", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 60, pow: 64, run: 78, def: 49} },
+      { id: 19990010, name: "三森大貴", team: "DeNA", pos: "内野手", bestPos: ["二", "三", "一", "外"], eval: "内野手", fStats: {meet: 67, pow: 68, run: 86, def: 60} },
       { id: 19980091, name: "伊勢大夢", team: "DeNA", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 77, con: 76, sta: 64} },
-      { id: 20020029, name: "度会隆輝", team: "DeNA", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 72, run: 64, def: 60} },
+      { id: 20020029, name: "度会隆輝", team: "DeNA", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 72, run: 64, def: 52} },
 
       // 中日
       { id: 20020035, name: "高橋宏斗", team: "中日", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 78, con: 73, sta: 75} },
       { id: 20030120, name: "金丸夢斗", team: "中日", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 81, sta: 71} },
       { id: 20000199, name: "松山晋也", team: "中日", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 85, con: 70, sta: 66} },
-      { id: 20000159, name: "石伊雄太", team: "中日", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 62, pow: 68, run: 65, def: 63} },
-      { id: 20000049, name: "田中幹也", team: "中日", pos: "内野手", bestPos: ["二", "遊"], eval: "内野手", fStats: {meet: 70, pow: 64, run: 77, def: 69} },
-      { id: 20010008, name: "村松開人", team: "中日", pos: "内野手", bestPos: ["遊", "二"], eval: "内野手", fStats: {meet: 64, pow: 63, run: 66, def: 65} },
-      { id: 19980058, name: "細川成也", team: "中日", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 67, pow: 81, run: 56, def: 62} },
-      { id: 20020001, name: "岡林勇希", team: "中日", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 78, pow: 67, run: 78, def: 64} },
-      { id: 19950002, name: "上林誠知", team: "中日", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 67, pow: 76, run: 83, def: 62} },
-      { id: 19930082, name: "山本泰寛", team: "中日", pos: "内野手", bestPos: ["遊", "二", "三", "一"], eval: "内野手", fStats: {meet: 67, pow: 67, run: 68, def: 62} },
-      { id: 19930180, name: "ジェイソン・ボスラー", team: "中日", pos: "内野手", bestPos: ["一", "三", "外"], eval: "内野手", fStats: {meet: 69, pow: 77, run: 62, def: 69} },
-      { id: 19910009, name: "木下拓哉", team: "中日", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 66, pow: 71, run: 62, def: 62} },
+      { id: 20000159, name: "石伊雄太", team: "中日", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 62, pow: 68, run: 65, def: 61} },
+      { id: 20000049, name: "田中幹也", team: "中日", pos: "内野手", bestPos: ["二", "遊"], eval: "内野手", fStats: {meet: 70, pow: 64, run: 77, def: 71} },
+      { id: 20010008, name: "村松開人", team: "中日", pos: "内野手", bestPos: ["遊", "二"], eval: "内野手", fStats: {meet: 64, pow: 63, run: 66, def: 69} },
+      { id: 19980058, name: "細川成也", team: "中日", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 67, pow: 81, run: 56, def: 56} },
+      { id: 20020001, name: "岡林勇希", team: "中日", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 78, pow: 67, run: 78, def: 68} },
+      { id: 19950002, name: "上林誠知", team: "中日", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 67, pow: 76, run: 83, def: 55} },
+      { id: 19930082, name: "山本泰寛", team: "中日", pos: "内野手", bestPos: ["遊", "二", "三", "一"], eval: "内野手", fStats: {meet: 67, pow: 67, run: 68, def: 63} },
+      { id: 19930180, name: "ジェイソン・ボスラー", team: "中日", pos: "内野手", bestPos: ["一", "三", "外"], eval: "内野手", fStats: {meet: 69, pow: 77, run: 62, def: 60} },
+      { id: 19910009, name: "木下拓哉", team: "中日", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 66, pow: 71, run: 62, def: 64} },
       { id: 19950167, name: "アルベルト・アブレウ", team: "中日", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 76, con: 68, sta: 67} },
       { id: 19960015, name: "齋藤綱記", team: "中日", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 79, con: 64, sta: 62} },
       { id: 19980019, name: "藤嶋健人", team: "中日", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 73, sta: 65} },
       { id: 19880058, name: "大野雄大", team: "中日", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 72, con: 79, sta: 69} },
-      { id: 20010028, name: "石川昂弥", team: "中日", pos: "内野手", bestPos: ["三", "一"], eval: "内野手", fStats: {meet: 65, pow: 74, run: 59, def: 73} },
+      { id: 20010028, name: "石川昂弥", team: "中日", pos: "内野手", bestPos: ["三", "一"], eval: "内野手", fStats: {meet: 65, pow: 74, run: 59, def: 63} },
       { id: 19960154, name: "福永裕基", team: "中日", pos: "内野手", bestPos: ["三", "二", "一", "遊", "外"], eval: "内野手", fStats: {meet: 71, pow: 72, run: 72, def: 64} },
-      { id: 19940044, name: "板山祐太郎", team: "中日", pos: "内野手", bestPos: ["二", "外", "三", "一"], eval: "内野手", fStats: {meet: 61, pow: 68, run: 70, def: 62} },
+      { id: 19940044, name: "板山祐太郎", team: "中日", pos: "内野手", bestPos: ["二", "三", "外", "一"], eval: "内野手", fStats: {meet: 61, pow: 68, run: 70, def: 61} },
 
       // ヤクルト
       { id: 19980092, name: "吉村貢司郎", team: "ヤクルト", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 80, sta: 70} },
       { id: 20000094, name: "荘司宏太", team: "ヤクルト", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 83, con: 67, sta: 66} },
       { id: 19970105, name: "大西広樹", team: "ヤクルト", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 75, con: 74, sta: 69} },
-      { id: 19980053, name: "古賀優大", team: "ヤクルト", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 75, pow: 70, run: 69, def: 80} },
-      { id: 19920108, name: "ホセ・オスナ", team: "ヤクルト", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 71, pow: 77, run: 58, def: 64} },
-      { id: 20010105, name: "長岡秀樹", team: "ヤクルト", pos: "内野手", bestPos: ["遊", "三"], eval: "内野手", fStats: {meet: 73, pow: 66, run: 69, def: 72} },
-      { id: 19920106, name: "ドミンゴ・サンタナ", team: "ヤクルト", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 76, pow: 80, run: 62, def: 58} },
-      { id: 19930145, name: "塩見泰隆", team: "ヤクルト", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 76, run: 73, def: 62} },
-      { id: 20000086, name: "北村恵吾", team: "ヤクルト", pos: "内野手", bestPos: ["二", "一", "三", "外"], eval: "内野手", fStats: {meet: 65, pow: 75, run: 68, def: 60} },
+      { id: 19980053, name: "古賀優大", team: "ヤクルト", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 75, pow: 70, run: 69, def: 66} },
+      { id: 19920108, name: "ホセ・オスナ", team: "ヤクルト", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 71, pow: 77, run: 58, def: 66} },
+      { id: 20010105, name: "長岡秀樹", team: "ヤクルト", pos: "内野手", bestPos: ["遊", "三"], eval: "内野手", fStats: {meet: 73, pow: 66, run: 69, def: 76} },
+      { id: 19920106, name: "ドミンゴ・サンタナ", team: "ヤクルト", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 76, pow: 80, run: 62, def: 53} },
+      { id: 19930145, name: "塩見泰隆", team: "ヤクルト", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 76, run: 73, def: 57} },
+      { id: 20000086, name: "北村恵吾", team: "ヤクルト", pos: "内野手", bestPos: ["二", "一", "三", "外"], eval: "内野手", fStats: {meet: 65, pow: 75, run: 68, def: 56} },
       { id: 19970007, name: "高橋奎二", team: "ヤクルト", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 69, sta: 68} },
       { id: 19880036, name: "石山泰稚", team: "ヤクルト", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 78, con: 75, sta: 67} },
       { id: 19900028, name: "小川泰弘", team: "ヤクルト", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 71, con: 82, sta: 70} },
       { id: 19960095, name: "清水昇", team: "ヤクルト", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 79, sta: 66} },
-      { id: 20020025, name: "内山壮真", team: "ヤクルト", pos: "内野手", bestPos: ["外", "捕", "三"], eval: "内野手", fStats: {meet: 69, pow: 73, run: 74, def: 62} },
+      { id: 20020025, name: "内山壮真", team: "ヤクルト", pos: "内野手", bestPos: ["外", "捕", "三"], eval: "内野手", fStats: {meet: 69, pow: 73, run: 74, def: 59} },
       { id: 19990072, name: "松本健吾", team: "ヤクルト", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 75, con: 78, sta: 71} },
-      { id: 19970174, name: "岩田幸宏", team: "ヤクルト", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 72, pow: 64, run: 82, def: 62} },
-      { id: 20010027, name: "武岡龍世", team: "ヤクルト", pos: "内野手", bestPos: ["二", "三", "遊"], eval: "内野手", fStats: {meet: 59, pow: 66, run: 73, def: 62} },
+      { id: 19970174, name: "岩田幸宏", team: "ヤクルト", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 72, pow: 64, run: 82, def: 57} },
+      { id: 20010027, name: "武岡龍世", team: "ヤクルト", pos: "内野手", bestPos: ["二", "三", "遊"], eval: "内野手", fStats: {meet: 59, pow: 66, run: 73, def: 59} },
       { id: 19940058, name: "星知弥", team: "ヤクルト", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 78, con: 68, sta: 65} },
-      { id: 19990015, name: "増田珠", team: "ヤクルト", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 62, pow: 69, run: 71, def: 60} },
+      { id: 19990015, name: "増田珠", team: "ヤクルト", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 62, pow: 69, run: 71, def: 52} },
 
       // 広島
       { id: 19970085, name: "森下暢仁", team: "広島", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 78, sta: 77} },
       { id: 19950053, name: "床田寛樹", team: "広島", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 71, con: 79, sta: 76} },
       { id: 19960067, name: "栗林良吏", team: "広島", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 81, con: 70, sta: 66} },
-      { id: 19980037, name: "坂倉将吾", team: "広島", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 70, pow: 75, run: 66, def: 62} },
-      { id: 20000006, name: "小園海斗", team: "広島", pos: "内野手", bestPos: ["三", "遊", "二"], eval: "内野手", fStats: {meet: 81, pow: 70, run: 76, def: 62} },
-      { id: 19900044, name: "菊池涼介", team: "広島", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 68, pow: 70, run: 66, def: 64} },
-      { id: 19980201, name: "サンドロ・ファビアン", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 74, pow: 78, run: 60, def: 50} },
-      { id: 19880026, name: "秋山翔吾", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 75, pow: 68, run: 69, def: 63} },
-      { id: 19980200, name: "エレフリス・モンテロ", team: "広島", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 67, pow: 75, run: 64, def: 62} },
-      { id: 19980102, name: "石原貴規", team: "広島", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 61, pow: 67, run: 68, def: 73} },
+      { id: 19980037, name: "坂倉将吾", team: "広島", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 70, pow: 75, run: 66, def: 59} },
+      { id: 20000006, name: "小園海斗", team: "広島", pos: "内野手", bestPos: ["三", "遊", "二"], eval: "内野手", fStats: {meet: 81, pow: 70, run: 76, def: 66} },
+      { id: 19900044, name: "菊池涼介", team: "広島", pos: "内野手", bestPos: ["二"], eval: "内野手", fStats: {meet: 68, pow: 70, run: 66, def: 71} },
+      { id: 19980201, name: "サンドロ・ファビアン", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 74, pow: 78, run: 60, def: 51} },
+      { id: 19880026, name: "秋山翔吾", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 75, pow: 68, run: 69, def: 61} },
+      { id: 19980200, name: "エレフリス・モンテロ", team: "広島", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 67, pow: 75, run: 64, def: 54} },
+      { id: 19980102, name: "石原貴規", team: "広島", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 61, pow: 67, run: 68, def: 64} },
       { id: 19960106, name: "島内颯太郎", team: "広島", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 81, con: 67, sta: 67} },
       { id: 19910052, name: "大瀬良大地", team: "広島", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 75, sta: 71} },
       { id: 19940165, name: "テイラー・ハーン", team: "広島", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 79, con: 71, sta: 65} },
@@ -2998,9 +3000,9 @@
       { id: 20010147, name: "高太一", team: "広島", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 76, sta: 65} },
       { id: 20010088, name: "持丸泰輝", team: "広島", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 57, pow: 70, run: 65, def: 62} },
       { id: 20020190, name: "岡本駿", team: "広島", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 79, con: 78, sta: 67} },
-      { id: 19930057, name: "野間峻祥", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 74, pow: 63, run: 73, def: 62} },
-      { id: 20020154, name: "佐々木泰", team: "広島", pos: "内野手", bestPos: ["三", "外"], eval: "内野手", fStats: {meet: 68, pow: 65, run: 73, def: 62} },
-      { id: 20040126, name: "平川蓮", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 57, pow: 67, run: 71, def: 71} },
+      { id: 19930057, name: "野間峻祥", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 74, pow: 63, run: 73, def: 54} },
+      { id: 20020154, name: "佐々木泰", team: "広島", pos: "内野手", bestPos: ["三", "外"], eval: "内野手", fStats: {meet: 68, pow: 65, run: 73, def: 59} },
+      { id: 20040126, name: "平川蓮", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 57, pow: 67, run: 71, def: 56} },
       { id: 19980125, name: "森浦大輔", team: "広島", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 80, con: 61, sta: 64} },
       { id: 20000192, name: "名原典彦", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 66, pow: 70, run: 78, def: 62} },
 
@@ -3008,133 +3010,133 @@
       { id: 20010023, name: "宮城大弥", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 82, sta: 77} },
       { id: 20020073, name: "山下舜平大", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 82, con: 66, sta: 66} },
       { id: 19930175, name: "アンドレス・マチャド", team: "オリックス", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 82, con: 72, sta: 68} },
-      { id: 19950009, name: "森友哉", team: "オリックス", pos: "捕手", bestPos: ["捕", "外"], eval: "捕手", fStats: {meet: 72, pow: 76, run: 73, def: 62} },
-      { id: 20020016, name: "紅林弘太郎", team: "オリックス", pos: "内野手", bestPos: ["遊", "三"], eval: "内野手", fStats: {meet: 71, pow: 71, run: 57, def: 81} },
-      { id: 20010004, name: "太田椋", team: "オリックス", pos: "内野手", bestPos: ["二", "一", "三"], eval: "内野手", fStats: {meet: 74, pow: 74, run: 63, def: 62} },
-      { id: 19940046, name: "西川龍馬", team: "オリックス", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 77, pow: 73, run: 74, def: 62} },
-      { id: 19960059, name: "中川圭太", team: "オリックス", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 74, pow: 75, run: 76, def: 62} },
-      { id: 19960085, name: "頓宮裕真", team: "オリックス", pos: "内野手", bestPos: ["一", "捕"], eval: "内野手", fStats: {meet: 68, pow: 76, run: 66, def: 62} },
-      { id: 19950011, name: "若月健矢", team: "オリックス", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 65, pow: 71, run: 70, def: 64} },
-      { id: 19910076, name: "杉本裕太郎", team: "オリックス", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 63, pow: 80, run: 68, def: 47} },
+      { id: 19950009, name: "森友哉", team: "オリックス", pos: "捕手", bestPos: ["捕", "外"], eval: "捕手", fStats: {meet: 72, pow: 76, run: 73, def: 58} },
+      { id: 20020016, name: "紅林弘太郎", team: "オリックス", pos: "内野手", bestPos: ["遊", "三"], eval: "内野手", fStats: {meet: 71, pow: 71, run: 57, def: 78} },
+      { id: 20010004, name: "太田椋", team: "オリックス", pos: "内野手", bestPos: ["二", "一", "三"], eval: "内野手", fStats: {meet: 74, pow: 74, run: 63, def: 64} },
+      { id: 19940046, name: "西川龍馬", team: "オリックス", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 77, pow: 73, run: 74, def: 58} },
+      { id: 19960059, name: "中川圭太", team: "オリックス", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 74, pow: 75, run: 76, def: 59} },
+      { id: 19960085, name: "頓宮裕真", team: "オリックス", pos: "内野手", bestPos: ["一", "捕"], eval: "内野手", fStats: {meet: 68, pow: 76, run: 66, def: 58} },
+      { id: 19950011, name: "若月健矢", team: "オリックス", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 65, pow: 71, run: 70, def: 65} },
+      { id: 19910076, name: "杉本裕太郎", team: "オリックス", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 63, pow: 80, run: 68, def: 52} },
       { id: 19890001, name: "岩嵜翔", team: "オリックス", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 80, con: 71, sta: 64} },
       { id: 20000154, name: "才木海翔", team: "オリックス", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 79, con: 69, sta: 68} },
       { id: 19910051, name: "九里亜蓮", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 75, sta: 74} },
       { id: 19980195, name: "アンダーソン・エスピノーザ", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 78, con: 70, sta: 71} },
       { id: 19980018, name: "山崎颯一郎", team: "オリックス", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 79, con: 68, sta: 64} },
-      { id: 19990147, name: "野口智哉", team: "オリックス", pos: "内野手", bestPos: ["外", "遊", "二", "三"], eval: "内野手", fStats: {meet: 56, pow: 69, run: 75, def: 64} },
+      { id: 19990147, name: "野口智哉", team: "オリックス", pos: "内野手", bestPos: ["外", "遊", "二", "三"], eval: "内野手", fStats: {meet: 56, pow: 69, run: 75, def: 55} },
       { id: 20000158, name: "曽谷龍平", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 78, con: 77, sta: 68} },
-      { id: 19970028, name: "廣岡大志", team: "オリックス", pos: "内野手", bestPos: ["外", "一", "三", "二", "遊"], eval: "内野手", fStats: {meet: 63, pow: 69, run: 75, def: 62} },
+      { id: 19970028, name: "廣岡大志", team: "オリックス", pos: "内野手", bestPos: ["外", "三", "一", "二", "遊"], eval: "内野手", fStats: {meet: 63, pow: 69, run: 75, def: 55} },
 
       // ロッテ
       { id: 19980059, name: "種市篤暉", team: "ロッテ", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 79, con: 72, sta: 74} },
       { id: 19960057, name: "小島和哉", team: "ロッテ", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 71, con: 73, sta: 73} },
       { id: 19980011, name: "鈴木昭汰", team: "ロッテ", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 78, con: 69, sta: 66} },
-      { id: 20050060, name: "寺地隆成", team: "ロッテ", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 68, pow: 69, run: 67, def: 51} },
-      { id: 19890119, name: "ネフタリ・ソト", team: "ロッテ", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 63, pow: 79, run: 61, def: 63} },
-      { id: 19980085, name: "佐藤都志也", team: "ロッテ", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 66, pow: 70, run: 71, def: 62} },
+      { id: 20050060, name: "寺地隆成", team: "ロッテ", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 68, pow: 69, run: 67, def: 46} },
+      { id: 19890119, name: "ネフタリ・ソト", team: "ロッテ", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 63, pow: 79, run: 61, def: 62} },
+      { id: 19980085, name: "佐藤都志也", team: "ロッテ", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 66, pow: 70, run: 71, def: 53} },
       { id: 20000025, name: "藤原恭大", team: "ロッテ", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 70, pow: 69, run: 79, def: 62} },
-      { id: 20030122, name: "西川史礁", team: "ロッテ", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 72, pow: 72, run: 72, def: 77} },
-      { id: 19980131, name: "小川龍成", team: "ロッテ", pos: "内野手", bestPos: ["二", "遊", "外", "三"], eval: "内野手", fStats: {meet: 66, pow: 60, run: 80, def: 62} },
-      { id: 19930022, name: "藤岡裕大", team: "ロッテ", pos: "内野手", bestPos: ["二", "遊"], eval: "内野手", fStats: {meet: 69, pow: 69, run: 70, def: 62} },
+      { id: 20030122, name: "西川史礁", team: "ロッテ", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 72, pow: 72, run: 72, def: 59} },
+      { id: 19980131, name: "小川龍成", team: "ロッテ", pos: "内野手", bestPos: ["二", "遊", "外", "三"], eval: "内野手", fStats: {meet: 66, pow: 60, run: 80, def: 59} },
+      { id: 19930022, name: "藤岡裕大", team: "ロッテ", pos: "内野手", bestPos: ["二", "遊"], eval: "内野手", fStats: {meet: 69, pow: 69, run: 70, def: 64} },
       { id: 19960017, name: "小野郁", team: "ロッテ", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 79, con: 70, sta: 62} },
       { id: 20040017, name: "田中晴也", team: "ロッテ", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 77, con: 71, sta: 68} },
       { id: 19980137, name: "高野脩汰", team: "ロッテ", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 81, con: 72, sta: 71} },
       { id: 19940075, name: "澤田圭佑", team: "ロッテ", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 75, con: 72, sta: 64} },
       { id: 20020191, name: "廣池康志郎", team: "ロッテ", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 72, sta: 70} },
-      { id: 20020131, name: "山本大斗", team: "ロッテ", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 56, pow: 73, run: 72, def: 66} },
-      { id: 19970092, name: "高部瑛斗", team: "ロッテ", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 77, pow: 71, run: 85, def: 62} },
-      { id: 19990154, name: "池田来翔", team: "ロッテ", pos: "内野手", bestPos: ["一", "三", "二"], eval: "内野手", fStats: {meet: 64, pow: 72, run: 72, def: 62} },
+      { id: 20020131, name: "山本大斗", team: "ロッテ", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 56, pow: 73, run: 72, def: 57} },
+      { id: 19970092, name: "高部瑛斗", team: "ロッテ", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 77, pow: 71, run: 85, def: 58} },
+      { id: 19990154, name: "池田来翔", team: "ロッテ", pos: "内野手", bestPos: ["一", "三", "二"], eval: "内野手", fStats: {meet: 64, pow: 72, run: 72, def: 57} },
       { id: 20010082, name: "横山陸人", team: "ロッテ", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 78, con: 67, sta: 69} },
-      { id: 20000163, name: "友杉篤輝", team: "ロッテ", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 64, pow: 60, run: 80, def: 62} },
+      { id: 20000163, name: "友杉篤輝", team: "ロッテ", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 64, pow: 60, run: 80, def: 63} },
 
       // ソフトバンク
       { id: 19950085, name: "リバン・モイネロ", team: "ソフトバンク", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 76, sta: 69} },
       { id: 19960001, name: "松本裕樹", team: "ソフトバンク", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 81, con: 70, sta: 66} },
       { id: 19970083, name: "杉山一樹", team: "ソフトバンク", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 83, con: 62, sta: 69} },
-      { id: 19970090, name: "海野隆司", team: "ソフトバンク", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 58, pow: 63, run: 71, def: 62} },
-      { id: 19910032, name: "山川穂高", team: "ソフトバンク", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 61, pow: 81, run: 64, def: 56} },
-      { id: 19960002, name: "栗原陵矢", team: "ソフトバンク", pos: "内野手", bestPos: ["三", "一"], eval: "内野手", fStats: {meet: 68, pow: 78, run: 65, def: 81} },
-      { id: 19960053, name: "周東佑京", team: "ソフトバンク", pos: "内野手", bestPos: ["外", "三", "二"], eval: "内野手", fStats: {meet: 71, pow: 66, run: 87, def: 76} },
-      { id: 19930035, name: "近藤健介", team: "ソフトバンク", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 79, pow: 82, run: 71, def: 69} },
-      { id: 19970077, name: "柳町達", team: "ソフトバンク", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 70, pow: 71, run: 69, def: 63} },
-      { id: 19920013, name: "牧原大成", team: "ソフトバンク", pos: "内野手", bestPos: ["二", "外", "三", "遊"], eval: "内野手", fStats: {meet: 75, pow: 71, run: 79, def: 65} },
-      { id: 19970043, name: "谷川原健太", team: "ソフトバンク", pos: "捕手", bestPos: ["捕", "外"], eval: "捕手", fStats: {meet: 63, pow: 73, run: 75, def: 60} },
-      { id: 19960158, name: "野村勇", team: "ソフトバンク", pos: "内野手", bestPos: ["遊", "三", "二", "一", "外"], eval: "内野手", fStats: {meet: 63, pow: 75, run: 81, def: 62} },
-      { id: 19980082, name: "山本祐大", team: "ソフトバンク", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 75, pow: 72, run: 67, def: 63} },
+      { id: 19970090, name: "海野隆司", team: "ソフトバンク", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 58, pow: 63, run: 71, def: 63} },
+      { id: 19910032, name: "山川穂高", team: "ソフトバンク", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 61, pow: 81, run: 64, def: 50} },
+      { id: 19960002, name: "栗原陵矢", team: "ソフトバンク", pos: "内野手", bestPos: ["三", "一"], eval: "内野手", fStats: {meet: 68, pow: 78, run: 65, def: 75} },
+      { id: 19960053, name: "周東佑京", team: "ソフトバンク", pos: "内野手", bestPos: ["外", "三", "二"], eval: "内野手", fStats: {meet: 71, pow: 66, run: 87, def: 67} },
+      { id: 19930035, name: "近藤健介", team: "ソフトバンク", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 79, pow: 82, run: 71, def: 61} },
+      { id: 19970077, name: "柳町達", team: "ソフトバンク", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 70, pow: 71, run: 69, def: 58} },
+      { id: 19920013, name: "牧原大成", team: "ソフトバンク", pos: "内野手", bestPos: ["二", "外", "三", "遊"], eval: "内野手", fStats: {meet: 75, pow: 71, run: 79, def: 66} },
+      { id: 19970043, name: "谷川原健太", team: "ソフトバンク", pos: "捕手", bestPos: ["捕", "外"], eval: "捕手", fStats: {meet: 63, pow: 73, run: 75, def: 54} },
+      { id: 19960158, name: "野村勇", team: "ソフトバンク", pos: "内野手", bestPos: ["遊", "二", "三", "一", "外"], eval: "内野手", fStats: {meet: 63, pow: 75, run: 81, def: 56} },
+      { id: 19980082, name: "山本祐大", team: "ソフトバンク", pos: "捕手", bestPos: ["捕", "一"], eval: "捕手", fStats: {meet: 75, pow: 72, run: 67, def: 67} },
       { id: 19960022, name: "藤井皓哉", team: "ソフトバンク", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 84, con: 64, sta: 70} },
       { id: 19970094, name: "大関友久", team: "ソフトバンク", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 72, con: 75, sta: 72} },
       { id: 19960171, name: "ダーウィンゾン・ヘルナンデス", team: "ソフトバンク", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 83, con: 69, sta: 65} },
       { id: 19940013, name: "上沢直之", team: "ソフトバンク", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 77, sta: 76} },
       { id: 20050008, name: "前田悠伍", team: "ソフトバンク", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 72, con: 78, sta: 62} },
-      { id: 19880004, name: "柳田悠岐", team: "ソフトバンク", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 76, pow: 79, run: 72, def: 63} },
-      { id: 20020192, name: "庄子雄大", team: "ソフトバンク", pos: "内野手", bestPos: ["遊", "二"], eval: "内野手", fStats: {meet: 59, pow: 68, run: 76, def: 45} },
-      { id: 19990017, name: "正木智也", team: "ソフトバンク", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 65, pow: 74, run: 73, def: 62} },
+      { id: 19880004, name: "柳田悠岐", team: "ソフトバンク", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 76, pow: 79, run: 72, def: 56} },
+      { id: 20020192, name: "庄子雄大", team: "ソフトバンク", pos: "内野手", bestPos: ["遊", "二"], eval: "内野手", fStats: {meet: 59, pow: 68, run: 76, def: 55} },
+      { id: 19990017, name: "正木智也", team: "ソフトバンク", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 65, pow: 74, run: 73, def: 55} },
 
       // 楽天
       { id: 20000164, name: "荘司康誠", team: "楽天", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 76, con: 65, sta: 69} },
       { id: 19960040, name: "西口直人", team: "楽天", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 82, con: 74, sta: 66} },
       { id: 19980031, name: "藤平尚真", team: "楽天", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 80, con: 69, sta: 70} },
-      { id: 19960083, name: "太田光", team: "楽天", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 58, pow: 64, run: 74, def: 64} },
-      { id: 19900016, name: "浅村栄斗", team: "楽天", pos: "内野手", bestPos: ["三", "二", "一"], eval: "内野手", fStats: {meet: 67, pow: 77, run: 63, def: 69} },
-      { id: 19970045, name: "村林一輝", team: "楽天", pos: "内野手", bestPos: ["遊", "三", "二", "一"], eval: "内野手", fStats: {meet: 70, pow: 65, run: 74, def: 68} },
-      { id: 20010167, name: "中島大輔", team: "楽天", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 70, run: 82, def: 69} },
-      { id: 19960063, name: "辰己涼介", team: "楽天", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 73, run: 84, def: 82} },
-      { id: 20030011, name: "宗山塁", team: "楽天", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 68, pow: 68, run: 77, def: 62} },
-      { id: 20010053, name: "黒川史陽", team: "楽天", pos: "内野手", bestPos: ["二", "一", "三"], eval: "内野手", fStats: {meet: 72, pow: 72, run: 68, def: 62} },
-      { id: 19890034, name: "伊藤光", team: "楽天", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 60, pow: 67, run: 71, def: 62} },
+      { id: 19960083, name: "太田光", team: "楽天", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 58, pow: 64, run: 74, def: 70} },
+      { id: 19900016, name: "浅村栄斗", team: "楽天", pos: "内野手", bestPos: ["三", "二", "一"], eval: "内野手", fStats: {meet: 67, pow: 77, run: 63, def: 63} },
+      { id: 19970045, name: "村林一輝", team: "楽天", pos: "内野手", bestPos: ["遊", "三", "二", "一"], eval: "内野手", fStats: {meet: 70, pow: 65, run: 74, def: 74} },
+      { id: 20010167, name: "中島大輔", team: "楽天", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 70, run: 82, def: 62} },
+      { id: 19960063, name: "辰己涼介", team: "楽天", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 69, pow: 73, run: 84, def: 75} },
+      { id: 20030011, name: "宗山塁", team: "楽天", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 68, pow: 68, run: 77, def: 65} },
+      { id: 20010053, name: "黒川史陽", team: "楽天", pos: "内野手", bestPos: ["二", "三", "一"], eval: "内野手", fStats: {meet: 72, pow: 72, run: 68, def: 59} },
+      { id: 19890034, name: "伊藤光", team: "楽天", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 60, pow: 67, run: 71, def: 54} },
       { id: 19840015, name: "岸孝之", team: "楽天", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 70, con: 82, sta: 72} },
       { id: 19990142, name: "西垣雅矢", team: "楽天", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 78, con: 62, sta: 64} },
       { id: 19910013, name: "加治屋蓮", team: "楽天", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 76, con: 63, sta: 61} },
       { id: 19960148, name: "藤井聖", team: "楽天", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 70, con: 72, sta: 67} },
       { id: 20010154, name: "古謝樹", team: "楽天", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 75, sta: 70} },
-      { id: 19910139, name: "ルーク・ボイト", team: "楽天", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 70, pow: 79, run: 69, def: 62} },
-      { id: 19960016, name: "宗佑磨", team: "楽天", pos: "内野手", bestPos: ["三"], eval: "内野手", fStats: {meet: 66, pow: 66, run: 67, def: 75} },
-      { id: 19980099, name: "佐藤直樹", team: "楽天", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 58, pow: 73, run: 84, def: 59} },
+      { id: 19910139, name: "ルーク・ボイト", team: "楽天", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 70, pow: 79, run: 69, def: 50} },
+      { id: 19960016, name: "宗佑磨", team: "楽天", pos: "内野手", bestPos: ["三"], eval: "内野手", fStats: {meet: 66, pow: 66, run: 67, def: 73} },
+      { id: 19980099, name: "佐藤直樹", team: "楽天", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 58, pow: 73, run: 84, def: 51} },
 
       // 日本ハム
       { id: 19970076, name: "伊藤大海", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 77, con: 81, sta: 81} },
       { id: 19990058, name: "北山亘基", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 79, con: 71, sta: 72} },
       { id: 19920002, name: "加藤貴之", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 69, con: 86, sta: 73} },
-      { id: 20000125, name: "田宮裕涼", team: "日本ハム", pos: "捕手", bestPos: ["捕", "外"], eval: "捕手", fStats: {meet: 69, pow: 72, run: 75, def: 62} },
-      { id: 19990007, name: "清宮幸太郎", team: "日本ハム", pos: "内野手", bestPos: ["三", "一", "外"], eval: "内野手", fStats: {meet: 72, pow: 77, run: 70, def: 62} },
-      { id: 19950168, name: "フランミル・レイエス", team: "日本ハム", pos: "外野手", bestPos: ["一"], eval: "外野手", fStats: {meet: 70, pow: 84, run: 65, def: 62} },
-      { id: 20000001, name: "万波中正", team: "日本ハム", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 63, pow: 80, run: 63, def: 64} },
-      { id: 20010013, name: "水谷瞬", team: "日本ハム", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 70, pow: 78, run: 76, def: 62} },
-      { id: 20000024, name: "野村佑希", team: "日本ハム", pos: "内野手", bestPos: ["一", "外", "三", "二"], eval: "内野手", fStats: {meet: 65, pow: 74, run: 71, def: 62} },
-      { id: 20020023, name: "進藤勇也", team: "日本ハム", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 55, pow: 65, run: 74, def: 56} },
-      { id: 20000141, name: "水野達稀", team: "日本ハム", pos: "内野手", bestPos: ["遊", "二", "三"], eval: "内野手", fStats: {meet: 62, pow: 74, run: 80, def: 62} },
+      { id: 20000125, name: "田宮裕涼", team: "日本ハム", pos: "捕手", bestPos: ["捕", "外"], eval: "捕手", fStats: {meet: 69, pow: 72, run: 75, def: 61} },
+      { id: 19990007, name: "清宮幸太郎", team: "日本ハム", pos: "内野手", bestPos: ["三", "一", "外"], eval: "内野手", fStats: {meet: 72, pow: 77, run: 70, def: 67} },
+      { id: 19950168, name: "フランミル・レイエス", team: "日本ハム", pos: "外野手", bestPos: ["一"], eval: "外野手", fStats: {meet: 70, pow: 84, run: 65, def: 49} },
+      { id: 20000001, name: "万波中正", team: "日本ハム", pos: "外野手", bestPos: ["外", "一"], eval: "外野手", fStats: {meet: 63, pow: 80, run: 63, def: 60} },
+      { id: 20010013, name: "水谷瞬", team: "日本ハム", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 70, pow: 78, run: 76, def: 57} },
+      { id: 20000024, name: "野村佑希", team: "日本ハム", pos: "内野手", bestPos: ["一", "三", "外", "二"], eval: "内野手", fStats: {meet: 65, pow: 74, run: 71, def: 57} },
+      { id: 20020023, name: "進藤勇也", team: "日本ハム", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 55, pow: 65, run: 74, def: 50} },
+      { id: 20000141, name: "水野達稀", team: "日本ハム", pos: "内野手", bestPos: ["遊", "二", "三"], eval: "内野手", fStats: {meet: 62, pow: 74, run: 80, def: 66} },
       { id: 19920077, name: "玉井大翔", team: "日本ハム", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 75, con: 74, sta: 61} },
       { id: 19950042, name: "齋藤友貴哉", team: "日本ハム", pos: "投手", bestPos: ["中継", "抑え"], eval: "中継ぎ", pStats: {pow: 78, con: 69, sta: 67} },
       { id: 19940041, name: "田中正義", team: "日本ハム", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 78, con: 72, sta: 66} },
       { id: 19920014, name: "有原航平", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 79, sta: 78} },
       { id: 19930052, name: "島本浩也", team: "日本ハム", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 74, con: 74, sta: 60} },
-      { id: 20000087, name: "奈良間大己", team: "日本ハム", pos: "内野手", bestPos: ["三", "二", "遊"], eval: "内野手", fStats: {meet: 59, pow: 65, run: 76, def: 62} },
-      { id: 19970084, name: "郡司裕也", team: "日本ハム", pos: "捕手", bestPos: ["三", "一", "外", "捕", "二"], eval: "捕手", fStats: {meet: 73, pow: 75, run: 63, def: 62} },
-      { id: 20000072, name: "矢澤宏太", team: "日本ハム", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 60, pow: 66, run: 81, def: 61} },
+      { id: 20000087, name: "奈良間大己", team: "日本ハム", pos: "内野手", bestPos: ["三", "二", "遊"], eval: "内野手", fStats: {meet: 59, pow: 65, run: 76, def: 57} },
+      { id: 19970084, name: "郡司裕也", team: "日本ハム", pos: "捕手", bestPos: ["三", "外", "一", "捕", "二"], eval: "捕手", fStats: {meet: 73, pow: 75, run: 63, def: 57} },
+      { id: 20000072, name: "矢澤宏太", team: "日本ハム", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 60, pow: 66, run: 81, def: 52} },
       { id: 20030073, name: "柳川大晟", team: "日本ハム", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 81, con: 60, sta: 65} },
 
       // 西武
       { id: 19990045, name: "平良海馬", team: "西武", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 80, con: 67, sta: 72} },
       { id: 19970038, name: "高橋光成", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 73, con: 73, sta: 73} },
       { id: 19990157, name: "隅田知一郎", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 77, con: 79, sta: 78} },
-      { id: 19990025, name: "古賀悠斗", team: "西武", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 62, pow: 68, run: 66, def: 62} },
-      { id: 19970200, name: "タイラー・ネビン", team: "西武", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 74, pow: 79, run: 67, def: 67} },
-      { id: 19930109, name: "源田壮亮", team: "西武", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 65, pow: 62, run: 78, def: 65} },
-      { id: 20020138, name: "渡部聖弥", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 68, pow: 76, run: 70, def: 62} },
-      { id: 19990016, name: "西川愛也", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 67, pow: 73, run: 82, def: 63} },
-      { id: 19970025, name: "柘植世那", team: "西武", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 57, pow: 63, run: 72, def: 62} },
-      { id: 19930066, name: "桑原将志", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 74, pow: 73, run: 77, def: 63} },
-      { id: 20030109, name: "滝澤夏央", team: "西武", pos: "内野手", bestPos: ["二", "遊", "三"], eval: "内野手", fStats: {meet: 63, pow: 59, run: 81, def: 62} },
-      { id: 20020120, name: "長谷川信哉", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 61, pow: 67, run: 79, def: 62} },
-      { id: 19940084, name: "石井一成", team: "西武", pos: "内野手", bestPos: ["二", "三"], eval: "内野手", fStats: {meet: 64, pow: 72, run: 75, def: 63} },
+      { id: 19990025, name: "古賀悠斗", team: "西武", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 62, pow: 68, run: 66, def: 61} },
+      { id: 19970200, name: "タイラー・ネビン", team: "西武", pos: "内野手", bestPos: ["一"], eval: "内野手", fStats: {meet: 74, pow: 79, run: 67, def: 61} },
+      { id: 19930109, name: "源田壮亮", team: "西武", pos: "内野手", bestPos: ["遊"], eval: "内野手", fStats: {meet: 65, pow: 62, run: 78, def: 75} },
+      { id: 20020138, name: "渡部聖弥", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 68, pow: 76, run: 70, def: 55} },
+      { id: 19990016, name: "西川愛也", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 67, pow: 73, run: 82, def: 64} },
+      { id: 19970025, name: "柘植世那", team: "西武", pos: "捕手", bestPos: ["捕"], eval: "捕手", fStats: {meet: 57, pow: 63, run: 72, def: 54} },
+      { id: 19930066, name: "桑原将志", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 74, pow: 73, run: 77, def: 61} },
+      { id: 20030109, name: "滝澤夏央", team: "西武", pos: "内野手", bestPos: ["二", "遊", "三"], eval: "内野手", fStats: {meet: 63, pow: 59, run: 81, def: 61} },
+      { id: 20020120, name: "長谷川信哉", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 61, pow: 67, run: 79, def: 60} },
+      { id: 19940084, name: "石井一成", team: "西武", pos: "内野手", bestPos: ["二", "三"], eval: "内野手", fStats: {meet: 64, pow: 72, run: 75, def: 65} },
       { id: 20040016, name: "山田陽翔", team: "西武", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 75, con: 70, sta: 68} },
       { id: 19940173, name: "エマニュエル・ラミレス", team: "西武", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 80, con: 65, sta: 67} },
       { id: 19960097, name: "甲斐野央", team: "西武", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 77, con: 66, sta: 64} },
       { id: 20060079, name: "篠原響", team: "西武", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 80, con: 68, sta: 68} },
       { id: 20000083, name: "渡邉勇太朗", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 71, con: 74, sta: 70} },
-      { id: 19920023, name: "外崎修汰", team: "西武", pos: "内野手", bestPos: ["二", "外", "三"], eval: "内野手", fStats: {meet: 64, pow: 71, run: 79, def: 66} },
+      { id: 19920023, name: "外崎修汰", team: "西武", pos: "内野手", bestPos: ["二", "三", "外"], eval: "内野手", fStats: {meet: 64, pow: 71, run: 79, def: 68} },
       { id: 19940178, name: "トレイ・ウィンゲンター", team: "西武", pos: "投手", bestPos: ["中継"], eval: "中継ぎ", pStats: {pow: 84, con: 64, sta: 68} },
-      { id: 20000290, name: "アレクサンダー・カナリオ", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 64, pow: 77, run: 77, def: 62} },
+      { id: 20000290, name: "アレクサンダー・カナリオ", team: "西武", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 64, pow: 77, run: 77, def: 53} },
     ];
 
     let availablePlayers = [];
@@ -3337,7 +3339,8 @@
     // 走力・守備力の重みを下げた分だけ野手全体のスコアが底上げ/底下げされてしまい、
     // 投手との土台のバランス（pitcherAvg実測69.94付近）が崩れて、また一方のカテゴリに
     // 偏って指名されるようになる。
-    const BATTER_TOOL_WEIGHT = { pow: 1.40, meet: 1.15, run: 0.75, def: 0.70 };
+    const BATTER_TOOL_WEIGHT = { pow: 1.65, meet: 1.45, run: 0.40, def: 0.50 };
+    const AI_PICK_TUNE = { spBonus: 4, spAce: 0.8, runCombo: 3, fit: 0.6 };
 
     // コンボ達成に向けて段階的にボーナスを乗せる（「あと1人で発動」の瞬間だけでなく、
     // 序盤の1人目・2人目の時点から少しずつ狙って集めるようにする）
@@ -3455,12 +3458,12 @@
     // 素点を実測し、その幅を0〜100点に線形で割り当て直すことで、平均的な編成はC〜B相当、
     // 下手な配置・貧弱な指名はD〜G、優れた指名・配置はA〜Sへときちんと分布するようにする。
     const SCORE_RANGE = {
-      pow:  { low: 70, high: 90  },
-      meet: { low: 68, high: 95  },
-      run:  { low: 65, high: 98  },
-      def:  { low: 58, high: 93  },
-      sp:   { low: 76, high: 104 },
-      rp:   { low: 77, high: 97  }
+      pow:  { low: 69,   high: 93.5  },
+      meet: { low: 70,   high: 90    },
+      run:  { low: 69,   high: 103   },
+      def:  { low: 49,   high: 89.5  },
+      sp:   { low: 74,   high: 103   },
+      rp:   { low: 63.5, high: 99    }
     };
     function rescaleStat(raw, key) {
       const { low, high } = SCORE_RANGE[key];
@@ -3703,7 +3706,7 @@
     //   Nごとの基準人数は、シミュレーションで「N回の指名で何人減ったか」の99%点を表にしたもの
     //   （scripts/build-position-thresholds.mjs で作成。選手データやAIの指名ロジックを変えたら作り直す）。
     // ==== POSITION_BOARD_THRESHOLDS:BEGIN（scripts/build-position-thresholds.mjs が自動生成。手で編集しない） ====
-    const POSITION_BOARD_THRESHOLDS = {"generatedAt":"2026-11-08","sourceHash":"d36e9e66fe39ed4d","method":{"teams":12,"modes":["npb","lottery","waiver"],"trainRuns":150,"validateRuns":150,"seed":20260930,"quantile":0.99},"validation":{"npb":{"decisions":7520,"dangerRate":0,"cautionRate":0,"gone1":0,"miss1":0,"gone2":0,"miss2":0},"lottery":{"decisions":8277,"dangerRate":0,"cautionRate":0,"gone1":0,"miss1":0,"gone2":0,"miss2":0},"waiver":{"decisions":8612,"dangerRate":0,"cautionRate":0,"gone1":0,"miss1":0,"gone2":0,"miss2":0}},"table":{"捕":[0,1,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,6,7,7,7,7,7,8,8,8,8,8,8,8,8],"一":[0,1,2,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,14,14,15,15,16,16,16,17,17,18],"二":[0,1,2,3,3,4,4,4,5,5,6,6,6,7,7,7,8,8,8,9,9,9,10,10,11,11,11,12,12,12,12,13,13,13],"三":[0,1,2,3,4,4,5,5,6,7,7,8,8,9,9,9,10,10,11,11,12,12,12,13,13,14,14,14,15,15,16,16,17,17],"遊":[0,1,2,2,3,3,3,4,4,4,4,5,5,5,5,6,6,6,7,7,7,7,8,8,8,8,9,9,9,9,9,10,10,10],"左":[0,1,2,3,4,5,6,6,7,8,8,9,9,10,11,11,12,13,13,14,15,15,16,16,17,18,18,19,20,20,21,21,22,23],"中":[0,1,2,3,4,5,6,6,7,8,8,9,9,10,11,11,12,13,13,14,15,15,16,16,17,18,18,19,20,20,21,21,22,23],"右":[0,1,2,3,4,5,6,6,7,8,8,9,9,10,11,11,12,13,13,14,15,15,16,16,17,18,18,19,20,20,21,21,22,23],"先発":[0,1,2,2,3,3,4,4,4,5,5,5,6,6,6,6,7,7,7,7,8,8,8,8,9,9,9,9,9,9,10,10,10,10],"中継":[0,1,2,3,4,5,5,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,14,14,15,16,16,17,18,18,19,19,20,20],"抑え":[0,1,2,2,2,3,3,4,4,4,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7,7,7,8,8,8,8,9,9,9]}};
+    const POSITION_BOARD_THRESHOLDS = {"generatedAt":"2026-11-09","sourceHash":"16290fcf1c3eef44","method":{"teams":12,"modes":["npb","lottery","waiver"],"trainRuns":150,"validateRuns":150,"seed":20260930,"quantile":0.99},"validation":{"npb":{"decisions":8184,"dangerRate":0.1,"cautionRate":0.2,"gone1":0,"miss1":0,"gone2":0,"miss2":0},"lottery":{"decisions":9746,"dangerRate":0,"cautionRate":0,"gone1":0,"miss1":0,"gone2":0,"miss2":0},"waiver":{"decisions":8205,"dangerRate":0.1,"cautionRate":0.1,"gone1":0,"miss1":0,"gone2":0,"miss2":0}},"table":{"捕":[0,1,2,2,2,3,3,3,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,6,7,7,7,7,8,8,8,8,8,9],"一":[0,1,2,3,3,4,4,5,5,6,6,7,7,8,8,8,9,9,9,10,10,10,11,11,12,12,12,13,13,13,14,14,14,15],"二":[0,1,2,2,3,3,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,12,13],"三":[0,1,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10,11,11,12,12,12,13,13,13,14,14,14,15,15,15],"遊":[0,1,2,2,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7,8,8,8,8,8,9,9,9,9,10,10],"左":[0,1,2,3,4,5,5,6,7,7,8,9,9,10,10,11,11,12,12,13,14,14,15,15,16,16,17,17,18,19,19,20,20,21],"中":[0,1,2,3,4,5,5,6,7,7,8,9,9,10,10,11,11,12,12,13,14,14,15,15,16,16,17,17,18,19,19,20,20,21],"右":[0,1,2,3,4,5,5,6,7,7,8,9,9,10,10,11,11,12,12,13,14,14,15,15,16,16,17,17,18,19,19,20,20,21],"先発":[0,1,2,3,3,4,4,5,5,5,6,6,6,7,7,7,7,7,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,8],"中継":[0,1,2,3,4,4,5,5,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,13,14,14,14,14,14,14,14,14,14,14],"抑え":[0,1,2,2,2,3,3,3,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6]}};
     // ==== POSITION_BOARD_THRESHOLDS:END ====
     const BOARD_POSITIONS = ["捕","一","二","三","遊","左","中","右","先発","中継","抑え"];
     const BOARD_PITCHER_ROLES = ["先発","中継","抑え"];
@@ -4280,7 +4283,10 @@
           // 「同じ選手層の質」でも投手側が常に野手より高得点になり、打力の高い野手が
           // 中盤まで残ってしまう。実測の平均差（約6点）を差し引いて、野手と対等な
           // スケールで比較できるようにする。
-          score += (getBaseStat(p) - 6.3) * pitcherScoutMult;
+          let pv = getBaseStat(p) - 6.3;
+          const pRole = Array.isArray(p.bestPos) ? p.bestPos[0] : p.bestPos;
+          if (pRole === "先発" && openRoles.includes("先発")) pv += AI_PICK_TUNE.spBonus + AI_PICK_TUNE.spAce * Math.max(0, Math.min(p.pStats.pow, p.pStats.con, p.pStats.sta) - 70);
+          score += pv * pitcherScoutMult;
         }
 
         // ★ 守備位置フィット：本当に必要な枠（一番相性の良い open slot）にどれだけ嵌るか
@@ -4299,7 +4305,7 @@
           const urgency = (9 - openSlots.length) / 9;
           // ★ 空いている位置のうち、その選手が実際に守れる位置（とDH）だけで評価する
           const fitSlots = openSlots.filter(pos => posAptitude(p, pos) > 0);
-          if (fitSlots.length > 0) score += (Math.max(...fitSlots.map(pos => getPosScore(p, pos))) - 50) * urgency;
+          if (fitSlots.length > 0) score += (Math.max(...fitSlots.map(pos => getPosScore(p, pos))) - 50) * urgency * AI_PICK_TUNE.fit;
           // 空いている守備位置に収まらない野手は、DHか控えにしかならない。残り枠に余裕が少ないほど強く下げる
           if (openFieldCount > 0 && !fitsOpenPosition(p)) {
             const spare = remainingBatterSlots - openFieldCount; // 適性のある選手で埋めたうえで余る枠
@@ -4322,7 +4328,7 @@
         // 素の実力で劣る選手がしきい値を満たしているというだけで優先されてしまう。
         if (p.fStats) {
            score += comboApproachBonus(pow75Count,  4, 8) * comboProximity(p.fStats.pow, 75);
-           score += comboApproachBonus(run75Count,  3, 6) * comboProximity(p.fStats.run, 75);
+           score += comboApproachBonus(run75Count,  3, AI_PICK_TUNE.runCombo) * comboProximity(p.fStats.run, 75);
            score += comboApproachBonus(def70Count,  4, 6) * comboProximity(p.fStats.def, 70);
            score += comboApproachBonus(meet75Count, 3, 6) * comboProximity(p.fStats.meet, 75);
         }
@@ -5992,9 +5998,10 @@
         }
         // ★ 2026-11-01 能力値を成績からの計算に切り替えるのに合わせて、出る割合が前に近くなるよう条件を変えた（オーナー判断・1万回で確認）：
         //   鉄壁の守備陣 守備70以上4人→64以上5人、安打製造機 ミート75以上3人→70以上3人、センターライン 守備70以上4人→64以上5人
+        // ★ 2026-11-09 段階1（守備の新しい形・AIの指名の重みの直し）に合わせて、鉄壁の守備陣・センターラインを「守備65以上が5人」に（64のままだと4球団のセンターラインが前の2.18倍）
         //   （11/3 守備力の基準点を全ポジション同じにした（案D）あと、真ん中の選手が62前後に集まるので64に。1万回で前の半分〜2倍を確認）。
         //   AIの指名の後押し（getAIPick の def70Count・meet75Count）は前の値のまま（そろえるとAIがコンボを集めすぎる）
-        if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 64).length >= 5) {
+        if (t.roster.filter(p => p && p.fStats && p.fStats.def >= 65).length >= 5) {
           comboNames.push('【鉄壁の守備陣】');
           comboBadges += `<span class="bg-green-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-green-800">鉄壁の守備陣</span>`;
         }
@@ -6011,7 +6018,7 @@
           comboBadges += `<span class="bg-orange-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-orange-800">勝利の方程式</span>`;
         }
         // ★ 「外」（外野。左・中・右どこでも同じ）は中堅も守れるので数える
-        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 64 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
+        let centerLineCount = t.roster.filter(p => p && p.fStats && p.fStats.def >= 65 && (p.bestPos.includes("捕") || p.bestPos.includes("二") || p.bestPos.includes("遊") || p.bestPos.includes("中") || p.bestPos.includes("外"))).length;
         if (centerLineCount >= 5) {
           comboNames.push('【センターライン】');
           comboBadges += `<span class="bg-emerald-600 text-white px-2 py-0.5 rounded-sm text-[10px] font-black shadow-sm border border-emerald-800">センターライン</span>`;
