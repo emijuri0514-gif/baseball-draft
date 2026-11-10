@@ -12,6 +12,7 @@ export const HASHED_NAMES = [
   // AIの指名ロジック（1回の指名で各ポジションがどれだけ減るかに直結）
   'getAIPick', 'getMissingPositions', 'getOpenDefensiveSlots', 'getOpenPitcherRoles', 'assignDefense', 'aptitudeMatchSize',
   'getPositionalStandoutBonus', 'comboApproachBonus', 'comboProximity', 'BATTER_TOOL_WEIGHT', 'TEAM_SCOUTING', 'DEFAULT_SCOUTING',
+  'AI_PICK_TUNE', 'AI_PLAYER_VALUE', // 2026-11-10 AIの指名の評価にだけ使う値（貢献度・スター度・確実さ）
   'isForeignPlayer', 'foreignCount', 'FOREIGN_PLAYER_LIMIT', 'TOTAL_ROUNDS', 'LINEUP_POSITIONS', 'FIELD_POSITIONS', 'DEF_PRIORITY',
   // 指名順（N）の数え方
   'computeBoardN', 'isWaiverRound',
