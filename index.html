@@ -3339,7 +3339,7 @@
     // 投手との土台のバランス（pitcherAvg実測69.94付近）が崩れて、また一方のカテゴリに
     // 偏って指名されるようになる。
     const BATTER_TOOL_WEIGHT = { pow: 1.65, meet: 1.45, run: 0.40, def: 0.50 };
-    const AI_PICK_TUNE = { spBonus: 7, spAce: 1.6, runCombo: 3, fit: 0.6, contribW: 2.0, contribMax: 6, starW: 0.4, starCap: 4, sureW: 6, pContrib: 1.2, flexBonus: 5, r1Noise: 0, r1Top: 8, r1Temp: 6 };
+    const AI_PICK_TUNE = { spBonus: 7, spAce: 1.6, runCombo: 3, fit: 0.6, contribW: 2.0, contribMax: 6, starW: 0.4, starCap: 4, sureW: 6, pContrib: 1.2, flexBonus: 5, ageFrom: 35, ageW: 1, ageMax: 4, r1Noise: 0, r1Top: 8, r1Temp: 6 };
     // ★ 2026-11-10 AIの指名の評価にだけ使う値（能力値の表示や採点には使わない）。[貢献度, スター度, 確実さ, 先発と救援の両方の経験（2026-11-11）]
     //   貢献度：Wikipedia の成績から自前で計算した、出場の量・ポジション・守備を含めた貢献（2024〜2026年。新しい年ほど重い）
     //   スター度：Wikipedia にある公表された実績（タイトル・MVP・沢村賞・ベストナイン・ゴールデングラブ賞・新人王・オールスター出場。2024〜2026年）
@@ -4345,6 +4345,10 @@
             score -= (1 - v[2]) * AI_PICK_TUNE.sureW;
           } else score -= AI_PICK_TUNE.sureW;
         }
+        // ★ 2026-11-11 年齢を少しだけ見る（オーナー指摘：宮崎敏郎が1巡目の上位10人は高い）。能力値は直近3年の成績なので、
+        //   ベテランの衰えが入りきらない。35歳から1歳ごとに−1（上限−4）。生年は選手ID（週刊ベースボールONLINEのID）の先頭4桁
+        { const by = Math.floor(p.id / 10000);
+          if (by >= 1950 && by <= 2015) score -= Math.min(AI_PICK_TUNE.ageMax, Math.max(0, (2026 - by) - AI_PICK_TUNE.ageFrom + 1) * AI_PICK_TUNE.ageW); }
         // ★ 2026-11-10 1巡目（まだ誰も取っていない球団）は球団ごとの好みのばらつきを大きくし、入札が同じ選手に集まりすぎないようにする
         if (isFirstPick) score += Math.random() * AI_PICK_TUNE.r1Noise;
 
