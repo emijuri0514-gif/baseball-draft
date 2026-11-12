@@ -372,6 +372,20 @@
 
     .draft-table th, .draft-table td { border: 1px solid #e5e7eb; text-align: center; padding: 0.2rem; font-size: 0.7rem; }
     .draft-table th { font-weight: 900; color: white; padding: 0.4rem; }
+    /* ★ 2026-11-12 スマホでは指名ボードを横にスクロールできるようにする（オーナー提案：12球団を画面の幅に押し込むと、
+       球団名が縦書きになり選手名も折り返して窮屈だった）。列に最低限の幅を持たせて1行で表示し、
+       「巡」の列と球団名の行は固定して、どこまでスクロールしても何巡目のどの球団か分かるようにする。PC（md以上）は今のまま */
+    @media (max-width: 767px) {
+      .draft-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
+      .draft-table th, .draft-table td { white-space: nowrap; min-width: 4.75rem; border-width: 0 1px 1px 0; }
+      .draft-table th:first-child, .draft-table td:first-child { border-left-width: 1px; }
+      .draft-table thead th { border-top-width: 1px; }
+      /* ↑ 罫線を重ねる表示（collapse）のままだと、固定した列の罫線の位置から後ろの文字が1px見えてしまうため、罫線を右と下だけにして重ならないようにした */
+      .draft-table thead th { position: sticky; top: 0; z-index: 2; }
+      .draft-table th:first-child, .draft-table td:first-child { position: sticky; left: 0; z-index: 1; min-width: 2rem; }
+      .draft-table thead th:first-child { z-index: 3; }
+      #draft-board-scroll { padding-left: 0; padding-right: 0; } /* 固定した「巡」の列の左に、すき間から後ろの選手名が見えないように */
+    }
 
     .pos-badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; border: 1px solid #cbd5e1; }
     .pos-ok { background-color: #dcfce7; color: #1e40af; border-color: #93c5fd; }
@@ -2555,8 +2569,9 @@
     <div id="view-draft-board" class="hidden md:flex w-full md:w-2/5 h-full flex-col bg-white">
       <div class="p-2 bg-gray-100 border-b border-gray-300 flex items-center">
         <h2 class="font-black text-sm text-gray-800">指名ボード</h2>
+        <span class="md:hidden ml-auto text-[11px] text-gray-500">← 横にスクロールできます →</span>
       </div>
-      <div class="flex-1 p-1 overflow-y-auto">
+      <div id="draft-board-scroll" class="flex-1 p-1 overflow-auto">
         <table class="w-full draft-table bg-white">
           <thead id="draft-matrix-head"></thead>
           <tbody id="draft-matrix-body"></tbody>
