@@ -87,6 +87,36 @@
       },
       {
         "@type": "Question",
+        "name": "友達と対戦できますか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "できます。トップの「友達と対戦」から部屋を作り、表示された合言葉を相手に伝えると、2人で同じドラフトに参加できます。友達対戦は2人までです。3人以上で遊びたいときは、1台のスマホやパソコンを回しながら2〜8人で遊べる「なんでもドラフト」を使ってください。" }
+      },
+      {
+        "@type": "Question",
+        "name": "遊ぶのに登録やログインは必要ですか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "必要ありません。名前やメールアドレスを入れずに、すぐに遊べます。友達対戦も、合言葉だけで部屋に入れます。" }
+      },
+      {
+        "@type": "Question",
+        "name": "ランクが思ったより低いのはなぜですか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "ランクは、パワー・ミート・機動力・守備力・先発陣・救援陣の6つの項目の平均で決まります。どれか1つが極端に低いと、ほかが高くても総合点が下がります。また、選手を守れない位置に置いたり、打順に合わない選手を置いたりすると点数が下がります。組み方のコツは攻略ガイドで説明しています。" }
+      },
+      {
+        "@type": "Question",
+        "name": "指名したい選手を、ほかの球団に取られてしまいました。",
+        "acceptedAnswer": { "@type": "Answer", "text": "同時に指名する回（NPB方式の1巡目など）では、ほかの球団と重なると抽選になり、外れることがあります。2巡目からの順番に指名する回では、自分の番の前にほかの球団が指名した選手は選べません。AIの球団も、それぞれのスカウト傾向で人気の選手を狙ってきます。本当に欲しい選手は、早い巡で指名するのがおすすめです。" }
+      },
+      {
+        "@type": "Question",
+        "name": "外国人選手は何人まで指名できますか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "1球団3人までです。3人に達すると、それ以上の外国人選手は指名できません。AIの球団も同じ決まりで指名しています。" }
+      },
+      {
+        "@type": "Question",
+        "name": "選手のデータはいつ更新されますか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "能力値は、シーズンの成績が出そろったあとに、まとめて計算し直します。2026年の成績は、多くの選手の記事に反映された段階で足して計算し直す予定です。選手の顔ぶれ（移籍や引退など）を直したときは、更新履歴でお知らせします。" }
+      },
+      {
+        "@type": "Question",
         "name": "NPBやプロ野球12球団の公式サイトですか？",
         "acceptedAnswer": { "@type": "Answer", "text": "いいえ、公式サイトではありません。個人が趣味で開発した非公式のファンコンテンツです。NPBおよび各球団とは一切関係ありません。" }
       }
@@ -112,6 +142,7 @@
             <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
             <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
             <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
             <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
           </div>
           <div class="mb-3 last:mb-0">
@@ -192,6 +223,36 @@
       <details class="p-card p-4">
         <summary class="font-bold cursor-pointer">対応しているブラウザは？</summary>
         <p class="text-sm mt-2">Google Chrome、Safari、Microsoft Edgeなど主要なブラウザの最新版に対応しています。</p>
+      </details>
+
+      <details class="p-card p-4">
+        <summary class="font-bold cursor-pointer">友達と対戦できますか？</summary>
+        <p class="text-sm mt-2">できます。トップの「友達と対戦」から部屋を作り、表示された合言葉を相手に伝えると、2人で同じドラフトに参加できます。友達対戦は2人までです。3人以上で遊びたいときは、1台のスマホやパソコンを回しながら2〜8人で遊べる「なんでもドラフト」を使ってください。（<a href="anything-draft.html" class="p-link">なんでもドラフト</a>）</p>
+      </details>
+
+      <details class="p-card p-4">
+        <summary class="font-bold cursor-pointer">遊ぶのに登録やログインは必要ですか？</summary>
+        <p class="text-sm mt-2">必要ありません。名前やメールアドレスを入れずに、すぐに遊べます。友達対戦も、合言葉だけで部屋に入れます。</p>
+      </details>
+
+      <details class="p-card p-4">
+        <summary class="font-bold cursor-pointer">ランクが思ったより低いのはなぜですか？</summary>
+        <p class="text-sm mt-2">ランクは、パワー・ミート・機動力・守備力・先発陣・救援陣の6つの項目の平均で決まります。どれか1つが極端に低いと、ほかが高くても総合点が下がります。また、選手を守れない位置に置いたり、打順に合わない選手を置いたりすると点数が下がります。組み方のコツは攻略ガイドで説明しています。（<a href="strategy.html" class="p-link">攻略ガイド</a>）</p>
+      </details>
+
+      <details class="p-card p-4">
+        <summary class="font-bold cursor-pointer">指名したい選手を、ほかの球団に取られてしまいました。</summary>
+        <p class="text-sm mt-2">同時に指名する回（NPB方式の1巡目など）では、ほかの球団と重なると抽選になり、外れることがあります。2巡目からの順番に指名する回では、自分の番の前にほかの球団が指名した選手は選べません。AIの球団も、それぞれのスカウト傾向で人気の選手を狙ってきます。本当に欲しい選手は、早い巡で指名するのがおすすめです。（<a href="teams.html" class="p-link">球団紹介（AIのスカウト傾向）</a>）</p>
+      </details>
+
+      <details class="p-card p-4">
+        <summary class="font-bold cursor-pointer">外国人選手は何人まで指名できますか？</summary>
+        <p class="text-sm mt-2">1球団3人までです。3人に達すると、それ以上の外国人選手は指名できません。AIの球団も同じ決まりで指名しています。</p>
+      </details>
+
+      <details class="p-card p-4">
+        <summary class="font-bold cursor-pointer">選手のデータはいつ更新されますか？</summary>
+        <p class="text-sm mt-2">能力値は、シーズンの成績が出そろったあとに、まとめて計算し直します。2026年の成績は、多くの選手の記事に反映された段階で足して計算し直す予定です。選手の顔ぶれ（移籍や引退など）を直したときは、更新履歴でお知らせします。（<a href="changelog.html" class="p-link">更新履歴</a>）</p>
       </details>
 
       <details class="p-card p-4">
