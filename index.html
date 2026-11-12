@@ -3963,9 +3963,12 @@
         const posOrder = {"投手":1, "捕手":2, "内野手":3, "外野手":4};
         displayPlayers.sort((a, b) => posOrder[a.pos] - posOrder[b.pos]);
       } else {
-        displayPlayers.sort((a, b) => {
-           return getBaseStat(b) - getBaseStat(a);
-        });
+        // ★ 2026-11-13 総合能力順は、AIの指名と同じ物差しで並べる（投手は総合値から6.3を引く。getAIPick の pv と同じ差し引き）。
+        //   投手の総合値は野手の4項目の平均より約6点高く出るため、そのまま並べると上位が投手ばかりになり、上から素直に選ぶ人が
+        //   1〜3巡目で投手を3人取って打線が弱くなっていた（Xで「試合で1勝もできない」。12球団・1万回の試しで、ふつうに指名した人は平均10位・
+        //   プレーオフに出られるのは2割弱 → この並びで平均6位前後・約7割。オーナー判断 11/13）。表示する能力値・採点・試合の計算は変えない
+        const listKey = p => getBaseStat(p) - (p.pStats ? 6.3 : 0);
+        displayPlayers.sort((a, b) => listKey(b) - listKey(a));
       }
 
       // ★ 対人戦・同時指名で自分はすでに指名を送信済みだが、相手（リモート）の指名が
