@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="js/error-tracking.js"></script>
+  <title>能力値の決め方｜成績から計算する仕組み｜AIドラフト</title>
+  <meta name="description" content="AIドラフトの選手の能力値（ミート・パワー・走力・守備・球威・制球・スタミナ）を、プロ野球の一軍の成績からどう計算しているかを解説します。使っている成績、出場が少ない選手の扱い、守れる位置の決め方まで。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="能力値の決め方｜成績から計算する仕組み｜AIドラフト">
+  <meta property="og:description" content="AIドラフトの選手の能力値（ミート・パワー・走力・守備・球威・制球・スタミナ）を、プロ野球の一軍の成績からどう計算しているかを解説します。使っている成績、出場が少ない選手の扱い、守れる位置の決め方まで。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/ability-method.html">
+  <link rel="canonical" href="https://dreamteam9.com/ability-method.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
+  <style>
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "能力値の決め方｜成績から計算する仕組み",
+    "description": "AIドラフトの選手の能力値（ミート・パワー・走力・守備・球威・制球・スタミナ）を、プロ野球の一軍の成績からどう計算しているかを解説します。使っている成績、出場が少ない選手の扱い、守れる位置の決め方まで。",
+    "image": "https://dreamteam9.com/images/ogp-top.jpg",
+    "mainEntityOfPage": "https://dreamteam9.com/ability-method.html",
+    "inLanguage": "ja",
+    "publisher": {
+      "@type": "Organization",
+      "name": "dreamteam9.com"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="p-mincho text-base md:text-lg">📐 能力値の決め方</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">選手の能力値は、どうやって決めている？</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">AIドラフトに出てくる選手の能力値は、プロ野球の一軍の個人成績をもとに、このサイトが独自に計算したゲーム用の数値です。ほかの野球ゲームの能力値は使っていません。このページでは、どの成績を使って、どんな考え方で点数にしているかを説明します。細かい式よりも、「何を見て、どう比べているか」を中心に書きます。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">① 使っている成績</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">成績は、Wikipedia日本語版の各選手の記事にある「年度別打撃成績」「年度別投手成績」「年度別守備成績」の表から読み取っています（CC BY-SA 4.0）。使うのは直近3年（今は2023〜2025年）の一軍の成績です。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">3年分をそのまま足すのではなく、新しい年ほど重く見ています。去年よく打った選手と、3年前によく打った選手なら、去年の方を重く見る、という考え方です。2026年に新しく加わった選手や、2026年に一軍に出始めた選手など、2025年までの成績ではほとんど判断できない数人だけは、2026年の成績まで使っています。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">② 点数のつけ方：両リーグの中での「順位」</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">成績の数字をそのまま点数にするのではなく、<span class="p-em">両リーグの選手の中で上から何番目くらいか</span>という順位を出して、それを点数に直しています。野手のミート・パワー・走力は野手全員の中で、投手は投手全員の中で比べます。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">順位から点数に直すときは、真ん中あたりの選手が多くなるようにしています。実際のプロ野球でも、飛び抜けた選手は一握りで、多くの選手はその間にいるからです。点数の一番上と一番下は、ゲームのバランスが大きく変わらないよう、前の能力値と同じ幅にそろえています。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">③ 項目ごとに見ている成績</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2"><span class="p-em">野手</span></p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">ミート</span>：打率を中心に、三振の少なさも少し加えています。ヒットを打つ力と、バットに当てる力の両方を見るためです</li><li><span class="p-em">パワー</span>：長打の多さ（長打率から打率を引いた分）、何打席に1本ホームランを打つか（本塁打÷打席）、1年あたりのホームランの本数を中心に見ています。打率も少しだけ入れています。打つ力があるからこそヒットになる打球もあるので0にはしませんが、打率の高さだけでパワーが高く出ないよう、割合は小さくしています</li><li><span class="p-em">走力</span>：盗塁を試みる多さを中心に、盗塁の成功率と三塁打の多さを加えています</li><li><span class="p-em">守備</span>：守ったポジションごとに、守備範囲の広さ（1試合あたりの刺殺と補殺の数）を中心に、守備率も見ています。二塁・三塁・遊撃は併殺、捕手は盗塁阻止率、外野は補殺（肩の強さ）も少し使います。比べるのは同じポジションの選手どうしで、ほかのミートなどと違って「上から何番目か」ではなく、<span class="p-em">平均からどれだけ離れているか</span>で点を付けます。2番目と3番目の差がわずかなら、点数の差も小さくなるようにするためです。材料には、そのポジションを守った試合の多さも入れています。レギュラーとして守り続けていること自体を、守備の力の表れとして見るためです。また、守った試合が少ない選手は、たまたまの数字が出やすいので、平均の方へ少し寄せてから点を付けます。直近3年にゴールデングラブ賞を受賞している選手には、受賞の回数に応じた小さな加点があります（上限あり）</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">守備はポジションによって難しさが違います。そこで、もとの点数をポジションごとに少しだけ変えています（遊撃・二塁が一番高く、三塁・捕手、外野、一塁の順。外野は左翼・中堅・右翼の区別がないので1つ）。「少しだけ」にしたのは、難しさを強く入れすぎると、守備が苦手な選手でも難しいポジションにいるだけで点数が高くなってしまうからです。守備が上手な選手ばかりのポジションの2番手が、守備が苦手な選手の多いポジションの1番手より下になる、ということが起きにくいようにしています</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2"><span class="p-em">投手</span></p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">球威</span>：三振を奪う多さを中心に、被本塁打の少なさを加えています</li><li><span class="p-em">制球</span>：四球と死球の少なさを中心に、暴投の少なさを加えています</li><li><span class="p-em">スタミナ</span>：1試合あたりに投げる回の長さを中心に見ています。先発と救援では役割がまったく違うので、先発は先発どうし、救援は救援どうしで比べています</li></ul>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">④ 出場が少ない選手の扱い</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">打席や登板が少ない選手は、たまたま好調だった（不調だった）数字がそのまま出やすくなります。たとえば30打席で打率4割の選手を、500打席で打率3割の選手より上にすると、ゲームとして違和感があります。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">そこで、出場の少ない選手の成績は、平均の方へ少し寄せてから順位を出しています。寄せる量は、だいたい1シーズン分くらいの出場を「平均の成績」として足すイメージです。たくさん出場している選手はほとんど動かず、出場が少ないほど平均に近づきます。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">寄せる先は、リーグ全体の平均ではなく、出場の少ない選手（控えの選手）の平均に近い値にしています。レギュラーに定着していない選手の成績を、レギュラーの平均まで引き上げてしまうと、たくさん出場して実力どおりの成績が出ている選手の方が損をするからです。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">一軍の出場がとても少ない選手は、二軍の成績を割り引いて足しています。それでも成績が足りず判断できない選手は、運営者が段階（S〜D）を決め、その段階の点数を入れています。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">⑤ 守れる位置の決め方</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">守れる位置も、成績から決めています。直近3年の一軍で、そのポジションを守った試合数を数えます。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li>一番多く守ったポジションが<span class="p-em">本職</span></li><li>3年で20試合以上守ったポジションは<span class="p-em">守れる位置（可）</span></li><li>1〜19試合だけ守ったポジションも<span class="p-em">一応守れる位置</span>として入れています</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">ポジションの難しさは、この「どこを守れるか」で表れます。遊撃を守れる選手は二塁や三塁も守れることが多く、一塁しか守れない選手は使える場所が限られます。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">Wikipediaの守備成績の表では、外野は「外野」の1つにまとまっていて、左翼・中堅・右翼の区別がありません。そのため、このゲームでは外野手はどの外野のポジションでも同じように守れる扱いにしています。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">⑥ 投手の役割（先発・中継ぎ・抑え）</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">投手の役割も成績から決めています。登板のうち先発した試合が半分以上なら先発、セーブが多ければ抑え、それ以外は中継ぎです。中継ぎでもセーブがある投手は抑えも、先発でも救援の登板が多い投手は中継ぎも、守れる位置として入れています。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">⑦ 能力値の更新</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">能力値は、シーズンの成績が出そろったあとに、年に1回まとめて計算し直します。2026年の成績は、Wikipediaの記事にまだ反映されていない選手が多いため、多くの選手の記事に入った段階で、2026年の成績を足して計算し直す予定です。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">⑧ 能力値はゲーム用の数値です</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">ここで紹介した能力値は、あくまでこのゲームのために計算した数値です。選手の本当の実力や価値を決めるものではありません。成績の表に出にくい力（守備の判断、チームへの貢献、けがからの復帰など）は入っていませんし、どの成績をどれだけ重く見るかで、点数は変わります。「この選手がこの点数なのはなぜだろう」と考えながら遊ぶのも、楽しみ方の一つだと思います。</p>
+    </section>
+
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">関連する読み物・ゲーム</h2>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1">
+        <li><a href="stats-calculator.html" class="p-link">野球の指標の計算ツール</a></li>
+        <li><a href="howto.html" class="p-link">遊び方</a></li>
+        <li><a href="faq.html" class="p-link">よくある質問</a>・<a href="glossary.html" class="p-link">用語集</a></li>
+        <li><a href="index.html" class="p-link">AIドラフトを始める</a></li>
+      </ul>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+  <footer class="text-center p-sub text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>

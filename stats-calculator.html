@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="js/error-tracking.js"></script>
+  <title>野球の指標の計算ツール｜OPS・WHIP・FIPの計算方法｜AIドラフト</title>
+  <meta name="description" content="打者と投手の成績を入れると、打率・出塁率・長打率・OPS・ISO・BABIP、防御率・WHIP・奪三振率・与四球率・K/BB・FIPを計算します。指標ごとの意味と式、計算の例も解説。入れた数字は送信・保存しません。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="野球の指標の計算ツール｜OPS・WHIP・FIPの計算方法｜AIドラフト">
+  <meta property="og:description" content="成績を入れると、OPS・WHIP・FIPなどの野球の指標を計算します。指標ごとの意味と式も解説。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/stats-calculator.html">
+  <link rel="canonical" href="https://dreamteam9.com/stats-calculator.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
+  <style>
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "野球の指標の計算ツール｜OPS・WHIP・FIPの計算方法",
+    "description": "打者と投手の成績から、OPS・WHIP・FIPなどの野球の指標を計算するツールと、指標ごとの意味と式の解説。",
+    "image": "https://dreamteam9.com/images/ogp-top.jpg",
+    "mainEntityOfPage": "https://dreamteam9.com/stats-calculator.html",
+    "inLanguage": "ja",
+    "publisher": { "@type": "Organization", "name": "dreamteam9.com" }
+  }
+  </script>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="p-mincho text-base md:text-lg">🧮 野球の指標の計算ツール</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">成績の数字を入れると、指標を計算します</h2>
+      <p class="text-sm md:text-base leading-relaxed">打率や防御率は中継やニュースでよく見ますが、OPS・WHIP・FIP のような指標は、計算の仕方まで知っている人は多くないと思います。このページでは、打者と投手の成績の数字を入れると、よく使われる指標をまとめて計算します。下の方には、指標ごとの意味と式、計算の例も載せています。</p>
+      <p class="text-sm md:text-base leading-relaxed mt-2">入れた数字は、このページの中だけで計算します。<span class="p-em">数字をどこかに送ったり、保存したりはしません</span>（ページを閉じると消えます）。</p>
+    </section>
+
+    <!-- ===== 打者 ===== -->
+    <section class="mb-8 p-sheet p-4" id="batter">
+      <h2 class="p-h2 text-lg mb-3">打者の指標を計算する</h2>
+      <form id="bat-form" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm" onsubmit="return false">
+        <label class="block">打席<input class="p-field mt-1" inputmode="numeric" data-k="pa" placeholder="例：600"></label>
+        <label class="block">打数<input class="p-field mt-1" inputmode="numeric" data-k="ab" placeholder="例：520"></label>
+        <label class="block">安打<input class="p-field mt-1" inputmode="numeric" data-k="h" placeholder="例：150"></label>
+        <label class="block">二塁打<input class="p-field mt-1" inputmode="numeric" data-k="d" placeholder="例：30"></label>
+        <label class="block">三塁打<input class="p-field mt-1" inputmode="numeric" data-k="t" placeholder="例：3"></label>
+        <label class="block">本塁打<input class="p-field mt-1" inputmode="numeric" data-k="hr" placeholder="例：20"></label>
+        <label class="block">四球<input class="p-field mt-1" inputmode="numeric" data-k="bb" placeholder="例：60"></label>
+        <label class="block">死球<input class="p-field mt-1" inputmode="numeric" data-k="hbp" placeholder="例：5"></label>
+        <label class="block">犠飛<input class="p-field mt-1" inputmode="numeric" data-k="sf" placeholder="例：5"></label>
+        <label class="block">三振<input class="p-field mt-1" inputmode="numeric" data-k="so" placeholder="例：100"></label>
+      </form>
+      <p class="text-xs p-sub mt-2">打席は、打数・四球・死球・犠飛・犠打などを合わせた数です。犠打は計算に使わないので、入れる欄はありません。</p>
+      <p id="bat-alert" class="p-alert text-sm mt-3" role="alert"></p>
+      <table class="w-full text-sm mt-3 border-collapse" aria-live="polite">
+        <tbody id="bat-out"></tbody>
+      </table>
+    </section>
+
+    <!-- ===== 投手 ===== -->
+    <section class="mb-8 p-sheet p-4" id="pitcher">
+      <h2 class="p-h2 text-lg mb-3">投手の指標を計算する</h2>
+      <form id="pit-form" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm" onsubmit="return false">
+        <label class="block">投球回<input class="p-field mt-1" inputmode="numeric" data-k="ipw" placeholder="例：150"></label>
+        <label class="block">投球回の端数
+          <select class="p-field mt-1" data-k="ipf">
+            <option value="0">なし</option>
+            <option value="1">1/3</option>
+            <option value="2">2/3</option>
+          </select>
+        </label>
+        <label class="block">被安打<input class="p-field mt-1" inputmode="numeric" data-k="h" placeholder="例：130"></label>
+        <label class="block">与四球<input class="p-field mt-1" inputmode="numeric" data-k="bb" placeholder="例：40"></label>
+        <label class="block">与死球<input class="p-field mt-1" inputmode="numeric" data-k="hbp" placeholder="例：5"></label>
+        <label class="block">奪三振<input class="p-field mt-1" inputmode="numeric" data-k="so" placeholder="例：140"></label>
+        <label class="block">被本塁打<input class="p-field mt-1" inputmode="numeric" data-k="hr" placeholder="例：12"></label>
+        <label class="block">自責点<input class="p-field mt-1" inputmode="numeric" data-k="er" placeholder="例：50"></label>
+        <label class="block">FIPの定数（任意）<input class="p-field mt-1" inputmode="decimal" data-k="c" placeholder="空でもよい"></label>
+      </form>
+      <p class="text-xs p-sub mt-2">「150回2/3」なら、投球回に 150、端数に 2/3 を選びます。FIPの定数は、下の「FIP」の説明を見てください。</p>
+      <p id="pit-alert" class="p-alert text-sm mt-3" role="alert"></p>
+      <table class="w-full text-sm mt-3 border-collapse" aria-live="polite">
+        <tbody id="pit-out"></tbody>
+      </table>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-mid" class="ad-slot"></div>
+
+    <!-- ===== 解説：打者 ===== -->
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">打者の指標の意味と計算の仕方</h2>
+      <p class="text-sm md:text-base leading-relaxed">計算の例は、どれも同じ架空の打者（打席600・打数520・安打150・二塁打30・三塁打3・本塁打20・四球60・死球5・犠飛5・三振100）で計算しています。実在の選手の成績ではありません。</p>
+
+      <h3 class="font-bold mt-5">打率</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">ヒットを打った割合です。式は「安打 ÷ 打数」。四球や死球、犠飛は打数に入らないので、打率には影響しません。例：150 ÷ 520 ＝ .288。いちばんよく知られた指標ですが、四球を選ぶ力や長打の多さは表れません。</p>
+
+      <h3 class="font-bold mt-5">出塁率</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">アウトにならずに塁に出た割合です。式は「（安打＋四球＋死球）÷（打数＋四球＋死球＋犠飛）」。打率と違って四球・死球も「出塁」として数えます。犠飛は分母にだけ入ります。例：（150＋60＋5）÷（520＋60＋5＋5）＝ 215 ÷ 590 ＝ .364。打率が同じくらいでも、四球の多い打者ほど出塁率が高くなります。</p>
+
+      <h3 class="font-bold mt-5">長打率</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">1打数あたりに進んだ塁の数（塁打）の平均です。式は「塁打 ÷ 打数」で、塁打は「単打×1＋二塁打×2＋三塁打×3＋本塁打×4」。単打は「安打−二塁打−三塁打−本塁打」で出します。例：単打は 150−30−3−20 ＝ 97、塁打は 97＋60＋9＋80 ＝ 246、長打率は 246 ÷ 520 ＝ .473。「率」と付いていますが割合ではないので、1を超えることもあります（打数1で本塁打1なら 4.000）。</p>
+
+      <h3 class="font-bold mt-5">OPS</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">出塁率と長打率を足したものです。式は「出塁率＋長打率」。塁に出る力と長打を打つ力を、1つの数字でざっくり見られるので、打者の総合的な打撃の目安としてよく使われます。例：.364＋.473 ＝ .837。分母の違う2つの率をそのまま足しているので、厳密な意味がある数字ではなく、あくまで目安です。</p>
+
+      <h3 class="font-bold mt-5">ISO（アイソ）</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">長打率から打率を引いたもので、「純粋な長打力」を見る指標です。式は「長打率−打率」。単打だけの打者は、打率が高くても ISO は 0 になります。例：.473−.288 ＝ .185（計算の途中は丸めずに引いています）。</p>
+
+      <h3 class="font-bold mt-5">BABIP（バビップ）</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">本塁打を除いて、前に飛んだ打球がヒットになった割合です。式は「（安打−本塁打）÷（打数−三振−本塁打＋犠飛）」。打球の質に加えて、守備や運の影響も受けやすい数字です。例：（150−20）÷（520−100−20＋5）＝ 130 ÷ 405 ＝ .321。年によって大きく上下しやすいので、打率が急に上がった・下がったときに、運の影響がどれくらいありそうかを考える材料になります。</p>
+    </section>
+
+    <!-- ===== 解説：投手 ===== -->
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">投手の指標の意味と計算の仕方</h2>
+      <p class="text-sm md:text-base leading-relaxed">計算の例は、架空の投手（投球回150・被安打130・与四球40・与死球5・奪三振140・被本塁打12・自責点50）で計算しています。</p>
+
+      <h3 class="font-bold mt-5">投球回の端数</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">投球回は、アウト1つで1/3回です。「150回1/3」は 150.333…回、「150回2/3」は 150.666…回として計算します。成績の表で「150.1」「150.2」と書かれているのは、小数ではなく端数のアウトの数（.1＝1/3、.2＝2/3）なので、そのまま 150.1 として計算すると少しずれます。</p>
+
+      <h3 class="font-bold mt-5">防御率</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">9回（1試合）を投げたとして、自責点がいくつになるかを表したものです。式は「自責点×9 ÷ 投球回」。例：50×9 ÷ 150 ＝ 3.00。失策がからんだ失点は自責点に入らないので、失点そのものとは違います。</p>
+
+      <h3 class="font-bold mt-5">WHIP（ウィップ）</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">1回あたりに、ヒットと四球で何人の走者を出したかを表します。式は「（被安打＋与四球）÷ 投球回」。一般的な式では死球は入れません。例：（130＋40）÷ 150 ＝ 1.13。数字が小さいほど、走者を出さない投手です。</p>
+
+      <h3 class="font-bold mt-5">奪三振率（K/9）・与四球率（BB/9）</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">9回あたりの奪三振・与四球の数です。式は「奪三振×9 ÷ 投球回」「与四球×9 ÷ 投球回」。例：奪三振率は 140×9 ÷ 150 ＝ 8.40、与四球率は 40×9 ÷ 150 ＝ 2.40。投球回で割るので、先発と救援、投げた回の多い投手と少ない投手を比べやすくなります。</p>
+
+      <h3 class="font-bold mt-5">K/BB</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">奪三振が与四球の何倍あるかです。式は「奪三振 ÷ 与四球」。三振を取る力と、四球を出さない制球の両方を1つで見られます。例：140 ÷ 40 ＝ 3.50。与四球が0のときは計算できません。</p>
+
+      <h3 class="font-bold mt-5">FIP（フィップ）</h3>
+      <p class="text-sm md:text-base leading-relaxed mt-1">投手が自分の力で決めやすい「本塁打・四球・死球・三振」だけを使って、防御率と同じ目盛りで投手を見る指標です。前に飛んだ打球がヒットになるかどうかは守備や運の影響が大きいので、それを外して考えます。式は「（13×被本塁打＋3×（与四球＋与死球）−2×奪三振）÷ 投球回＋定数」。</p>
+      <p class="text-sm md:text-base leading-relaxed mt-2">定数は、リーグ全体の FIP の平均がリーグ全体の防御率と同じになるように決める数で、リーグと年ごとに変わります。自分で出すときは、そのリーグ・その年の全投手の合計の成績で「リーグの防御率 −（13×被本塁打＋3×（与四球＋与死球）−2×奪三振）÷ 投球回」を計算します。このツールでは、定数の欄を空にすると<span class="p-em">定数を足す前の値</span>を出します。同じリーグ・同じ年の投手どうしを比べるだけなら、定数なしの値でも順番は変わりません。</p>
+      <p class="text-sm md:text-base leading-relaxed mt-2">例：（13×12＋3×（40＋5）−2×140）÷ 150 ＝（156＋135−280）÷ 150 ＝ 11 ÷ 150 ＝ 0.07（定数なし）。定数を足す前の値なので、防御率と同じ目盛りにはなっていません（定数なしの値は、マイナスになることもあります）。防御率と比べたいときは、定数を入れてください。</p>
+    </section>
+
+    <!-- ===== ゲームとのつながり ===== -->
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">AIドラフトの能力値との関係</h2>
+      <p class="text-sm md:text-base leading-relaxed">AIドラフトの選手の能力値も、こうした成績から計算しています。たとえばパワーはISO（長打率−打率）と本塁打の多さ、ミートは打率と三振の少なさ、球威は三振を奪う多さと被本塁打の少なさ、制球は四球・死球の少なさを中心に見ています。ただし、能力値は両リーグの選手の中で上から何番目くらいかを点数に直したもので、ここで計算する指標の数字そのものではありません。くわしくは<a href="ability-method.html" class="p-link">能力値の決め方</a>にまとめています。</p>
+      <p class="text-sm md:text-base leading-relaxed mt-2">好きな選手の成績を入れてみて、「この選手は出塁率が高いからミートより選球眼のタイプかな」と考えてから<a href="index.html" class="p-link">ドラフト</a>をしてみると、指名の見え方が少し変わると思います。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">関連する読み物・ゲーム</h2>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1">
+        <li><a href="glossary.html" class="p-link">野球・ドラフト用語集</a></li>
+        <li><a href="faq.html" class="p-link">よくある質問</a></li>
+        <li><a href="strategy.html" class="p-link">ドラフト攻略ガイド</a></li>
+        <li><a href="index.html" class="p-link">AIドラフトを始める</a></li>
+      </ul>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+  <footer class="text-center p-sub text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+  <script src="js/stats-calc.js"></script>
+  <script>
+    // ★ 入力した数字はこのページの中だけで計算する。送信・保存（localStorage など）はしない
+    (function () {
+      const C = window.StatsCalc;
+      const toHalf = s => String(s || '').replace(/[０-９．]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
+      function read(form) {
+        const v = {};
+        form.querySelectorAll('[data-k]').forEach(el => { const t = toHalf(el.value); v[el.dataset.k] = t === '' ? null : Number(t); });
+        return v;
+      }
+      function render(tbody, alertEl, res) {
+        alertEl.textContent = res.errors.join(' ');
+        tbody.innerHTML = '';
+        res.rows.forEach(([label, val]) => {
+          const tr = document.createElement('tr'); tr.className = 'p-rule-top';
+          const th = document.createElement('th'); th.className = 'text-left font-bold py-2'; th.textContent = label;
+          const td = document.createElement('td'); td.className = 'text-right py-2 font-mono'; td.textContent = val;
+          tr.append(th, td); tbody.append(tr);
+        });
+      }
+      const bf = document.getElementById('bat-form'), pf = document.getElementById('pit-form');
+      const upB = () => render(document.getElementById('bat-out'), document.getElementById('bat-alert'), C.batter(read(bf)));
+      const upP = () => render(document.getElementById('pit-out'), document.getElementById('pit-alert'), C.pitcher(read(pf)));
+      bf.addEventListener('input', upB); pf.addEventListener('input', upP); pf.addEventListener('change', upP);
+      upB(); upP();
+    })();
+  </script>
+</body>
+</html>
