@@ -55,7 +55,26 @@
       { "@type": "DefinedTerm", "name": "中継ぎ", "description": "先発投手の後を受けて、試合の中盤を投げる投手。短いイニングを全力で投げ切る球威が重視される。" },
       { "@type": "DefinedTerm", "name": "抑え（クローザー）", "description": "試合終盤、リードを守り切るために最後に登板する投手。チームの生命線とも言える。" },
       { "@type": "DefinedTerm", "name": "スカウト傾向", "description": "球団によって、指名時に重視する能力値の配分が異なること。" },
-      { "@type": "DefinedTerm", "name": "コンボ", "description": "特定の条件を満たした編成に付くボーナス演出。試合内容に少しだけ反映されるが、採点そのものには影響しない。" }
+      { "@type": "DefinedTerm", "name": "コンボ", "description": "特定の条件を満たした編成に付くボーナス演出。試合内容に少しだけ反映されるが、採点そのものには影響しない。" },
+      { "@type": "DefinedTerm", "name": "入札", "description": "1巡目に、各球団が指名したい選手の名前を同時に出すこと。ほかの球団がどの選手を選ぶか分からないまま出すので、読み合いが生まれる。本サイトのNPB方式・全巡同時指名でも、同時に指名する回はこの形になる。" },
+      { "@type": "DefinedTerm", "name": "競合・単独指名", "description": "2球団以上が同じ選手に入札することを「競合」、ほかの球団と重ならずに入札が決まることを「単独指名」という。競合した場合は抽選で交渉権を決める。" },
+      { "@type": "DefinedTerm", "name": "外れ1位", "description": "1巡目の抽選に外れた球団が、改めて指名し直した選手のこと。外れた球団は、まだ交渉権が決まっていない選手の中からもう一度選ぶ。本サイトでも、抽選に外れたらもう一度選び直す。" },
+      { "@type": "DefinedTerm", "name": "支配下選手・育成選手", "description": "支配下選手は、一軍の公式戦に出られる正式な契約の選手。育成選手は支配下とは別の契約で、まずは二軍などで力をつける選手。一軍の試合に出るには支配下選手への登録が必要になる。本サイトで指名できるのは、現役の選手の中から選んだ一部の選手。" },
+      { "@type": "DefinedTerm", "name": "FA（フリーエージェント）", "description": "条件を満たした現役選手が、ほかの球団と自由に契約の交渉をできる制度。新人を獲得するドラフトとは別の仕組み。" },
+      { "@type": "DefinedTerm", "name": "外国人枠", "description": "本サイトでは、1球団が指名できる外国人選手は3人まで。3人に達すると、それ以上は指名できない（AIの球団も同じ）。" },
+      { "@type": "DefinedTerm", "name": "能力値", "description": "選手の力を表す、本サイト独自の数値。野手はミート・パワー・走力・守備力、投手は球威・制球・スタミナの項目がある。プロ野球の一軍の成績から計算している。" },
+      { "@type": "DefinedTerm", "name": "本職・守れる位置", "description": "本職は、その選手が一番多く守ってきたポジション。それ以外にも守った経験があるポジションが「守れる位置」。本職に置くと守備力がそのまま使われ、守れない位置に置くと守備力が大きく下がる。" },
+      { "@type": "DefinedTerm", "name": "打率・長打率", "description": "打率は安打÷打数で、ヒットを打つ確率。長打率は塁打÷打数で、1打数あたりに進めた塁の数。本塁打や二塁打が多いほど高くなる。本サイトのミートは打率を中心に、パワーは長打率から打率を引いた分（長打の多さ）と本塁打の多さを中心に見ている（指標の計算ツールで計算できる）。" },
+      { "@type": "DefinedTerm", "name": "守備率", "description": "守備機会のうち、失策をしなかった割合（刺殺と補殺の合計を、刺殺・補殺・失策の合計で割った値）。" },
+      { "@type": "DefinedTerm", "name": "刺殺・補殺", "description": "刺殺は、打者や走者を自分でアウトにした数（捕球してアウトにしたなど）。補殺は、送球でほかの野手のアウトを助けた数。外野手の補殺は肩の強さの目安になる。" },
+      { "@type": "DefinedTerm", "name": "併殺", "description": "1つのプレーで2つのアウトを取ること（ダブルプレー）。二塁手・遊撃手・三塁手の守備を見るときの材料の一つ。" },
+      { "@type": "DefinedTerm", "name": "盗塁阻止率", "description": "盗塁を試みられたうち、捕手がアウトにした割合。捕手の守備を見るときの材料の一つ。" },
+      { "@type": "DefinedTerm", "name": "ランク", "description": "編成の採点に応じて付くS〜Gの8段階の評価。総合点が90点以上でS、80点以上でA、70点以上でBとなる。" },
+      { "@type": "DefinedTerm", "name": "レーダーチャート", "description": "結果画面に出る、パワー・ミート・機動力・守備力・先発陣・救援陣の6項目を0〜100点で表した図。6項目の平均が総合点になる。" },
+      { "@type": "DefinedTerm", "name": "プレーオフ・シード", "description": "採点の後に行うトーナメント。採点の順位（シード）が高い球団ほど、1回戦が免除されるなど有利な位置から始まる。進出できるのは上位8球団まで。" },
+      { "@type": "DefinedTerm", "name": "延長規定", "description": "プレーオフの試合は、9回で決着しなければ延長に入り、21回を終えても同点なら総合点の高い球団の勝ちになる。" },
+      { "@type": "DefinedTerm", "name": "ポジション残数ボード", "description": "ドラフト画面の上に出る、ポジションごとに「まだ守れる選手が何人残っているか」の一覧。次の自分の番までにほかの球団が指名する人数をもとに、足りなくなりそうなポジションに「危険」「注意」を出す。" },
+      { "@type": "DefinedTerm", "name": "実績", "description": "「初めて遊んだ」「コンボを発動した」などの条件を満たすと解除される記録。記録は遊んでいる端末の中だけに保存される。" }
     ]
   }
   </script>
@@ -77,6 +96,8 @@
             <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
             <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
             <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
             <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
             <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
           </div>
@@ -134,6 +155,30 @@
           <dt class="font-bold">交渉権</dt>
           <dd class="mt-1">指名や抽選によって得られる、その選手と契約交渉ができる権利のこと。本サイトでは交渉権の獲得＝その選手を自チームの選手として獲得したことを意味する。</dd>
         </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">入札</dt>
+          <dd class="mt-1">1巡目に、各球団が指名したい選手の名前を同時に出すこと。ほかの球団がどの選手を選ぶか分からないまま出すので、読み合いが生まれる。本サイトのNPB方式・全巡同時指名でも、同時に指名する回はこの形になる。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">競合・単独指名</dt>
+          <dd class="mt-1">2球団以上が同じ選手に入札することを「競合」、ほかの球団と重ならずに入札が決まることを「単独指名」という。競合した場合は抽選で交渉権を決める。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">外れ1位</dt>
+          <dd class="mt-1">1巡目の抽選に外れた球団が、改めて指名し直した選手のこと。外れた球団は、まだ交渉権が決まっていない選手の中からもう一度選ぶ。本サイトでも、抽選に外れたらもう一度選び直す。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">支配下選手・育成選手</dt>
+          <dd class="mt-1">支配下選手は、一軍の公式戦に出られる正式な契約の選手。育成選手は支配下とは別の契約で、まずは二軍などで力をつける選手。一軍の試合に出るには支配下選手への登録が必要になる。本サイトで指名できるのは、現役の選手の中から選んだ一部の選手。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">FA（フリーエージェント）</dt>
+          <dd class="mt-1">条件を満たした現役選手が、ほかの球団と自由に契約の交渉をできる制度。新人を獲得するドラフトとは別の仕組み。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">外国人枠</dt>
+          <dd class="mt-1">本サイトでは、1球団が指名できる外国人選手は3人まで。3人に達すると、それ以上は指名できない（AIの球団も同じ）。</dd>
+        </div>
       </dl>
     </section>
 
@@ -173,6 +218,70 @@
         <div class="p-card p-3">
           <dt class="font-bold">抑え（クローザー）</dt>
           <dd class="mt-1">試合終盤、リードを守り切るために最後に登板する投手。ここが崩れると勝ち試合を落としてしまうため、チームの生命線とも言える。<a href="rankings.html#pos-cl" class="p-link">抑えランキングを見る</a>。</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">能力値・成績</h2>
+      <dl class="space-y-3 text-sm md:text-base">
+        <div class="p-card p-3">
+          <dt class="font-bold">能力値</dt>
+          <dd class="mt-1">選手の力を表す、本サイト独自の数値。野手はミート・パワー・走力・守備力、投手は球威・制球・スタミナの項目がある。プロ野球の一軍の成績から計算している。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">本職・守れる位置</dt>
+          <dd class="mt-1">本職は、その選手が一番多く守ってきたポジション。それ以外にも守った経験があるポジションが「守れる位置」。本職に置くと守備力がそのまま使われ、守れない位置に置くと守備力が大きく下がる。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">打率・長打率</dt>
+          <dd class="mt-1">打率は安打÷打数で、ヒットを打つ確率。長打率は塁打÷打数で、1打数あたりに進めた塁の数。本塁打や二塁打が多いほど高くなる。本サイトのミートは打率を中心に、パワーは長打率から打率を引いた分（長打の多さ）と本塁打の多さを中心に見ている（<a href="stats-calculator.html" class="p-link">指標の計算ツール</a>で計算できる）。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">守備率</dt>
+          <dd class="mt-1">守備機会のうち、失策をしなかった割合（刺殺と補殺の合計を、刺殺・補殺・失策の合計で割った値）。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">刺殺・補殺</dt>
+          <dd class="mt-1">刺殺は、打者や走者を自分でアウトにした数（捕球してアウトにしたなど）。補殺は、送球でほかの野手のアウトを助けた数。外野手の補殺は肩の強さの目安になる。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">併殺</dt>
+          <dd class="mt-1">1つのプレーで2つのアウトを取ること（ダブルプレー）。二塁手・遊撃手・三塁手の守備を見るときの材料の一つ。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">盗塁阻止率</dt>
+          <dd class="mt-1">盗塁を試みられたうち、捕手がアウトにした割合。捕手の守備を見るときの材料の一つ。</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">採点・画面</h2>
+      <dl class="space-y-3 text-sm md:text-base">
+        <div class="p-card p-3">
+          <dt class="font-bold">ランク</dt>
+          <dd class="mt-1">編成の採点に応じて付くS〜Gの8段階の評価。総合点が90点以上でS、80点以上でA、70点以上でBとなる。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">レーダーチャート</dt>
+          <dd class="mt-1">結果画面に出る、パワー・ミート・機動力・守備力・先発陣・救援陣の6項目を0〜100点で表した図。6項目の平均が総合点になる。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">プレーオフ・シード</dt>
+          <dd class="mt-1">採点の後に行うトーナメント。採点の順位（シード）が高い球団ほど、1回戦が免除されるなど有利な位置から始まる。進出できるのは上位8球団まで。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">延長規定</dt>
+          <dd class="mt-1">プレーオフの試合は、9回で決着しなければ延長に入り、21回を終えても同点なら総合点の高い球団の勝ちになる。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">ポジション残数ボード</dt>
+          <dd class="mt-1">ドラフト画面の上に出る、ポジションごとに「まだ守れる選手が何人残っているか」の一覧。次の自分の番までにほかの球団が指名する人数をもとに、足りなくなりそうなポジションに「危険」「注意」を出す。</dd>
+        </div>
+        <div class="p-card p-3">
+          <dt class="font-bold">実績</dt>
+          <dd class="mt-1">「初めて遊んだ」「コンボを発動した」などの条件を満たすと解除される記録。記録は遊んでいる端末の中だけに保存される。</dd>
         </div>
       </dl>
     </section>
