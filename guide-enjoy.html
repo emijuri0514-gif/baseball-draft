@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="js/error-tracking.js"></script>
+  <title>プロ野球を楽しむ読み物｜球団の傾向・中継の見方・指標の計算｜AIドラフト</title>
+  <meta name="description" content="AIドラフトの球団紹介、12球団の中継サブスク比較、CS・日本シリーズの見る方法、広島カープの中継事情、野球の指標の計算ツールなど、プロ野球をもっと楽しむための読み物をまとめた一覧です。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="プロ野球を楽しむ読み物｜球団の傾向・中継の見方・指標の計算｜AIドラフト">
+  <meta property="og:description" content="AIドラフトの球団紹介、12球団の中継サブスク比較、CS・日本シリーズの見る方法、広島カープの中継事情、野球の指標の計算ツールなど、プロ野球をもっと楽しむための読み物をまとめた一覧です。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/guide-enjoy.html">
+  <link rel="canonical" href="https://dreamteam9.com/guide-enjoy.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
+  <style>
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "プロ野球を楽しむ読み物",
+    "description": "AIドラフトの球団紹介、12球団の中継サブスク比較、CS・日本シリーズの見る方法、広島カープの中継事情、野球の指標の計算ツールなど、プロ野球をもっと楽しむための読み物をまとめた一覧です。",
+    "url": "https://dreamteam9.com/guide-enjoy.html",
+    "inLanguage": "ja",
+    "hasPart": [
+      {
+        "@type": "Article",
+        "name": "球団紹介（12球団のスカウト傾向）",
+        "url": "https://dreamteam9.com/teams.html"
+      },
+      {
+        "@type": "Article",
+        "name": "12球団対応の中継サブスク比較",
+        "url": "https://dreamteam9.com/npb-broadcast-guide.html"
+      },
+      {
+        "@type": "Article",
+        "name": "CS・日本シリーズの見る方法",
+        "url": "https://dreamteam9.com/postseason-broadcast.html"
+      },
+      {
+        "@type": "Article",
+        "name": "広島カープがDAZNで見れない理由と、全試合見る方法",
+        "url": "https://dreamteam9.com/hiroshima-broadcast.html"
+      },
+      {
+        "@type": "Article",
+        "name": "野球の指標の計算ツール",
+        "url": "https://dreamteam9.com/stats-calculator.html"
+      }
+    ],
+    "publisher": {
+      "@type": "Organization",
+      "name": "dreamteam9.com"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="p-mincho text-base md:text-lg">⚾ プロ野球を楽しむ</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">プロ野球を楽しむ読み物</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">ゲームの外でも、プロ野球を楽しむのに役立ちそうな読み物をここに集めました。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">試合を見る方法は、配信サービスごとに見られる球団や二軍の扱いが違っていて、意外と分かりにくいところです。12球団まとめての比較、ポストシーズン（CS・日本シリーズ）の見方、それから事情が少し違う広島カープの中継について書いています。広島のページは、運営者が実際にスカパー！で1年間カープを見ていた経験をもとにしています。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">数字で野球を見るのが好きな人には、OPSやWHIP、FIPなどを自分で計算できるツールを置いています。AIドラフトの12球団それぞれのAIが、どんな選手を好んで指名するかは「球団紹介」で読めます。</p>
+    </section>
+
+    <section class="mb-8 space-y-3">
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="teams.html" class="p-link">🏟️ 球団紹介（12球団のスカウト傾向）</a></h2>
+        <p class="text-sm leading-relaxed">このゲームのAI球団が、どの能力を重く見て指名するか。AIの指名の決め方、1万回のシミュレーションで見た1巡目の入札先、担当球団を選ぶときのヒント。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="npb-broadcast-guide.html" class="p-link">📡 12球団対応の中継サブスク比較</a></h2>
+        <p class="text-sm leading-relaxed">DAZNとスカパー！プロ野球セットで、どの球団の一軍・二軍が見られるかの比較。12球団まとめて見る方法。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="postseason-broadcast.html" class="p-link">🏆 CS・日本シリーズの見る方法</a></h2>
+        <p class="text-sm leading-relaxed">クライマックスシリーズと日本シリーズを、テレビや配信でどう見られるかのまとめ。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="hiroshima-broadcast.html" class="p-link">🎏 広島カープがDAZNで見れない理由と、全試合見る方法</a></h2>
+        <p class="text-sm leading-relaxed">広島の主催試合がDAZNで配信されない理由と、カープファンにとっての中継サブスク事情。運営者の体験つき。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="stats-calculator.html" class="p-link">🧮 野球の指標の計算ツール</a></h2>
+        <p class="text-sm leading-relaxed">打率・出塁率・長打率・OPS、防御率・WHIP・FIPなどを、成績を入れて計算できるツール。指標ごとの意味と式の解説つき。入れた数字は送信・保存しません。</p>
+      </div>
+    </section>
+
+    <section class="mb-8 text-center">
+      <p class="text-xs p-sub mb-2">ほかの読み物の一覧</p>
+      <p class="text-sm"><a href="guide-play.html" class="p-link font-bold">🎮 遊び方・攻略</a> ｜ <a href="guide-draft.html" class="p-link font-bold">🗒️ ドラフトを知る</a></p>
+    </section>
+
+    <div class="text-center pb-6">
+      <a href="index.html" class="p-btn b-shu inline-flex items-center justify-center py-3 px-8">AIドラフトを始める</a>
+    </div>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+  <footer class="text-center p-sub text-xs py-6">
+    <p class="mb-2">読み物：<a href="guide-play.html" class="hover:underline">遊び方・攻略</a> ｜ <a href="guide-draft.html" class="hover:underline">ドラフトを知る</a> ｜ <a href="guide-enjoy.html" class="hover:underline">プロ野球を楽しむ</a></p>
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>
