@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="js/error-tracking.js"></script>
+  <title>遊び方・攻略の読み物｜ルール・採点・能力値・攻略のまとめ｜AIドラフト</title>
+  <meta name="description" content="AIドラフトの遊び方、攻略ガイド、採点の仕組み、能力値の決め方、1万回のシミュレーションの集計、よくある質問など、遊ぶときに役立つ読み物をまとめた一覧です。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="遊び方・攻略の読み物｜ルール・採点・能力値・攻略のまとめ｜AIドラフト">
+  <meta property="og:description" content="AIドラフトの遊び方、攻略ガイド、採点の仕組み、能力値の決め方、1万回のシミュレーションの集計、よくある質問など、遊ぶときに役立つ読み物をまとめた一覧です。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/guide-play.html">
+  <link rel="canonical" href="https://dreamteam9.com/guide-play.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
+  <style>
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "遊び方・攻略の読み物",
+    "description": "AIドラフトの遊び方、攻略ガイド、採点の仕組み、能力値の決め方、1万回のシミュレーションの集計、よくある質問など、遊ぶときに役立つ読み物をまとめた一覧です。",
+    "url": "https://dreamteam9.com/guide-play.html",
+    "inLanguage": "ja",
+    "hasPart": [
+      {
+        "@type": "Article",
+        "name": "遊び方・ルール解説",
+        "url": "https://dreamteam9.com/howto.html"
+      },
+      {
+        "@type": "Article",
+        "name": "ドラフト攻略ガイド",
+        "url": "https://dreamteam9.com/strategy.html"
+      },
+      {
+        "@type": "Article",
+        "name": "採点の仕組み",
+        "url": "https://dreamteam9.com/scoring.html"
+      },
+      {
+        "@type": "Article",
+        "name": "能力値の決め方",
+        "url": "https://dreamteam9.com/ability-method.html"
+      },
+      {
+        "@type": "Article",
+        "name": "AIだけのドラフトを1万回回して分かったこと",
+        "url": "https://dreamteam9.com/simulation-2026.html"
+      },
+      {
+        "@type": "Article",
+        "name": "よくある質問",
+        "url": "https://dreamteam9.com/faq.html"
+      }
+    ],
+    "publisher": {
+      "@type": "Organization",
+      "name": "dreamteam9.com"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="p-mincho text-base md:text-lg">🎮 遊び方・攻略</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">遊び方・攻略の読み物</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">AIドラフトを遊ぶときに役に立つ読み物を、このページにまとめました。ルールの説明から、点数がどう決まっているか、能力値がどこから来ているか、AIがどんな指名をしてくるかまで、ゲームの中身を作っている側から書いています。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">初めて遊ぶなら、まずは「遊び方」で流れをつかむのが早いと思います。何回か遊んでランクがCあたりで止まるようなら、「採点の仕組み」と「攻略ガイド」を読むと、どこで点を落としているかが見えてきます。選手の能力値に「あれ？」と思ったときは「能力値の決め方」へ。AIの癖が気になる人には、AIだけのドラフトを1万回回した集計もあります。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">ゲームを直すと内容が変わるページもあるので、そのときは各ページのほうを書き直しています。</p>
+    </section>
+
+    <section class="mb-8 space-y-3">
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="howto.html" class="p-link">📖 遊び方・ルール解説</a></h2>
+        <p class="text-sm leading-relaxed">担当球団を選ぶところから、ドラフト、スタメン編成、採点、プレーオフまでの流れ。3つのドラフト方式、ランクの基準、コンボの条件などのルールもここにまとめています。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="strategy.html" class="p-link">🎯 ドラフト攻略ガイド</a></h2>
+        <p class="text-sm leading-relaxed">序盤・中盤・終盤の指名の考え方、ポジションのバランス、打順と守備位置の組み方、コンボの狙い方、AI球団の傾向を読んだ立ち回り。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="scoring.html" class="p-link">💯 採点の仕組み</a></h2>
+        <p class="text-sm leading-relaxed">6つの項目の点数の出し方、打順と守備位置の適性、0〜100点への直し方とランク、守れる位置の扱い、コンボが試合でどう効くか。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="ability-method.html" class="p-link">📐 能力値の決め方</a></h2>
+        <p class="text-sm leading-relaxed">ミート・パワー・走力・守備・球威・制球・スタミナを、プロ野球の一軍の成績からどう計算しているか。出場が少ない選手の扱いや、守れる位置の決め方も。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="simulation-2026.html" class="p-link">🔁 AIだけのドラフトを1万回回して分かったこと</a></h2>
+        <p class="text-sm leading-relaxed">12球団・4球団・2球団で1万回ずつ回した集計。1巡目に入札が集まる選手、ランクの出方、球団ごとの差、コンボの出やすさ。</p>
+      </div>
+      <div class="p-card p-4">
+        <h2 class="p-mincho text-base md:text-lg mb-1"><a href="faq.html" class="p-link">❓ よくある質問</a></h2>
+        <p class="text-sm leading-relaxed">料金、対応している環境、選手データの出典、AIの指名の考え方、不具合の知らせ方など、よく聞かれることへの答え。</p>
+      </div>
+    </section>
+
+    <section class="mb-8 text-center">
+      <p class="text-xs p-sub mb-2">ほかの読み物の一覧</p>
+      <p class="text-sm"><a href="guide-draft.html" class="p-link font-bold">🗒️ ドラフトを知る</a> ｜ <a href="guide-enjoy.html" class="p-link font-bold">⚾ プロ野球を楽しむ</a></p>
+    </section>
+
+    <div class="text-center pb-6">
+      <a href="index.html" class="p-btn b-shu inline-flex items-center justify-center py-3 px-8">AIドラフトを始める</a>
+    </div>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+  <footer class="text-center p-sub text-xs py-6">
+    <p class="mb-2">読み物：<a href="guide-play.html" class="hover:underline">遊び方・攻略</a> ｜ <a href="guide-draft.html" class="hover:underline">ドラフトを知る</a> ｜ <a href="guide-enjoy.html" class="hover:underline">プロ野球を楽しむ</a></p>
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>
