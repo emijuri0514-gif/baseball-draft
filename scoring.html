@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="js/error-tracking.js"></script>
+  <title>採点の仕組み｜ランク・コンボ・守れる位置の考え方｜AIドラフト</title>
+  <meta name="description" content="AIドラフトでチームのランク（S〜G）がどう決まるかを解説します。6つの項目の点数の出し方、打順と守備位置の適性、コンボの効果、守れる位置の考え方まで。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="採点の仕組み｜ランク・コンボ・守れる位置の考え方｜AIドラフト">
+  <meta property="og:description" content="AIドラフトでチームのランク（S〜G）がどう決まるかを解説します。6つの項目の点数の出し方、打順と守備位置の適性、コンボの効果、守れる位置の考え方まで。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/scoring.html">
+  <link rel="canonical" href="https://dreamteam9.com/scoring.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
+  <style>
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "採点の仕組み｜ランク・コンボ・守れる位置の考え方",
+    "description": "AIドラフトでチームのランク（S〜G）がどう決まるかを解説します。6つの項目の点数の出し方、打順と守備位置の適性、コンボの効果、守れる位置の考え方まで。",
+    "image": "https://dreamteam9.com/images/ogp-top.jpg",
+    "mainEntityOfPage": "https://dreamteam9.com/scoring.html",
+    "inLanguage": "ja",
+    "publisher": {
+      "@type": "Organization",
+      "name": "dreamteam9.com"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="p-mincho text-base md:text-lg">💯 採点の仕組み</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">ドラフトの結果は、どうやって採点されている？</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">AIドラフトでは、12巡のドラフトとスタメン編成が終わると、すべての球団のチームが採点され、S〜Gのランクが付きます。このページでは、その点数がどうやって決まるのかを説明します。操作の手順やルールの一覧は「遊び方」のページにまとめているので、ここでは「なぜこのランクになったのか」が分かるように、採点の考え方を中心に書きます。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">① 採点の流れ</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">採点は、次の3つの段階で行います。</p>
+      <ol class="list-decimal pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">6つの項目の素点を出す</span>：パワー・ミート・機動力・守備力・先発陣・救援陣</li><li><span class="p-em">打順と守備位置の適性で、素点を少し上げ下げする</span></li><li><span class="p-em">6つの項目を0〜100点に直して平均し、その点数でランクを決める</span></li></ol>
+      <p class="text-sm md:text-base leading-relaxed mb-2">結果画面のレーダーチャートに出ている6つの数字が、3.の「0〜100点に直した各項目の点数」です。チームの総合点（pt）は、この6つの平均です。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">② 6つの項目の素点</h2>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">パワー・ミート・機動力</span>：スタメンの野手9人（DHを含む）の能力値の平均です。ベンチの選手は入りません</li><li><span class="p-em">守備力</span>：DHを除く8人の守備力の平均です。ただし、その選手が守っている位置によって値が変わります（⑤で説明します）</li><li><span class="p-em">先発陣</span>：先発の枠に入れた投手を、先発として評価した点数です。先発は、制球とスタミナを重めに、球威も加えて見ています</li><li><span class="p-em">救援陣</span>：中継ぎと抑えの枠に入れた2人を、救援として評価した点数の平均です。救援は球威を一番重く見ています</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">投手は、役割が合っているかどうかでも点数が変わります。本職の役割に置くと少し上がり、ほかの役割ができる投手でも本職でなければ少し下がります。先発の経験がない投手を先発に置くと、大きく下がります。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">③ 打順と守備位置の適性</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">同じ選手を集めても、並べ方で点数は変わります。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">守備位置の適性</span>：全員がそれぞれの適性に合った位置に就いているほど、6つの項目すべてが少しずつ上がります</li><li><span class="p-em">打順の適性</span>：打順ごとに、求める能力の配分を決めています。たとえば1番は「出塁と足で流れを作る」ので走力とミート、4番は「チーム最強の長打力」なのでパワーを一番重く見ます。8番は守備を重めに見るなど、下位打線にも役割があります。その打順に合った選手を置くほど、打線の4つの項目が上がります</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">スタメン編成の画面で、打順と守備位置のところに出る「◎○△▲✕」の印は、この適性の目安です。◎や○が多いほど、採点も試合も有利になります。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">④ 0〜100点への直し方とランク</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">能力値の平均をそのまま点数にすると、どんな組み方でも似たような点数になり、ランクの差がつきません。そこで、「わざと一番弱い選手を一番悪い配置で組んだとき」から「理想の選手を理想の配置で組んだとき」までを0〜100点に割り当てています。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">どのくらいのランクになるかは、遊ぶ球団の数で大きく変わります。2026年11月13日に、AIの球団と、人が指名したと想定したチームで1万回ずつ試したところ、12球団で遊ぶと、AIの球団も、空いているポジションに本職の選手を一覧の上から指名したチームも、C〜B（Cが中心）になり、Aはほとんど出ませんでした。球団の数が少ないほど強い選手が回ってくるので、4球団ならA〜Bが中心です。適当に指名したり、選手を守れない位置に置いたりすると、D以下になりやすくなります。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">85点を超えたところからは、点数の伸びがゆるやかになります。いくつもの項目が100点に張り付いて差がつかなくなるのを防ぐためで、そのぶんSランクはなかなか取れません。</p>
+      <div class="overflow-x-auto"><table class="w-full text-sm border-collapse"><thead><tr class="p-rule-top"><th class="p-2 text-left">ランク</th><th class="p-2 text-left">総合点</th><th class="p-2 text-left">評価</th></tr></thead><tbody><tr class="p-rule-top"><td class="p-2">S</td><td class="p-2">90〜100</td><td class="p-2">伝説級のドラフト采配！</td></tr><tr class="p-rule-top"><td class="p-2">A</td><td class="p-2">80〜89</td><td class="p-2">素晴らしい編成！</td></tr><tr class="p-rule-top"><td class="p-2">B</td><td class="p-2">70〜79</td><td class="p-2">堅実にまとまった編成</td></tr><tr class="p-rule-top"><td class="p-2">C</td><td class="p-2">60〜69</td><td class="p-2">及第点の編成</td></tr><tr class="p-rule-top"><td class="p-2">D</td><td class="p-2">50〜59</td><td class="p-2">伸びしろだらけの編成</td></tr><tr class="p-rule-top"><td class="p-2">E</td><td class="p-2">40〜49</td><td class="p-2">来年に期待の編成</td></tr><tr class="p-rule-top"><td class="p-2">F</td><td class="p-2">30〜39</td><td class="p-2">再建は来年から…</td></tr><tr class="p-rule-top"><td class="p-2">G</td><td class="p-2">0〜29</td><td class="p-2">一からの立て直しが必要</td></tr></tbody></table></div>
+      <p class="text-sm md:text-base leading-relaxed mb-2">6つの項目の平均なので、どれか1つが極端に低いと総合点が大きく下がります。打線だけ、投手だけを集めるより、弱点を作らない方がランクは上がりやすくなります。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">⑤ 守れる位置の考え方</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">選手には、それぞれ守れる位置があります。一番多く守ってきた位置が「本職」、それ以外にも守った経験がある位置が「守れる位置」です（決め方は「能力値の決め方」のページで説明しています）。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">本職に置く</span>：守備力がそのまま使われます</li><li><span class="p-em">守れる位置に置く</span>：守備力が少しだけ下がります。守れる位置には、直近3年で20試合以上守った「可」と、1〜19試合だけ守った「一応」がありますが、ゲームの中ではどちらも同じ扱いです</li><li><span class="p-em">守れない位置に置く</span>：守備力が大きく下がります。内野手を別の内野に回すより、内野手を外野に回す方が大きく下がり、捕手を守れない選手を捕手に置く（または捕手しか守れない選手をほかの位置に置く）と一番大きく下がります</li><li><span class="p-em">DH</span>：守備がないので、適性は関係ありません。打つ力だけで決まります</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">スタメン編成の画面では、打者を枠に置くと、守備位置が本職を優先して自動で合わせられます。「おまかせで並べる」を押すと、打順・守備位置・投手をまとめて自動で並べることもできます（どちらも、あとから自由に変えられます）。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">外野手は「外野」として守れる位置が決まっているので、左翼・中堅・右翼のどこに置いても本職と同じ扱いです。守れる位置が多い選手は、ほかの選手との組み合わせを考えるときに頼りになります。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">⑥ コンボ：採点ではなく、試合で効く</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">特定の条件を満たすと「コンボ」が発動します。コンボは<span class="p-em">採点（ランク）には影響しません</span>。かわりに、ランクの後のプレーオフの試合で、チームの打撃・守備・投手力が少しだけ上がります。条件の人数は、スタメンだけでなく、指名した選手全員（ベンチの選手も含む）で数えます。</p>
+      <div class="overflow-x-auto"><table class="w-full text-sm border-collapse"><thead><tr class="p-rule-top"><th class="p-2 text-left">コンボ</th><th class="p-2 text-left">条件</th><th class="p-2 text-left">試合での効果</th></tr></thead><tbody><tr class="p-rule-top"><td class="p-2">超重量打線</td><td class="p-2">パワー75以上の野手が4人以上</td><td class="p-2">長打が出やすく</td></tr><tr class="p-rule-top"><td class="p-2">機動力野球</td><td class="p-2">走力73以上の野手が3人以上</td><td class="p-2">足を使った攻撃が強く</td></tr><tr class="p-rule-top"><td class="p-2">鉄壁の守備陣</td><td class="p-2">守備力65以上の野手が5人以上</td><td class="p-2">守備が堅く</td></tr><tr class="p-rule-top"><td class="p-2">黄金の投手陣</td><td class="p-2">総合力75以上の投手が2人以上（総合力は、先発なら球威・制球・スタミナの平均、中継ぎ・抑えなら球威を一番重く見た値）</td><td class="p-2">先発・救援とも強く</td></tr><tr class="p-rule-top"><td class="p-2">安打製造機</td><td class="p-2">ミート70以上の野手が3人以上</td><td class="p-2">ヒットが出やすく</td></tr><tr class="p-rule-top"><td class="p-2">勝利の方程式</td><td class="p-2">球威80以上で、中継ぎか抑えを務められる投手が2人以上</td><td class="p-2">救援が強く</td></tr><tr class="p-rule-top"><td class="p-2">センターライン</td><td class="p-2">捕手・二塁・遊撃・外野のどれかを守れる選手で、守備力65以上が5人以上</td><td class="p-2">守備が堅く</td></tr><tr class="p-rule-top"><td class="p-2">ユーティリティ</td><td class="p-2">守れる位置（投手は務められる役割）が2つ以上の選手が5人以上</td><td class="p-2">全体が少しずつ</td></tr><tr class="p-rule-top"><td class="p-2">○○愛</td><td class="p-2">同じ球団の選手が3人以上</td><td class="p-2">その球団の選手だけ少し</td></tr></tbody></table></div>
+      <p class="text-sm md:text-base leading-relaxed mb-2">コンボの条件は、遊び方のページにも載せています。ランクを上げたいときは適性と配置、プレーオフで勝ちたいときはコンボも、と考えると、指名の楽しみが増えると思います。</p>
+    </section>
+
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">関連する読み物・ゲーム</h2>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1">
+        <li><a href="howto.html" class="p-link">遊び方（操作とルール）</a></li>
+        <li><a href="ability-method.html" class="p-link">能力値の決め方</a></li>
+        <li><a href="simulation-2026.html" class="p-link">AIだけのドラフトを1万回回して分かったこと</a></li>
+        <li><a href="strategy.html" class="p-link">攻略ガイド</a></li>
+        <li><a href="glossary.html" class="p-link">野球・ドラフト用語集</a></li>
+        <li><a href="index.html" class="p-link">AIドラフトを始める</a></li>
+      </ul>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+  <footer class="text-center p-sub text-xs py-6">
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>
