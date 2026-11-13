@@ -92,12 +92,472 @@
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-top" class="ad-slot"></div>
 
-    <p class="text-sm text-gray-400 mb-8 text-center">
-      ゲーム内のAIは球団ごとに異なる「スカウト傾向」を持っており、能力値のどこを重視して指名するかが変わります。<br>
-      同じ選手でも、担当するAI球団によって評価が変わるのはこのためです。
-    </p>
+    <section class="mb-10">
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">このゲームの11のAI球団は、それぞれ違う「スカウト傾向」を持っています。同じ選手を見ても、どの能力を重く見るかが球団ごとに違うので、指名の順番やライバルになりやすい相手が変わります。ここでは、AIがどうやって指名する選手を決めているかと、12球団それぞれの傾向を紹介します。</p>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">※ここでいう傾向は、このゲームのAIの設定です。実在の球団の方針や、実際のスカウトの考え方を表すものではありません。</p>
+    </section>
 
-    <div id="team-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    <section class="mb-10">
+      <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">① AIはどうやって指名する選手を決めている？</h2>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">AIは、指名のたびに、残っている選手ひとりひとりに点数をつけ、点数の高い選手を指名します。点数のつけ方は、おおまかに次のとおりです。</p>
+      <ol class="space-y-2 text-sm md:text-base text-gray-200 list-decimal pl-5 mb-3 leading-relaxed"><li><span class="font-black text-yellow-300">足りないポジションを埋める</span>：スタメンを組むのに必要なポジション（捕手・内野・外野・投手）のうち、まだ足りないところに入る選手を優先します。どこかのポジションを守れる人がいなくなりそうなときは、そのポジションを守れる選手だけを候補にします</li><li><span class="font-black text-yellow-300">能力を球団の傾向で重みづけする</span>：野手は「パワー・ミート・走力・守備」の4つ、投手は投手としての総合力を見ます。そこに球団ごとの重み（下の表の数字）を掛けます。1.00 が標準で、1.30 なら3割増しで重く見る、0.80 なら2割引きで軽く見る、という意味です。どの球団にも共通して、走力や守備より、パワーとミート（打つ力）を重く見る土台の考え方を入れています</li><li><span class="font-black text-yellow-300">エースは早めに確保する</span>：先発投手がまだいない球団は、球威と制球のそろった先発投手を重く見ます。スタメンの先発は1人なので、1人確保したあとは、ほかの投手と同じ見方に戻ります</li><li><span class="font-black text-yellow-300">実績と出場の多さも少しだけ見る</span>：プロ野球の成績から計算した「貢献度」（出場の量や守るポジションも含めた、チームへの貢献の目安）と、タイトルや表彰・オールスター出場などの公表された実績を、AIの評価に少しだけ加えています。直近の出場が少ない選手と、35歳を超えたベテランは、少し評価を下げます。逆に、先発と救援の両方を務めてきた投手は、序盤の指名で少し高く見ます。人どうしのドラフトでも、実績が少ない選手や、これからの衰えが心配な選手を1巡目で取ることは少ないからです。これはAIの指名の判断にだけ使っていて、選手の能力値や採点には使っていません</li><li><span class="font-black text-yellow-300">1巡目は球団ごとに方針が分かれる</span>：1巡目だけは、評価の高い数人の中から、評価が高いほど選ばれやすい形で1人を選びます。そのため、毎回同じ選手に全球団の入札が集まることはなく、遊ぶたびに1位の顔ぶれが少しずつ変わります</li></ol>
+    </section>
+
+    <section class="mb-10">
+      <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">② 12球団の傾向</h2>
+      <div id="team-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#f97316] text-gray-900 px-4 py-2 flex justify-between items-center">
+              <span class="font-black">巨人</span>
+              <span class="text-xs font-bold">長距離砲補強型</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">長打力のある選手を最優先で指名する傾向。守備や走力は多少犠牲にしてでも、一発のあるパワーヒッターを集めようとします。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:96.2962963%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.30</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:59.25925926%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.80</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:59.25925926%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.80</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:85.18518519%; background:#38bdf8"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.15</span>
+              </div>
+              <a href="players.html?team=%E5%B7%A8%E4%BA%BA" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 巨人の選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f3272.92dabf11.573f3273.206e23f1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Finreason%2F101632%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 読売ジャイアンツ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#eab308] text-gray-900 px-4 py-2 flex justify-between items-center">
+              <span class="font-black">阪神</span>
+              <span class="text-xs font-bold">投手王国・堅守巧打</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">投手力を最も重視しつつ、堅い守備とコンパクトな打撃を好む伝統的な編成方針です。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:81.48148148%; background:#38bdf8"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.10</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:77.77777778%; background:#38bdf8"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.05</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:96.2962963%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.30</span>
+              </div>
+              <a href="players.html?team=%E9%98%AA%E7%A5%9E" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 阪神の選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f3272.92dabf11.573f3273.206e23f1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Finreason%2F104001%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 阪神タイガース ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#0ea5e9] text-gray-900 px-4 py-2 flex justify-between items-center">
+              <span class="font-black">DeNA</span>
+              <span class="text-xs font-bold">長打指向スラッガー編成</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">長打力重視型。多少荒くても一発の魅力があるスラッガータイプの打者を好んで集めます。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:92.59259259%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.25</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:62.96296296%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.85</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:62.96296296%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.85</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <a href="players.html?team=DeNA" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 DeNAの選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f410e.74a2df3a.573f410f.092c90b5/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fselection-j%2Fnpb-220719new09%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 横浜DeNAベイスターズ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#dc2626] text-white px-4 py-2 flex justify-between items-center">
+              <span class="font-black">広島</span>
+              <span class="text-xs font-bold">機動力・守備の育成路線</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">走力・守備力を重視し、堅実な守備固めと機動力を軸にしたチーム作りを志向します。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:59.25925926%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.80</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:96.2962963%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.30</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:88.88888889%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.20</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <a href="players.html?team=%E5%BA%83%E5%B3%B6" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 広島の選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f3c92.71c5931e.573f3c93.c671d4b1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmsjeans%2F21ss1961701%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 広島東洋カープ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#2563eb] text-white px-4 py-2 flex justify-between items-center">
+              <span class="font-black">中日</span>
+              <span class="text-xs font-bold">伝統の投手陣・堅守型</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">投手力と守備を最優先。打撃力は多少低くても失点を防ぐ手堅い編成を好みます。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:62.96296296%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.85</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:88.88888889%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.20</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:96.2962963%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.30</span>
+              </div>
+              <a href="players.html?team=%E4%B8%AD%E6%97%A5" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 中日の選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f410e.74a2df3a.573f410f.092c90b5/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fselection-j%2Fnpb-220719new11%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 中日ドラゴンズ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#22c55e] text-gray-900 px-4 py-2 flex justify-between items-center">
+              <span class="font-black">ヤクルト</span>
+              <span class="text-xs font-bold">スワローズ打線・攻撃野球</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">長打力・確実性ともに高水準を求める、打撃力全振り型の編成方針です。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:88.88888889%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.20</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:88.88888889%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.20</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:55.55555556%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.75</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:59.25925926%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.80</span>
+              </div>
+              <a href="players.html?team=%E3%83%A4%E3%82%AF%E3%83%AB%E3%83%88" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 ヤクルトの選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f3add.4ca0beb5.573f3ade.611a0fe0/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fauc-elehelm-hatstore%2F12746961%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 東京ヤクルトスワローズ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#0f172a] text-white px-4 py-2 flex justify-between items-center">
+              <span class="font-black">オリックス</span>
+              <span class="text-xs font-bold">エース輩出の投手王国</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">12球団で最も投手を重視するタイプ。とにかく好投手を集めたがる傾向があります。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:100%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.35</span>
+              </div>
+              <a href="players.html?team=%E3%82%AA%E3%83%AA%E3%83%83%E3%82%AF%E3%82%B9" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 オリックスの選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f6cfa.0de4ba55.573f6cfb.58972fa4/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fauc-amazingstore%2F13552121%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 オリックス・バファローズ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#6b7280] text-white px-4 py-2 flex justify-between items-center">
+              <span class="font-black">ロッテ</span>
+              <span class="text-xs font-bold">堅実な投手・守備育成型</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">投手・守備を手堅く揃える堅実なタイプ。極端な偏りは少なめです。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:81.48148148%; background:#38bdf8"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.10</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:88.88888889%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.20</span>
+              </div>
+              <a href="players.html?team=%E3%83%AD%E3%83%83%E3%83%86" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 ロッテの選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f69ab.48a04eac.573f69ac.cb303e18/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmischief%2F10019441%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 千葉ロッテマリーンズ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#fde047] text-gray-900 px-4 py-2 flex justify-between items-center">
+              <span class="font-black">ソフトバンク</span>
+              <span class="text-xs font-bold">資金力で最強戦力を揃える</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">打力・投手力ともに高水準を求める、隙のない編成を目指す豊富な戦力補強型です。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:92.59259259%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.25</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:81.48148148%; background:#38bdf8"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.10</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:88.88888889%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.20</span>
+              </div>
+              <a href="players.html?team=%E3%82%BD%E3%83%95%E3%83%88%E3%83%90%E3%83%B3%E3%82%AF" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 ソフトバンクの選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f69ab.48a04eac.573f69ac.cb303e18/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmischief%2F10019451%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 福岡ソフトバンクホークス ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#9f1239] text-white px-4 py-2 flex justify-between items-center">
+              <span class="font-black">楽天</span>
+              <span class="text-xs font-bold">エース中心のバランス型</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">極端な偏りのないバランス型。その中でもやや投手を重視する傾向があります。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:88.88888889%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.20</span>
+              </div>
+              <a href="players.html?team=%E6%A5%BD%E5%A4%A9" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 楽天の選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f7bed.008017f3.573f7bee.be459c85/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Frakuteneagles%2Fd0401292%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 東北楽天ゴールデンイーグルス ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#7dd3fc] text-gray-900 px-4 py-2 flex justify-between items-center">
+              <span class="font-black">日本ハム</span>
+              <span class="text-xs font-bold">データ重視の逸材発掘型</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">走力をやや重視しつつ全体的にバランスの良い、将来性のある選手を見出すタイプです。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:85.18518519%; background:#38bdf8"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.15</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <a href="players.html?team=%E6%97%A5%E6%9C%AC%E3%83%8F%E3%83%A0" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 日本ハムの選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f69ab.48a04eac.573f69ac.cb303e18/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmischief%2F10078139%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 北海道日本ハムファイターズ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+          <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+            <div class="bg-[#06b6d4] text-gray-900 px-4 py-2 flex justify-between items-center">
+              <span class="font-black">西武</span>
+              <span class="text-xs font-bold">俊足強打の機動力野球</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <p class="text-xs text-gray-300 mb-3">走力を最も重視するタイプ。機動力を活かした野球を志向する編成方針です。</p>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">パワー</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:74.07407407%; background:#9ca3af"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.00</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">ミート</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">走力</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:96.2962963%; background:#eab308"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">1.30</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">守備</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="w-12 text-gray-400 shrink-0">投手</span>
+                <div class="bar-track flex-1"><div class="bar-fill" style="width:66.66666667%; background:#f97316"></div></div>
+                <span class="w-8 text-right text-gray-300 shrink-0">0.90</span>
+              </div>
+              <a href="players.html?team=%E8%A5%BF%E6%AD%A6" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 西武の選手を見る</a>
+              <a href="https://hb.afl.rakuten.co.jp/ichiba/573f3272.92dabf11.573f3273.206e23f1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Finreason%2F101655%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 埼玉西武ライオンズ ニューエラキャップ（PR）</a>
+            </div>
+          </div>
+      </div>
+      <div class="overflow-x-auto mb-3"><table class="w-full text-xs md:text-sm text-gray-200 border-collapse"><thead><tr class="border-b border-gray-600 text-gray-400"><th class="p-2 text-left whitespace-nowrap">球団</th><th class="p-2 text-left whitespace-nowrap">傾向の名前</th><th class="p-2 text-left whitespace-nowrap">重く見る</th><th class="p-2 text-left whitespace-nowrap">軽く見る</th></tr></thead><tbody><tr class="border-t border-gray-700"><td class="p-2">巨人</td><td class="p-2">長距離砲補強型</td><td class="p-2">パワー（1.30）・投手（1.15）</td><td class="p-2">走力・守備（0.80）</td></tr><tr class="border-t border-gray-700"><td class="p-2">阪神</td><td class="p-2">投手王国・堅守巧打</td><td class="p-2">投手（1.30）・ミート（1.10）</td><td class="p-2">パワー（0.90）</td></tr><tr class="border-t border-gray-700"><td class="p-2">DeNA</td><td class="p-2">長打指向スラッガー編成</td><td class="p-2">パワー（1.25）</td><td class="p-2">走力・守備（0.85）</td></tr><tr class="border-t border-gray-700"><td class="p-2">ヤクルト</td><td class="p-2">スワローズ打線・攻撃野球</td><td class="p-2">パワー・ミート（1.20）</td><td class="p-2">守備（0.75）・投手（0.80）</td></tr><tr class="border-t border-gray-700"><td class="p-2">中日</td><td class="p-2">伝統の投手陣・堅守型</td><td class="p-2">投手（1.30）・守備（1.20）</td><td class="p-2">パワー（0.85）</td></tr><tr class="border-t border-gray-700"><td class="p-2">広島</td><td class="p-2">機動力・守備の育成路線</td><td class="p-2">走力（1.30）・守備（1.20）</td><td class="p-2">パワー（0.80）</td></tr><tr class="border-t border-gray-700"><td class="p-2">オリックス</td><td class="p-2">エース輩出の投手王国</td><td class="p-2">投手（1.35。12球団で一番）</td><td class="p-2">パワー・走力（0.90）</td></tr><tr class="border-t border-gray-700"><td class="p-2">ロッテ</td><td class="p-2">堅実な投手・守備育成型</td><td class="p-2">投手（1.20）・守備（1.10）</td><td class="p-2">パワー（0.90）</td></tr><tr class="border-t border-gray-700"><td class="p-2">ソフトバンク</td><td class="p-2">資金力で最強戦力を揃える</td><td class="p-2">パワー（1.25）・投手（1.20）・ミート（1.10）</td><td class="p-2">なし</td></tr><tr class="border-t border-gray-700"><td class="p-2">楽天</td><td class="p-2">エース中心のバランス型</td><td class="p-2">投手（1.20）</td><td class="p-2">なし</td></tr><tr class="border-t border-gray-700"><td class="p-2">日本ハム</td><td class="p-2">データ重視の逸材発掘型</td><td class="p-2">走力（1.15）</td><td class="p-2">なし</td></tr><tr class="border-t border-gray-700"><td class="p-2">西武</td><td class="p-2">俊足強打の機動力野球</td><td class="p-2">走力（1.30）</td><td class="p-2">ミート・守備・投手（0.90）</td></tr></tbody></table></div>
+    </section>
+
+    <section class="mb-10">
+      <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">③ 1万回のドラフトで見る、AIがよく1巡目で取るタイプ</h2>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">2026年11月13日に、AIだけのドラフトを12球団で1万回回して、各球団のAIが1巡目にどこへ入札したかを数えました。</p>
+      <div class="overflow-x-auto mb-3"><table class="w-full text-xs md:text-sm text-gray-200 border-collapse"><thead><tr class="border-b border-gray-600 text-gray-400"><th class="p-2 text-left whitespace-nowrap">球団</th><th class="p-2 text-left whitespace-nowrap">1巡目で投手に入札した割合</th><th class="p-2 text-left whitespace-nowrap">よく入札した選手</th></tr></thead><tbody><tr class="border-t border-gray-700"><td class="p-2">巨人</td><td class="p-2">41%</td><td class="p-2">近藤健介・牧秀悟</td></tr><tr class="border-t border-gray-700"><td class="p-2">阪神</td><td class="p-2">59%</td><td class="p-2">近藤健介・牧秀悟・伊藤大海</td></tr><tr class="border-t border-gray-700"><td class="p-2">DeNA</td><td class="p-2">40%</td><td class="p-2">近藤健介・牧秀悟</td></tr><tr class="border-t border-gray-700"><td class="p-2">ヤクルト</td><td class="p-2">26%</td><td class="p-2">近藤健介・牧秀悟</td></tr><tr class="border-t border-gray-700"><td class="p-2">中日</td><td class="p-2">66%</td><td class="p-2">伊藤大海・髙橋遥人</td></tr><tr class="border-t border-gray-700"><td class="p-2">広島</td><td class="p-2">58%</td><td class="p-2">近藤健介・牧秀悟・伊藤大海</td></tr><tr class="border-t border-gray-700"><td class="p-2">オリックス</td><td class="p-2">69%</td><td class="p-2">伊藤大海・髙橋遥人</td></tr><tr class="border-t border-gray-700"><td class="p-2">ロッテ</td><td class="p-2">64%</td><td class="p-2">近藤健介・伊藤大海</td></tr><tr class="border-t border-gray-700"><td class="p-2">ソフトバンク</td><td class="p-2">31%</td><td class="p-2">近藤健介・牧秀悟</td></tr><tr class="border-t border-gray-700"><td class="p-2">楽天</td><td class="p-2">58%</td><td class="p-2">近藤健介・牧秀悟・伊藤大海</td></tr><tr class="border-t border-gray-700"><td class="p-2">日本ハム</td><td class="p-2">51%</td><td class="p-2">近藤健介・牧秀悟</td></tr><tr class="border-t border-gray-700"><td class="p-2">西武</td><td class="p-2">55%</td><td class="p-2">近藤健介・牧秀悟</td></tr></tbody></table></div>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">（「よく入札した選手」は、その球団の入札先のうち多かった選手。1人で入札の3割を超えたのは、ヤクルトとソフトバンクの近藤選手だけでした）</p>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">パワーを重く見るヤクルト・ソフトバンク・DeNA・巨人は、1巡目でも野手、とくに近藤選手と牧選手に入札することが多く、投手を重く見るオリックス・中日は、1巡目から先発投手を取りにいきます。</p>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">どの能力を重く見るかで、採点の結果にも差が出ます。その差の大きさ（一番上と一番下の球団の平均点の差）は「1万回のシミュレーションで分かったこと」のページにまとめています。これは<span class="font-black text-yellow-300">このゲームのAIの傾向で、実在の球団の強さとは関係ありません</span>。</p>
+    </section>
+
+    <section class="mb-10">
+      <h2 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1 mb-3">④ 担当球団を選ぶときのヒント</h2>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">担当球団は、ゲームの中では「あなたの球団」になり、その球団の傾向は AI としては使われません。かわりに、残りの11球団が上の傾向で指名してきます。</p>
+      <ul class="space-y-2 text-sm md:text-base text-gray-200 list-disc pl-5 mb-3 leading-relaxed"><li><span class="font-black text-yellow-300">長打の選手を取りたいなら、巨人・DeNA・ヤクルト・ソフトバンクが強力なライバル</span>：4球団ともパワーを重く見るので、1巡目で長打の選手が重なりやすくなります。自分がこのどれかを担当すると、その1球団ぶんライバルが減ります</li><li><span class="font-black text-yellow-300">投手を集めたいなら、オリックス・阪神・中日が手ごわい</span>：投手を重く見る球団が多いので、好投手は早めに消えます</li><li><span class="font-black text-yellow-300">俊足・好守の選手は、広島と西武が狙ってくる</span>：走力を重く見る球団は2つだけなので、ほかのタイプより残りやすいことがあります</li><li><span class="font-black text-yellow-300">AIの数を減らすと、ライバルの顔ぶれも変わる</span>：対戦するAIの数は1〜11球団から選べます。少ないときは、どの球団が入るかで取り合いになる選手が大きく変わります</li></ul>
+      <p class="text-sm md:text-base text-gray-200 leading-relaxed mb-3">どの球団を選んでも、ルールや能力値は同じです。推しの球団で遊ぶのが一番楽しいと思います。</p>
+    </section>
+
   
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-bottom" class="ad-slot"></div>
@@ -105,6 +565,8 @@
     <section class="border-t border-gray-700 pt-6 mt-8 text-center">
       <p class="text-xs text-gray-400 mb-3">こちらのページもどうぞ</p>
       <div class="flex flex-wrap justify-center gap-x-5 gap-y-2">
+        <a href="simulation-2026.html" class="text-sm text-blue-400 hover:underline font-bold">🔁 1万回のシミュレーション</a>
+        <a href="scoring.html" class="text-sm text-blue-400 hover:underline font-bold">💯 採点の仕組み</a>
         <a href="strategy.html" class="text-sm text-blue-400 hover:underline font-bold">🎯 攻略ガイド</a>
         <a href="rankings.html" class="text-sm text-blue-400 hover:underline font-bold">🏆 ランキング</a>
         <a href="players.html" class="text-sm text-blue-400 hover:underline font-bold">🧢 選手名鑑</a>
@@ -115,102 +577,5 @@
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 
-  <script>
-    const TEAM_STYLE = {
-      "巨人": { bg: "bg-[#f97316]", text: "text-gray-900" },
-      "阪神": { bg: "bg-[#eab308]", text: "text-gray-900" },
-      "DeNA": { bg: "bg-[#0ea5e9]", text: "text-gray-900" },
-      "ヤクルト": { bg: "bg-[#22c55e]", text: "text-gray-900" },
-      "中日": { bg: "bg-[#2563eb]", text: "text-white" },
-      "広島": { bg: "bg-[#dc2626]", text: "text-white" },
-      "オリックス": { bg: "bg-[#0f172a]", text: "text-white" },
-      "ロッテ": { bg: "bg-[#6b7280]", text: "text-white" },
-      "ソフトバンク": { bg: "bg-[#fde047]", text: "text-gray-900" },
-      "楽天": { bg: "bg-[#9f1239]", text: "text-white" },
-      "日本ハム": { bg: "bg-[#7dd3fc]", text: "text-gray-900" },
-      "西武": { bg: "bg-[#06b6d4]", text: "text-gray-900" }
-    };
-
-    const TEAM_SCOUTING = {
-      "巨人":       { label: "長距離砲補強型",       pow: 1.30, meet: 1.00, run: 0.80, def: 0.80, pitcher: 1.15,
-                      desc: "長打力のある選手を最優先で指名する傾向。守備や走力は多少犠牲にしてでも、一発のあるパワーヒッターを集めようとします。" },
-      "阪神":       { label: "投手王国・堅守巧打",   pow: 0.90, meet: 1.10, run: 1.00, def: 1.05, pitcher: 1.30,
-                      desc: "投手力を最も重視しつつ、堅い守備とコンパクトな打撃を好む伝統的な編成方針です。" },
-      "DeNA":       { label: "長打指向スラッガー編成", pow: 1.25, meet: 1.00, run: 0.85, def: 0.85, pitcher: 1.00,
-                      desc: "長打力重視型。多少荒くても一発の魅力があるスラッガータイプの打者を好んで集めます。" },
-      "広島":       { label: "機動力・守備の育成路線", pow: 0.80, meet: 1.00, run: 1.30, def: 1.20, pitcher: 0.90,
-                      desc: "走力・守備力を重視し、堅実な守備固めと機動力を軸にしたチーム作りを志向します。" },
-      "中日":       { label: "伝統の投手陣・堅守型", pow: 0.85, meet: 1.00, run: 1.00, def: 1.20, pitcher: 1.30,
-                      desc: "投手力と守備を最優先。打撃力は多少低くても失点を防ぐ手堅い編成を好みます。" },
-      "ヤクルト":   { label: "スワローズ打線・攻撃野球", pow: 1.20, meet: 1.20, run: 0.90, def: 0.75, pitcher: 0.80,
-                      desc: "長打力・確実性ともに高水準を求める、打撃力全振り型の編成方針です。" },
-      "オリックス": { label: "エース輩出の投手王国", pow: 0.90, meet: 1.00, run: 0.90, def: 1.00, pitcher: 1.35,
-                      desc: "12球団で最も投手を重視するタイプ。とにかく好投手を集めたがる傾向があります。" },
-      "ロッテ":     { label: "堅実な投手・守備育成型", pow: 0.90, meet: 1.00, run: 1.00, def: 1.10, pitcher: 1.20,
-                      desc: "投手・守備を手堅く揃える堅実なタイプ。極端な偏りは少なめです。" },
-      "ソフトバンク": { label: "資金力で最強戦力を揃える", pow: 1.25, meet: 1.10, run: 1.00, def: 1.00, pitcher: 1.20,
-                      desc: "打力・投手力ともに高水準を求める、隙のない編成を目指す豊富な戦力補強型です。" },
-      "楽天":       { label: "エース中心のバランス型", pow: 1.00, meet: 1.00, run: 1.00, def: 1.00, pitcher: 1.20,
-                      desc: "極端な偏りのないバランス型。その中でもやや投手を重視する傾向があります。" },
-      "日本ハム":   { label: "データ重視の逸材発掘型", pow: 1.00, meet: 1.00, run: 1.15, def: 1.00, pitcher: 1.00,
-                      desc: "走力をやや重視しつつ全体的にバランスの良い、将来性のある選手を見出すタイプです。" },
-      "西武":       { label: "俊足強打の機動力野球", pow: 1.00, meet: 0.90, run: 1.30, def: 0.90, pitcher: 0.90,
-                      desc: "走力を最も重視するタイプ。機動力を活かした野球を志向する編成方針です。" }
-    };
-
-    function bar(label, val) {
-      const pct = Math.min(100, (val / 1.35) * 100);
-      const color = val >= 1.2 ? '#eab308' : val >= 1.05 ? '#38bdf8' : val >= 0.95 ? '#9ca3af' : '#f97316';
-      return `
-        <div class="flex items-center gap-2 text-[11px]">
-          <span class="w-12 text-gray-400 shrink-0">${label}</span>
-          <div class="bar-track flex-1"><div class="bar-fill" style="width:${pct}%; background:${color}"></div></div>
-          <span class="w-8 text-right text-gray-300 shrink-0">${val.toFixed(2)}</span>
-        </div>
-      `;
-    }
-
-    // ★ アフィリエイトリンク：担当者が実際に選んだ商品のみ掲載。全球団分揃うまでは順次追加していく。
-    const TEAM_GOODS_LINK = {
-      "中日": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f410e.74a2df3a.573f410f.092c90b5/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fselection-j%2Fnpb-220719new11%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "中日ドラゴンズ ニューエラキャップ" },
-      "DeNA": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f410e.74a2df3a.573f410f.092c90b5/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fselection-j%2Fnpb-220719new09%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "横浜DeNAベイスターズ ニューエラキャップ" },
-      "広島": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f3c92.71c5931e.573f3c93.c671d4b1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmsjeans%2F21ss1961701%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "広島東洋カープ ニューエラキャップ" },
-      "ヤクルト": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f3add.4ca0beb5.573f3ade.611a0fe0/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fauc-elehelm-hatstore%2F12746961%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "東京ヤクルトスワローズ ニューエラキャップ" },
-      "阪神": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f3272.92dabf11.573f3273.206e23f1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Finreason%2F104001%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "阪神タイガース ニューエラキャップ" },
-      "巨人": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f3272.92dabf11.573f3273.206e23f1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Finreason%2F101632%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "読売ジャイアンツ ニューエラキャップ" },
-      "ソフトバンク": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f69ab.48a04eac.573f69ac.cb303e18/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmischief%2F10019451%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "福岡ソフトバンクホークス ニューエラキャップ" },
-      "オリックス": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f6cfa.0de4ba55.573f6cfb.58972fa4/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fauc-amazingstore%2F13552121%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "オリックス・バファローズ ニューエラキャップ" },
-      "日本ハム": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f69ab.48a04eac.573f69ac.cb303e18/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmischief%2F10078139%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "北海道日本ハムファイターズ ニューエラキャップ" },
-      "西武": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f3272.92dabf11.573f3273.206e23f1/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Finreason%2F101655%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "埼玉西武ライオンズ ニューエラキャップ" },
-      "楽天": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f7bed.008017f3.573f7bee.be459c85/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Frakuteneagles%2Fd0401292%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "東北楽天ゴールデンイーグルス ニューエラキャップ" },
-      "ロッテ": { url: "https://hb.afl.rakuten.co.jp/ichiba/573f69ab.48a04eac.573f69ac.cb303e18/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmischief%2F10019441%2F&amp;link_type=hybrid_url&amp;ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "千葉ロッテマリーンズ ニューエラキャップ" }
-    };
-
-    function renderCard(team) {
-      const s = TEAM_SCOUTING[team];
-      const style = TEAM_STYLE[team];
-      const goods = TEAM_GOODS_LINK[team];
-      return `
-        <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
-          <div class="${style.bg} ${style.text} px-4 py-2 flex justify-between items-center">
-            <span class="font-black">${team}</span>
-            <span class="text-xs font-bold">${s.label}</span>
-          </div>
-          <div class="p-4 space-y-2">
-            <p class="text-xs text-gray-300 mb-3">${s.desc}</p>
-            ${bar('パワー', s.pow)}
-            ${bar('ミート', s.meet)}
-            ${bar('走力', s.run)}
-            ${bar('守備', s.def)}
-            ${bar('投手', s.pitcher)}
-            <a href="players.html?team=${encodeURIComponent(team)}" class="block text-right text-[11px] text-blue-400 hover:underline pt-1">🧢 ${team}の選手を見る</a>
-            ${goods ? `<a href="${goods.url}" target="_blank" rel="noopener noreferrer sponsored" class="block text-right text-[11px] text-blue-400 hover:underline">🛒 ${goods.label}（PR）</a>` : ''}
-          </div>
-        </div>
-      `;
-    }
-
-    document.getElementById('team-grid').innerHTML = Object.keys(TEAM_SCOUTING).map(renderCard).join('');
-  </script>
-</body>
+  </body>
 </html>
