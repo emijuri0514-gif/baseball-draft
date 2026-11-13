@@ -2336,6 +2336,7 @@
           <a href="strategy.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🎯 攻略ガイド</a>
           <a href="glossary.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📚 用語集</a>
           <a href="stats-calculator.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🧮 指標の計算ツール</a>
+          <a href="ability-method.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">📐 能力値の決め方</a>
           <a href="draft-system.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">🗒️ ドラフト会議とは</a>
           <a href="faq.html" target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-700 hover:underline font-bold py-1">❓ FAQ</a>
         </div>
@@ -2647,6 +2648,7 @@
         <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-1">選手をタップして選択→配置したい枠をタップで配置（ドラッグでも配置できます）</p>
         <p class="text-green-200 text-center text-[9px] md:text-[11px] mb-1">打＝打順適性 ／ 守＝守備適性　◎最適 ○good △普通 ▲不向き ✕ミスマッチ</p>
         <div class="text-center mb-2">
+          <button onclick="window.autoLineup()" class="text-[11px] md:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-3 py-1 rounded-full mr-2">⚡ おまかせで並べる</button>
           <button onclick="window.clearLineup()" class="text-[10px] md:text-xs text-green-200 underline underline-offset-2">配置を全解除してやり直す</button>
         </div>
 
@@ -5852,6 +5854,7 @@
                 }
               }
               lineupAssignments[slot.id] = pId;
+              autoPosForSlot();
               renderLineupPhase();
             } else {
               showAppAlert("⚠️ 投手枠と野手枠が違います！");
@@ -5873,6 +5876,7 @@
                 if (lineupAssignments[key] === selectedPoolPlayerId) delete lineupAssignments[key];
               }
               lineupAssignments[slot.id] = selectedPoolPlayerId;
+              autoPosForSlot();
               selectedPoolPlayerId = null;
               renderLineupPhase();
             } else if (slot.dataset.filled === "true") {
@@ -5885,7 +5889,7 @@
 
         // 守備位置を変えたら適性マークを更新
         for (let i = 1; i <= 9; i++) {
-          document.getElementById(`pos-b${i}`).addEventListener('change', renderLineupPhase);
+          document.getElementById(`pos-b${i}`).addEventListener('change', () => { lineupPosTouched[i] = true; autoPosForSlot(); renderLineupPhase(); });
         }
 
         lineupPhaseInitialized = true;
@@ -5897,15 +5901,88 @@
       }
 
       lineupAssignments = {};
+      lineupPosTouched = {};
       selectedPoolPlayerId = null;
       renderLineupPhase();
       showScreen('screen-lineup');
     }
 
+    // ★ 2026-11-13 スタメン画面の守備位置の自動配置（オーナー判断。Xの「試合で1勝もできない」の調査で、守備位置を初期値のまま
+    //   進めた人は採点が最下位・勝率2割台になると分かった。docs/MATCH_WINRATE_2026-11-13.md）
+    //   (a) 打者を枠に置いたとき、自分で守備位置を選び直していない枠の守備位置を、本職・守れる位置を優先して自動で組み直す。
+    //       自分で守備位置を選び直した枠（lineupPosTouched）は変えない（自分で並べる人の操作は変えない）
+    //   (b) 「おまかせで並べる」：AIの球団と同じ組み方（buildAILineup）で、打順・守備位置・投手をまとめて置く
+    let lineupPosTouched = {};
+    // 置いてある打者のうち、守備位置を自分で選び直していない枠（lineupPosTouched でない枠）の守備位置を、まとめて組み直す。
+    //   自分で選んだ枠の位置は動かさず、残りの位置の中で assignDefense と同じ考え方（適性のある位置を優先・守備の点数）で割り当てる
+    //   （1人ずつ空いている位置に入れていくと、後から置いた捕手の位置がもう埋まっていた、ということが起きたため）
+    function autoPosForSlot() {
+      const user = userTeamRef();
+      if (!user) return;
+      const fixed = new Set(), free = [];
+      for (let i = 1; i <= 9; i++) {
+        const pid = lineupAssignments[`slot-b${i}`];
+        if (!pid) continue;
+        const p = user.roster.find(x => x.id === pid);
+        if (!p) continue;
+        if (lineupPosTouched[i]) fixed.add(document.getElementById(`pos-b${i}`).value);
+        else free.push({ i, p });
+      }
+      if (!free.length) return;
+      const P = LINEUP_POSITIONS.filter(pos => !fixed.has(pos)), K = P.length, FULL = 1 << K;
+      const gain = free.map(({ p }) => P.map(pos => 1e6 + (pos !== "DH" && posAptitude(p, pos) > 0 ? 1e3 + (posAptitude(p, pos) === 2 ? 1e2 : 0) : 0) + getPosScore(p, pos)));
+      let dp = new Float64Array(FULL).fill(-Infinity); dp[0] = 0;
+      const parent = [], chose = [];
+      for (let n = 0; n < free.length; n++) {
+        const nd = new Float64Array(FULL).fill(-Infinity), par = new Int16Array(FULL).fill(-1), ch = new Int8Array(FULL).fill(-1);
+        for (let m = 0; m < FULL; m++) {
+          if (dp[m] === -Infinity) continue;
+          for (let k = 0; k < K; k++) {
+            if (m & (1 << k)) continue;
+            const nm = m | (1 << k), v = dp[m] + gain[n][k];
+            if (v > nd[nm]) { nd[nm] = v; par[nm] = m; ch[nm] = k; }
+          }
+        }
+        parent.push(par); chose.push(ch); dp = nd;
+      }
+      let best = -1;
+      for (let m = 0; m < FULL; m++) if (dp[m] !== -Infinity && (best < 0 || dp[m] > dp[best])) best = m;
+      if (best < 0) return; // 自分で選んだ位置が多くて、残りの位置が足りない
+      for (let n = free.length - 1, m = best; n >= 0; n--) {
+        const k = chose[n][m];
+        document.getElementById(`pos-b${free[n].i}`).value = P[k];
+        m = parent[n][m];
+      }
+    }
+    window.autoLineup = function() {
+      const user = userTeamRef();
+      if (!user) return;
+      const apply = () => {
+        const al = buildAILineup(user);
+        lineupAssignments = {};
+        lineupPosTouched = {};
+        selectedPoolPlayerId = null;
+        al.batters.forEach((b, idx) => {
+          const i = idx + 1;
+          lineupAssignments[`slot-b${i}`] = b.p.id;
+          const sel = document.getElementById(`pos-b${i}`);
+          if (sel) sel.value = b.pos;
+        });
+        if (al.sp) lineupAssignments['slot-p1'] = al.sp.id;
+        if (al.rp) lineupAssignments['slot-p2'] = al.rp.id;
+        if (al.cp) lineupAssignments['slot-p3'] = al.cp.id;
+        renderLineupPhase();
+        if (typeof gtag === 'function') gtag('event', 'cta_click', { target: 'auto_lineup' });
+      };
+      if (Object.keys(lineupAssignments).length === 0) apply();
+      else showAppConfirm('今の配置を、おまかせの並びに置き換えますか？', apply, '置き換える');
+    };
+
     window.clearLineup = function() {
       if (Object.keys(lineupAssignments).length === 0) return;
       showAppConfirm('配置をすべて解除しますか？', () => {
         lineupAssignments = {};
+        lineupPosTouched = {};
         selectedPoolPlayerId = null;
         renderLineupPhase();
       }, '全解除する');
