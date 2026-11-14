@@ -2515,6 +2515,14 @@
             <p id="pos-board-toast" role="status" class="hidden mt-1 text-[11px] font-bold text-red-100 bg-red-900 border border-red-600 rounded px-2 py-1"></p>
           </div>
 
+          <!-- ★ 2026-11-15 スマホでは絞り込み・並べ替え・検索を1行にたたむ（オーナー指摘：選手一覧が小さくてスクロールが面倒）。
+               タップで開く。PC（md以上）は今までどおり常に表示 -->
+          <button id="list-filters-toggle" type="button" onclick="window.toggleListFilters()" aria-expanded="false" aria-controls="list-filters" class="md:hidden w-full flex items-center gap-2 text-left text-[11px] font-bold text-white bg-gray-800 border border-gray-700 rounded px-2 py-1.5">
+            <span class="shrink-0">🔍 絞り込み・並べ替え</span>
+            <span id="list-filters-summary" class="flex-1 min-w-0 truncate text-gray-400"></span>
+            <span id="list-filters-caret" class="shrink-0 text-gray-400">▼</span>
+          </button>
+          <div id="list-filters" class="hidden md:block mt-2 md:mt-0">
           <div class="grid grid-cols-2 gap-1 mb-2">
             <select id="team-filter" class="select-sport border-2 rounded p-1 text-[10px] md:text-sm font-bold">
               <option value="">全球団</option>
@@ -2569,6 +2577,7 @@
             <span class="text-yellow-500">★</span>タップでお気に入り登録（「★リスト」タブで確認）／
             野手：ミ=ミート パ=パワー 走=走力 守=守備　投手：球威・制球・スタ=スタミナ
           </p>
+          </div>
         </div>
       </div>
       <div id="player-list" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-100 pb-10"></div>
@@ -3939,7 +3948,29 @@
       return '';
     }
 
+    // スマホでたたんだ「絞り込み・並べ替え」の行に、今かかっている条件を短く出す（何もなければ並べ方だけ）
+    let listFiltersOpen = false;
+    window.toggleListFilters = function() {
+      listFiltersOpen = !listFiltersOpen;
+      document.getElementById('list-filters').classList.toggle('hidden', !listFiltersOpen);
+      document.getElementById('list-filters-caret').textContent = listFiltersOpen ? '▲' : '▼';
+      document.getElementById('list-filters-toggle').setAttribute('aria-expanded', listFiltersOpen ? 'true' : 'false');
+    };
+    function updateListFiltersSummary() {
+      const el = document.getElementById('list-filters-summary');
+      if (!el) return;
+      const label = id => { const sel = document.getElementById(id); return sel.value ? sel.options[sel.selectedIndex].text : ''; };
+      const kw = document.getElementById('search-input').value.trim();
+      const active = [label('team-filter'), label('pos-filter'), label('stat-filter'), kw ? `「${kw}」` : ''].filter(Boolean);
+      const sortSel = document.getElementById('sort-filter');
+      const sortText = sortSel.options[sortSel.selectedIndex].text;
+      el.textContent = active.length ? `${active.join('・')}／${sortText}` : sortText;
+      el.classList.toggle('text-yellow-300', active.length > 0);
+      el.classList.toggle('text-gray-400', active.length === 0);
+    }
+
     function renderSearchList() {
+      updateListFiltersSummary();
       const keyword = document.getElementById('search-input').value.toLowerCase();
       const teamFilter = document.getElementById('team-filter').value;
       const posFilter = document.getElementById('pos-filter').value;
