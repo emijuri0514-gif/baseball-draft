@@ -15,6 +15,7 @@
     gtag("js", new Date());
     gtag("config", "G-N7NP62TTYB");
   </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8902892637129231" crossorigin="anonymous"></script>
   <script async src="js/error-tracking.js"></script>
   <title>能力値の決め方｜成績から計算する仕組み｜AIドラフト</title>
   <meta name="description" content="AIドラフトの選手の能力値（ミート・パワー・走力・守備・球威・制球・スタミナ）を、プロ野球の一軍の成績からどう計算しているかを解説します。使っている成績、出場が少ない選手の扱い、守れる位置の決め方まで。">
@@ -70,6 +71,8 @@
             <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
             <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
             <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
             <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
             <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
           </div>
@@ -123,8 +126,12 @@
     <section class="mb-8">
       <h2 class="p-h2 text-lg mb-3">③ 項目ごとに見ている成績</h2>
       <p class="text-sm md:text-base leading-relaxed mb-2"><span class="p-em">野手</span></p>
-      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">ミート</span>：打率を中心に、三振の少なさも少し加えています。ヒットを打つ力と、バットに当てる力の両方を見るためです</li><li><span class="p-em">パワー</span>：長打の多さ（長打率から打率を引いた分）、何打席に1本ホームランを打つか（本塁打÷打席）、1年あたりのホームランの本数を中心に見ています。打率も少しだけ入れています。打つ力があるからこそヒットになる打球もあるので0にはしませんが、打率の高さだけでパワーが高く出ないよう、割合は小さくしています</li><li><span class="p-em">走力</span>：盗塁を試みる多さを中心に、盗塁の成功率と三塁打の多さを加えています</li><li><span class="p-em">守備</span>：守ったポジションごとに、守備範囲の広さ（1試合あたりの刺殺と補殺の数）を中心に、守備率も見ています。二塁・三塁・遊撃は併殺、捕手は盗塁阻止率、外野は補殺（肩の強さ）も少し使います。比べるのは同じポジションの選手どうしで、ほかのミートなどと違って「上から何番目か」ではなく、<span class="p-em">平均からどれだけ離れているか</span>で点を付けます。2番目と3番目の差がわずかなら、点数の差も小さくなるようにするためです。材料には、そのポジションを守った試合の多さも入れています。レギュラーとして守り続けていること自体を、守備の力の表れとして見るためです。また、守った試合が少ない選手は、たまたまの数字が出やすいので、平均の方へ少し寄せてから点を付けます。直近3年にゴールデングラブ賞を受賞している選手には、受賞の回数に応じた小さな加点があります（上限あり）</li></ul>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">ミート</span>：打率を中心に、三振の少なさも少し加えています。ヒットを打つ力と、バットに当てる力の両方を見るためです</li><li><span class="p-em">パワー</span>：長打の多さ（長打率から打率を引いた分）、何打席に1本ホームランを打つか（本塁打÷打席）、1年あたりのホームランの本数を中心に見ています。打率も少しだけ入れています。打つ力があるからこそヒットになる打球もあるので0にはしませんが、打率の高さだけでパワーが高く出ないよう、割合は小さくしています</li><li><span class="p-em">走力</span>：盗塁を試みる多さを中心に、盗塁の成功率と三塁打の多さを加えています</li><li><span class="p-em">守備</span>：守ったポジションごとに、1試合あたりの守備処理数（刺殺と補殺の数）と守備率（エラーの少なさ）を中心に見ています。二塁・三塁・遊撃は、エラーの少なさを処理数より重く見て、併殺の多さも使います。外野は補殺（肩の強さ）も少し使い、捕手は盗塁阻止率を中心に見ます。比べるのは同じポジションの選手どうしで、ほかのミートなどと違って「上から何番目か」ではなく、<span class="p-em">平均からどれだけ離れているか</span>で点を付けます。2番目と3番目の差がわずかなら、点数の差も小さくなるようにするためです。材料には、そのポジションを守った試合の多さも入れています。レギュラーとして守り続けていること自体を、守備の力の表れとして見るためです。また、守った試合が少ない選手は、たまたまの数字が出やすいので、平均の方へ少し寄せてから点を付けます</li></ul>
       <p class="text-sm md:text-base leading-relaxed mb-2">守備はポジションによって難しさが違います。そこで、もとの点数をポジションごとに少しだけ変えています（遊撃・二塁が一番高く、三塁・捕手、外野、一塁の順。外野は左翼・中堅・右翼の区別がないので1つ）。「少しだけ」にしたのは、難しさを強く入れすぎると、守備が苦手な選手でも難しいポジションにいるだけで点数が高くなってしまうからです。守備が上手な選手ばかりのポジションの2番手が、守備が苦手な選手の多いポジションの1番手より下になる、ということが起きにくいようにしています</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">二塁・三塁・遊撃をかけ持ちする選手は、同じ試合の途中で守る位置が変わると、どちらの位置にも1試合ずつ数えられます。そのままだと1試合あたりの処理数が小さく出るので、その年の出場試合数より守備試合の合計が多い分だけ、処理数を出すときの試合数を減らしています（減らすのは2割まで）。二遊三を守った試合は、ほかの二遊三の位置の「守った試合の多さ」にも一部だけ分けて数えます。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">外野は、Wikipediaの表でレフト・センター・ライトが分かれていません。打球が多く飛ぶセンターの選手ほど処理数が多く出るので、処理数が少ないことによる減点は半分にしています（多いことによる加点はそのまま）。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">直近3年にゴールデングラブ賞を受賞した選手には、受賞したポジションに加点があります。新しい年の受賞ほど重く見て、受賞の回数が増えるほど1回あたりの加点は小さくなります（いちばん多い選手でも5点ほど）。表に出にくい守備のうまさを補うための加点で、受賞したことがそのまま守備の正解というわけではありません。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">守備イニングや打球の向きのデータは使っていないので、守備力は実際の守備範囲を直接測ったものではありません。公開されている成績と受賞歴から出した、このゲーム独自の評価です。</p>
       <p class="text-sm md:text-base leading-relaxed mb-2"><span class="p-em">投手</span></p>
       <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">球威</span>：三振を奪う多さを中心に、被本塁打の少なさを加えています</li><li><span class="p-em">制球</span>：四球と死球の少なさを中心に、暴投の少なさを加えています</li><li><span class="p-em">スタミナ</span>：1試合あたりに投げる回の長さを中心に見ています。先発と救援では役割がまったく違うので、先発は先発どうし、救援は救援どうしで比べています</li></ul>
     </section>
@@ -177,6 +184,7 @@
     <div id="ad-slot-bottom" class="ad-slot"></div>
   </main>
   <footer class="text-center p-sub text-xs py-6">
+    <p class="mb-2">読み物：<a href="guide-play.html" class="hover:underline">遊び方・攻略</a> ｜ <a href="guide-draft.html" class="hover:underline">ドラフトを知る</a> ｜ <a href="guide-enjoy.html" class="hover:underline">プロ野球を楽しむ</a></p>
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 </body>

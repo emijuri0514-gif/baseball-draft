@@ -15,6 +15,7 @@
     gtag("js", new Date());
     gtag("config", "G-N7NP62TTYB");
   </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8902892637129231" crossorigin="anonymous"></script>
   <script async src="js/error-tracking.js"></script>
   <title>NPBドラフト会議の仕組みを解説｜AIドラフト</title>
   <meta name="description" content="実際のNPBドラフト会議はどんな仕組みで行われているのか。1巡目抽選・2巡目以降ウェーバーの指名方式、支配下選手と育成選手の違い、FA制度との違いなどを解説。本サイトのシミュレーションとの違いもまとめました。">
@@ -67,6 +68,8 @@
             <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
             <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
             <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
             <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
           </div>
           <div class="mb-3 last:mb-0">
@@ -99,53 +102,63 @@
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-top" class="ad-slot"></div>
 
-    <section class="text-center">
-      <h2 class="p-mincho text-xl md:text-2xl mb-2">NPBドラフト会議はどんな仕組み？</h2>
-      <p class="text-sm md:text-base p-sub leading-relaxed">
-        本サイトは現役のNPB選手を12球団のAIと奪い合う「if」のシミュレーションですが、実際のドラフト会議はまったく違うルールで行われています。<br>
-        ここではNPBドラフト会議の仕組みを解説します。<a href="howto.html" class="p-link">本サイトの遊び方</a>と比べてみるのも面白いはずです。
-      </p>
+    <section>
+      <h2 class="p-mincho text-xl md:text-2xl mb-2 text-center">NPBドラフト会議はどんな仕組み？</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">このサイトは、現役のNPB選手を12球団のAIと取り合う「もしも」のシミュレーションです。本物のドラフト会議は、ルールも目的もまったく違います。ここでは本物のドラフト会議の仕組みを、2026年10月22日のドラフト会議で実際に起きたことを例にして説明します。2026年の指名の一覧は<a href="draft-2026.html" class="p-link">2026ドラフトの結果と振り返り</a>に、このゲームの遊び方は<a href="howto.html" class="p-link">遊び方</a>にまとめています。</p>
     </section>
 
     <section>
-      <h3 class="p-h2 text-lg mb-3">① NPBドラフト会議とは</h3>
-      <p class="text-sm md:text-base">
-        正式名称は「新人選手選択会議」。プロ野球12球団が、その年にプロ入りを希望する高校生・大学生・社会人・独立リーグの選手など「アマチュア選手」を指名する会議です。毎年秋（例年10月頃）に開催され、プロ野球界の一大イベントとして中継・報道されます。本サイトのように現役のプロ選手を指名し合うものではなく、あくまで「これからプロ入りする新人」を対象にしている点が最大の違いです。
-      </p>
+      <h3 class="p-h2 text-lg mb-3">① ドラフト会議とは</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">正式な名前は「新人選手選択会議」です。プロ野球12球団が、その年にプロ入りを希望する高校生・大学生・社会人・独立リーグなどの選手を指名する会議で、毎年秋に開かれます。2026年は10月22日（木）に行われ、テレビやネットで中継されました。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">指名された選手と、指名した球団の間で、入団に向けた交渉が始まります。ドラフトで決まるのは「入団の交渉をする権利（交渉権）」で、指名された時点で入団が決まるわけではありません。</p>
     </section>
 
     <section>
-      <h3 class="p-h2 text-lg mb-3">② 指名方式：1巡目は抽選、2巡目以降はウェーバー</h3>
-      <div class="space-y-3 text-sm md:text-base">
-        <p><span class="font-black">1巡目：</span>全12球団が同時に「1位指名」の選手名を発表します。同じ選手に複数球団の指名が重複した場合は、くじ引きで交渉権を獲得する球団を決定します。くじを外した球団は「外れ1位」として、改めて別の選手を指名し直します。</p>
-        <p><span class="font-black">2巡目以降：</span>抽選は行わず、あらかじめ決められた順番で1人ずつ指名していく「ウェーバー方式」が採用されます。指名順は前年度の成績が絡む形で決められます。</p>
-        <p class="text-xs p-sub">※本サイトの「NPB方式」は、この方式をベースにしたゲーム内ルールです。</p>
-      </div>
+      <h3 class="p-h2 text-lg mb-3">② 1巡目は「入札」：重なったら抽選</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">1巡目だけは、12球団が同時に、指名したい選手の名前を出します（入札）。ほかの球団と重ならなければ、そのまま交渉権が決まります。2球団以上が同じ選手に入札したときは、その球団どうしのくじ引きで交渉権を決めます。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">2026年は、最初の入札で重なった選手が2人いました。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><span class="p-em">渡部海（青学大・捕手）</span>：楽天と中日が入札し、抽選で楽天が交渉権を獲得</li><li><span class="p-em">鈴木泰成（青学大・投手）</span>：ソフトバンクとロッテが入札し、抽選でソフトバンクが交渉権を獲得</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">残りの8球団（巨人・阪神・DeNA・広島・ヤクルト・オリックス・日本ハム・西武）は、最初の入札がほかの球団と重ならない「単独指名」でした。</p>
     </section>
 
     <section>
-      <h3 class="p-h2 text-lg mb-3">③ 支配下選手と育成選手の違い</h3>
-      <p class="text-sm md:text-base mb-3">
-        ドラフトで指名される選手には、大きく分けて「支配下選手」と「育成選手」の2種類があります。
-      </p>
-      <ul class="space-y-2 text-sm md:text-base list-disc list-inside">
-        <li><span class="font-black">支配下選手：</span>各球団が登録できる人数に上限がある正式契約の選手。一軍の公式戦に出場できます。</li>
-        <li><span class="font-black">育成選手：</span>支配下枠とは別の契約で、まずは二軍などで育成される選手。一軍公式戦に出場するには、支配下選手への「昇格（支配下登録）」が必要です。背番号に3桁の番号が付くのが特徴で、そこから育成出身選手が一軍で活躍すると大きな話題になります。</li>
-      </ul>
+      <h3 class="p-h2 text-lg mb-3">③ 抽選に外れたら「外れ1位」</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">抽選に外れた球団どうしで、まだ交渉権が決まっていない選手の中から、もう一度同時に入札します。これを「外れ1位」と呼びます。外れ1位の入札でまた重なれば、もう一度抽選です。1巡目の全球団の交渉権が決まるまで、これをくり返します。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">2026年は、ここでも抽選がありました。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li>中日は、渡部海の抽選に外れたあと、外れ1位で<span class="p-em">宮原廉（近大・投手）</span>に入札しました。同じく抽選に外れたロッテも宮原廉に入札していて、もう一度の抽選で中日が交渉権を得ました</li><li>ロッテは、鈴木泰成に続いて宮原廉の抽選にも外れ、3回目の入札で<span class="p-em">米沢友翔（関大・投手）</span>を1位で指名しました</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">「くじを外したあとに誰を選ぶか」は、球団の準備の深さが表れるところで、ドラフトの見どころの一つです。</p>
     </section>
 
     <section>
-      <h3 class="p-h2 text-lg mb-3">④ ドラフトとFA制度の違い</h3>
-      <p class="text-sm md:text-base">
-        ドラフトとよく混同される制度に「FA（フリーエージェント）」があります。ドラフトが「新人選手を新たに獲得する」仕組みなのに対し、FAは一定期間の一軍登録日数などの条件を満たした<span class="font-black">現役選手</span>が、所属球団の枠を離れて他球団と自由に契約交渉できる制度です。ドラフトは10月の会議で一括して行われますが、FAは毎年オフシーズンに権利を取得した選手が個別に権利行使を宣言する、という違いもあります。
-      </p>
+      <h3 class="p-h2 text-lg mb-3">④ 2巡目からは「ウェーバー」：順番に1人ずつ</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">2巡目からは抽選はなく、決められた順番に1人ずつ指名していきます。前の球団が指名した選手は、もう選べません。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li>2巡目は、その年のリーグの順位が下の球団から順に指名します（ウェーバー）。セ・リーグとパ・リーグの同じ順位の球団を交互に並べ、どちらのリーグを先にするかは年ごとに入れ替わります。2026年はパ・リーグが先でした</li><li>3巡目は、2巡目と逆の順番になります（逆ウェーバー）。4巡目はまた2巡目と同じ順、というように、巡ごとに順番が折り返します</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">成績が下の球団ほど早く選べる仕組みは、戦力の差が広がりすぎないようにする工夫だといわれています。</p>
     </section>
 
     <section>
-      <h3 class="p-h2 text-lg mb-3">⑤ 本サイトのシミュレーションとの違い</h3>
-      <p class="text-sm md:text-base">
-        実際のドラフト会議は「まだプロの実績がないアマチュア選手」を、球団のスカウトが実際に見極めて指名する仕組みです。一方、本サイトは「もし現役のNPB選手を12球団で自由に奪い合えたら」という、実在しない設定で楽しむシミュレーションゲームです。指名方式（1巡目抽選＋2巡目以降ウェーバー）はこの制度を参考にしていますが、対象選手・指名の目的はまったくの別物としてお楽しみください。
-      </p>
+      <h3 class="p-h2 text-lg mb-3">⑤ 育成選手の指名</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">本指名（支配下選手の指名）が終わったあと、育成選手の指名（育成ドラフト）が行われます。参加するかどうかは球団ごとに決めていて、2026年は11球団が参加しました。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">育成選手は、一軍の試合に出られる「支配下選手」とは別の契約で、公式戦は二軍の試合にしか出られません。一軍の試合に出るには、支配下選手への登録（支配下登録）が必要です。背番号が3けたになるのが特徴です。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">⑥ このゲームのドラフトとの違い</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">このゲームのドラフトは、本物の仕組みを参考にした3つの方式から選べます。</p>
+      <div class="overflow-x-auto"><table class="w-full text-sm border-collapse"><thead><tr class="p-rule-top"><th class="p-2 text-left">方式</th><th class="p-2 text-left">このゲームでの決め方</th><th class="p-2 text-left">本物との違い</th></tr></thead><tbody><tr class="p-rule-top"><td class="p-2">NPB方式（おすすめ）</td><td class="p-2">1巡目は全球団が同時に指名し、重なったら抽選。2巡目からは順番に1人ずつ</td><td class="p-2">本物に一番近い。ただし順番は、ゲームを始めるたびにランダムで決まる（成績の順ではない）。巡ごとに順番が折り返すのは本物と同じ</td></tr><tr class="p-rule-top"><td class="p-2">全巡 同時指名</td><td class="p-2">12巡すべてで同時に指名し、重なったら抽選</td><td class="p-2">本物にはない、運の要素が一番大きい方式</td></tr><tr class="p-rule-top"><td class="p-2">完全ウェーバー</td><td class="p-2">抽選なしで、1巡目から順番に1人ずつ</td><td class="p-2">本物にはない、読み合いを重視した方式</td></tr></tbody></table></div>
+      <p class="text-sm md:text-base leading-relaxed mb-2">そして一番大きな違いは、<span class="p-em">選ぶ選手</span>です。本物のドラフトは、まだプロの実績がないアマチュア選手を、スカウトが何年もかけて見極めて指名します。このゲームは「もし今の現役選手を12球団で自由に取り合えたら」という、現実にはない設定で楽しむものです。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">⑦ ドラフトとFAの違い</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">ドラフトとよく比べられる制度に「FA（フリーエージェント）」があります。ドラフトが新人を獲得する仕組みなのに対し、FAは、一軍に登録された日数などの条件を満たした現役選手が、ほかの球団と自由に契約の交渉をできる制度です。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">ドラフトは秋の会議で一度に行われますが、FAは、日本シリーズが終わったあとの決まった期間に、権利を持つ選手が「権利を使う」と申し出て始まります。2026年は、11月10日に、FAを宣言した選手が公示されました。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">このページの情報について</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-2">制度の説明は、2026年11月13日に、NPB公式サイトのお知らせと、Wikipedia日本語版の記事（「プロ野球ドラフト会議」「ウェイバー方式」「育成選手制度 (日本プロ野球)」「フリーエージェント (日本プロ野球)」「2026年度新人選手選択会議 (日本プロ野球)」）で確かめた内容を、このサイトの言葉でまとめたものです。ルールは年によって変わることがあるので、正確なところは公式の情報で確かめてください。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li><a href="https://npb.jp/" class="p-link" target="_blank" rel="noopener noreferrer">NPB（日本野球機構）公式サイト</a></li><li><a href="https://ja.wikipedia.org/wiki/%E3%83%97%E3%83%AD%E9%87%8E%E7%90%83%E3%83%89%E3%83%A9%E3%83%95%E3%83%88%E4%BC%9A%E8%AD%B0" class="p-link" target="_blank" rel="noopener noreferrer">Wikipedia「プロ野球ドラフト会議」</a></li></ul>
     </section>
 
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
@@ -166,6 +179,7 @@
     </section>
 </main>
   <footer class="text-center p-sub text-xs py-6">
+    <p class="mb-2">読み物：<a href="guide-play.html" class="hover:underline">遊び方・攻略</a> ｜ <a href="guide-draft.html" class="hover:underline">ドラフトを知る</a> ｜ <a href="guide-enjoy.html" class="hover:underline">プロ野球を楽しむ</a></p>
     <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
   </footer>
 </body>

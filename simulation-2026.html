@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8902892637129231" crossorigin="anonymous"></script>
+  <script async src="js/error-tracking.js"></script>
+  <title>AIだけのドラフトを1万回回して分かったこと｜1巡目・ランク・球団の傾向｜AIドラフト</title>
+  <meta name="description" content="AIドラフトで、AIだけのドラフトを12球団・4球団・2球団で1万回ずつ回しました。1巡目に入札が集まる選手、ランクの出方、球団ごとの差、コンボの出やすさをまとめています。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="AIだけのドラフトを1万回回して分かったこと｜1巡目・ランク・球団の傾向｜AIドラフト">
+  <meta property="og:description" content="AIドラフトで、AIだけのドラフトを12球団・4球団・2球団で1万回ずつ回しました。1巡目に入札が集まる選手、ランクの出方、球団ごとの差、コンボの出やすさをまとめています。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/simulation-2026.html">
+  <link rel="canonical" href="https://dreamteam9.com/simulation-2026.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
+  <style>
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+</style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "AIだけのドラフトを1万回回して分かったこと",
+    "description": "AIドラフトで、AIだけのドラフトを12球団・4球団・2球団で1万回ずつ回しました。1巡目に入札が集まる選手、ランクの出方、球団ごとの差、コンボの出やすさをまとめています。",
+    "image": "https://dreamteam9.com/images/ogp-top.jpg",
+    "mainEntityOfPage": "https://dreamteam9.com/simulation-2026.html",
+    "inLanguage": "ja",
+    "publisher": {
+      "@type": "Organization",
+      "name": "dreamteam9.com"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="p-mincho text-base md:text-lg">🔁 1万回のシミュレーション</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">AIだけで1万回、ドラフトをしてみた</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">AIの指名や採点が偏っていないかを確かめるために、人が入らない「AIだけのドラフト」をまとめて回しています。11月11日にAIの指名の考え方を直したので、その後の版でもう一度1万回ずつ回しました。このページはその集計です。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2"><span class="p-em">集計の条件</span></p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed"><li>作成日：2026年11月13日（この日に公開していたゲームの版で回した）</li><li>能力値：成績から計算した能力値（2023〜2025年の一軍の成績。パワーの式は11月11日の版）</li><li>ドラフト方式：NPB方式（1巡目は入札と抽選、2巡目からはウェーバー）</li><li>球団の数：12球団・4球団・2球団、それぞれ1万回</li><li>人の担当球団はなし（すべての球団をAIが指名・編成）</li></ul>
+      <p class="text-sm md:text-base leading-relaxed mb-2">人が遊ぶときは、人の指名を見てAIの指名も変わります。ここの数字は「AIだけならこう動く」という目安です。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">1巡目の入札は、もう2人に集まらない</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">直す前のAIは、1巡目の入札が毎回、近藤健介選手と牧秀悟選手の2人だけに集まっていました。12球団のうち平均で8球団近くが同じ選手に入札していて、さすがに偏りすぎだと思ったところです。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">いまは、評価の高い数人の中から、評価が高いほど選ばれやすい形で1人を選ぶようにしています。12球団で回すと、1巡目の入札先は12人に分かれ、1人に入札したのは多い選手でも平均2.6球団でした。</p>
+      <div class="overflow-x-auto"><table class="w-full text-sm border-collapse"><thead><tr class="p-rule-top"><th class="p-2 text-left">選手</th><th class="p-2 text-left">球団・ポジション</th><th class="p-2 text-left">1巡目の入札（1回あたり平均）</th></tr></thead><tbody><tr class="p-rule-top"><td class="p-2">近藤健介</td><td class="p-2">ソフトバンク・外野手</td><td class="p-2">2.6球団</td></tr><tr class="p-rule-top"><td class="p-2">牧秀悟</td><td class="p-2">DeNA・内野手</td><td class="p-2">2.0球団</td></tr><tr class="p-rule-top"><td class="p-2">伊藤大海</td><td class="p-2">日本ハム・投手</td><td class="p-2">1.5球団</td></tr><tr class="p-rule-top"><td class="p-2">髙橋遥人</td><td class="p-2">阪神・投手</td><td class="p-2">1.5球団</td></tr><tr class="p-rule-top"><td class="p-2">村上頌樹</td><td class="p-2">阪神・投手</td><td class="p-2">1.3球団</td></tr><tr class="p-rule-top"><td class="p-2">宮城大弥</td><td class="p-2">オリックス・投手</td><td class="p-2">1.2球団</td></tr><tr class="p-rule-top"><td class="p-2">佐藤輝明</td><td class="p-2">阪神・内野手</td><td class="p-2">1.1球団</td></tr><tr class="p-rule-top"><td class="p-2">東克樹</td><td class="p-2">DeNA・投手</td><td class="p-2">0.7球団</td></tr></tbody></table></div>
+      <p class="text-sm md:text-base leading-relaxed mb-2">この8人は、12球団なら9割以上の回で1巡目のうちに指名されていました。抽選になる回も多く、近藤選手は8割、牧選手は7割の回で抽選になっています。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">1巡目の半分以上が投手になった</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">ここは直す前と一番変わったところです。1巡目に指名された選手のうち投手の割合は、12球団で54.5%、4球団で54.6%、2球団で52.5%でした。11月9日に回したときは12球団で7.4%しかなかったので、ほぼ逆になっています。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">先発投手がまだいない球団は、球威と制球のそろった先発を早めに確保する、という考え方をAIに入れたのが大きいと思います。指名全体で見ると投手は25%（スタメン12枠のうち3枠）のままなので、投手を前に、野手を後ろに回すようになった、ということだと思います。人が遊ぶときは、AIが投手を取り合っている1巡目に強打者を取りにいく、という順番の入れ替えが効きそうです。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">球団の数で、ランクの出方はかなり変わる</h2>
+      <div class="overflow-x-auto"><table class="w-full text-sm border-collapse"><thead><tr class="p-rule-top"><th class="p-2 text-left">球団の数</th><th class="p-2 text-left">A</th><th class="p-2 text-left">B</th><th class="p-2 text-left">C</th><th class="p-2 text-left">D</th><th class="p-2 text-left">E</th></tr></thead><tbody><tr class="p-rule-top"><td class="p-2">12球団</td><td class="p-2">0%</td><td class="p-2">26.8%</td><td class="p-2">67.1%</td><td class="p-2">5.8%</td><td class="p-2">0.3%</td></tr><tr class="p-rule-top"><td class="p-2">4球団</td><td class="p-2">32.7%</td><td class="p-2">64.5%</td><td class="p-2">2.8%</td><td class="p-2">0%</td><td class="p-2">0%</td></tr><tr class="p-rule-top"><td class="p-2">2球団</td><td class="p-2">62.3%</td><td class="p-2">37.7%</td><td class="p-2">0%</td><td class="p-2">0%</td><td class="p-2">0%</td></tr></tbody></table></div>
+      <p class="text-sm md:text-base leading-relaxed mb-2">（Sランクは、どの球団の数でも一度も出ませんでした。F・Gも0でした）</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">球団が少ないほど、1球団に強い選手がたくさん回ってくるので、ランクは上がります。12球団でBランクなら、AIの多くより上の編成です。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">球団ごとの差（このゲームのAIの傾向）</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">※ここでいう差は、このゲームのAIの「スカウト傾向」の設定から出たものです。実在の球団の強さや方針とは関係ありません。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">AIの球団は、それぞれ違う「スカウト傾向」（どの能力を重く見るか）を持っています。12球団で回したとき、1万回の平均の総合点は、一番高い球団と一番低い球団で5.8点の差がありました（総合点は0〜100点で、12球団全体の平均は66.6点）。Bランク以上を取った割合でいうと、一番高い球団で56%、一番低い球団で8%です。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">差の出方には、はっきりした傾向がありました。パワーを重く見る設定の球団ほど点が高く、投手を重く見る設定の球団ほど低めに出ています。1巡目の入札も、投手への入札が7割近い球団から、3割に届かない球団まで分かれました。採点の6つの項目のうち4つは打線なので、投手を先に集めると、そのぶん打線の点が伸びにくいのだと考えています。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-2">正直に書くと、この差は直す前より広がっています。AIの考え方を次に見直すときに、どこまで差を縮めるかを考えるつもりです。どの球団を担当しても、ルールと能力値は同じです。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">コンボの出やすさ</h2>
+      <div class="overflow-x-auto"><table class="w-full text-sm border-collapse"><thead><tr class="p-rule-top"><th class="p-2 text-left">コンボ</th><th class="p-2 text-left">12球団</th><th class="p-2 text-left">4球団</th><th class="p-2 text-left">2球団</th></tr></thead><tbody><tr class="p-rule-top"><td class="p-2">黄金の投手陣</td><td class="p-2">97.8%</td><td class="p-2">100%</td><td class="p-2">100%</td></tr><tr class="p-rule-top"><td class="p-2">安打製造機</td><td class="p-2">90.3%</td><td class="p-2">100%</td><td class="p-2">100%</td></tr><tr class="p-rule-top"><td class="p-2">機動力野球</td><td class="p-2">82.4%</td><td class="p-2">81.0%</td><td class="p-2">73.2%</td></tr><tr class="p-rule-top"><td class="p-2">ユーティリティ</td><td class="p-2">75.9%</td><td class="p-2">88.7%</td><td class="p-2">95.3%</td></tr><tr class="p-rule-top"><td class="p-2">勝利の方程式</td><td class="p-2">69.5%</td><td class="p-2">82.7%</td><td class="p-2">89.3%</td></tr><tr class="p-rule-top"><td class="p-2">超重量打線</td><td class="p-2">63.1%</td><td class="p-2">95.4%</td><td class="p-2">99.9%</td></tr><tr class="p-rule-top"><td class="p-2">鉄壁の守備陣</td><td class="p-2">18.3%</td><td class="p-2">67.7%</td><td class="p-2">99.6%</td></tr><tr class="p-rule-top"><td class="p-2">センターライン</td><td class="p-2">8.1%</td><td class="p-2">35.1%</td><td class="p-2">55.1%</td></tr></tbody></table></div>
+      <p class="text-sm md:text-base leading-relaxed mb-2">12球団では、守備のコンボ（鉄壁の守備陣・センターライン）が目立って出にくくなっています。AIは打つ力を重く見る球団が多いので、守備の上手な選手が後ろの巡まで残ることがあります。12球団で遊ぶなら、守備のコンボは差をつけやすいところかもしれません。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">プレーオフは、シードの差が小さい</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">12球団（上位8球団が進出）でプレーオフの優勝を採点の順位ごとに数えると、1位シードが13.8%、8位シードが12.0%でした。一番低かったのは6位シードの11.1%です。上位に立てば少し有利ですが、短期決戦なので、下のシードからでも十分に勝ちあがります。</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">この集計について</h2>
+      <p class="text-sm md:text-base leading-relaxed mb-2">数字はすべて、AIだけのドラフトを2026年11月13日に回した結果です。AIの指名の考え方や能力値を変えたら、また回し直してこのページを書き換えます。能力値は、2026年の成績が出そろったあとに計算し直す予定です。</p>
+    </section>
+
+
+    <section class="mb-8">
+      <h2 class="p-h2 text-lg mb-3">関連する読み物・ゲーム</h2>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1">
+        <li><a href="scoring.html" class="p-link">採点の仕組み</a></li>
+        <li><a href="ability-method.html" class="p-link">能力値の決め方</a></li>
+        <li><a href="strategy.html" class="p-link">攻略ガイド</a></li>
+        <li><a href="teams.html" class="p-link">球団紹介（AIのスカウト傾向）</a></li>
+        <li><a href="howto.html" class="p-link">遊び方</a></li>
+        <li><a href="index.html" class="p-link">AIドラフトを始める</a></li>
+      </ul>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+  </main>
+  <footer class="text-center p-sub text-xs py-6">
+    <p class="mb-2">読み物：<a href="guide-play.html" class="hover:underline">遊び方・攻略</a> ｜ <a href="guide-draft.html" class="hover:underline">ドラフトを知る</a> ｜ <a href="guide-enjoy.html" class="hover:underline">プロ野球を楽しむ</a></p>
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>
