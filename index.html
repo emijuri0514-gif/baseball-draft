@@ -373,6 +373,8 @@
 
     .draft-table th, .draft-table td { border: 1px solid #e5e7eb; text-align: center; padding: 0.2rem; font-size: 0.7rem; }
     .draft-table th { font-weight: 900; color: white; padding: 0.4rem; }
+    /* ★ 2026-11-15 左上の「巡」は背景が薄い灰色なので、白ではなく濃い灰色の文字にする（白だと読めなかった） */
+    .draft-table thead th:first-child { color: #1f2937; }
     /* ★ 2026-11-12 スマホでは指名ボードを横にスクロールできるようにする（オーナー提案：12球団を画面の幅に押し込むと、
        球団名が縦書きになり選手名も折り返して窮屈だった）。列に最低限の幅を持たせて1行で表示し、
        「巡」の列と球団名の行は固定して、どこまでスクロールしても何巡目のどの球団か分かるようにする。PC（md以上）は今のまま */
@@ -4212,7 +4214,7 @@
         const cls = now  ? `${t.color.bg} text-white ring-2 ring-yellow-400`
                   : done ? 'bg-gray-200 text-gray-400 line-through'
                          : 'bg-white text-gray-600 border border-gray-300';
-        return `<span class="px-1.5 py-0.5 rounded text-[10px] font-black ${cls}">${t.name.replace('(AI)','')}</span>`;
+        return `<span ${now ? 'data-now="1" ' : ''}class="shrink-0 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-black ${cls}">${t.name.replace('(AI)','')}</span>`;
       }).join('');
 
       const msg = activeTeam
@@ -4224,8 +4226,16 @@
         <div class="bg-gray-800 text-white text-[10px] font-bold px-2 py-1 flex justify-between">
           <span>第${currentRound}巡 ウェーバー ${waiverPos + 1}/${waiverQueue.length}</span><span>${msg}</span>
         </div>
-        <div class="bg-gray-50 p-1.5 flex flex-wrap gap-1">${chips}</div>
+        <div id="turn-bar-chips" class="relative bg-gray-50 p-1.5 flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible gap-1">${chips}</div>
         ${waiverLog.length ? `<div class="bg-white px-2 py-1 text-[10px] text-gray-600 border-t truncate">直前: ${waiverLog.slice(-3).reverse().join(' ／ ')}</div>` : ''}`;
+      // ★ 2026-11-15 スマホでは指名の順番を1行にして横に流す（2行だと選手一覧が狭くなるため。オーナー判断）。
+      //   今の球団が見えるように、1つ前の球団が左端に来るところまで横に動かす。PC（md以上）は今までどおり折り返す
+      const row = document.getElementById('turn-bar-chips');
+      const nowChip = row && row.querySelector('[data-now]');
+      if (row && nowChip && row.scrollWidth > row.clientWidth) {
+        const prev = nowChip.previousElementSibling;
+        row.scrollLeft = Math.max(0, (prev || nowChip).offsetLeft - 6);
+      }
     }
 
     function startTurn() {
