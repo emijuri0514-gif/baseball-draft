@@ -172,7 +172,7 @@
       const style = TEAM_STYLE[p.team] || { bg: "bg-gray-700", text: "text-white" };
       const stats = p.fStats
         ? [statBadge('ミート', p.fStats.meet), statBadge('パワー', p.fStats.pow), statBadge('走力', p.fStats.run), statBadge('守備力', p.fStats.def)]
-        : [statBadge('球威', p.pStats.pow), statBadge('制球', p.pStats.con), statBadge('スタミナ', p.pStats.sta)];
+        : [statBadge('球威', p.pStats.pow), statBadge('制球', p.pStats.con), statBadge(`スタミナ（${p.eval === '先発' ? '先発' : p.eval === '抑え' ? '抑え' : '中継ぎ'}）`, p.pStats.sta)];
       return `
         <div class="bg-gray-800 rounded-lg overflow-hidden shadow" data-name="${p.name}" data-team="${p.team}" data-pos="${p.pos}">
           <div class="${style.bg} ${style.text} text-xs font-black px-3 py-1 flex justify-between items-center">

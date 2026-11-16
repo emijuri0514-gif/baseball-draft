@@ -3936,7 +3936,7 @@
           <div class="stat-box mt-1">
             <span class="stat-label">球威</span><span class="stat-val ${getValClass(p.pStats.pow)}">${p.pStats.pow}</span>
             <span class="stat-label ml-1">制球</span><span class="stat-val ${getValClass(p.pStats.con)}">${p.pStats.con}</span>
-            <span class="stat-label ml-1">ｽタ</span><span class="stat-val ${getValClass(p.pStats.sta)}">${p.pStats.sta}</span>
+            <span class="stat-label ml-1">ｽタ<span class="text-[9px] text-gray-500">(${p.eval === '先発' ? '先発' : p.eval === '抑え' ? '抑え' : '中継ぎ'})</span></span><span class="stat-val ${getValClass(p.pStats.sta)}">${p.pStats.sta}</span>
           </div>`;
       } else if (p.fStats) {
         return `
