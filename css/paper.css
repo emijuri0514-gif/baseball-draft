@@ -102,3 +102,15 @@ body.paper { font-family: var(--gothic); background-color: var(--paper); color: 
 /* 押せるカード（404 の行き先など）。マウスを乗せたときだけ枠を墨に */
 a.p-card { display: block; color: var(--ink); }
 @media (hover: hover) { a.p-card:hover { border-color: var(--ink); } }
+
+/* ---------- 更新履歴のタイムライン（第3弾 2026-11-08） ---------- */
+/* 縦の線は細い罫線、点は白地に墨の輪。新しい数件だけ墨で塗る（前の青い点の置き換え） */
+.p-tl { border-color: var(--hair); }
+.p-dot { background: var(--sheet); border: 2px solid var(--ink); }
+.p-dot.is-new { background: var(--ink); }
+
+/* ---------- 中継ページ（第5弾 2026-11-08） ---------- */
+/* 左に墨の太い線を引いた面（「あわせて読みたい」・料金の強調など。前の黄色い左線の置き換え） */
+.p-accent { border-left: 4px solid var(--ink); }
+/* 運営者のアイコンの丸（朱赤は使わない） */
+.p-avatar { background: var(--muted-bg); border: 1px solid var(--hair); }
