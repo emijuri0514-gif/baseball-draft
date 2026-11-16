@@ -17,7 +17,8 @@
     "test:anything-draft-e2e": "node tests/anything-draft/e2e.mjs",
     "build:anything-players": "node scripts/build-anything-draft-players.mjs",
     "check:anything-players": "node scripts/build-anything-draft-players.mjs --check",
-    "test:firestore-rules": "cd tests/firestore-rules && npm test"
+    "test:firestore-rules": "cd tests/firestore-rules && npm test",
+    "test:mp-sync": "node tests/mp-sync/run.mjs"
   },
   "devDependencies": {
     "autoprefixer": "^10.6.1",
