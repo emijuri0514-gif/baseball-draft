@@ -3293,6 +3293,18 @@
     }
     // このプレイがメジャー組モードか（開始のときに決める）
     let mlbModeOn = false;
+    // 球団の絞り込みに「メジャー所属」を足す・外す（11/20 オーナー：球団の絞り込みにメジャーの選手を）
+    function syncMlbTeamFilter() {
+      const sel = document.getElementById('team-filter');
+      if (!sel) return;
+      const opt = sel.querySelector('option[value="MLB"]');
+      if (mlbModeOn && !opt) {
+        const o = document.createElement('option'); o.value = 'MLB'; o.textContent = 'メジャー所属'; sel.appendChild(o);
+      } else if (!mlbModeOn && opt) {
+        if (sel.value === 'MLB') sel.value = '';
+        opt.remove();
+      }
+    }
 
     let availablePlayers = [];
     let teams = [];
@@ -3721,6 +3733,7 @@
       userHadSRankThisRun = false;
       mlbModeOn = mlbSelect;
       availablePlayers = mlbModeOn ? [...initialDatabase, ...mlbPlayersOn(mlbTodayJst())] : [...initialDatabase];
+      syncMlbTeamFilter();
       resetPositionBoard();
 
       teams = [{
@@ -4093,7 +4106,9 @@
 
       let displayPlayers = availablePlayers.filter(p => {
         if(currentTab === 'fav' && !favoriteIds.includes(p.id)) return false;
-        if(teamFilter && p.team !== teamFilter) return false;
+        // ★ 球団の絞り込みの「メジャー所属」（メジャー組モードのときだけ出る）
+        if(teamFilter === 'MLB') { if (!isMlbPlayer(p)) return false; }
+        else if(teamFilter && p.team !== teamFilter) return false;
         // ★ 「外」（外野。左・中・右どこでも同じ）の選手も、左翼・中堅・右翼の絞り込みに出す
         if(posFilter && !expandBestPos(p).includes(posFilter)) return false;
         if(posFilter && boardStrictPos === posFilter && !canPlayForBoard(p, posFilter)) return false;
@@ -5374,6 +5389,7 @@
       }
       userHadSRankThisRun = false;
       mlbModeOn = false; // 友達対戦はメジャー組モードを使わない（NPB の選手だけ）
+      syncMlbTeamFilter();
       availablePlayers = [...initialDatabase];
       resetPositionBoard();
       favoriteIds = [];
