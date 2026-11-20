@@ -1643,13 +1643,8 @@
         ctx.stroke();
       }
 
-      function drawRow(label, pos, name, teamName, y, era) {
-        if (era) {
-          // ★ メジャー組：名前の下に「日本時代の能力値（◯〜◯年）」
-          ctx.textAlign = 'left'; ctx.fillStyle = '#a5b4fc'; ctx.font = 'bold 20px sans-serif';
-          ctx.fillText(era, colNameX, y + rowH - 22, colTeamRightX - colNameX);
-        }
-        const midY = y + rowH / 2 - 10 - (era ? 12 : 0); // メジャー組は下に年の行があるので、名前を少し上に
+      function drawRow(label, pos, name, teamName, y) {
+        const midY = y + rowH / 2 - 10;
         ctx.textBaseline = 'middle';
 
         ctx.textAlign = 'left';
@@ -1693,7 +1688,7 @@
       sectionLabel('スタメン', y);
       y += labelH;
       batters.forEach(r => {
-        drawRow(`${r.order}番`, r.pos, shortenForeignName(r.name), r.teamLabel || r.team, y, r.era);
+        drawRow(`${r.order}番`, r.pos, shortenForeignName(r.name), r.teamLabel || r.team, y);
         y += rowH;
       });
 
@@ -1701,7 +1696,7 @@
       sectionLabel('投手陣', y);
       y += labelH;
       pitchers.forEach(p => {
-        drawRow(p.pos, '', shortenForeignName(p.name), p.teamLabel || p.team, y, p.era);
+        drawRow(p.pos, '', shortenForeignName(p.name), p.teamLabel || p.team, y);
         y += rowH;
       });
 
@@ -2346,7 +2341,7 @@
       <div id="mlb-mode-row" class="hidden text-left mb-4 md:mb-6 border-2 border-gray-300 rounded p-3">
         <label for="mlb-mode" class="flex items-center gap-2 font-bold text-sm text-blue-800 cursor-pointer">
           <input type="checkbox" id="mlb-mode" class="w-5 h-5 flex-shrink-0">
-          メジャー組も入れる
+          メジャー所属選手も入れる
         </label>
         <p id="mlb-mode-desc" class="text-[11px] text-gray-600 mt-1 leading-snug">MLBの日本人選手も指名できます。能力値は日本時代の成績から計算したものです。このモードでは、ランクの実績は数えません。</p>
       </div>
@@ -2372,7 +2367,7 @@
           window.__lastSetupValues = { team: document.getElementById('user-team').value, ai: document.getElementById('ai-count').value, mode: document.getElementById('draft-mode').value, mlb: document.getElementById('mlb-mode').checked };
           var teams = Number(document.getElementById('ai-count').value) + 1;
           var mode = { npb: 'NPB方式', lottery: '全巡 同時指名', waiver: '完全ウェーバー' }[document.getElementById('draft-mode').value] || '';
-          document.getElementById('quick-start-summary').textContent = document.getElementById('user-team').value + '／計' + teams + '球団／' + mode + (document.getElementById('mlb-mode').checked ? '／メジャー組あり' : '');
+          document.getElementById('quick-start-summary').textContent = document.getElementById('user-team').value + '／計' + teams + '球団／' + mode + (document.getElementById('mlb-mode').checked ? '／メジャー所属選手あり' : '');
           document.getElementById('quick-start').classList.remove('hidden');
           document.getElementById('setup-fields').classList.add('hidden');
           document.getElementById('start-game-btn').textContent = 'すぐに始める';
@@ -2386,7 +2381,7 @@
         document.getElementById('mlb-mode').addEventListener('change', function () {
           var el = document.getElementById('quick-start-summary');
           if (!el || !el.textContent) return;
-          el.textContent = el.textContent.replace(/／メジャー組あり$/, '') + (this.checked ? '／メジャー組あり' : '');
+          el.textContent = el.textContent.replace(/／メジャー所属選手あり$/, '') + (this.checked ? '／メジャー所属選手あり' : '');
         });
         window.openSetupFields = function () {
           if (typeof gtag === 'function') gtag('event', 'setup_change_open');
@@ -3250,7 +3245,7 @@
     // ==========================================
     // メジャー組モード（2026-11-16 オーナー判断・T3-8）
     // ==========================================
-    // ★ 設定で「メジャー組も入れる」を選んだときだけ、MLB の日本人選手を指名の候補に足す（今の NPB の選手の能力値は変えない）。
+    // ★ 設定で「メジャー所属選手も入れる」（11/20 オーナー：「メジャー組」から呼び方を変更）を選んだときだけ、MLB の日本人選手を指名の候補に足す（今の NPB の選手の能力値は変えない）。
     //   能力値は日本時代の直近3年（出場が基準に届いた3年。野手200打席・先発50投球回）の一軍の成績を、その時代の一軍の選手の中で
     //   順位付けして計算（Wikipedia 日本語版だけ）。飛び抜けた項目は今の上限を超えてよい（超えた分は半分）。
     //   team は日本時代の最後の球団（カードの色・球団の絞り込みに使う）、mlb.team は 2026年の所属（ロゴ・色は使わず名前の文字だけ）。
@@ -6564,10 +6559,11 @@
 
         // シェアカード用に、打順・守備位置だけを保持しておく（◎〜✕マークは画像だけ見ても意味が分からないため含めない）。
         // オーダーカード（編成一覧の縦長カード）用に、出身球団も合わせて持たせておく。
+        // ★ オーダーカードのメジャー組は、MLB の球団名だけ（「日本時代の能力値」「元○○」は文字が多すぎるので出さない。11/20 オーナー）
         t.shareLineup = rows.map(r => ({ order: r.order, pos: r.pos, name: r.p.name, team: r.p.team,
-          teamLabel: isMlbPlayer(r.p) ? mlbTeamLabel(r.p) : '', era: isMlbPlayer(r.p) ? mlbEraLabel(r.p) : '' }));
+          teamLabel: isMlbPlayer(r.p) ? r.p.mlb.team : '' }));
         t.sharePitchers = pitcherObjs.map(x => ({ pos: x.pos, name: x.p.name, team: x.p.team,
-          teamLabel: isMlbPlayer(x.p) ? mlbTeamLabel(x.p) : '', era: isMlbPlayer(x.p) ? mlbEraLabel(x.p) : '' }));
+          teamLabel: isMlbPlayer(x.p) ? x.p.mlb.team : '' }));
         t.mlbMode = mlbModeOn;
 
         container.innerHTML += `
