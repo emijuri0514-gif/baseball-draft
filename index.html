@@ -6854,8 +6854,11 @@
     // 抑えへ飛ばさず、まず中継ぎに任せる（中継ぎが一度も登板しないまま終わるのを防ぐ）。
     // 7〜8回はまだ球数的に余裕がある投手（疲労0.9超）なら続投させる。fatigueを渡さない
     // （先発未登板など）場合は1.0＝万全として扱う。
-    function scheduledPitcherStage(inning, fatigue = 1.0, currentStage = 0) {
-      if (currentStage >= 1 && inning >= 9) return 2;
+    // ★ 2026-11-20 オーナー指摘：抑えは「9回以降に自分のチームが勝っているとき」だけ予定どおり出す
+    //   （前は点差に関係なく9回に必ず抑えに代えていたので、同点・負けの9回や延長では抑えが最後まで投げ続けていた）。
+    //   同点・負けのときは中継ぎが続投し、ピンチやスタミナ切れのときだけ抑えに代える（checkPitcherChange の reliefPinch など）
+    function scheduledPitcherStage(inning, fatigue = 1.0, currentStage = 0, isLeading = true) {
+      if (currentStage >= 1 && inning >= 9 && isLeading) return 2;
       if (inning >= 7 && fatigue <= 0.9) return 1;
       return 0;
     }
@@ -6878,7 +6881,9 @@
       // （余っている投手がいるのに使われない）不具合があった。scheduledPitcherStage自体に
       // 現在の段階を渡して「中継ぎを経由してからでないと抑えへは進めない」ようにし、
       // 念のためここでも進める場合は必ず1段階ずつにする。
-      const scheduled = scheduledPitcherStage(state.inning, fatigue, state[stageKey]);
+      const defScoreNow = state.isTop ? state.scoreB : state.scoreA;
+      const atkScoreNow = state.isTop ? state.scoreA : state.scoreB;
+      const scheduled = scheduledPitcherStage(state.inning, fatigue, state[stageKey], defScoreNow > atkScoreNow);
       let stage = state[stageKey];
       if (scheduled > stage) stage++;
 
@@ -6904,14 +6909,20 @@
       const dueToPitchCount = !!current && stage < 2 && (
         pitches >= 110 || (pitches >= 100 && (current.stats.run >= 3 || isLosing))
       );
-      if (dueToFatigue || dueToBlowout || dueToPitchCount) stage++;
+      // ★ 9回以降の同点・負けで中継ぎが投げているとき（2026-11-20 オーナー指摘）：
+      //   ピンチ（同点で得点圏に走者）か、中継ぎとしての球数の目安（スタミナ×0.6球。60〜72で36〜43球＝およそ2〜3イニング）を
+      //   超えたら抑えに代える。負けているときは、ピンチでは代えない（抑えを温存し、球数の目安だけで代える）
+      const reliefLate = !!current && stage === 1 && state[stageKey] === 1 && state.inning >= 9 && defScore <= atkScore;
+      const reliefPinch = reliefLate && defScore === atkScore && (state.bases[1] || state.bases[2]);
+      const reliefTired = reliefLate && pitches >= ((current.pStats && current.pStats.sta) || 60) * 0.6;
+      if (dueToFatigue || dueToBlowout || dueToPitchCount || reliefPinch || reliefTired) stage++;
 
       state[stageKey] = stage;
       const expectedPitcher = [defLineup.pitchers.sp, defLineup.pitchers.rp, defLineup.pitchers.cp][stage];
 
       if (state[currentPitcherRef] !== expectedPitcher) {
         state[currentPitcherRef] = expectedPitcher;
-        const reason = dueToBlowout ? '（大量失点）' : (dueToPitchCount ? '（球数超過）' : (dueToFatigue ? '（スタミナ切れ）' : ''));
+        const reason = dueToBlowout ? '（大量失点）' : (dueToPitchCount ? '（球数超過）' : (dueToFatigue || reliefTired ? '（スタミナ切れ）' : (reliefPinch ? '（ピンチ）' : '')));
         if (log) log(`<span class="text-blue-500 font-black bg-blue-50 px-2 py-1 rounded block">🔄 【${defTeam.name.replace('(AI)','')}】投手交代${reason}: ${expectedPitcher.name} がマウンドに上がります。</span>`);
       }
     }
