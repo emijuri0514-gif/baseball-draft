@@ -6732,7 +6732,8 @@
     // ==========================================
     let matchSpeed = 1000;
     let matchState = null; // ライブ観戦中（screen-match表示用）の試合状態
-    const MAX_INNING = 21; // 安全弁：ここまで同点が続いたら強制決着させる
+    // ★ 2026-11-20 オーナー判断：延長は実際のプロ野球と同じ12回まで（前は21回）。12回で同点なら延長規定（総合pt）で勝敗を決める
+    const MAX_INNING = 12;
 
     // ★ RE24モデル
     const RUN_EXPECTANCY = [
@@ -7075,12 +7076,11 @@
     function gameTick(state, log) {
       if (state.inning > 9 && state.scoreA !== state.scoreB) return { done: true };
       if (state.inning > MAX_INNING) {
-        // ★ 延長規定：21回を終えても同点なら、総合pt（AI採点）が高い方の勝ち。
+        // ★ 延長規定：12回を終えても同点なら、総合pt（AI採点）が高い方の勝ち（2026-11-20 に21回から12回へ）。
         //   以前は安全弁として先攻に1点を足して決着させていたが、必ず先攻が勝つのは不公平なので改めた（2026-10-02 オーナー決定）。
         if (state.scoreA === state.scoreB && state.tiebreakWinnerIsA === undefined) {
           state.tiebreakWinnerIsA = tiebreakWinnerIsA(state.teamA, state.teamB);
-          const w = state.tiebreakWinnerIsA ? state.teamA : state.teamB;
-          if (log) log(`<span class="text-yellow-600 font-black">⚖️ ${MAX_INNING}回を終えて同点。延長規定により、総合力で${w.name.replace('(AI)', '')}の勝利</span>`);
+          // 「12回引き分け → 総合ptで◯◯の勝利」は、試合終了の行の下に endMatch() が出す（ライブ・友達対戦の再生とも）
         }
         return { done: true };
       }
@@ -7425,6 +7425,11 @@
       document.getElementById('speed-btn').style.display = 'none';
 
       addLog(`<span class="text-xl text-red-600">試合終了！ ${matchState.scoreA} - ${matchState.scoreB}</span>`);
+      // ★ 延長規定で決まったときは、なぜ勝ったかを試合終了の行の下にも出す（2026-11-20 オーナー）
+      if (matchState.scoreA === matchState.scoreB) {
+        const w = matchWinnerIsA(matchState) ? matchState.teamA : matchState.teamB;
+        addLog(`<span class="text-yellow-600 font-black">⚖️ ${MAX_INNING}回引き分け → 総合ptで${w.name.replace('(AI)', '')}の勝利</span>`);
+      }
 
       recordPlayoffLiveResult(matchState, forcedWinner);
       if (typeof gtag === 'function') {
@@ -7679,7 +7684,7 @@
             <span class="truncate">${bWin ? '🏆 ' : ''}${bName}</span>
             <span>${m.resolved ? m.scoreB : ''}</span>
           </div>
-          ${m.resolved && m.tiebreak ? `<p class="mt-1 text-[10px] text-yellow-300 font-bold">⚖️ 延長規定により総合力で勝利</p>` : ''}
+          ${m.resolved && m.tiebreak ? `<p class="mt-1 text-[10px] text-yellow-300 font-bold">⚖️ ${MAX_INNING}回引き分け → 総合ptで勝利</p>` : ''}
         </div>`;
     }
 
