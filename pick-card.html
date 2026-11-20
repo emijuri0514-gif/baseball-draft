@@ -143,7 +143,7 @@
     <section class="space-y-3 text-sm text-gray-300 leading-relaxed">
       <h3 class="text-lg font-black text-blue-400 border-b border-blue-700 pb-1">使えない言葉について</h3>
       <ul class="space-y-1.5">
-        <li>・<strong class="text-white">実在の選手の名前</strong>（ゲームに登場する現役選手と、1位指名予想の候補選手）は使えません。実在の人が本当に指名されたように見える画像を作らないためです。</li>
+        <li>・<strong class="text-white">実在の選手の名前</strong>（ゲームに登場する現役選手〈メジャー組モードの選手を含む〉と、1位指名予想の候補選手）は使えません。実在の人が本当に指名されたように見える画像を作らないためです。</li>
         <li>・人を傷つける言葉、公式の発表や速報に見える言葉、URL・メールアドレス・電話番号なども使えません。</li>
         <li>・入力した名前や所属は、この端末の中で画像を作るためだけに使い、どこにも送りません。</li>
         <li>・作った画像を投稿するときは、ほかの人の名前を勝手に使わないようにしてください。</li>
@@ -239,7 +239,11 @@
         if (end === -1) throw new Error('parse-failed');
         const players = new Function(html.slice(start, end + 2) + '; return initialDatabase;')();
         if (!Array.isArray(players) || !players.length) throw new Error('empty');
-        return players.map(p => p.name);
+        // ★ メジャー組モードの選手（MLB_DATABASE）も実在の選手として使えなくする。「大谷翔平（打者）」は「大谷翔平」でも止める
+        const mStart = html.indexOf('const MLB_DATABASE');
+        const mEnd = mStart === -1 ? -1 : html.indexOf('];', mStart);
+        const mlb = mEnd === -1 ? [] : new Function(html.slice(mStart, mEnd + 2) + '; return MLB_DATABASE;')();
+        return players.map(p => p.name).concat(mlb.map(p => p.name.replace(/（[^）]*）$/, '')));
       });
       const cand = fetch('data/draft-2026-candidates.json').then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
         .then(d => (d.players || []).map(p => p.name));
