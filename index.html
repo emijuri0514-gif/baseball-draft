@@ -4058,7 +4058,8 @@
       for (let i = 0; i < TOTAL_ROUNDS; i++) {
         let rowHtml = `<td class="font-bold text-gray-500 bg-gray-100">${i + 1}</td>`;
         teams.forEach(t => {
-          const pickName = t.roster[i] ? shortenForeignName(t.roster[i].name) : '-';
+          // ★ 大谷の2枚は「大谷翔平（投手）」だと列が広がるので、ボードでは「大谷(投)」「大谷(打)」に縮める（11/20 オーナー：ボードが変になった）
+          const pickName = t.roster[i] ? shortenForeignName(t.roster[i].name).replace(/^大谷翔平（(.)手）$/, '大谷($1)').replace(/^大谷翔平（(.)者）$/, '大谷($1)') : '-';
           const mlbMark = isMlbPlayer(t.roster[i]) ? '<sup class="text-indigo-700">M</sup>' : '';
           rowHtml += `<td class="font-bold text-gray-800 text-xs">${pickName}${mlbMark}</td>`;
         });
@@ -4068,7 +4069,8 @@
       const mlbNote = document.getElementById('draft-matrix-mlb-note');
       if (mlbNote) {
         const picked = teams.flatMap(t => t.roster.filter(isMlbPlayer));
-        mlbNote.textContent = picked.length ? 'M＝メジャー組（' + picked.map(p => `${p.name}：${mlbEraLabel(p)}`).join('／') + '）' : '';
+        // ★ 選手ごとの年を全部並べると長すぎるので（11/20 オーナー）、短い注記だけにする。年は選手一覧と結果の画面に出ている
+        mlbNote.textContent = picked.length ? 'M＝メジャー所属（能力値は日本時代の成績）' : '';
         mlbNote.classList.toggle('hidden', !picked.length);
       }
       renderPositionBoard(); // どの球団かが指名するたびに呼ばれるので、ボードもここで更新する
