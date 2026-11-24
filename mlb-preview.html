@@ -1794,14 +1794,14 @@
 
     // ★ メジャー組モードの印（結果の画像に入れる。オーナー指示 11/16）。中央の座標と文字の大きさで描く
     function drawMlbModeBadge(ctx, cx, cy, size) {
-      const text = 'メジャー組モード';
+      const text = 'メジャー所属選手モード';
       ctx.save();
       ctx.font = `900 ${size}px sans-serif`;
-      const w = Math.min(ctx.measureText(text).width, size * 9) + size * 1.2, h = size * 1.6;
+      const w = Math.min(ctx.measureText(text).width, size * 11) + size * 1.2, h = size * 1.6;
       ctx.fillStyle = '#4338ca';
       ctx.beginPath(); ctx.roundRect(cx - w / 2, cy - h / 2, w, h, h / 2); ctx.fill();
       ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(text, cx, cy + 1, size * 9);
+      ctx.fillText(text, cx, cy + 1, size * 11);
       ctx.restore();
     }
 
@@ -3300,7 +3300,7 @@
     function mlbEraNote(players) {
       const ms = players.filter(isMlbPlayer);
       if (!ms.length) return '';
-      return '※メジャー組は日本時代の能力値：' + ms.map(p => `${p.name} ${p.mlb.years}年`).join('・');
+      return '※メジャー所属選手は日本時代の能力値：' + ms.map(p => `${p.name} ${p.mlb.years}年`).join('・');
     }
     // このプレイがメジャー組モードか（開始のときに決める）
     let mlbModeOn = false;
@@ -6576,7 +6576,7 @@
       const container = document.getElementById('ranking-container');
       // ★ メジャー組モードの印（結果の画面にも出す。ランクの実績は数えないことも書く）
       container.innerHTML = mlbModeOn
-        ? `<div class="bg-indigo-700 text-white rounded-lg px-3 py-2 text-xs md:text-sm font-bold text-center">メジャー組モード：メジャー組の能力値は日本時代のものです。このモードでは、ランクの実績は数えません</div>`
+        ? `<div class="bg-indigo-700 text-white rounded-lg px-3 py-2 text-xs md:text-sm font-bold text-center">メジャー所属選手モード：メジャー所属選手の能力値は日本時代のものです。このモードでは、ランクの実績は数えません</div>`
         : '';
 
       ranked.forEach((t, index) => {
