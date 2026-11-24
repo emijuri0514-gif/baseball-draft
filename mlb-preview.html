@@ -1794,7 +1794,7 @@
 
     // ★ メジャー組モードの印（結果の画像に入れる。オーナー指示 11/16）。中央の座標と文字の大きさで描く
     function drawMlbModeBadge(ctx, cx, cy, size) {
-      const text = 'メジャー所属選手モード';
+      const text = 'MLB組モード';
       ctx.save();
       ctx.font = `900 ${size}px sans-serif`;
       const w = Math.min(ctx.measureText(text).width, size * 11) + size * 1.2, h = size * 1.6;
@@ -2343,7 +2343,7 @@
       <div id="mlb-mode-row" class="hidden text-left mb-4 md:mb-6 border-2 border-gray-300 rounded p-3">
         <label for="mlb-mode" class="flex items-center gap-2 font-bold text-sm text-blue-800 cursor-pointer">
           <input type="checkbox" id="mlb-mode" class="w-5 h-5 flex-shrink-0">
-          メジャー所属選手も入れる
+          MLB組も入れる
         </label>
         <p id="mlb-mode-desc" class="text-[11px] text-gray-600 mt-1 leading-snug">MLBの日本人選手も指名できます。能力値は日本時代の成績から計算したものです。このモードでは、ランクの実績は数えません。</p>
       </div>
@@ -2369,7 +2369,7 @@
           window.__lastSetupValues = { team: document.getElementById('user-team').value, ai: document.getElementById('ai-count').value, mode: document.getElementById('draft-mode').value, mlb: document.getElementById('mlb-mode').checked };
           var teams = Number(document.getElementById('ai-count').value) + 1;
           var mode = { npb: 'NPB方式', lottery: '全巡 同時指名', waiver: '完全ウェーバー' }[document.getElementById('draft-mode').value] || '';
-          document.getElementById('quick-start-summary').textContent = document.getElementById('user-team').value + '／計' + teams + '球団／' + mode + (document.getElementById('mlb-mode').checked ? '／メジャー所属選手あり' : '');
+          document.getElementById('quick-start-summary').textContent = document.getElementById('user-team').value + '／計' + teams + '球団／' + mode + (document.getElementById('mlb-mode').checked ? '／MLB組あり' : '');
           document.getElementById('quick-start').classList.remove('hidden');
           document.getElementById('setup-fields').classList.add('hidden');
           document.getElementById('start-game-btn').textContent = 'すぐに始める';
@@ -2383,7 +2383,7 @@
         document.getElementById('mlb-mode').addEventListener('change', function () {
           var el = document.getElementById('quick-start-summary');
           if (!el || !el.textContent) return;
-          el.textContent = el.textContent.replace(/／メジャー所属選手あり$/, '') + (this.checked ? '／メジャー所属選手あり' : '');
+          el.textContent = el.textContent.replace(/／MLB組あり$/, '') + (this.checked ? '／MLB組あり' : '');
         });
         window.openSetupFields = function () {
           if (typeof gtag === 'function') gtag('event', 'setup_change_open');
@@ -3256,7 +3256,7 @@
     // ==========================================
     // メジャー組モード（2026-11-16 オーナー判断・T3-8）
     // ==========================================
-    // ★ 設定で「メジャー所属選手も入れる」（11/20 オーナー：「メジャー組」から呼び方を変更）を選んだときだけ、MLB の日本人選手を指名の候補に足す（今の NPB の選手の能力値は変えない）。
+    // ★ 設定で「MLB組も入れる」（11/20 オーナー：「メジャー組」から呼び方を変更）を選んだときだけ、MLB の日本人選手を指名の候補に足す（今の NPB の選手の能力値は変えない）。
     //   能力値は日本時代の直近3年（出場が基準に届いた3年。野手200打席・先発50投球回）の一軍の成績を、その時代の一軍の選手の中で
     //   順位付けして計算（Wikipedia 日本語版だけ）。飛び抜けた項目は今の上限を超えてよい（超えた分は半分）。
     //   team は日本時代の最後の球団（カードの色・球団の絞り込みに使う）、mlb.team は 2026年の所属（ロゴ・色は使わず名前の文字だけ）。
@@ -3300,7 +3300,7 @@
     function mlbEraNote(players) {
       const ms = players.filter(isMlbPlayer);
       if (!ms.length) return '';
-      return '※メジャー所属選手は日本時代の能力値：' + ms.map(p => `${p.name} ${p.mlb.years}年`).join('・');
+      return '※MLB組は日本時代の能力値：' + ms.map(p => `${p.name} ${p.mlb.years}年`).join('・');
     }
     // このプレイがメジャー組モードか（開始のときに決める）
     let mlbModeOn = false;
@@ -3310,7 +3310,7 @@
       if (!sel) return;
       const opt = sel.querySelector('option[value="MLB"]');
       if (mlbModeOn && !opt) {
-        const o = document.createElement('option'); o.value = 'MLB'; o.textContent = 'メジャー所属'; sel.appendChild(o);
+        const o = document.createElement('option'); o.value = 'MLB'; o.textContent = 'MLB組'; sel.appendChild(o);
       } else if (!mlbModeOn && opt) {
         if (sel.value === 'MLB') sel.value = '';
         opt.remove();
@@ -4073,7 +4073,7 @@
       if (mlbNote) {
         const picked = teams.flatMap(t => t.roster.filter(isMlbPlayer));
         // ★ 選手ごとの年を全部並べると長すぎるので（11/20 オーナー）、短い注記だけにする。年は選手一覧と結果の画面に出ている
-        mlbNote.textContent = picked.length ? 'M＝メジャー所属（能力値は日本時代の成績）' : '';
+        mlbNote.textContent = picked.length ? 'M＝MLB組（能力値は日本時代の成績）' : '';
         mlbNote.classList.toggle('hidden', !picked.length);
       }
       renderPositionBoard(); // どの球団かが指名するたびに呼ばれるので、ボードもここで更新する
@@ -6576,7 +6576,7 @@
       const container = document.getElementById('ranking-container');
       // ★ メジャー組モードの印（結果の画面にも出す。ランクの実績は数えないことも書く）
       container.innerHTML = mlbModeOn
-        ? `<div class="bg-indigo-700 text-white rounded-lg px-3 py-2 text-xs md:text-sm font-bold text-center">メジャー所属選手モード：メジャー所属選手の能力値は日本時代のものです。このモードでは、ランクの実績は数えません</div>`
+        ? `<div class="bg-indigo-700 text-white rounded-lg px-3 py-2 text-xs md:text-sm font-bold text-center">MLB組モード：MLB組の能力値は日本時代のものです。このモードでは、ランクの実績は数えません</div>`
         : '';
 
       ranked.forEach((t, index) => {
