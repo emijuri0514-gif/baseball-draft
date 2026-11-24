@@ -3264,21 +3264,21 @@
     //   大谷は投手と打者の2人。投手のカードは id を別にし、「選手詳細を見る」のリンクには ffId（週刊ベースボールONLINE の実在の id）を使う。
     //   調査と値：非公開リポジトリ docs/MLB_MODE_RESEARCH_2026-11-15.md・.work/mlb-research/analysis/final_values_2026-11-16.json
     const MLB_DATABASE = [
-      { id: 20010014, name: "佐々木朗希", team: "ロッテ", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 86, con: 73, sta: 71}, mlb: { team: "ドジャース", years: "2022〜2024", from: "2026-11-25" } },
-      { id: 19940012, name: "大谷翔平（打者）", team: "日本ハム", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 72, pow: 77, run: 72, def: 56}, mlb: { team: "ドジャース", years: "2014・2016・2017", from: "2026-11-25" } },
-      { id: 19980024, name: "山本由伸", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 83, con: 82, sta: 81}, mlb: { team: "ドジャース", years: "2021〜2023", from: "2026-11-25" } },
-      { id: 19960020, name: "岡本和真", team: "巨人", pos: "内野手", bestPos: ["一", "三", "外"], eval: "内野手", fStats: {meet: 78, pow: 83, run: 57, def: 70}, mlb: { team: "ブルージェイズ", years: "2023〜2025", from: "2026-11-26" } },
-      { id: 20000004, name: "村上宗隆", team: "ヤクルト", pos: "内野手", bestPos: ["三", "一", "外"], eval: "内野手", fStats: {meet: 64, pow: 84, run: 71, def: 65}, mlb: { team: "ホワイトソックス", years: "2023〜2025", from: "2026-11-26" } },
-      { id: 19940033, name: "鈴木誠也", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 80, pow: 83, run: 74, def: 76}, mlb: { team: "カブス", years: "2019〜2021", from: "2026-11-26" } },
+      { id: 20010014, name: "佐々木朗希", team: "ロッテ", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 86, con: 73, sta: 72}, mlb: { team: "ドジャース", years: "2022〜2024", from: "2026-11-25" } },
+      { id: 19940012, name: "大谷翔平（打者）", team: "日本ハム", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 78, pow: 78, run: 72, def: 56}, mlb: { team: "ドジャース", years: "2014・2016・2017", from: "2026-11-25" } },
+      { id: 19980024, name: "山本由伸", team: "オリックス", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 84, con: 81, sta: 82}, mlb: { team: "ドジャース", years: "2021〜2023", from: "2026-11-25" } },
+      { id: 19960020, name: "岡本和真", team: "巨人", pos: "内野手", bestPos: ["一", "三", "外"], eval: "内野手", fStats: {meet: 83, pow: 84, run: 60, def: 70}, mlb: { team: "ブルージェイズ", years: "2023〜2025", from: "2026-11-26" } },
+      { id: 20000004, name: "村上宗隆", team: "ヤクルト", pos: "内野手", bestPos: ["三", "一", "外"], eval: "内野手", fStats: {meet: 66, pow: 84, run: 71, def: 65}, mlb: { team: "ホワイトソックス", years: "2023〜2025", from: "2026-11-26" } },
+      { id: 19940033, name: "鈴木誠也", team: "広島", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 82, pow: 83, run: 72, def: 76}, mlb: { team: "カブス", years: "2019〜2021", from: "2026-11-26" } },
       { id: 19860043, name: "ダルビッシュ有", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 85, con: 79, sta: 81}, mlb: { team: "パドレス", years: "2009〜2011", from: "2026-11-27" } },
-      { id: 19930012, name: "今永昇太", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 83, sta: 76}, mlb: { team: "カブス", years: "2021〜2023", from: "2026-11-27" } },
-      { id: 19930032, name: "千賀滉大", team: "ソフトバンク", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 83, con: 70, sta: 75}, mlb: { team: "メッツ", years: "2020〜2022", from: "2026-11-27" } },
-      { id: 19930029, name: "吉田正尚", team: "オリックス", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 84, pow: 80, run: 71, def: 58}, mlb: { team: "レッドソックス", years: "2020〜2022", from: "2026-11-28" } },
-      { id: 19950014, name: "松井裕樹", team: "楽天", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 86, con: 71, sta: 69}, mlb: { team: "パドレス", years: "2021〜2023", from: "2026-11-28" } },
-      { id: 19910029, name: "菊池雄星", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 81, con: 74, sta: 80}, mlb: { team: "エンゼルス", years: "2016〜2018", from: "2026-11-28" } },
-      { id: 19980039, name: "今井達也", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 82, con: 68, sta: 80}, mlb: { team: "アストロズ", years: "2023〜2025", from: "2026-11-29" } },
-      { id: 919940012, ffId: 19940012, name: "大谷翔平（投手）", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 85, con: 71, sta: 75}, mlb: { team: "ドジャース", years: "2014〜2016", from: "2026-11-29" } },
-      { id: 19890049, name: "菅野智之", team: "巨人", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 75, con: 84, sta: 72}, mlb: { team: "ロッキーズ", years: "2022〜2024", from: "2026-11-29" } },
+      { id: 19930012, name: "今永昇太", team: "DeNA", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 80, con: 81, sta: 79}, mlb: { team: "カブス", years: "2021〜2023", from: "2026-11-27" } },
+      { id: 19930032, name: "千賀滉大", team: "ソフトバンク", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 84, con: 70, sta: 76}, mlb: { team: "メッツ", years: "2020〜2022", from: "2026-11-27" } },
+      { id: 19930029, name: "吉田正尚", team: "オリックス", pos: "外野手", bestPos: ["外"], eval: "外野手", fStats: {meet: 85, pow: 81, run: 72, def: 58}, mlb: { team: "レッドソックス", years: "2020〜2022", from: "2026-11-28" } },
+      { id: 19950014, name: "松井裕樹", team: "楽天", pos: "投手", bestPos: ["抑え", "中継"], eval: "抑え", pStats: {pow: 86, con: 71, sta: 67}, mlb: { team: "パドレス", years: "2021〜2023", from: "2026-11-28" } },
+      { id: 19910029, name: "菊池雄星", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 82, con: 75, sta: 81}, mlb: { team: "エンゼルス", years: "2016〜2018", from: "2026-11-28" } },
+      { id: 19980039, name: "今井達也", team: "西武", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 82, con: 67, sta: 81}, mlb: { team: "アストロズ", years: "2023〜2025", from: "2026-11-29" } },
+      { id: 919940012, ffId: 19940012, name: "大谷翔平（投手）", team: "日本ハム", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 85, con: 70, sta: 79}, mlb: { team: "ドジャース", years: "2014〜2016", from: "2026-11-29" } },
+      { id: 19890049, name: "菅野智之", team: "巨人", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 74, con: 83, sta: 74}, mlb: { team: "ロッキーズ", years: "2022〜2024", from: "2026-11-29" } },
     ];
     const MLB_MODE_START = '2026-11-25';
     // 日本時間の今日（YYYY-MM-DD）。確認用ページ（mlb-preview.html）だけ window.__mlbPreviewDate で日付を差し替える
