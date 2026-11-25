@@ -1722,7 +1722,7 @@
     // まずOSの共有シート（写真に保存が選べる）を試し、使えない環境だけ従来のダウンロードにする
     // extra：結果シェア画像のときだけ、文言の番号（phrase_id）とランク（grade）を一緒に送る
     function downloadCanvasImage(dataUrl, filename, extra) {
-      if (typeof gtag === 'function') gtag('event', 'share_click', Object.assign({ method: 'image_save', content: filename }, extra || {}));
+      if (typeof gtag === 'function') gtag('event', 'share_click', Object.assign({ method: 'image_save', content: filename, mode: mlbModeOn ? 'mlb_on' : 'mlb_off' }, extra || {}));
       const blob = dataURLtoBlob(dataUrl);
       const file = new File([blob], filename, { type: blob.type });
       if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
@@ -2007,7 +2007,7 @@
 
     // 文章は自動生成せず、リンクとタグだけ入れた投稿画面を新規タブで開く（画像は各自で添付）
     window.openXShare = function() {
-      if (typeof gtag === 'function') gtag('event', 'share_click', Object.assign({ method: 'x_share' }, (lastShareCardState && lastShareCardState.gaParams) || {}));
+      if (typeof gtag === 'function') gtag('event', 'share_click', Object.assign({ method: 'x_share', mode: mlbModeOn ? 'mlb_on' : 'mlb_off' }, (lastShareCardState && lastShareCardState.gaParams) || {}));
       if (typeof gtag === 'function' && lastShareCardState && lastShareCardState.kind === 'pick') {
         gtag('event', 'pick_card_share', { method: 'x_share', result: lastShareCardState.pickInfo.result });
       }
@@ -3713,7 +3713,9 @@
         ai_count: aiCount,
         draft_mode: draftModeSelect,
         start_from: window.__quickStartShown ? 'quick' : 'full',
-        has_last_setup: window.__hasLastSetup ? 1 : 0
+        has_last_setup: window.__hasLastSetup ? 1 : 0,
+        // ★ 2026-11-25 MLB組モードのオン・オフ（オーナー指示。登録済みの mode を使う。game_sim_complete の mode とはイベントが別）
+        mode: mlbSelect ? 'mlb_on' : 'mlb_off'
       };
       if (window.__setupChangeOpened && window.__lastSetupValues) {
         const last = window.__lastSetupValues, changed = [];
@@ -3734,7 +3736,7 @@
       } catch (e) {}
       if (typeof gtag === 'function') gtag('event', 'draft_start', startParams);
       // 完走率を始め方ごとに比べるため、ドラフト完了のイベントにも同じ値を付ける
-      window.__draftStartParams = { start_from: window.__quickStartShown ? 'quick' : 'full', has_last_setup: window.__hasLastSetup ? 1 : 0 };
+      window.__draftStartParams = { start_from: window.__quickStartShown ? 'quick' : 'full', has_last_setup: window.__hasLastSetup ? 1 : 0, mode: mlbSelect ? 'mlb_on' : 'mlb_off' };
       // 次に来たときの「すぐに始める」用に、今回の設定を覚えておく（この端末・このブラウザだけ）
       try { localStorage.setItem('dt9_last_setup_v1', JSON.stringify({ team: userTeamSelect, ai: aiCount, mode: draftModeSelect, mlb: mlbSelect ? 1 : 0 })); } catch (e) {}
 
@@ -6136,7 +6138,7 @@
 
       // ★ ドラフト会議が終わってスタメン編成画面に進んだタイミングをGA4で計測する
       if (typeof gtag === 'function') {
-        gtag('event', 'draft_complete', Object.assign({ team_count: teams.length, draft_mode: draftMode, play_mode: mpRoomId ? 'friend' : 'solo' }, mpRoomId ? {} : (window.__draftStartParams || {})));
+        gtag('event', 'draft_complete', Object.assign({ team_count: teams.length, draft_mode: draftMode, play_mode: mpRoomId ? 'friend' : 'solo', mode: mlbModeOn ? 'mlb_on' : 'mlb_off' }, mpRoomId ? {} : (window.__draftStartParams || {})));
       }
 
       lineupAssignments = {};
