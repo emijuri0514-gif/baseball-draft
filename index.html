@@ -2344,6 +2344,14 @@
         </label>
         <p id="mlb-mode-desc" class="text-[11px] text-gray-600 mt-1 leading-snug">MLBの日本人選手も指名できます。能力値は日本時代の成績から計算したものです。このモードでは、ランクの実績は数えません。</p>
       </div>
+      <!-- ★ 2026-11-26「AIの指名をいつも飛ばす」（初期はオフ。この端末で覚える） -->
+      <div class="text-left mb-4 md:mb-6 border-2 border-gray-300 rounded p-3">
+        <label for="skip-ai" class="flex items-center gap-2 font-bold text-sm text-blue-800 cursor-pointer">
+          <input type="checkbox" id="skip-ai" class="w-5 h-5 flex-shrink-0">
+          AIの指名をいつも飛ばす
+        </label>
+        <p class="text-[11px] text-gray-600 mt-1 leading-snug">ウェーバーの巡で、AIの指名を待たずに自分の番まで進みます。飛ばした間の指名は一覧で出ます。指名の結果は飛ばさないときと同じです（全巡 同時指名と友達対戦では使いません）。</p>
+      </div>
       <button id="start-game-btn" onclick="window.startGame()" class="btn-mvp w-full text-white font-black py-4 rounded-lg text-lg">ドラフト会議を開始する</button>
       <script>
         // ★「すぐに始める」：前回の設定があれば選択欄に戻し、選択欄をたたんで要約と「すぐに始める」ボタンを見せる
@@ -2352,6 +2360,11 @@
           var today = window.__mlbPreviewDate || new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
           window.__mlbModeSelectable = today >= '2026-11-25';
           if (window.__mlbModeSelectable) document.getElementById('mlb-mode-row').classList.remove('hidden');
+          try {
+            var skipBox = document.getElementById('skip-ai');
+            skipBox.checked = localStorage.getItem('dt9_skip_ai_v1') === '1';
+            skipBox.addEventListener('change', function () { try { localStorage.setItem('dt9_skip_ai_v1', skipBox.checked ? '1' : '0'); } catch (e) {} });
+          } catch (e) {}
           var saved = null;
           try { saved = JSON.parse(localStorage.getItem('dt9_last_setup_v1')); } catch (e) {}
           window.__hasLastSetup = !!saved;
@@ -2595,6 +2608,7 @@
         </div>
         <div class="p-2 bg-gray-900">
           <div id="turn-bar" class="hidden"></div>
+          <div id="waiver-skip-summary" class="hidden"></div>
           <div id="status-alert" class="hidden mb-2 p-2 font-bold text-xs rounded border-l-4"></div>
           <div id="pos-status-bar" class="flex flex-wrap gap-1 mb-2"></div>
           <!-- ポジション残数ボード（初期は1行の要約。タップで開く） -->
@@ -2709,6 +2723,7 @@
     <h2 class="font-sport text-xl md:text-3xl font-bold mb-6 tracking-widest text-yellow-400">第 <span id="reveal-round">1</span> 巡 <span id="reveal-mode-label">選択希望選手</span></h2>
     <div id="reveal-cards-container" class="flex flex-wrap justify-center gap-4 max-w-5xl overflow-y-auto max-h-[60vh] py-2"></div>
     <div id="reveal-status" class="mt-6 text-lg md:text-2xl font-bold h-10"></div>
+    <button id="reveal-skip-btn" type="button" onclick="window.skipToUserTurn()" class="hidden bg-yellow-400 hover:bg-yellow-300 text-gray-900 text-sm font-black px-5 py-2 rounded-full">⏩ 自分の番まで進む</button>
     </div>
   </div>
 
@@ -3380,6 +3395,12 @@
     let waiverPos = 0;
     let waiverLog = [];
     let waiverAnnounce = true; // ウェーバー中もAIの指名結果を1件ずつアナウンス表示するか
+    // ★ 2026-11-26「自分の番まで進む」（オーナー判断）：ウェーバーで、AIの指名を待たずに自分の番まで一気に進める。
+    //   指名そのもの（getAIPick）は飛ばさない場合と同じで、待ち時間とアナウンスだけを省く。全巡同時指名と友達対戦では使わない
+    let waiverSkipping = false;    // 「自分の番まで進む」を押して進めている最中
+    let waiverAlwaysSkip = false;  // 設定「AIの指名をいつも飛ばす」
+    let waiverSkipList = [];       // 飛ばした間の指名（自分の番に戻ったら一覧で見せる）
+    let waiverPending = null;      // 待っているタイマー { timer, fn }（押したらすぐ実行するため）
 
     // ★ 人対人対戦（Firestore同期）の状態。mpRoomId!=nullで対戦中。mpIsHost=trueが
     // ゲーム進行の権威（指名確定・抽選の判定）を持つ側、falseは相手の指名を
@@ -3823,6 +3844,8 @@
       draftMode = document.getElementById('draft-mode').value;
       waiverBaseOrder = shuffleArray(teams.map(t => t.id));
       waiverLog = [];
+      waiverSkipping = false; waiverSkipList = []; waiverPending = null;
+      waiverAlwaysSkip = !!(document.getElementById('skip-ai') && document.getElementById('skip-ai').checked);
 
       window.switchDraftView('list');
       beginRound();
@@ -4347,8 +4370,53 @@
       team.needsPick = false;
       availablePlayers = availablePlayers.filter(p => p.id !== player.id);
       waiverLog.push(`<strong>${team.name.replace('(AI)','')}</strong>→${player.name}`);
-      renderDraftMatrix();
+      if (team.isUser) hideWaiverSkipSummary();
+      if (!(waiverFastNow() && !team.isUser)) renderDraftMatrix();
       mpHostRecordPick(team, player);
+    }
+
+    function canSkipWaiver() { return !mpRoomId && isWaiverRound(currentRound); }
+    function waiverFastNow() { return canSkipWaiver() && (waiverSkipping || waiverAlwaysSkip); }
+
+    window.skipToUserTurn = function() {
+      if (!canSkipWaiver() || waiverSkipping) return;
+      waiverSkipping = true;
+      const rb = document.getElementById('reveal-skip-btn');
+      if (rb) rb.classList.add('hidden');
+      const tb = document.getElementById('turn-bar-skip-btn');
+      if (tb) { tb.disabled = true; tb.textContent = '⏩ 進めています…'; }
+      if (typeof gtag === 'function') gtag('event', 'waiver_skip');
+      if (waiverPending) { clearTimeout(waiverPending.timer); const fn = waiverPending.fn; waiverPending = null; fn(); }
+    };
+
+    function hideWaiverSkipSummary() {
+      const box = document.getElementById('waiver-skip-summary');
+      if (box) { box.className = 'hidden'; box.innerHTML = ''; }
+    }
+    window.hideWaiverSkipSummary = hideWaiverSkipSummary;
+
+    // 自分の番に戻ったとき、飛ばした間に指名された選手を一覧で出す（★リストの選手は目立たせる）
+    function showWaiverSkipSummary() {
+      const box = document.getElementById('waiver-skip-summary');
+      if (!box) return;
+      const list = waiverSkipList; waiverSkipList = [];
+      if (!list.length) { hideWaiverSkipSummary(); return; }
+      const favTaken = list.filter(x => favoriteIds.includes(x.player.id)).length;
+      const rows = list.map(x => {
+        const fav = favoriteIds.includes(x.player.id);
+        return `<li class="flex items-center gap-1 min-w-0 ${fav ? 'text-red-700 font-black' : ''}">
+          <span class="shrink-0 w-2 h-2 rounded-full ${x.team.color.bg}"></span>
+          <span class="shrink-0 text-gray-500">${x.round}巡 ${x.team.name.replace('(AI)','')}</span>
+          <span class="truncate">${fav ? '★' : ''}${x.player.name}<span class="text-gray-500 font-normal">（${x.player.pos}）</span></span>
+        </li>`;
+      }).join('');
+      box.className = 'mb-2 rounded border border-yellow-400 bg-yellow-50 text-gray-800 text-[11px]';
+      box.innerHTML = `
+        <div class="flex items-center justify-between px-2 py-1 bg-yellow-200 font-black">
+          <span>飛ばした間の指名（${list.length}人）${favTaken ? `<span class="text-red-700">　★リストの選手が${favTaken}人取られました</span>` : ''}</span>
+          <button type="button" onclick="window.hideWaiverSkipSummary()" class="px-2 text-gray-600 hover:text-black" aria-label="閉じる">×</button>
+        </div>
+        <ol class="grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-0.5 px-2 py-1 max-h-32 overflow-y-auto">${rows}</ol>`;
     }
 
     window.toggleAnnounce = function() {
@@ -4376,21 +4444,26 @@
           </div>
         </div>
       `;
+      const skipBtn = document.getElementById('reveal-skip-btn');
+      if (skipBtn) skipBtn.classList.toggle('hidden', !canSkipWaiver() || waiverSkipping);
       showScreen('screen-reveal');
       const seq = ++revealScreenSeq;
-      setTimeout(() => {
+      const done = () => {
+        waiverPending = null;
+        if (skipBtn) skipBtn.classList.add('hidden');
         // ★ 対人戦のゲストでは、アナウンス中に抽選や次の読み上げが始まることがある。そのときに
         //   この古いタイマーが「ドラフト画面に戻す」と、始まったばかりの抽選画面を隠してしまい、
         //   封筒を選べずにゲームが止まっていた。読み上げ画面をまだ自分が使っているときだけ戻す。
         if (seq === revealScreenSeq && !document.getElementById('screen-reveal').classList.contains('hidden-screen')) showScreen('screen-draft');
         callback();
-      }, 1500);
+      };
+      waiverPending = { timer: setTimeout(done, 1500), fn: done };
     }
 
     function proceedWaiver() {
       if (waiverPos >= waiverQueue.length) {
         currentRound++;
-        if (currentRound > TOTAL_ROUNDS) startLineupPhase();
+        if (currentRound > TOTAL_ROUNDS) { waiverSkipping = false; waiverSkipList = []; startLineupPhase(); }
         else beginRound();
         return;
       }
@@ -4400,11 +4473,16 @@
       team.needsPick = true;
       mpBroadcastTurn();
 
-      renderTurnBar(team);
-      renderPosStatus();
-      renderSearchList();
-      document.getElementById('status-alert').className = "hidden";
-      if (team.isUser) positionBoardOnUserTurn();
+      // 飛ばしている間（AIの番）は画面の描き直しを省き、自分の番に戻ったときにまとめて描く
+      const fast = !team.isUser && team.control !== 'remote' && waiverFastNow();
+      if (!fast) {
+        if (team.isUser) { waiverSkipping = false; renderDraftMatrix(); }
+        renderTurnBar(team);
+        renderPosStatus();
+        renderSearchList();
+        document.getElementById('status-alert').className = "hidden";
+        if (team.isUser) { positionBoardOnUserTurn(); showWaiverSkipSummary(); }
+      }
 
       if (!team.isUser) {
         if (team.control === 'remote') {
@@ -4416,13 +4494,19 @@
           });
           return;
         }
-        setTimeout(() => {
+        const runPick = () => {
+          waiverPending = null;
           const pick = getAIPick(team);
           commitPick(team, pick);
           const advance = () => { waiverPos++; proceedWaiver(); };
-          if (waiverAnnounce && pick) announceWaiverPick(team, pick, advance);
+          if (waiverFastNow()) {
+            if (pick) waiverSkipList.push({ team, player: pick, round: currentRound });
+            advance();
+          } else if (waiverAnnounce && pick) announceWaiverPick(team, pick, advance);
           else advance();
-        }, 900);
+        };
+        if (fast) { runPick(); return; }
+        waiverPending = { timer: setTimeout(runPick, 900), fn: runPick };
       }
     }
 
@@ -4450,6 +4534,7 @@
           <span>第${currentRound}巡 ウェーバー ${waiverPos + 1}/${waiverQueue.length}</span><span>${msg}</span>
         </div>
         <div id="turn-bar-chips" class="relative bg-gray-50 p-1.5 flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible gap-1">${chips}</div>
+        ${activeTeam && !activeTeam.isUser && activeTeam.control !== 'remote' && canSkipWaiver() ? `<button id="turn-bar-skip-btn" type="button" onclick="window.skipToUserTurn()" ${waiverSkipping ? 'disabled' : ''} class="w-full bg-yellow-400 hover:bg-yellow-300 disabled:opacity-60 text-gray-900 text-xs font-black py-1.5">${waiverSkipping ? '⏩ 進めています…' : '⏩ 自分の番まで進む'}</button>` : ''}
         ${waiverLog.length ? `<div class="bg-white px-2 py-1 text-[10px] text-gray-600 border-t truncate">直前: ${waiverLog.slice(-3).reverse().join(' ／ ')}</div>` : ''}`;
       // ★ 2026-11-15 スマホでは指名の順番を1行にして横に流す（2行だと選手一覧が狭くなるため。オーナー判断）。
       //   今の球団が見えるように、1つ前の球団が左端に来るところまで横に動かす。PC（md以上）は今までどおり折り返す
