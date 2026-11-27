@@ -64,6 +64,9 @@
     "inLanguage": "ja"
   }
   </script>
+    <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "トップ", "item": "https://dreamteam9.com/"}, {"@type": "ListItem", "position": 2, "name": "ドラフトを知る", "item": "https://dreamteam9.com/guide-draft.html"}, {"@type": "ListItem", "position": 3, "name": "2026年ドラフト会議の結果と振り返り", "item": "https://dreamteam9.com/draft-2026.html"}]}
+  </script>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
 <body class="text-gray-100">
@@ -76,46 +79,50 @@
         <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="text-[11px] md:text-xs font-bold bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">☰ メニュー</button>
         <a href="index.html" class="text-[11px] md:text-xs font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-full whitespace-nowrap">ゲームに戻る</a>
       </div>
-      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left">
+      <div id="nav-menu" class="hidden absolute right-4 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-3 z-30 text-left max-h-[75vh] overflow-y-auto">
           <div class="mb-3 last:mb-0">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">遊ぶ</p>
-            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
-            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎲 なんでもドラフト <span class="ml-1 text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded align-middle">NEW</span></a>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🃏 指名カードメーカー</a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎲 なんでもドラフト</a>
+            <a href="howto.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📖 遊び方</a>
             <a href="strategy.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 攻略ガイド</a>
-            <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
-            <a href="stats-calculator.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧮 指標の計算ツール</a>
-            <a href="ability-method.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📐 能力値の決め方</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">ゲームの中身</p>
             <a href="scoring.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">💯 採点の仕組み</a>
+            <a href="ability-method.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📐 能力値の決め方</a>
             <a href="simulation-2026.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🔁 1万回のシミュレーション</a>
-            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
-            <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ FAQ</a>
-          </div>
-          <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">選手・球団を調べる</p>
             <a href="teams.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏟️ 球団紹介</a>
+            <a href="faq.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">❓ よくある質問</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">ドラフトを知る</p>
+            <a href="draft-system.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗒️ ドラフト会議とは</a>
             <a href="draft-legends.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📜 歴代ドラフト伝説</a>
-            <a href="rankings.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 ランキング</a>
-            <a href="players.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧢 選手名鑑</a>
+            <a href="mock-draft.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗳️ 模擬ドラフトのやり方</a>
+            <a href="glossary.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📚 用語集</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">2026年ドラフト特集</p>
-            <a href="draft-predict.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🎯 12球団1位指名予想</a>
-          </div>
-          <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">グッズ・関連情報</p>
-            <a href="recommend.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">プロ野球を楽しむ</p>
             <a href="npb-broadcast-guide.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📡 中継サブスク比較</a>
             <a href="postseason-broadcast.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🏆 CS・日本シリーズの見る方法</a>
+            <a href="batting-order.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">⚾ 打順の組み方</a>
+            <a href="stats-calculator.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🧮 指標の計算ツール</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発情報</p>
-            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 更新履歴</a>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">開発の記録</p>
+            <a href="making.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🛠️ 未経験から作ったゲームの話</a>
+            <a href="devblog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">📝 開発ブログ</a>
+            <a href="changelog.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">🗂️ 更新履歴</a>
+            <a href="about.html" class="block text-sm text-gray-200 hover:text-blue-400 py-1">運営者情報</a>
           </div>
       </div>
     </div>
   </header>
 
   <main class="max-w-3xl mx-auto px-4 py-8 space-y-10">
+    <!-- ★ 2026-11-28 パンくず（AdSense の直し：棚と記事の関係を伝える） -->
+    <nav aria-label="パンくずリスト" class="text-xs text-gray-400 mb-4"><a href="index.html" class="text-blue-400 hover:underline">トップ</a><span aria-hidden="true" class="mx-1">＞</span><a href="guide-draft.html" class="text-blue-400 hover:underline">ドラフトを知る</a><span aria-hidden="true" class="mx-1">＞</span><span aria-current="page">2026年ドラフト会議の結果と振り返り</span></nav>
     <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
     <div id="ad-slot-top" class="ad-slot"></div>
 

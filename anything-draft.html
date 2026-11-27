@@ -129,6 +129,9 @@
     .ad-anim { animation: adpop .35s ease-out; }
     @keyframes adpop { from { transform: scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
   </style>
+    <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "トップ", "item": "https://dreamteam9.com/"}, {"@type": "ListItem", "position": 2, "name": "なんでもドラフト", "item": "https://dreamteam9.com/anything-draft.html"}]}
+  </script>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
 <body class="paper">
@@ -140,7 +143,7 @@
         <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn b-ghost text-xs whitespace-nowrap" style="min-height:36px;padding:0 .75rem">☰ メニュー</button>
         <a href="index.html" class="home-only p-btn b-ghost text-xs whitespace-nowrap inline-flex items-center" style="min-height:36px;padding:0 .75rem">AIドラフトへ</a>
       </div>
-      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left max-h-[75vh] overflow-y-auto">
           <div class="play-only mb-3">
             <p class="p-menu-h text-[11px] font-bold mb-1">なんでもドラフト</p>
             <button type="button" id="ad-home-link" class="block w-full text-left text-sm py-1 underline">はじめの画面（説明）に戻る</button>
@@ -148,25 +151,47 @@
           </div>
           <div class="mb-3 last:mb-0">
             <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
-            <a href="index.html" class="block text-sm py-1">AIドラフト（ゲーム）</a>
-            <a href="pick-card.html" class="block text-sm py-1">指名カードメーカー</a>
-            <a href="howto.html" class="block text-sm py-1">遊び方</a>
-            <a href="draft-system.html" class="block text-sm py-1">ドラフト会議とは</a>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー</a>
+            <a href="howto.html" class="block text-sm py-1">📖 遊び方</a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
-            <a href="draft-2026.html" class="block text-sm py-1">2026ドラフトの結果と振り返り</a>
-            <a href="draft-predict.html" class="block text-sm py-1">12球団1位指名予想</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">ゲームの中身</p>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="faq.html" class="block text-sm py-1">❓ よくある質問</a>
           </div>
           <div class="mb-3 last:mb-0">
-            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
-            <a href="changelog.html" class="block text-sm py-1">更新履歴</a>
+            <p class="p-menu-h text-[11px] font-bold mb-1">ドラフトを知る</p>
+            <a href="draft-system.html" class="block text-sm py-1">🗒️ ドラフト会議とは</a>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026年ドラフトの結果と振り返り</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="mock-draft.html" class="block text-sm py-1">🗳️ 模擬ドラフトのやり方</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">プロ野球を楽しむ</p>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+            <a href="batting-order.html" class="block text-sm py-1">⚾ 打順の組み方</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発の記録</p>
+            <a href="making.html" class="block text-sm py-1">🛠️ 未経験から作ったゲームの話</a>
+            <a href="devblog.html" class="block text-sm py-1">📝 開発ブログ</a>
+            <a href="changelog.html" class="block text-sm py-1">🗂️ 更新履歴</a>
+            <a href="about.html" class="block text-sm py-1">運営者情報</a>
           </div>
       </div>
     </div>
   </header>
 
   <main class="max-w-3xl mx-auto px-4 py-6 space-y-8">
+    <!-- ★ 2026-11-28 パンくず（AdSense の直し：棚と記事の関係を伝える） -->
+    <nav aria-label="パンくずリスト" class="text-xs p-sub mb-4"><a href="index.html" class="p-link">トップ</a><span aria-hidden="true" class="mx-1">＞</span><span aria-current="page">なんでもドラフト</span></nav>
     <div id="ad-slot-top" class="ad-slot home-only"></div>
 
     <!-- 続きから（途中で閉じたとき）。はじめの画面の一番上に出す -->

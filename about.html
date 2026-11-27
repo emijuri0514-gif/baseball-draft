@@ -22,6 +22,9 @@
   <link rel="canonical" href="https://dreamteam9.com/about.html">
   <!-- ★ 2026-10-27 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一。共通の部品は css/paper.css -->
   <link rel="stylesheet" href="css/paper.css">
+    <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "トップ", "item": "https://dreamteam9.com/"}, {"@type": "ListItem", "position": 2, "name": "運営者情報", "item": "https://dreamteam9.com/about.html"}]}
+  </script>
   <link rel="stylesheet" href="css/tailwind.css">
 </head>
 <body class="paper">
@@ -33,6 +36,8 @@
   </header>
 
   <main class="max-w-3xl mx-auto px-4 py-8 space-y-8 text-sm md:text-base leading-relaxed">
+    <!-- ★ 2026-11-28 パンくず（AdSense の直し：棚と記事の関係を伝える） -->
+    <nav aria-label="パンくずリスト" class="text-xs p-sub mb-4"><a href="index.html" class="p-link">トップ</a><span aria-hidden="true" class="mx-1">＞</span><span aria-current="page">運営者情報</span></nav>
 
     <section>
       <h2 class="p-h2 text-lg mb-3">運営者</h2>
