@@ -3927,25 +3927,99 @@
       return missing;
     }
 
-    function renderPosStatus() {
-      let counts = { "投手": 0, "捕手": 0, "内野手": 0, "外野手": 0 };
-      userTeamRef().roster.forEach(p => { if(p) counts[p.pos]++; });
+    // ==========================================
+    // ★ 2026-11-27 人の指名の枠は「守れる位置」で数える（オーナー判断・案1）
+    //   今までは登録の区分（内野手・外野手など）で数えていたため、たとえば内野手登録の佐藤輝明（三・外）を外野で使うつもりで
+    //   取っても内野手として数えられ、最後の自由な1枠（DH）が先に埋まって、取りたい内野手が一覧から消えることがあった。
+    //   野手9人を「捕1・内4・外3・DH1」に割り振れるかで判定する。守れる位置に加えて登録の区分も数えるので、今より厳しくはならない。
+    //   ★ AI の指名（getAIPick → getMissingPositions）はまだ登録の区分のまま（変えるとAIの取り方が変わり、1万回の確認と基準表の作り直しが要る）
+    // ==========================================
+    const BAT_SLOT_CAP = { '捕': 1, '内': 4, '外': 3 };
+    const BAT_SLOT_LABEL = { '捕': '捕手', '内': '内野手', '外': '外野手' };
+    // その打者が入れる枠（本職が先。DHはどの打者も入れるので含めない）
+    function batterSlotTypes(p) {
+      const out = [];
+      const add = t => { if (t && !out.includes(t)) out.push(t); };
+      (Array.isArray(p.bestPos) ? p.bestPos : [p.bestPos]).forEach(x => {
+        if (x === '捕') add('捕');
+        else if (['一', '二', '三', '遊'].includes(x)) add('内');
+        else if (['左', '中', '右', '外'].includes(x)) add('外');
+      });
+      add({ '捕手': '捕', '内野手': '内', '外野手': '外' }[p.pos]);
+      return out;
+    }
+    // 打者たちを「捕1・内4・外3・DH1」に割り振れるか（ホールの条件：入れる枠の組み合わせごとに、人数が枠＋DHの1を超えない）
+    function battersFitSlots(typeLists) {
+      if (typeLists.length > 9) return false;
+      const keys = ['捕', '内', '外'];
+      for (let mask = 1; mask < 8; mask++) {
+        const S = keys.filter((k, i) => mask & (1 << i));
+        const capS = S.reduce((a, k) => a + BAT_SLOT_CAP[k], 0) + 1;
+        if (typeLists.filter(ts => ts.every(t => S.includes(t))).length > capS) return false;
+      }
+      return true;
+    }
+    function userBatterTypeLists(roster) { return roster.filter(p => p && p.pos !== '投手').map(batterSlotTypes); }
+    // 人のチームがこの選手を指名しても、枠をそろえられるか
+    function userCanPickForSlots(roster, p) {
+      if (p.pos === '投手') return roster.filter(x => x && x.pos === '投手').length < 3;
+      return battersFitSlots([...userBatterTypeLists(roster), batterSlotTypes(p)]);
+    }
+    // まだ空いている枠（その位置だけを守れる打者を1人足しても割り振れる枠）
+    function userOpenBatterSlots(roster) {
+      const base = userBatterTypeLists(roster);
+      return ['捕', '内', '外'].filter(t => battersFitSlots([...base, [t]]));
+    }
+    // 表示用の割り振り（本職を優先して、捕・内・外・DH のどこに数えるか）
+    function assignUserBatterSlots(roster) {
+      const bats = roster.filter(p => p && p.pos !== '投手');
+      const cap = { ...BAT_SLOT_CAP, 'DH': 1 }, res = [];
+      const go = i => {
+        if (i === bats.length) return true;
+        for (const t of [...batterSlotTypes(bats[i]), 'DH']) if (cap[t] > 0) { cap[t]--; res[i] = t; if (go(i + 1)) return true; cap[t]++; }
+        return false;
+      };
+      if (!go(0)) return null;
+      return bats.map((p, i) => ({ p, slot: res[i] }));
+    }
+    // あと何を指名すれば枠がそろうか（例：「外野手1人」「投手1人・野手2人」）
+    function remainingNeedText(roster) {
+      const parts = [];
+      const pc = roster.filter(p => p && p.pos === '投手').length;
+      if (pc < 3) parts.push(`投手${3 - pc}人`);
+      const k = 9 - roster.filter(p => p && p.pos !== '投手').length;
+      if (k > 0) {
+        const open = userOpenBatterSlots(roster).map(t => BAT_SLOT_LABEL[t]);
+        parts.push(open.length === 3 ? `野手${k}人` : open.length === 1 ? `${open[0]}${k}人` : `野手${k}人（${open.join('・')}）`);
+      }
+      return parts.join('・');
+    }
 
-      let surplus = Math.max(0, counts["捕手"] - 1) + Math.max(0, counts["内野手"] - 4) + Math.max(0, counts["外野手"] - 3);
-      let dhFilled = surplus > 0 ? 1 : 0;
+    function renderPosStatus() {
+      const roster = userTeamRef().roster;
+      const pc = roster.filter(p => p && p.pos === '投手').length;
+      const asg = assignUserBatterSlots(roster) || [];
+      const counts = { '捕': 0, '内': 0, '外': 0, 'DH': 0 };
+      asg.forEach(a => counts[a.slot]++);
+      // どちらの枠にも回せる選手（例：佐藤輝明 三・外）は、表示の割り振りと違う枠にも回せることを書き添える
+      const flex = asg.filter(a => batterSlotTypes(a.p).length >= 2);
 
       let html = '';
-      html += `<span class="pos-badge ${counts["投手"]>=3?'pos-ok':'pos-need'}">投: ${Math.min(counts["投手"],3)}/3</span>`;
-      html += `<span class="pos-badge ${counts["捕手"]>=1?'pos-ok':'pos-need'}">捕: ${Math.min(counts["捕手"],1)}/1</span>`;
-      html += `<span class="pos-badge ${counts["内野手"]>=4?'pos-ok':'pos-need'}">内: ${Math.min(counts["内野手"],4)}/4</span>`;
-      html += `<span class="pos-badge ${counts["外野手"]>=3?'pos-ok':'pos-need'}">外: ${Math.min(counts["外野手"],3)}/3</span>`;
-      html += `<span class="pos-badge ${dhFilled?'pos-ok':'pos-need'}">DH: ${dhFilled}/1</span>`;
+      html += `<span class="pos-badge ${pc>=3?'pos-ok':'pos-need'}">投: ${Math.min(pc,3)}/3</span>`;
+      html += `<span class="pos-badge ${counts['捕']>=1?'pos-ok':'pos-need'}">捕: ${counts['捕']}/1</span>`;
+      html += `<span class="pos-badge ${counts['内']>=4?'pos-ok':'pos-need'}">内: ${counts['内']}/4</span>`;
+      html += `<span class="pos-badge ${counts['外']>=3?'pos-ok':'pos-need'}">外: ${counts['外']}/3</span>`;
+      html += `<span class="pos-badge ${counts['DH']?'pos-ok':'pos-need'}">DH: ${counts['DH']}/1</span>`;
 
       // ★ 外国人枠は「埋めるべき最低数」ではなく「これ以上は指名できない上限」なので、
       //   他の枠バッジとは逆に、上限に達したら赤（pos-need）にする。
       const fCount = foreignCount(userTeamRef());
       html += `<span class="pos-badge ${fCount>=FOREIGN_PLAYER_LIMIT?'pos-need':'pos-ok'}">外国人: ${fCount}/${FOREIGN_PLAYER_LIMIT}</span>`;
 
+      if (flex.length) {
+        const txt = flex.map(a => `${a.p.name}（${batterSlotTypes(a.p).join('・')}）`).join('、');
+        html += `<span class="w-full text-[10px] font-bold text-gray-300 leading-snug">兼任：${txt}は、ほかの枠にも回して数えます</span>`;
+      }
       document.getElementById('pos-status-bar').innerHTML = html;
       renderPositionBoard();
     }
@@ -4217,15 +4291,16 @@
       const listDiv = document.getElementById('player-list');
       const user = userTeamRef();
 
-      // 必要ポジションの選手が枯れた場合は全ポジションを解放する
-      let missing = getMissingPositions(user.roster);
-      if (!availablePlayers.some(p => missing.includes(p.pos))) {
-        missing = ["投手", "捕手", "内野手", "外野手"];
-      }
-      // ★ 2026-11-27 Xのバグ報告「定期的に選手が消える」：枠が埋まったポジション（例：内野手4/4）の選手は指名できないので
-      //   一覧から外しているが、理由がどこにも出ず、絞り込みの結果が「該当選手がいません」だけになって「選手が消えた」と見えていた。
-      //   隠している理由と、あと何を指名すればよいかを一覧の上に出す。指名できる選手の決まりは変えない
-      const closedGroups = ["投手", "捕手", "内野手", "外野手"].filter(g => !missing.includes(g));
+      // ★ 人の指名は「守れる位置」で枠をそろえられる選手だけを出す（userCanPickForSlots。2026-11-27 案1）
+      //   必要な枠に入れる選手が残っていない場合は、全員を出す（今までと同じ逃げ道）
+      let canPick = p => userCanPickForSlots(user.roster, p);
+      const slotsReleased = !availablePlayers.some(canPick);
+      if (slotsReleased) canPick = () => true;
+      // ★ 2026-11-27 Xのバグ報告「定期的に選手が消える」：枠が埋まった選手を一覧から外すとき、理由とあと必要な枠を一覧の上に出す
+      const pitchersFull = user.roster.filter(p => p && p.pos === '投手').length >= 3;
+      const openSlots = userOpenBatterSlots(user.roster);
+      const closedBat = slotsReleased ? [] : ['捕', '内', '外'].filter(t => !openSlots.includes(t)).map(t => BAT_SLOT_LABEL[t]);
+      const closedGroups = slotsReleased ? [] : [...(pitchersFull ? ['投手'] : []), ...closedBat];
       const hiddenByFull = [];
 
       let displayPlayers = availablePlayers.filter(p => {
@@ -4253,7 +4328,7 @@
            if (statFilter === "0" && maxStat >= 70) return false;
         }
 
-        if (!missing.includes(p.pos)) { hiddenByFull.push(p); return false; }
+        if (!canPick(p)) { hiddenByFull.push(p); return false; }
         return true;
       });
 
@@ -4313,28 +4388,18 @@
         const need = remainingNeedText(user.roster);
         if (!html && hiddenByFull.length) {
           const names = hiddenByFull.slice(0, 2).map(p => p.name).join('・') + (hiddenByFull.length > 2 ? ` ほか${hiddenByFull.length - 2}人` : '');
-          const groups = [...new Set(hiddenByFull.map(p => p.pos))].join('・');
           bigNote = true;
+          const hiddenSlots = [...new Set(hiddenByFull.flatMap(p => p.pos === '投手' ? ['投手'] : batterSlotTypes(p).map(t => BAT_SLOT_LABEL[t])))];
           note = `<div class="m-2 p-3 rounded border border-yellow-400 bg-yellow-50 text-gray-800 text-xs leading-relaxed">
-            <p class="font-black mb-1">${groups}の枠が埋まっているため、指名できません</p>
-            <p>条件に合う選手（${names}）はまだ残っていますが、${groups}はもう必要な人数がそろっています。${need ? `残りの指名では<strong>${need}</strong>を選んでください。` : ''}</p>
+            <p class="font-black mb-1">入れる枠が埋まっているため、指名できません</p>
+            <p>条件に合う選手（${names}）はまだ残っていますが、その選手が入れる枠（${hiddenSlots.join('・')}）はもう必要な人数がそろっています。${need ? `残りの指名では<strong>${need}</strong>を選んでください。` : ''}</p>
           </div>`;
         } else {
-          note = `<p class="px-2 py-1.5 text-[11px] font-bold text-gray-600 bg-yellow-50 border-b border-yellow-200">枠が埋まった${closedGroups.join('・')}は一覧に出ません。${need ? `あと必要：${need}` : ''}</p>`;
+          const hiddenWhat = [pitchersFull ? '投手' : '', closedBat.length ? `${closedBat.join('・')}しか守れない野手` : ''].filter(Boolean).join('と');
+          note = `<p class="px-2 py-1.5 text-[11px] font-bold text-gray-600 bg-yellow-50 border-b border-yellow-200">枠が埋まったので、${hiddenWhat}は一覧に出ません。${need ? `あと必要：${need}` : ''}</p>`;
         }
       }
       listDiv.innerHTML = note + (html || (bigNote ? '' : '<p class="text-gray-500 text-xs p-2 font-bold">該当選手がいません</p>'));
-    }
-
-    // あと何を指名すれば枠がそろうか（例：「外野手1人」「投手1人・野手（DH）1人」）。枠の数え方は getMissingPositions / renderPosStatus と同じ
-    function remainingNeedText(roster) {
-      const c = { "投手": 0, "捕手": 0, "内野手": 0, "外野手": 0 };
-      roster.forEach(p => { if (p) c[p.pos]++; });
-      const surplus = Math.max(0, c["捕手"] - 1) + Math.max(0, c["内野手"] - 4) + Math.max(0, c["外野手"] - 3);
-      const parts = [];
-      [["投手", 3], ["捕手", 1], ["内野手", 4], ["外野手", 3]].forEach(([g, n]) => { if (c[g] < n) parts.push(`${g}${n - c[g]}人`); });
-      if (surplus === 0) parts.push('野手（DH）1人');
-      return parts.join('・');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
