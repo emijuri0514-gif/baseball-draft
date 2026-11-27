@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N7NP62TTYB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-N7NP62TTYB");
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8902892637129231" crossorigin="anonymous"></script>
+  <script async src="js/error-tracking.js"></script>
+  <title>模擬ドラフトのやり方 ― 友達と遊ぶときに決めておくこと｜AIドラフト</title>
+  <meta name="description" content="友達と模擬ドラフトをするときに、始める前に決めておくと揉めにくいこと。指名する対象、人数と巡の数、順番の決め方（折り返し・1巡目のくじ）、くじの作り方、守備位置の枠、時間、記録の残し方、ひとりでやる方法まで。">
+  <meta property="og:site_name" content="AIドラフト">
+  <meta property="og:title" content="模擬ドラフトのやり方 ― 友達と遊ぶときに決めておくこと｜AIドラフト">
+  <meta property="og:description" content="友達と模擬ドラフトをするときに、始める前に決めておくと揉めにくいこと。指名する対象、人数と巡の数、順番の決め方（折り返し・1巡目のくじ）、くじの作り方、守備位置の枠、時間、記録の残し方、ひとりでやる方法まで。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dreamteam9.com/mock-draft.html">
+  <link rel="canonical" href="https://dreamteam9.com/mock-draft.html">
+  <meta property="og:image" content="https://dreamteam9.com/images/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- ★ 2026-10-28 デザインをE案（ドラフト指名票：紙白・墨・罫線）に統一（第2弾）。共通の部品は css/paper.css -->
+  <link rel="stylesheet" href="css/paper.css">
+  <style>
+    /* ★ 広告枠プレースホルダー：AdSense審査通過後、中に広告タグを追加する想定。
+       空の間はdisplay:noneで完全に無害化し、中身が入ったら自動で表示・余白がつく ★ */
+    .ad-slot:empty { display: none; }
+    .ad-slot { margin: 1.5rem 0; text-align: center; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "模擬ドラフトのやり方 ― 友達と遊ぶときに決めておくこと",
+    "description": "友達と模擬ドラフトをするときに、始める前に決めておくと揉めにくいこと。指名する対象、人数と巡の数、順番の決め方（折り返し・1巡目のくじ）、くじの作り方、守備位置の枠、時間、記録の残し方、ひとりでやる方法まで。",
+    "image": "https://dreamteam9.com/images/ogp-top.jpg",
+    "mainEntityOfPage": "https://dreamteam9.com/mock-draft.html",
+    "inLanguage": "ja",
+    "datePublished": "2026-11-27",
+    "publisher": { "@type": "Organization", "name": "dreamteam9.com" }
+  }
+  </script>
+  <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="paper">
+  <header class="p-head sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2 relative">
+      <h1 class="p-mincho text-base md:text-lg">🗳️ 模擬ドラフトのやり方</h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="howto.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📖 遊び方</a>
+        <a href="devblog.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">📝 開発ブログ</a>
+        <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">☰ メニュー</button>
+        <a href="index.html" class="p-btn p-btn-sm b-ghost inline-flex items-center whitespace-nowrap text-[11px] md:text-xs px-2 md:px-3">ゲームに戻る</a>
+      </div>
+      <div id="nav-menu" class="p-menu hidden absolute right-4 top-full mt-2 w-64 p-3 z-30 text-left">
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">遊ぶ</p>
+            <a href="pick-card.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'pickcard_menu'})" class="block text-sm py-1">🃏 指名カードメーカー <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="anything-draft.html" onclick="if(typeof gtag==='function')gtag('event','cta_click',{month:new Date().getMonth()+1,target:'anything_menu'})" class="block text-sm py-1">🎲 なんでもドラフト <span class="ml-1 p-badge text-[9px] font-black align-middle">NEW</span></a>
+            <a href="strategy.html" class="block text-sm py-1">🎯 攻略ガイド</a>
+            <a href="glossary.html" class="block text-sm py-1">📚 用語集</a>
+            <a href="stats-calculator.html" class="block text-sm py-1">🧮 指標の計算ツール</a>
+            <a href="ability-method.html" class="block text-sm py-1">📐 能力値の決め方</a>
+            <a href="scoring.html" class="block text-sm py-1">💯 採点の仕組み</a>
+            <a href="simulation-2026.html" class="block text-sm py-1">🔁 1万回のシミュレーション</a>
+            <a href="faq.html" class="block text-sm py-1">❓ FAQ</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">選手・球団を調べる</p>
+            <a href="teams.html" class="block text-sm py-1">🏟️ 球団紹介</a>
+            <a href="draft-legends.html" class="block text-sm py-1">📜 歴代ドラフト伝説</a>
+            <a href="rankings.html" class="block text-sm py-1">🏆 ランキング</a>
+            <a href="players.html" class="block text-sm py-1">🧢 選手名鑑</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">2026年ドラフト特集</p>
+            <a href="draft-2026.html" class="block text-sm py-1">📅 2026ドラフト放送予定・注目選手</a>
+            <a href="draft-predict.html" class="block text-sm py-1">🎯 12球団1位指名予想</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">グッズ・関連情報</p>
+            <a href="recommend.html" class="block text-sm py-1">🛍️ おすすめグッズ・コンテンツ</a>
+            <a href="npb-broadcast-guide.html" class="block text-sm py-1">📡 中継サブスク比較</a>
+            <a href="postseason-broadcast.html" class="block text-sm py-1">🏆 CS・日本シリーズの見る方法</a>
+          </div>
+          <div class="mb-3 last:mb-0">
+            <p class="p-menu-h text-[11px] font-bold mb-1">開発情報</p>
+            <a href="changelog.html" class="block text-sm py-1">🛠️ 更新履歴</a>
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-10">
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-top" class="ad-slot"></div>
+
+    <section>
+      <p class="text-xs p-sub mb-1">ドラフトを知る</p>
+      <h2 class="p-mincho text-xl md:text-2xl mb-2">模擬ドラフトのやり方 ― 友達と遊ぶときに決めておくこと</h2>
+      <p class="text-xs p-sub">2026年11月27日</p>
+    </section>
+
+    <section>
+      <p class="text-sm md:text-base leading-relaxed mb-3">模擬ドラフトは、本物のドラフト会議のように、決めた順番で選手を指名し合う遊びです。プロ野球の現役選手で12球団を作り直してもいいし、高校野球の注目選手で今年のドラフトを予想してもいい。野球以外でも、好きなお菓子やアニメのキャラクターで同じことができます。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">やること自体は簡単です。ただ、何も決めずに始めると、途中で「それはありなの？」が必ず出てきます。このページでは、始める前に決めておくと揉めにくいことを、順番に書いていきます。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">1. 何を指名するかを決める</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">最初は「選ぶ対象」から。ここがあいまいだと、後で一番もめます。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed mb-3">
+        <li><span class="p-em">プロ野球の現役選手</span>なら、いつの時点の所属で数えるか（今季の開幕時点、今日の時点など）</li>
+        <li><span class="p-em">ドラフト候補の予想</span>なら、プロ志望届を出した選手だけにするか（本物のドラフトでは、野球部の高校3年生・大学4年生は、プロ志望届を出していないと指名できません）</li>
+        <li><span class="p-em">野球以外のお題</span>なら、「同じ物の色違いは別物か」のような細かいところ</li>
+      </ul>
+      <p class="text-sm md:text-base leading-relaxed mb-3">「迷ったら、言い出した人がその場で決める」とだけ決めておくのも手です。全部を先に決めきるのは無理なので。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">2. 何人で、何巡にするか</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">人数はいくらでもかまいませんが、3〜6人くらいが回しやすいと思います。人数が多いと、自分の番が来るまでの待ち時間が長くなるからです。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">巡の数（1人が何回指名するか）は、時間から逆算すると決めやすくなります。1人1回の指名に1分かかるとして、5人で10巡なら50回、ほぼ1時間です。野球のチームを作るなら、スタメンの9人か、投手を足した12人くらいがちょうどいい区切りになります。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">3. 指名の順番を決める</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">順番の決め方で、遊びの公平さがかなり変わります。よく使われるのは次の3つです。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3"><span class="p-em">ずっと同じ順番（1→2→3、1→2→3…）</span></p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">いちばん単純ですが、毎回最初に選べる人が有利すぎます。おすすめしません。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3"><span class="p-em">折り返し（1→2→3、3→2→1、1→2→3…）</span></p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">「スネーク方式」とも呼ばれる形で、1巡ごとに順番が逆になります。1巡目の最後の人は、2巡目の最初にもう一度選べる。有利と不利がならされるので、迷ったらこれで十分です。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3"><span class="p-em">1巡目だけ同時に出して、重なったらくじ</span></p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">本物のプロ野球のドラフトに近い形です。1巡目は全員が紙に書いて一斉に出し、同じ選手に重なったらくじで決める。外れた人だけもう一度出し直します。2巡目からは折り返しの順番で1人ずつ指名します。くじの場面がいちばん盛り上がるので、雰囲気を味わいたいならこの形がいいです。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">最初の順番そのものは、じゃんけんかくじで決めます。前回の模擬ドラフトで最下位だった人を1番にする、というやり方もあります。本物のドラフトも、2巡目からは、その年の順位が下の球団から先に指名する仕組みです。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">4. くじの作り方</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">1巡目で指名が重なったときのくじは、その場の人数分だけ用意します。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed mb-3">
+        <li><span class="p-em">紙のくじ</span>：同じ大きさの紙に、1枚だけ印を付けて折る。いちばん確実です</li>
+        <li><span class="p-em">あみだくじ</span>：紙とペンだけでできて、外れた人も納得しやすい</li>
+        <li><span class="p-em">くじ引きのアプリやサイト</span>：オンラインで集まるときに便利。ただ、全員の画面で結果が見えるものを選ばないと、「本当に引いたの？」となりがちです</li>
+      </ul>
+      <p class="text-sm md:text-base leading-relaxed mb-3">オンラインのときは、通話をつないで、誰か1人が画面を共有しながら引くのが無難です。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">5. 「枠」の決まりを作るかどうか</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">野球のチームを作るなら、守備位置の決まりを作るかどうかを決めます。決まりがないと、全員が強い投手と強打者ばかりを取って、捕手がいないチームが並ぶことになります。それはそれで面白いのですが、チームとして比べるなら枠があったほうがいい。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">例えば「投手3人・捕手1人・内野手4人・外野手3人・あと1人は自由」のように、人数を先に決めておきます。内野と外野の両方を守れる選手をどちらに数えるかも、ここで決めておくと後で困りません。外国人選手の人数に上限を付けるかどうかも、話し合っておくといいところです。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">6. 時間の決まり</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">1人が長く考え込むと、ほかの人は待つしかありません。「1回の指名は1分まで」「時間を過ぎたら、その人のリストの一番上を自動で指名」のように決めておくと、テンポが落ちません。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">あらかじめ自分の欲しい順のリストを作っておいてもらうのも、時間を縮めるいい方法です。先に取られたら次の人に進むだけなので、迷う時間がぐっと減ります。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">7. 記録の残し方</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">誰が誰を何巡目で取ったかは、その場でメモしておくのがおすすめです。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed mb-3">
+        <li>紙なら、横に人の名前、縦に巡の数の表を作って埋めていく</li>
+        <li>オンラインなら、全員が書き込める表計算のシートが便利</li>
+        <li>終わったら、チームごとに画像にまとめておくと、後で見返したときに楽しい</li>
+      </ul>
+      <p class="text-sm md:text-base leading-relaxed mb-3">結果をSNSに載せるなら、選んだ理由をひとこと添えると、見る人にも伝わりやすくなります。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">8. ひとりで模擬ドラフトをするには</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">相手がいなくても大丈夫です。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">ひとりでやるなら、相手の分も自分で選ぶか、相手の指名を決まりで決めてしまう方法があります。たとえば「相手は、残っている中で今季の成績が一番いい選手を取る」と決めて、その通りに動かす。自分の好みが入らないぶん、思ったより手強い相手になります。</p>
+      <p class="text-sm md:text-base leading-relaxed mb-3">もう少し手軽にやりたいなら、コンピューターが相手の球団を受け持ってくれるサイトやアプリを使うのも一つです。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3">始める前の確認表</h3>
+      <p class="text-sm md:text-base leading-relaxed mb-3">最後に、始める前に全員で確かめておきたいことをまとめておきます。</p>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed mb-3">
+        <li>何を指名するか（対象と、いつの時点か）</li>
+        <li>人数と巡の数</li>
+        <li>順番の決め方（折り返しにするか、1巡目はくじにするか）</li>
+        <li>守備位置などの枠</li>
+        <li>1回の指名の時間</li>
+        <li>記録をだれがつけるか</li>
+      </ul>
+      <p class="text-sm md:text-base leading-relaxed mb-3">ここまで決まっていれば、あとは始めるだけです。揉めたときのために「最後は言い出した人が決める」も、こっそり足しておくといいかもしれません。</p>
+    </section>
+
+    <section>
+      <h3 class="p-h2 text-lg mb-3 mt-4">関係するページ</h3>
+      <ul class="list-disc pl-5 text-sm md:text-base space-y-1 leading-relaxed mb-3">
+        <li><a href="draft-system.html" class="p-link">ドラフト会議とは</a>：本物のプロ野球のドラフト会議の仕組み（入札と抽選、ウェーバー、育成指名）</li>
+        <li><a href="anything-draft.html" class="p-link">なんでもドラフト</a>：お題を決めて、友達と交代で指名する遊びをその場で回せるページ</li>
+        <li><a href="pick-card.html" class="p-link">指名カードメーカー</a>：指名した結果を、ドラフト会議風の画像にできます</li>
+        <li><a href="index.html" class="p-link">AIドラフト</a>：AIの球団を相手に、現役のプロ野球選手でひとりで模擬ドラフトができるゲーム</li>
+      </ul>
+    </section>
+
+    <!-- 広告枠（AdSense審査通過後、ここにadsbygoogleタグを追加する） -->
+    <div id="ad-slot-bottom" class="ad-slot"></div>
+
+    <div class="text-center pt-4 pb-10">
+      <a href="index.html" class="p-btn b-shu inline-flex items-center justify-center py-3 px-8">ゲームを始める</a>
+    </div>
+</main>
+  <footer class="text-center p-sub text-xs py-6">
+    <p class="mb-2">読み物：<a href="guide-play.html" class="hover:underline">遊び方・攻略</a> ｜ <a href="guide-draft.html" class="hover:underline">ドラフトを知る</a> ｜ <a href="guide-enjoy.html" class="hover:underline">プロ野球を楽しむ</a></p>
+    <a href="privacy.html" class="hover:underline">プライバシーポリシー</a> ｜ <a href="about.html" class="hover:underline">運営者情報</a> ｜ <a href="contact.html" class="hover:underline">お問い合わせ</a> ｜ 本サイトはアフィリエイト広告を利用しています ｜ © 2026 dreamteam9.com
+  </footer>
+</body>
+</html>
