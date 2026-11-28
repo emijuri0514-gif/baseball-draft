@@ -7294,9 +7294,15 @@
       // ★ ここは素の走力（baseRun）で判定する。fStats.runはコンボ等のチーム全体バフがかかっているため、
       //   それをそのまま使うと機動力野球コンボを組んだだけで長距離砲まで盗塁を仕掛けてしまう。
       const runSpeed = runner.baseRun != null ? runner.baseRun : (runner.fStats ? runner.fStats.run : 50);
-      if (runSpeed < 60) return; // 足の遅い選手は仕掛けない
+      if (runSpeed < 55) return; // 足の遅い選手は仕掛けない
 
-      const attemptChance = Math.min(0.4, (runSpeed - 60) * 0.012);
+      // ★ 2026-11-28 Xの声「盗塁の頻度が多すぎる。筒香が盗塁してアウトになる」。走力ごとに「一塁に出たうち何回盗塁を仕掛けたか」を
+      //   実際の成績（2023〜2025年、Wikipedia。能力値の計算に使っている盗塁企図÷出塁）とくらべると、ゲームは走力65〜79で3〜4倍仕掛けていた
+      //   （走力67の筒香は、実際は出塁の約4%なのにゲームでは約14%）。走力ごとの実際の企図率に合わせた曲線にする：
+      //   1回出塁あたりの目標 T = 2.1% × e^(0.1164×(走力−60))（走力60で約2%、70で約7%、75で約12%、80で約21%、85で約38%。上限45%）。
+      //   この判定は一塁にいる間の打席ごとに行われ、何度も判定されるぶん実際より多く出るので、1000試合ほど回して合うように打席ごとの確率に直した（指数2.3）
+      const stintTarget = Math.min(0.45, 0.021 * Math.exp(0.1164 * (runSpeed - 60)));
+      const attemptChance = 1 - Math.pow(1 - stintTarget, 1 / 2.3);
       if (Math.random() >= attemptChance) return;
 
       const atkTeam = state.isTop ? state.teamA : state.teamB;
@@ -7304,7 +7310,8 @@
       const catcher = defLineup.batters.find(b => b.fieldPos === '捕');
       const catcherDef = getCatcherDef(defLineup);
 
-      let successChance = 0.55 + (runSpeed - 50) * 0.006 - (catcherDef - 50) * 0.005;
+      // ★ 2026-11-28 成功率も実際の成績に寄せる（走力60で約5割、70で約7割5分、80で約8割。前は足の速い選手ほど実際より低く出ていた）
+      let successChance = 0.57 + (runSpeed - 55) * 0.011 - (catcherDef - 50) * 0.005;
       successChance = Math.max(0.15, Math.min(0.9, successChance));
 
       if (Math.random() < successChance) {
