@@ -967,8 +967,32 @@
       { grade: 'F', min: 30, max: 39,  color: '#3b82f6', textColor: '#ffffff', tagline: '再建は来年から…' },
       { grade: 'G', min: 0,  max: 29,  color: '#9ca3af', textColor: '#1f2937', tagline: '一からの立て直しが必要' }
     ];
-    function getGradeInfo(finalScore) {
-      return GRADE_TABLE.find(g => finalScore >= g.min) || GRADE_TABLE[GRADE_TABLE.length - 1];
+    // ★ 2026-11-28 オーナー判断：ランクの区切りを球団数ごとに下げる（点数はそのまま。今より厳しくなる球団数は作らない）。
+    //   球団が多いほど選手の取り合いがきつく、同じうまさでも点数が下がる（11/8〜11/27、12球団で A 以上は 0.1%、S は 0）。
+    //   a＝A の線（B 以下も同じだけ下げる）、s＝S の線。A は「いいドラフトをすれば届く」、S は「かなりうまく取れたときだけ」。
+    //   決め方と見直しの予定は非公開の docs/GRADE_BY_TEAMS_2026-11-28.md（1週間後と 12/1〜7 の再計算の後に合わせ直す）
+    const GRADE_LINES_BY_TEAMS = {
+      2: { a: 80, s: 88 }, 3: { a: 80, s: 88 }, 4: { a: 80, s: 85 }, 5: { a: 79, s: 85 }, 6: { a: 79, s: 84 },
+      7: { a: 78, s: 83 }, 8: { a: 77, s: 82 }, 9: { a: 75, s: 80 }, 10: { a: 74, s: 79 }, 11: { a: 72, s: 78 }, 12: { a: 70, s: 77 }
+    };
+    function gradeLinesFor(teamCount) {
+      const n = Math.min(12, Math.max(2, Math.round(Number(teamCount) || 4)));
+      return GRADE_LINES_BY_TEAMS[n];
+    }
+    // 球団数ごとの区切りで、S〜G の各段の min・max を作り直した表
+    function gradeTableFor(teamCount) {
+      const { a, s } = gradeLinesFor(teamCount);
+      return GRADE_TABLE.map((g, i) => {
+        if (g.grade === 'S') return { ...g, min: s, max: 100 };
+        if (g.grade === 'A') return { ...g, min: a, max: s - 1 };
+        if (g.grade === 'G') return { ...g, min: 0, max: a - 51 };
+        const min = a - 10 * (i - 1);
+        return { ...g, min, max: min + 9 };
+      });
+    }
+    function getGradeInfo(finalScore, teamCount) {
+      const table = gradeTableFor(teamCount);
+      return table.find(g => finalScore >= g.min) || table[table.length - 1];
     }
 
     // AIコメント：コンボの発動有無ではなく、実際の打線・投手力の数値（radarData）を見て
@@ -1032,7 +1056,7 @@
       const variants = table[label];
       return variants[Math.floor(Math.random() * variants.length)](value);
     };
-    function generateTeamComment(radarData, orderBuff, finalScore) {
+    function generateTeamComment(radarData, orderBuff, finalScore, teamCount) {
       const stats = STAT_LABELS.map((label, i) => ({ label, value: radarData[i] }));
       const sorted = [...stats].sort((a, b) => b.value - a.value);
       const best = sorted[0];
@@ -1041,11 +1065,13 @@
       const secondWorst = sorted[sorted.length - 2];
       const spread = best.value - worst.value;
 
+      // ★ 書き出しはランク（球団数ごとの区切り）に合わせる。点数で決めていたころは、S なのに「及第点」と出ることがあった
       let opening;
-      if (finalScore >= 90) opening = '投打に隙のない、優勝候補と呼べる仕上がりです。';
-      else if (finalScore >= 80) opening = '上位を狙える、まとまりの良い編成です。';
-      else if (finalScore >= 70) opening = '堅実にまとまった、及第点以上の編成です。';
-      else if (finalScore >= 60) opening = '投打どちらかに伸びしろを残す編成です。';
+      const openGrade = getGradeInfo(finalScore, teamCount).grade;
+      if (openGrade === 'S') opening = '投打に隙のない、優勝候補と呼べる仕上がりです。';
+      else if (openGrade === 'A') opening = '上位を狙える、まとまりの良い編成です。';
+      else if (openGrade === 'B') opening = '堅実にまとまった、及第点以上の編成です。';
+      else if (openGrade === 'C') opening = '投打どちらかに伸びしろを残す編成です。';
       else opening = 'まだ発展途上で、来年に向けて課題の見える編成です。';
 
       const parts = [opening];
@@ -1151,7 +1177,7 @@
       const byDiff = list => [...list].sort((a, b) => b.d - a.d || a.i - b.i);
       if (!isChampion) {
         if (isLast) return { lines: SHARE_TAGLINE_LAST, focus: -1, id: 'last' };
-        if (byScore[0].v < SHARE_TAGLINE_LOW_TOP || SHARE_TAGLINE_LOW_GRADES.includes(getGradeInfo(finalScore).grade)) {
+        if (byScore[0].v < SHARE_TAGLINE_LOW_TOP || SHARE_TAGLINE_LOW_GRADES.includes(getGradeInfo(finalScore, teamCount).grade)) {
           const shine = byDiff(byScore.slice(0, 2))[0];
           return { lines: [`光るのは【${shine.label}】`, 'ここから伸びるチーム'], focus: shine.i, id: 'shine_' + SHARE_STAT_KEYS[shine.i] };
         }
@@ -1231,7 +1257,7 @@
       const band = shareBandStyle(team);
       const radarData = team.radarData || [50, 50, 50, 50, 50, 50];
       const totalSum = radarData.reduce((s, v) => s + v, 0);
-      const gradeInfo = getGradeInfo(team.finalScore);
+      const gradeInfo = getGradeInfo(team.finalScore, team.shareTeamCount);
       const isChampion = opts.kind === 'champion';
       const rank = team.shareRank || 0, count = team.shareTeamCount || 0;
       const isLast = !isChampion && count >= 2 && rank === count;
@@ -1433,7 +1459,7 @@
       const radarData = team.radarData || [50, 50, 50, 50, 50, 50];
       const statLabels = ['長打力', '確実性', '機動力', '守備力', '先発陣', '救援陣'];
       const totalSum = radarData.reduce((s, v) => s + v, 0);
-      const gradeInfo = getGradeInfo(team.finalScore);
+      const gradeInfo = getGradeInfo(team.finalScore, team.shareTeamCount);
 
       const lineupRows = team.shareLineup || [];
       const pitcherNames = team.sharePitchers || [];
@@ -1966,7 +1992,7 @@
       const gaParams = { team_owner: teamOwner };
       if (team.shareTeamCount) gaParams.team_count = team.shareTeamCount;
       if (teamOwner === 'own') {
-        gaParams.grade = getGradeInfo(team.finalScore).grade;
+        gaParams.grade = getGradeInfo(team.finalScore, team.shareTeamCount).grade;
         if (canvas.sharePhraseId) gaParams.phrase_id = canvas.sharePhraseId;
       }
       if (lastShareCardState) lastShareCardState.gaParams = gaParams;
@@ -6752,7 +6778,7 @@
         t.finalScore = Math.round((final_pow + final_meet + final_run + final_def + final_sp + final_rp) / 6);
 
         // コメント生成：コンボの発動状況ではなく、実際の打線・投手力の数値を見て分析する
-        t.comment = generateTeamComment(t.radarData, orderBuff, t.finalScore);
+        t.comment = generateTeamComment(t.radarData, orderBuff, t.finalScore, teams.length);
 
         // --- 実績判定（担当球団のみ。AI球団の結果では解除しない） ---
         if (t.isUser) {
@@ -6763,7 +6789,7 @@
           saveAchievementState();
           if (achState.stats.playCount >= 10) unlockAchievement('played_10');
 
-          const grade = getGradeInfo(t.finalScore).grade;
+          const grade = getGradeInfo(t.finalScore, teams.length).grade;
           // ★ メジャー組モードでは、ランクに関わる実績（S・G・Aランク・雑草魂）は数えない（2026-11-16 オーナー判断）
           const rankAch = !mlbModeOn;
           if (rankAch && grade === 'S') { unlockAchievement('rank_s'); userHadSRankThisRun = true; }
@@ -6836,7 +6862,7 @@
         // 結果シェア画像の「◯球団中 ◯位」用
         t.shareRank = index + 1;
         t.shareTeamCount = ranked.length;
-        const g = getGradeInfo(t.finalScore);
+        const g = getGradeInfo(t.finalScore, ranked.length);
 
         const rows = t.isUser
           ? Array.from({length: 9}, (_, i) => {
@@ -6929,7 +6955,9 @@
           const userRank = ranked.findIndex(t => t.isUser) + 1;
           const params = { rank: userRank, team_count: ranked.length, play_mode: mpRoomId ? 'friend' : 'solo' };
           if (userTeam && userTeam.radarData) {
-            params.grade = getGradeInfo(userTeam.finalScore).grade;
+            params.grade = getGradeInfo(userTeam.finalScore, ranked.length).grade;
+            // ★ 2026-11-28 区切りを合わせ直すため、点数も送る（新しいカスタム定義は増やさず、指名カードの共有で使っている result を使い回す）
+            params.result = String(userTeam.finalScore);
             const isLast = ranked.length >= 2 && userRank === ranked.length;
             params.phrase_id = pickShareTagline(userTeam.radarData, userTeam.finalScore, isLast, false, ranked.length).id;
           }
