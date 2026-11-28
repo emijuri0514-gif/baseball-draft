@@ -105,7 +105,7 @@
     }
 
     // ★ 部屋を作る：自分を枠0（本職球団）に置き、残りは空き枠。1対1は totalSlots=2 で使う。
-    async function createRoom({ teamName, totalSlots, draftMode }) {
+    async function createRoom({ teamName, totalSlots, draftMode, mlb }) {
       const clientId = getClientId();
       let code;
       let ref;
@@ -121,11 +121,14 @@
           ? { teamName, control: 'human', clientId, ready: true }
           : { teamName: null, control: 'open', clientId: null, ready: false }
       ));
-      await setDoc(ref, {
+      // ★ 2026-11-28 友達対戦の MLB組（11/30 から）：MLB組を入れる部屋だけ mlb: true を足す（入れない部屋のデータは今までと同じ）
+      const roomDoc = {
         code, status: 'waiting', draftMode, hostClientId: clientId,
         slots, picks: [], pendingPick: null, lotteryResult: null,
         createdAt: serverTimestamp(), updatedAt: serverTimestamp()
-      });
+      };
+      if (mlb) roomDoc.mlb = true;
+      await setDoc(ref, roomDoc);
       return { roomId: code, clientId, isHost: true };
     }
 
@@ -2559,6 +2562,14 @@
         <h2 class="text-lg font-bold mb-4 border-b pb-2">ルームを作る</h2>
         <p class="font-bold mb-2 text-sm text-left text-blue-800">あなたの担当球団</p>
         <select id="mp-create-team" class="w-full border-2 border-gray-300 p-3 rounded mb-4 font-bold text-base focus:outline-none focus:border-blue-500"></select>
+        <!-- ★ 2026-11-28 友達対戦の MLB組（11/30 から。それまでは出さない） -->
+        <div id="mp-mlb-row" class="hidden text-left mb-4 border-2 border-gray-300 rounded p-3">
+          <label for="mp-mlb-mode" class="flex items-center gap-2 font-bold text-sm text-blue-800 cursor-pointer">
+            <input type="checkbox" id="mp-mlb-mode" class="w-5 h-5 flex-shrink-0">
+            MLB組も入れる
+          </label>
+          <p class="text-[11px] text-gray-600 mt-1 leading-snug">MLBの日本人選手15人も指名できます（参加する人も同じ顔ぶれです）。能力値は日本時代の成績から計算したものです。このモードでは、ランクの実績は数えません。</p>
+        </div>
         <button onclick="window.mpCreateRoom()" class="btn-mvp w-full text-white font-black py-3 rounded-lg">この設定でルームを作る</button>
         <button onclick="window.mpShowPanel('choice')" class="w-full mt-3 text-sm text-gray-600 hover:underline">戻る</button>
       </div>
@@ -2582,6 +2593,7 @@
           <p class="text-xs text-gray-600 mb-2">この合言葉を相手に伝えてください</p>
           <p id="mp-room-code" class="text-3xl font-black tracking-[0.3em] text-blue-800 mb-1"></p>
         </div>
+        <p id="mp-room-mlb" class="hidden text-xs font-bold text-indigo-700 mb-2">この部屋は MLB組あり です</p>
         <div id="mp-slot-list" class="text-left space-y-2 mb-4"></div>
         <button id="mp-start-btn" onclick="window.mpStartRoom()" class="hidden btn-mvp w-full text-white font-black py-3 rounded-lg mb-2">対戦を開始する</button>
         <p id="mp-waiting-guest-msg" class="hidden text-sm text-gray-600 mb-2">⏳ ホストが開始するのを待っています...</p>
@@ -3337,6 +3349,9 @@
       { id: 19890049, name: "菅野智之", team: "巨人", pos: "投手", bestPos: ["先発"], eval: "先発", pStats: {pow: 75, con: 82, sta: 75}, mlb: { team: "ロッキーズ", years: "2021・2022・2024", from: "2026-11-29" } },
     ];
     const MLB_MODE_START = '2026-11-25';
+    // ★ 2026-11-28 オーナー判断：友達対戦の MLB組は、MLB組が全員そろった後の 2026-11-30（日本時間）から選べる
+    const MP_MLB_START = '2026-11-30';
+    function mpMlbAvailable() { return mlbTodayJst() >= MP_MLB_START; }
     // 日本時間の今日（YYYY-MM-DD）。確認用ページ（mlb-preview.html）だけ window.__mlbPreviewDate で日付を差し替える
     function mlbTodayJst() {
       if (window.__mlbPreviewDate) return window.__mlbPreviewDate;
@@ -3345,6 +3360,8 @@
     function mlbModeAvailable() { return mlbTodayJst() >= MLB_MODE_START; }
     function mlbPlayersOn(dateStr) { return MLB_DATABASE.filter(p => p.mlb.from <= dateStr); }
     function isMlbPlayer(p) { return !!(p && p.mlb); }
+    // 友達対戦の同期で、もう一覧から消えた選手を id で探す（MLB組の選手も含める。2026-11-28）
+    function findAnyPlayer(id) { return initialDatabase.find(p => p.id === id) || MLB_DATABASE.find(p => p.id === id) || null; }
     // 「ドジャース（元オリックス）」の形。MLB の球団はロゴ・色を使わず名前の文字だけ
     function mlbTeamLabel(p) { return `${p.mlb.team}（元${p.team}）`; }
     // 選手のそばに必ず出す「日本時代の能力値（◯〜◯年）」
@@ -4945,6 +4962,8 @@
     let stamenContinueCallback = null;
     const STAMEN_PITCHER_BADGE = { '先発': '先', '中継': '中', '抑え': '抑' };
 
+    // ★ p はスタメンの共有用データ（shareLineup／sharePitchers）。メジャー組は teamLabel に MLB の球団名が入っている
+    //   （以前は p.mlb を見ていたが、共有用データには入っていないので、日本の旧所属が出ていた。11/28）
     function buildStamenRow(badgeText, posLabel, p, team, delayMs) {
       return `
         <div class="stamen-row flex items-center gap-3 bg-white text-black rounded-lg shadow-lg overflow-hidden border-l-8 ${team.color.border}" style="animation-delay:${delayMs}ms">
@@ -4952,7 +4971,7 @@
           <div class="flex-1 min-w-0 py-2 pr-3">
             <p class="text-[10px] md:text-xs font-bold text-gray-500">${posLabel}</p>
             <p class="text-base md:text-lg font-black truncate">${p.name}</p>
-            <p class="text-[10px] text-gray-400 truncate">${isMlbPlayer(p) ? mlbTeamLabel(p) : p.team}</p>
+            <p class="text-[10px] text-gray-400 truncate">${p.teamLabel || (isMlbPlayer(p) ? mlbTeamLabel(p) : p.team)}</p>
           </div>
         </div>`;
     }
@@ -5518,6 +5537,8 @@
     };
 
     window.mpShowPanel = function(name) {
+      const mlbRow = document.getElementById('mp-mlb-row');
+      if (mlbRow) mlbRow.classList.toggle('hidden', !mpMlbAvailable());
       ['choice', 'create', 'join', 'waiting'].forEach(n => {
         document.getElementById('mp-panel-' + n).classList.toggle('hidden', n !== name);
       });
@@ -5528,7 +5549,8 @@
       if (!(await ensureMP())) { showAppAlert('通信の準備に失敗しました。通信環境をご確認のうえ、もう一度お試しください。'); return; }
       const teamName = document.getElementById('mp-create-team').value;
       try {
-        const { roomId } = await window.MP.createRoom({ teamName, totalSlots: 2, draftMode: document.getElementById('draft-mode').value });
+        const mpMlb = mpMlbAvailable() && !!(document.getElementById('mp-mlb-mode') && document.getElementById('mp-mlb-mode').checked);
+        const { roomId } = await window.MP.createRoom({ teamName, totalSlots: 2, draftMode: document.getElementById('draft-mode').value, mlb: mpMlb });
         mpRoomId = roomId; mpIsHost = true; mpMySlotIndex = 0;
         mpUnsubRoom = window.MP.subscribeRoom(roomId, mpOnRoomSnapshot);
         mpStartPolling();
@@ -5636,6 +5658,8 @@
     }
     // リアルタイム通知の受け取り口：届いた時刻を記録してから処理する
     function mpOnRoomSnapshot(data) {
+      const mlbLabel = document.getElementById('mp-room-mlb');
+      if (mlbLabel) mlbLabel.classList.toggle('hidden', !(data && data.mlb));
       mpLastSnapshotAt = Date.now();
       mpOnRoomUpdate(data);
     }
@@ -5682,9 +5706,11 @@
         }, 15000);
       }
       userHadSRankThisRun = false;
-      mlbModeOn = false; // 友達対戦はメジャー組モードを使わない（NPB の選手だけ）
+      // ★ 2026-11-28 友達対戦の MLB組（11/30 から）：部屋に mlb: true があるときだけ。2台で顔ぶれがずれないよう、
+      //   日付の判定ではなく MLB組の全員（11/29 までにそろった15人）を入れる
+      mlbModeOn = !!(data && data.mlb) && mpMlbAvailable();
       syncMlbTeamFilter();
-      availablePlayers = [...initialDatabase];
+      availablePlayers = mlbModeOn ? [...initialDatabase, ...MLB_DATABASE] : [...initialDatabase];
       resetPositionBoard();
       favoriteIds = [];
       const resyncBtn = document.getElementById('mp-resync-btn');
@@ -5727,7 +5753,7 @@
 
       window.switchDraftView('list');
 
-      if (typeof gtag === 'function') gtag('event', 'mp_draft_start', { draft_mode: draftMode, is_host: mpIsHost });
+      if (typeof gtag === 'function') gtag('event', 'mp_draft_start', { draft_mode: draftMode, is_host: mpIsHost, mode: mlbModeOn ? 'mlb_on' : 'mlb_off' });
 
       if (mpIsHost) {
         beginRound();
@@ -5760,7 +5786,7 @@
       const pp = data.pendingPick;
       if (!pp) return;
       if (mpPendingRemotePick && mpPendingRemotePick.slotIndex === pp.slotIndex && mpPendingRemotePick.playerId === pp.playerId) return;
-      const player = availablePlayers.find(p => p.id === pp.playerId) || initialDatabase.find(p => p.id === pp.playerId);
+      const player = availablePlayers.find(p => p.id === pp.playerId) || findAnyPlayer(pp.playerId);
       if (!player) return;
 
       mpPendingRemotePick = { slotIndex: pp.slotIndex, playerId: pp.playerId, player };
@@ -5879,7 +5905,7 @@
         mpMyLotteryChoice = null;
         mpLotteryRevealTriggered = false;
         const cTeams = lot.teamSlots.map(slot => teams.find(t => t.id === slot)).filter(Boolean);
-        const player = availablePlayers.find(p => p.id === lot.playerId) || initialDatabase.find(p => p.id === lot.playerId);
+        const player = availablePlayers.find(p => p.id === lot.playerId) || findAnyPlayer(lot.playerId);
         if (cTeams.length === lot.teamSlots.length && player) {
           setupLottery(cTeams, player);
         }
@@ -5991,7 +6017,7 @@
       mpGuestDraining = true;
       const entry = mpGuestPickQueue.shift();
       const team = teams.find(t => t.id === entry.slotIndex);
-      const player = availablePlayers.find(p => p.id === entry.playerId) || initialDatabase.find(p => p.id === entry.playerId);
+      const player = availablePlayers.find(p => p.id === entry.playerId) || findAnyPlayer(entry.playerId);
       if (!team || !player || team.roster.some(p => p.id === player.id)) { mpDrainGuestPickQueue(); return; }
 
       commitPick(team, player);
@@ -6017,7 +6043,7 @@
       mpLastRevealKey = rv.key;
       const entries = (rv.picks || []).map(e => ({
         team: teams.find(t => t.id === e.slot),
-        player: availablePlayers.find(p => p.id === e.playerId) || initialDatabase.find(p => p.id === e.playerId)
+        player: availablePlayers.find(p => p.id === e.playerId) || findAnyPlayer(e.playerId)
       })).filter(e => e.team && e.player);
       if (entries.length === 0) return;
       entries.forEach(e => mpRevealedPickIds.add(e.player.id));
